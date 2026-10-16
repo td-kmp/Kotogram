@@ -17,7 +17,6 @@ dependencies {
     implementation(libs.compose.runtime)
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)
-    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.nucleus.application)
     implementation(libs.nucleus.decorated.window.tao)
     implementation(libs.nucleus.decorated.window.material3)

@@ -67,7 +67,7 @@ internal fun AuthorizationState.toDomain(): AuthState = when (this) {
 
     AuthorizationStateLoggingOut -> AuthState.LoggingOut
 
-    // TelegramClient starts a new instance right after these, which reports its own state.
+    // TdSessionManager starts a new instance right after these, which reports its own state.
     AuthorizationStateClosing, AuthorizationStateClosed -> AuthState.Initializing
 }
 

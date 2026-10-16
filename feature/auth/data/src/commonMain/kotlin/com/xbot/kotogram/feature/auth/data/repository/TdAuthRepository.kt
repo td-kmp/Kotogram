@@ -1,6 +1,6 @@
 package com.xbot.kotogram.feature.auth.data.repository
 
-import com.xbot.kotogram.data.tdlib.TelegramClient
+import com.xbot.kotogram.data.tdlib.TdSessionManager
 import com.xbot.kotogram.feature.auth.data.mapper.tdCall
 import com.xbot.kotogram.feature.auth.data.mapper.toDomain
 import com.xbot.kotogram.feature.auth.domain.model.AuthState
@@ -21,55 +21,57 @@ import io.xbot.tdlib.api.SetAuthenticationPhoneNumber
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-internal class TdAuthRepository(private val client: TelegramClient) : AuthRepository {
+internal class TdAuthRepository(private val session: TdSessionManager) : AuthRepository {
 
-    override val authState: Flow<AuthState> = client.authorizationState.map { it.toDomain() }
+    override val authState: Flow<AuthState> = session.authorizationState.map { it.toDomain() }
 
     override suspend fun setPhoneNumber(phoneNumber: String) {
-        tdCall { client.send(SetAuthenticationPhoneNumber(phoneNumber = phoneNumber)) }
+        tdCall { session.client().send(SetAuthenticationPhoneNumber(phoneNumber = phoneNumber)) }
     }
 
     override suspend fun requestQrCode() {
-        tdCall { client.send(RequestQrCodeAuthentication()) }
+        tdCall { session.client().send(RequestQrCodeAuthentication()) }
     }
 
     override suspend fun checkCode(code: String) {
-        tdCall { client.send(CheckAuthenticationCode(code = code)) }
+        tdCall { session.client().send(CheckAuthenticationCode(code = code)) }
     }
 
     override suspend fun resendCode() {
-        tdCall { client.send(ResendAuthenticationCode(reason = ResendCodeReasonUserRequest)) }
+        tdCall {
+            session.client().send(ResendAuthenticationCode(reason = ResendCodeReasonUserRequest))
+        }
     }
 
     override suspend fun setEmailAddress(email: String) {
-        tdCall { client.send(SetAuthenticationEmailAddress(emailAddress = email)) }
+        tdCall { session.client().send(SetAuthenticationEmailAddress(emailAddress = email)) }
     }
 
     override suspend fun checkEmailCode(code: String) {
         tdCall {
-            client.send(
+            session.client().send(
                 CheckAuthenticationEmailCode(code = EmailAddressAuthenticationCode(code = code))
             )
         }
     }
 
     override suspend fun checkPassword(password: String) {
-        tdCall { client.send(CheckAuthenticationPassword(password = password)) }
+        tdCall { session.client().send(CheckAuthenticationPassword(password = password)) }
     }
 
     override suspend fun requestPasswordRecovery() {
-        tdCall { client.send(RequestAuthenticationPasswordRecovery) }
+        tdCall { session.client().send(RequestAuthenticationPasswordRecovery) }
     }
 
     override suspend fun recoverPassword(recoveryCode: String) {
-        tdCall { client.send(RecoverAuthenticationPassword(recoveryCode = recoveryCode)) }
+        tdCall { session.client().send(RecoverAuthenticationPassword(recoveryCode = recoveryCode)) }
     }
 
     override suspend fun register(firstName: String, lastName: String) {
-        tdCall { client.send(RegisterUser(firstName = firstName, lastName = lastName)) }
+        tdCall { session.client().send(RegisterUser(firstName = firstName, lastName = lastName)) }
     }
 
     override suspend fun logOut() {
-        tdCall { client.send(LogOut) }
+        tdCall { session.client().send(LogOut) }
     }
 }

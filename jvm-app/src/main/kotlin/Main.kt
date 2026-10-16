@@ -5,21 +5,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.ui.App
 import com.xbot.kotogram.ui.KotogramTheme
-import com.xbot.kotogram.ui.di.closeTelegramClient
 import com.xbot.kotogram.ui.di.initKoin
 import dev.nucleusframework.application.nucleusApplication
 import dev.nucleusframework.window.material.MaterialDecoratedWindow
 import dev.nucleusframework.window.material.MaterialTitleBar
-import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeoutOrNull
+import org.koin.core.context.stopKoin
 
 fun main(args: Array<String>) {
     initKoin()
-    // Covers window close, Cmd+Q and SIGTERM alike.
-    Runtime.getRuntime().addShutdownHook(
-        Thread { runBlocking { withTimeoutOrNull(TDLIB_CLOSE_TIMEOUT) { closeTelegramClient() } } }
-    )
+    // Closes Koin's AutoCloseable singletons (TDLib) on window close, Cmd+Q and SIGTERM alike.
+    Runtime.getRuntime().addShutdownHook(Thread(::stopKoin))
     nucleusApplication(args) {
         KotogramTheme {
             MaterialDecoratedWindow(
@@ -39,5 +34,3 @@ fun main(args: Array<String>) {
         }
     }
 }
-
-private val TDLIB_CLOSE_TIMEOUT = 3.seconds
