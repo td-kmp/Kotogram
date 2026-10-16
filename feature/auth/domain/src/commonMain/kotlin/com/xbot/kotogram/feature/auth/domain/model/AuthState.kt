@@ -36,3 +36,26 @@ sealed interface AuthState {
 
     data object LoggingOut : AuthState
 }
+
+/**
+ * Whether TDLib accepts a new phone number or QR request now. It refuses both while waiting
+ * for QR confirmation: leaving that state takes a log out, which restarts TDLib at
+ * [AuthState.WaitPhoneNumber].
+ */
+val AuthState.acceptsLoginRequest: Boolean
+    get() = when (this) {
+        AuthState.WaitPhoneNumber,
+        is AuthState.WaitCode,
+        is AuthState.WaitEmailAddress,
+        is AuthState.WaitEmailCode,
+        is AuthState.WaitPassword,
+        is AuthState.WaitRegistration,
+        is AuthState.Unsupported
+        -> true
+
+        AuthState.Initializing,
+        is AuthState.WaitQrConfirmation,
+        AuthState.Ready,
+        AuthState.LoggingOut
+        -> false
+    }

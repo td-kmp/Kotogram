@@ -24,8 +24,12 @@ class RootViewModel(private val observeAuthState: ObserveAuthStateUseCase) :
     override val container = orbitContainer<RootState, Nothing>(RootState()) {
         observeAuthState().collect { authState ->
             val route = when (authState) {
-                AuthState.Initializing, AuthState.LoggingOut -> RootRoute.Splash
+                // A TDLib restart inside the login flow (QR -> phone) must not tear the flow down.
+                AuthState.Initializing, AuthState.LoggingOut ->
+                    if (state.route == RootRoute.Auth) RootRoute.Auth else RootRoute.Splash
+
                 AuthState.Ready -> RootRoute.Main
+
                 else -> RootRoute.Auth
             }
             reduce { state.copy(route = route) }

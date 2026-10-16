@@ -11,13 +11,17 @@ data class PhoneState(
     /** National number digits. */
     val number: String = "",
     val syncContacts: Boolean = true,
+    /** TDLib takes a phone number now: it isn't restarting or waiting for a QR scan. */
+    val isAcceptingNumber: Boolean = false,
     val isCountryPickerVisible: Boolean = false,
     val countryQuery: String = "",
     val isSubmitting: Boolean = false,
     val error: AuthError? = null
 ) {
-    val canSubmit: Boolean get() = callingCode.isNotEmpty() && number.length >= MIN_NUMBER_LENGTH &&
-        !isSubmitting
+    val canSubmit: Boolean
+        get() = isAcceptingNumber && !isSubmitting && callingCode.isNotEmpty() && hasFullNumber
+
+    private val hasFullNumber: Boolean get() = number.length >= MIN_NUMBER_LENGTH
 
     val filteredCountries: List<Country>
         get() = if (countryQuery.isBlank()) {

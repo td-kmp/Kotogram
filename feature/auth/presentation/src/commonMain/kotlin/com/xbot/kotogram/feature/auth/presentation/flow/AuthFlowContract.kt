@@ -29,11 +29,13 @@ data class AuthFlowState(
 
                 is AuthState.Unsupported -> AuthRoute.Unsupported
 
-                AuthState.WaitPhoneNumber, is AuthState.WaitQrConfirmation -> null
-
-                AuthState.Initializing, AuthState.Ready, AuthState.LoggingOut -> return listOf(
-                    AuthRoute.Loading
-                )
+                // TDLib restarts (QR -> phone switch) and the hand-off to the main screen keep the entry screen.
+                AuthState.WaitPhoneNumber,
+                is AuthState.WaitQrConfirmation,
+                AuthState.Initializing,
+                AuthState.Ready,
+                AuthState.LoggingOut
+                -> null
             }
             return listOfNotNull(entry, step.takeUnless { isEditingEntry })
         }

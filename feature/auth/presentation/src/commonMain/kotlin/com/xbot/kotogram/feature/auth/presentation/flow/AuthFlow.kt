@@ -2,7 +2,6 @@ package com.xbot.kotogram.feature.auth.presentation.flow
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -52,11 +51,6 @@ fun AuthFlow(modifier: Modifier = Modifier, viewModel: AuthFlowViewModel = koinV
                 rememberViewModelStoreNavEntryDecorator()
             ),
             entryProvider = entryProvider {
-                entry<AuthRoute.Loading> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
-                }
                 entry<AuthRoute.Qr> {
                     QrRoute(
                         canUsePasskey = LoginMethod.Passkey in loginMethods,

@@ -3,18 +3,33 @@ package com.xbot.kotogram.feature.auth.presentation.phone
 import androidx.lifecycle.ViewModel
 import com.xbot.kotogram.feature.auth.domain.model.AuthException
 import com.xbot.kotogram.feature.auth.domain.model.Country
+import com.xbot.kotogram.feature.auth.domain.model.acceptsLoginRequest
 import com.xbot.kotogram.feature.auth.domain.repository.AuthRepository
 import com.xbot.kotogram.feature.auth.domain.repository.CountryRepository
+import com.xbot.kotogram.feature.auth.domain.usecase.ObserveAuthStateUseCase
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import org.orbitmvi.orbit.OrbitContainerHost
+import org.orbitmvi.orbit.syntax.Syntax
 import org.orbitmvi.orbit.viewmodel.orbitContainer
 
 class PhoneViewModel(
+    private val observeAuthState: ObserveAuthStateUseCase,
     private val countryRepository: CountryRepository,
     private val authRepository: AuthRepository
 ) : ViewModel(),
     OrbitContainerHost<PhoneState, PhoneState, PhoneSideEffect> {
 
     override val container = orbitContainer<PhoneState, PhoneSideEffect>(PhoneState()) {
+        coroutineScope {
+            launch { loadCountries() }
+            observeAuthState().collect { authState ->
+                reduce { state.copy(isAcceptingNumber = authState.acceptsLoginRequest) }
+            }
+        }
+    }
+
+    private suspend fun Syntax<PhoneState, PhoneSideEffect>.loadCountries() {
         val countries = runCatching { countryRepository.countries() }.getOrDefault(emptyList())
         val detected = countryRepository.detectedCountryCode()
         val country = countries.firstOrNull { it.code == detected }
