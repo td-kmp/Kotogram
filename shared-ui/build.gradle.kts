@@ -33,6 +33,8 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(projects.shared)
+            implementation(projects.feature.auth.data)
+            implementation(projects.feature.auth.presentation)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.ui)
@@ -41,6 +43,15 @@ kotlin {
             implementation(libs.calf.ui)
             implementation(libs.calf.permissions)
             implementation(libs.calf.file.picker)
+            implementation(libs.androidx.lifecycle.viewmodel.compose)
+            implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+            implementation(libs.androidx.navigation3.ui)
+            implementation(libs.orbit.core)
+            implementation(libs.orbit.viewmodel)
+            implementation(libs.orbit.compose)
+            api(libs.koin.core)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
         }
     }
 }

@@ -1,0 +1,70 @@
+<resources>
+    <string name="action_continue">Продолжить</string>
+    <string name="action_back">Назад</string>
+
+    <string name="login_by_phone">Вход по номеру телефона</string>
+    <string name="login_by_qr">Вход по QR-коду</string>
+    <string name="login_by_passkey">Вход с ключом доступа</string>
+
+    <string name="qr_title">Быстрый вход по QR-коду</string>
+    <string name="qr_step_1">Запустите Telegram на телефоне</string>
+    <string name="qr_step_2">Откройте Настройки &gt; Устройства &gt; Подключить устройство</string>
+    <string name="qr_step_3">Для подтверждения направьте камеру телефона на этот экран</string>
+
+    <string name="phone_title">Телефон</string>
+    <string name="phone_subtitle">Проверьте код страны и введите свой номер телефона.</string>
+    <string name="phone_hint">Номер телефона</string>
+    <string name="country_placeholder">Страна</string>
+    <string name="country_search">Поиск</string>
+    <string name="sync_contacts">Синхронизировать контакты</string>
+
+    <string name="code_hint">Код</string>
+    <string name="code_sent_telegram">Мы отправили код в приложение Telegram на другом вашем устройстве.</string>
+    <string name="code_sent_sms">Мы отправили SMS с кодом активации на номер %1$s.</string>
+    <string name="code_sent_sms_word">Мы отправили SMS на номер %1$s. Кодовое слово начинается с буквы %2$s.</string>
+    <string name="code_sent_sms_phrase">Мы отправили SMS на номер %1$s. Кодовая фраза начинается со слова «%2$s».</string>
+    <string name="code_sent_call">Мы звоним на номер %1$s, чтобы продиктовать код.</string>
+    <string name="code_sent_flash_call">Мы звоним на номер %1$s. Отвечать не нужно.</string>
+    <string name="code_sent_missed_call">Мы вам звоним. Введите последние %2$d цифр номера, начинающегося с %1$s.</string>
+    <string name="code_sent_fragment">Мы отправили код на ваш анонимный номер в Fragment.</string>
+    <string name="code_resend">Отправить код повторно</string>
+    <string name="code_resend_in">Отправить повторно через %1$s</string>
+    <string name="wrong_number">Неверный номер?</string>
+
+    <string name="password_title">Двухэтапная аутентификация</string>
+    <string name="password_subtitle">Ваш аккаунт защищён дополнительным паролем.</string>
+    <string name="password_placeholder">Пароль</string>
+    <string name="password_hint">Подсказка: %1$s</string>
+    <string name="password_forgot">Забыли пароль?</string>
+    <string name="password_recovery_sent">Мы отправили код восстановления на %1$s.</string>
+    <string name="password_recovery_code">Код восстановления</string>
+
+    <string name="email_title">Электронная почта</string>
+    <string name="email_subtitle">Укажите почту для получения кодов входа.</string>
+    <string name="email_placeholder">Email</string>
+    <string name="email_code_title">Проверьте почту</string>
+    <string name="email_code_subtitle">Введите код, который мы отправили на %1$s.</string>
+
+    <string name="registration_title">Ваше имя</string>
+    <string name="registration_subtitle">Введите имя и фамилию.</string>
+    <string name="first_name">Имя</string>
+    <string name="last_name">Фамилия (необязательно)</string>
+    <string name="tos_title">Условия использования</string>
+    <string name="tos_accept">Регистрируясь, вы принимаете Условия использования.</string>
+
+    <string name="unsupported_title">Вход недоступен</string>
+    <string name="unsupported_subtitle">Для этого аккаунта нужен шаг, который поддерживают только официальные приложения Telegram.</string>
+
+    <string name="error_invalid_phone">Неверный номер телефона.</string>
+    <string name="error_phone_banned">Этот номер заблокирован.</string>
+    <string name="error_invalid_code">Неверный код.</string>
+    <string name="error_code_expired">Срок действия кода истёк. Запросите новый.</string>
+    <string name="error_invalid_password">Неверный пароль.</string>
+    <string name="error_invalid_email">Неверный адрес почты.</string>
+    <string name="error_invalid_name">Недопустимое имя.</string>
+    <string name="error_passkey_unavailable">Ключи доступа недоступны на этом устройстве.</string>
+    <string name="error_passkey_cancelled">Вход с ключом доступа отменён.</string>
+    <string name="error_too_many_attempts">Слишком много попыток. Попробуйте позже.</string>
+    <string name="error_too_many_attempts_seconds">Слишком много попыток. Повторите через %1$d с.</string>
+    <string name="error_unknown">Ошибка: %1$s</string>
+</resources>
