@@ -1,0 +1,539 @@
+<title>Kotogram Login Screens</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Open+Sans:wght@400;600&family=Roboto:wght@400;500&display=swap">
+<style>
+/* Layout: a spec sheet. One section per auth step (TDLib state in the eyebrow), device frames side by side
+   with component notes under each. Page chrome is quiet; the frames carry the platform look. */
+:root {
+  /* page */
+  --bg: #f4f6f8;
+  --panel: #ffffff;
+  --fg: #16202a;
+  --muted: #5d6b78;
+  --line: #d9e0e6;
+  --accent: #2f6fb3;
+  --chip: #e8eef5;
+  --shadow: rgba(18, 32, 46, 0.18);
+  --font-ui: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* iOS 26 (spec §1.2) */
+  --ios-d-bg: #000000; --ios-d-fg: #ffffff; --ios-d-accent: #3e88f7; --ios-d-sep: #38383a;
+  --ios-d-ph: #5a5a5e; --ios-d-sec: #8e8e93; --ios-d-dis: #1c1c1e; --ios-d-ondis: #8e8e93; --ios-d-field: #1c1c1e;
+  --ios-l-bg: #ffffff; --ios-l-fg: #000000; --ios-l-accent: #007aff; --ios-l-sep: #c6c6c8;
+  --ios-l-ph: #c4c4c6; --ios-l-sec: #8a8a8e; --ios-l-dis: #e9e9eb; --ios-l-ondis: #a2a2a7; --ios-l-field: #eeeef0;
+  --ios-switch: #34c759; --ios-red-d: #ff453a; --ios-red-l: #ff3b30;
+
+  /* Desktop (Telegram Desktop look) */
+  --dk-d-bg: #131a22; --dk-d-fg: #ffffff; --dk-d-card: #232e3c; --dk-d-accent: #5eb5f7; --dk-d-sep: #2b3846;
+  --dk-d-ph: #6c7883; --dk-d-sec: #8d9ba8; --dk-d-red: #ef5b5b;
+  --dk-l-bg: #ffffff; --dk-l-fg: #000000; --dk-l-card: #f1f3f5; --dk-l-accent: #3390ec; --dk-l-sep: #e4e7eb;
+  --dk-l-ph: #a2acb4; --dk-l-sec: #707579; --dk-l-red: #e53935;
+
+  /* Android M3, seeded from #3390EC */
+  --an-d-bg: #111418; --an-d-fg: #e1e2e8; --an-d-high: #282a2f; --an-d-highest: #33353a; --an-d-primary: #a4c8ff;
+  --an-d-onprimary: #00315d; --an-d-sec: #c3c6cf; --an-d-outline: #43474e; --an-d-tonal: #3b4858; --an-d-err: #ffb4ab;
+  --an-l-bg: #f8f9ff; --an-l-fg: #191c20; --an-l-high: #e6e8ee; --an-l-highest: #e0e2e8; --an-l-primary: #2a65ad;
+  --an-l-onprimary: #ffffff; --an-l-sec: #43474e; --an-l-outline: #c3c6cf; --an-l-tonal: #d5e3f8; --an-l-err: #ba1a1a;
+
+  --qr-tile: #ffffff; --qr-dot: #000000; --logo-a: #4fa6f0; --logo-b: #2a7fd4; --logo-fg: #ffffff;
+  --bezel-ios: #1d1d1f; --bezel-and: #26282c; --island: #000000; --white: #ffffff;
+  --traffic-r: #ff5f57; --traffic-y: #febc2e; --traffic-g: #28c840; --scrim: rgba(0, 0, 0, 0.5);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1318; --panel: #151c23; --fg: #e4eaf0; --muted: #93a2b0; --line: #26313c; --accent: #6fb0f0;
+    --chip: #1d2731; --shadow: rgba(0, 0, 0, 0.5); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1318; --panel: #151c23; --fg: #e4eaf0; --muted: #93a2b0; --line: #26313c; --accent: #6fb0f0;
+  --chip: #1d2731; --shadow: rgba(0, 0, 0, 0.5); color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font: 15px/1.5 var(--font-ui);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+.wrap { max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+header.top { display: flex; flex-direction: column; gap: 12px; max-width: 70ch; }
+.eyebrow { font: 500 12px/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-size: clamp(26px, 4vw, 36px); line-height: 1.15; margin: 0; font-weight: 600; text-wrap: balance; }
+.lead { color: var(--muted); margin: 0; }
+code, .mono { font-family: var(--font-mono); font-size: 0.86em; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; position: sticky; top: env(safe-area-inset-top, 0px);
+  z-index: 5; background: var(--bg); padding-block: 10px; border-bottom: 1px solid var(--line); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--panel); }
+.seg button { font: 500 13px/1 var(--font-ui); color: var(--muted); background: none; border: 0; padding: 9px 14px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--chip); color: var(--fg); }
+.seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.controls .label { font: 500 12px/1 var(--font-mono); color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+
+section.screen { display: flex; flex-direction: column; gap: 18px; padding-top: 8px; }
+section.screen > h2 { margin: 0; font-size: 22px; font-weight: 600; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+section.screen > h2 .state { font: 400 12.5px/1.3 var(--font-mono); color: var(--muted); }
+section.screen > p { margin: 0; color: var(--muted); max-width: 70ch; }
+.row { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+figure.shot { margin: 0; display: flex; flex-direction: column; gap: 12px; min-width: 0; max-width: 100%; }
+figure.shot[hidden] { display: none; }
+figcaption { display: flex; flex-direction: column; gap: 6px; max-width: 340px; }
+figcaption .plat { font: 500 12px/1 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+figcaption ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 13px; display: flex; flex-direction: column; gap: 3px; }
+.desktop-shot figcaption { max-width: 560px; }
+.scroller { overflow-x: auto; max-width: 100%; padding: 4px 4px 12px; margin: -4px; }
+
+/* ---------- device frames ---------- */
+.dev { position: relative; flex: none; overflow: hidden; color: var(--x-fg); background: var(--x-bg); box-shadow: 0 18px 40px var(--shadow); }
+.f-ios { --x-bg: var(--ios-d-bg); --x-fg: var(--ios-d-fg); --x-accent: var(--ios-d-accent); --x-sep: var(--ios-d-sep);
+  --x-ph: var(--ios-d-ph); --x-sec: var(--ios-d-sec); --x-dis: var(--ios-d-dis); --x-ondis: var(--ios-d-ondis);
+  --x-field: var(--ios-d-field); --x-red: var(--ios-red-d);
+  width: 290px; height: 620px; border-radius: 46px; border: 9px solid var(--bezel-ios);
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif; }
+.light .f-ios { --x-bg: var(--ios-l-bg); --x-fg: var(--ios-l-fg); --x-accent: var(--ios-l-accent); --x-sep: var(--ios-l-sep);
+  --x-ph: var(--ios-l-ph); --x-sec: var(--ios-l-sec); --x-dis: var(--ios-l-dis); --x-ondis: var(--ios-l-ondis);
+  --x-field: var(--ios-l-field); --x-red: var(--ios-red-l); }
+.f-and { --x-bg: var(--an-d-bg); --x-fg: var(--an-d-fg); --x-high: var(--an-d-high); --x-highest: var(--an-d-highest);
+  --x-accent: var(--an-d-primary); --x-onacc: var(--an-d-onprimary); --x-sec: var(--an-d-sec); --x-sep: var(--an-d-outline);
+  --x-tonal: var(--an-d-tonal); --x-red: var(--an-d-err);
+  width: 290px; height: 620px; border-radius: 30px; border: 8px solid var(--bezel-and); font-family: "Roboto", system-ui, sans-serif; }
+.light .f-and { --x-bg: var(--an-l-bg); --x-fg: var(--an-l-fg); --x-high: var(--an-l-high); --x-highest: var(--an-l-highest);
+  --x-accent: var(--an-l-primary); --x-onacc: var(--an-l-onprimary); --x-sec: var(--an-l-sec); --x-sep: var(--an-l-outline);
+  --x-tonal: var(--an-l-tonal); --x-red: var(--an-l-err); }
+.f-dk { --x-bg: var(--dk-d-bg); --x-fg: var(--dk-d-fg); --x-card: var(--dk-d-card); --x-accent: var(--dk-d-accent);
+  --x-sep: var(--dk-d-sep); --x-ph: var(--dk-d-ph); --x-sec: var(--dk-d-sec); --x-red: var(--dk-d-red);
+  width: 560px; height: 440px; border-radius: 12px; border: 1px solid var(--x-sep); font-family: "Open Sans", system-ui, sans-serif; }
+.light .f-dk { --x-bg: var(--dk-l-bg); --x-fg: var(--dk-l-fg); --x-card: var(--dk-l-card); --x-accent: var(--dk-l-accent);
+  --x-sep: var(--dk-l-sep); --x-ph: var(--dk-l-ph); --x-sec: var(--dk-l-sec); --x-red: var(--dk-l-red); }
+
+.dev svg { display: block; }
+.status { height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 26px; font-size: 13px; font-weight: 600; }
+.f-and .status { height: 30px; padding: 0 18px; font-weight: 500; font-size: 12px; }
+.status .ind { display: flex; gap: 5px; align-items: center; }
+.island { position: absolute; top: 10px; left: 50%; translate: -50% 0; width: 86px; height: 26px; border-radius: 14px; background: var(--island); }
+.f-and .cam { position: absolute; top: 9px; left: 50%; translate: -50% 0; width: 11px; height: 11px; border-radius: 50%; background: var(--island); }
+.homebar { position: absolute; bottom: 7px; left: 50%; translate: -50% 0; width: 104px; height: 4px; border-radius: 3px; background: var(--x-fg); opacity: 0.85; }
+.f-and .homebar { width: 90px; height: 3px; opacity: 0.6; }
+.body { position: absolute; inset: 44px 0 0; display: flex; flex-direction: column; }
+.f-and .body { inset: 30px 0 0; }
+
+/* iOS Liquid Glass imitation of UIButton.glassButtonConfiguration */
+.glass { background: color-mix(in srgb, var(--x-fg) 9%, transparent); backdrop-filter: blur(16px) saturate(1.8);
+  -webkit-backdrop-filter: blur(16px) saturate(1.8);
+  border: 0.5px solid color-mix(in srgb, var(--x-fg) 22%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--x-fg) 30%, transparent), 0 6px 18px var(--shadow); }
+.navbtn { position: absolute; top: 6px; left: 14px; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: var(--x-fg); z-index: 2; }
+.f-and .navbtn { left: 12px; top: 6px; width: 40px; height: 40px; background: var(--x-tonal); box-shadow: none; border: 0; }
+.hero { text-align: center; line-height: 1; }
+.content { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 70px 0 0; }
+.title-ios { font-size: 26px; font-weight: 700; letter-spacing: -0.4px; margin-top: 18px; text-align: center; }
+.sub-ios { font-size: 15px; line-height: 20px; text-align: center; padding: 0 30px; margin-top: 8px; color: var(--x-fg); }
+.f-ios .sub-ios.dim { color: var(--x-sec); }
+.title-and { font-size: 27px; font-weight: 500; margin-top: 18px; text-align: center; letter-spacing: -0.2px; }
+.sub-and { font-size: 14px; line-height: 20px; color: var(--x-sec); text-align: center; padding: 0 28px; margin-top: 8px; }
+.link { color: var(--x-accent); }
+
+.ios-group { width: 100%; margin-top: 26px; }
+.hair { height: 0.5px; background: var(--x-sep); margin: 0 14px; }
+.ios-row { height: 48px; display: flex; align-items: center; gap: 10px; padding: 0 16px; font-size: 16px; }
+.ios-row .grow { flex: 1; }
+.chev { color: var(--x-sec); }
+.notch { height: 7px; margin: 0 14px; }
+.notch svg { width: 100%; height: 7px; }
+.vbar { width: 0.5px; height: 26px; background: var(--x-sep); }
+.ph { color: var(--x-ph); }
+.tnum { font-variant-numeric: tabular-nums; }
+.switch { width: 46px; height: 28px; border-radius: 14px; background: var(--ios-switch); position: relative; flex: none; }
+.switch::after { content: ""; position: absolute; right: 2px; top: 2px; width: 34px; height: 24px; border-radius: 12px; background: var(--white); }
+.ios-cta { position: absolute; left: 16px; right: 16px; bottom: 26px; height: 50px; border-radius: 25px; display: grid; place-items: center;
+  font-size: 16px; font-weight: 600; }
+.ios-cta.off { background: color-mix(in srgb, var(--x-dis) 80%, transparent); color: var(--x-ondis); }
+.ios-cta.on { background: color-mix(in srgb, var(--x-accent) 88%, transparent); color: var(--white); }
+
+.and-group { width: calc(100% - 32px); margin-top: 24px; display: flex; flex-direction: column; gap: 2px; }
+.and-item { background: var(--x-high); min-height: 56px; display: flex; align-items: center; gap: 12px; padding: 0 16px; font-size: 15px; border-radius: 6px; }
+.and-item:first-child { border-radius: 22px 22px 6px 6px; }
+.and-item:last-child { border-radius: 6px 6px 22px 22px; }
+.and-item .grow { flex: 1; }
+.and-vbar { width: 1px; height: 24px; background: var(--x-sep); }
+.m3switch { width: 46px; height: 28px; border-radius: 14px; background: var(--x-accent); position: relative; flex: none; }
+.m3switch::after { content: ""; position: absolute; right: 4px; top: 4px; width: 20px; height: 20px; border-radius: 50%; background: var(--x-onacc); }
+.and-row { width: calc(100% - 32px); display: flex; align-items: center; gap: 12px; padding: 14px 4px 0; font-size: 15px; }
+.and-row .grow { flex: 1; }
+.and-cta { position: absolute; left: 16px; right: 16px; bottom: 22px; height: 52px; border-radius: 26px; display: grid; place-items: center;
+  font-size: 15px; font-weight: 500; background: var(--x-accent); color: var(--x-onacc); }
+.and-cta.off { background: color-mix(in srgb, var(--x-fg) 12%, transparent); color: color-mix(in srgb, var(--x-fg) 40%, transparent); }
+
+/* desktop window */
+.titlebar { height: 40px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px 0 14px; }
+.traffic { display: flex; gap: 8px; }
+.traffic i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+.traffic i:nth-child(1) { background: var(--traffic-r); } .traffic i:nth-child(2) { background: var(--traffic-y); } .traffic i:nth-child(3) { background: var(--traffic-g); }
+.tb-actions { display: flex; gap: 8px; }
+.tb-btn { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--x-card); color: var(--x-sec); }
+.dk-body { position: absolute; inset: 40px 0 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 30px; }
+.dk-title { font-size: 19px; font-weight: 600; margin-top: 14px; text-align: center; }
+.dk-sub { font-size: 13px; color: var(--x-sec); margin-top: 6px; text-align: center; max-width: 330px; }
+.dk-card { width: 290px; margin-top: 18px; background: var(--x-card); border-radius: 10px; padding: 4px 0; }
+.dk-row { height: 40px; display: flex; align-items: center; gap: 9px; padding: 0 14px; font-size: 14px; }
+.dk-links { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 20px; font-size: 13.5px; }
+.dk-err { color: var(--x-red); }
+
+/* code cells */
+.cells { display: flex; gap: 8px; margin-top: 26px; }
+.cell { display: grid; place-items: center; font-weight: 600; font-variant-numeric: tabular-nums; }
+.f-ios .cell { width: 40px; height: 50px; border-radius: 10px; background: var(--x-field); font-size: 22px; }
+.f-ios .cell.focus { box-shadow: inset 0 0 0 2px var(--x-accent); }
+.f-and .cell { width: 44px; height: 54px; border-radius: 16px; background: var(--x-highest); font-size: 22px; font-weight: 500; }
+.f-and .cell.focus { box-shadow: inset 0 0 0 2px var(--x-accent); }
+.f-dk .cell { width: 34px; height: 42px; border-bottom: 2px solid var(--x-sep); font-size: 20px; }
+.f-dk .cell.focus { border-color: var(--x-accent); }
+.caret { width: 2px; height: 22px; background: var(--x-accent); }
+.under { margin-top: 18px; font-size: 14px; text-align: center; display: flex; flex-direction: column; gap: 10px; }
+.under .dim { color: var(--x-sec); }
+
+/* fields */
+.ios-field { width: calc(100% - 32px); height: 48px; border-radius: 12px; background: var(--x-field); display: flex; align-items: center; padding: 0 14px; gap: 10px; margin-top: 24px; font-size: 16px; }
+.ios-field .grow { flex: 1; }
+.and-field { width: calc(100% - 32px); height: 56px; border-radius: 6px; border: 1px solid var(--x-sep); display: flex; align-items: center; padding: 0 14px; gap: 10px; margin-top: 24px; font-size: 15px; position: relative; }
+.and-field.focus { border: 2px solid var(--x-accent); }
+.and-field .lbl { position: absolute; top: -9px; left: 10px; padding: 0 4px; font-size: 12px; background: var(--x-bg); color: var(--x-accent); }
+.and-field .grow { flex: 1; }
+.and-support { width: calc(100% - 32px); font-size: 12px; color: var(--x-sec); padding: 4px 16px 0; }
+.dk-field { width: 290px; height: 42px; border-radius: 10px; background: var(--x-card); display: flex; align-items: center; padding: 0 14px; gap: 10px; margin-top: 18px; font-size: 14px; }
+.dk-field.err { box-shadow: inset 0 0 0 1.5px var(--x-red); }
+.dk-field .grow { flex: 1; }
+.dk-btn { width: 290px; height: 40px; border-radius: 10px; margin-top: 12px; display: grid; place-items: center; font-size: 14px; font-weight: 600; background: var(--x-accent); color: var(--white); }
+
+/* avatar */
+.avatar { width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; color: var(--x-accent); background: color-mix(in srgb, var(--x-accent) 16%, transparent); }
+
+/* QR */
+.qr-tile { width: 196px; height: 196px; border-radius: 14px; background: var(--qr-tile); padding: 12px; }
+.qr-tile canvas { width: 100%; height: 100%; display: block; }
+.steps { display: flex; flex-direction: column; gap: 9px; margin-top: 14px; width: 330px; font-size: 13px; }
+.steps div { display: flex; gap: 10px; align-items: flex-start; }
+.steps b { flex: none; width: 19px; height: 19px; border-radius: 50%; background: var(--x-accent); color: var(--white); display: grid; place-items: center; font-size: 11px; font-weight: 600; }
+
+/* country picker */
+.dim-layer { position: absolute; inset: 0; background: var(--scrim); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; top: 54px; border-radius: 14px 14px 0 0; background: var(--x-bg); display: flex; flex-direction: column; }
+.f-ios .sheet { background: color-mix(in srgb, var(--x-bg) 92%, var(--x-fg)); }
+.grabber { width: 36px; height: 5px; border-radius: 3px; background: var(--x-sec); opacity: 0.5; margin: 6px auto 0; }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px 8px; font-size: 16px; font-weight: 600; }
+.sheet-head .x { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--x-field); color: var(--x-sec); }
+.search { margin: 0 16px; height: 36px; border-radius: 10px; background: var(--x-field); display: flex; align-items: center; gap: 6px; padding: 0 10px; color: var(--x-sec); font-size: 15px; }
+.f-and .search { height: 52px; border-radius: 26px; background: var(--x-high); padding: 0 16px; margin: 8px 16px 6px; gap: 12px; }
+.list { overflow: hidden; flex: 1; padding-top: 6px; }
+.sec { font-size: 12px; color: var(--x-sec); padding: 10px 16px 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+.f-and .sec { color: var(--x-accent); font-weight: 500; text-transform: none; font-size: 13px; letter-spacing: 0; }
+.crow { display: flex; align-items: center; gap: 12px; padding: 0 16px; height: 44px; font-size: 15px; }
+.crow .grow { flex: 1; }
+.crow .cc { color: var(--x-sec); font-variant-numeric: tabular-nums; }
+.f-ios .crow + .crow { box-shadow: inset 50px 0.5px 0 0 var(--x-bg), inset 0 0.5px 0 0 var(--x-sep); }
+.dk-dialog { position: absolute; left: 50%; top: 50%; translate: -50% -50%; width: 300px; height: 340px; border-radius: 12px; background: var(--x-bg);
+  box-shadow: 0 16px 40px var(--shadow); display: flex; flex-direction: column; border: 1px solid var(--x-sep); }
+.dk-dialog .search { background: var(--x-card); margin: 0 14px; height: 34px; }
+.dk-dialog .crow { height: 36px; font-size: 13.5px; padding: 0 14px; }
+.dk-dialog .crow.hover { background: var(--x-card); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .dev { transition: background-color 0.2s; }
+}
+@media (max-width: 640px) {
+  .row { gap: 24px; justify-content: center; }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">KTG-1 · вход · макеты к docs/design/auth.md</span>
+    <h1>Экраны входа Kotogram на Android, iOS и десктопе</h1>
+    <p class="lead">Статичные макеты по спецификации дизайна. Цвета, отступы и компоненты взяты из спеки; под каждым кадром перечислено, чем экран собирается в коде. Это ориентир для реализации, а не попиксельный эталон: стекло iOS здесь имитировано CSS, а настоящее рисует UIKit.</p>
+  </header>
+
+  <div class="controls" role="toolbar" aria-label="Фильтры макетов">
+    <span class="label">Платформа</span>
+    <div class="seg" id="platform-filter">
+      <button type="button" id="pf-all" data-p="all" aria-pressed="true">Все</button>
+      <button type="button" id="pf-desktop" data-p="desktop" aria-pressed="false">Десктоп</button>
+      <button type="button" id="pf-ios" data-p="ios" aria-pressed="false">iOS</button>
+      <button type="button" id="pf-android" data-p="android" aria-pressed="false">Android</button>
+    </div>
+    <span class="label">Тема кадров</span>
+    <div class="seg" id="mode-filter">
+      <button type="button" id="mf-dark" data-m="dark" aria-pressed="true">Тёмная</button>
+      <button type="button" id="mf-light" data-m="light" aria-pressed="false">Светлая</button>
+    </div>
+  </div>
+
+  <main id="screens" class="dark"></main>
+</div>
+
+<script>
+(function () {
+  const ICON = {
+    close: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 3.5l9 9m0-9l-9 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+    back: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10.5 2.5L5 8l5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    andBack: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M16 10H4m5-5l-5 5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    chev: '<svg width="8" height="13" viewBox="0 0 8 13" fill="none"><path d="M1.5 1.5l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    shield: '<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1.8l5 2v4c0 3.2-2.2 5.4-5 6.4-2.8-1-5-3.2-5-6.4v-4l5-2z" stroke="currentColor" stroke-width="1.4"/><path d="M8 5.5v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+    eye: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M1.8 10S5 4.5 10 4.5 18.2 10 18.2 10 15 15.5 10 15.5 1.8 10 1.8 10z" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="2.6" stroke="currentColor" stroke-width="1.5"/></svg>',
+    search: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.8" stroke="currentColor" stroke-width="1.6"/><path d="M10.6 10.6L14 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+    cam: '<svg width="30" height="30" viewBox="0 0 30 30" fill="none"><path d="M4 10.5c0-1.4 1.1-2.5 2.5-2.5H9l2-3h8l2 3h2.5c1.4 0 2.5 1.1 2.5 2.5V22c0 1.4-1.1 2.5-2.5 2.5h-17C5.1 24.5 4 23.4 4 22V10.5z" stroke="currentColor" stroke-width="1.8"/><circle cx="15" cy="15.5" r="4.5" stroke="currentColor" stroke-width="1.8"/></svg>',
+    chevDown: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2.5L7.5 6 4 9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    batt: '<svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x="0.5" y="0.5" width="20" height="11" rx="3" stroke="currentColor" opacity="0.5"/><rect x="2" y="2" width="15" height="8" rx="1.8" fill="currentColor"/><rect x="21.5" y="4" width="1.6" height="4" rx="0.8" fill="currentColor" opacity="0.5"/></svg>',
+    wifi: '<svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><path d="M7.5 2.2c2.2 0 4.2.8 5.7 2.2l1.1-1.2C12.5 1.5 10.1.6 7.5.6S2.5 1.5.7 3.2l1.1 1.2c1.5-1.4 3.5-2.2 5.7-2.2zm0 3.1c1.4 0 2.6.5 3.6 1.3l1.1-1.2C11 4.3 9.3 3.7 7.5 3.7s-3.5.6-4.7 1.7L3.9 6.6c1-.8 2.2-1.3 3.6-1.3zm0 3.1c-.6 0-1.2.2-1.6.6L7.5 10.6 9.1 9c-.4-.4-1-.6-1.6-.6z"/></svg>',
+    signal: '<svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>'
+  };
+  // Kotogram mark: our own cat-ear logo, not Telegram's plane (API terms for third-party clients).
+  const logo = (s) => `<svg width="${s}" height="${s}" viewBox="0 0 96 96" aria-hidden="true">
+    <defs><linearGradient id="lg${s}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--logo-a)"/><stop offset="1" stop-color="var(--logo-b)"/></linearGradient></defs>
+    <circle cx="48" cy="48" r="48" fill="url(#lg${s})"/>
+    <path d="M27 36l5-14 11 9a26 26 0 0110 0l11-9 5 14c3 4 4 8 4 12 0 13-11 22-25 22S23 61 23 48c0-4 1-8 4-12z" fill="var(--logo-fg)"/>
+    <circle cx="39" cy="48" r="3.2" fill="var(--logo-b)"/><circle cx="57" cy="48" r="3.2" fill="var(--logo-b)"/>
+    <path d="M45 56l3 2.5 3-2.5" stroke="var(--logo-b)" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+  const iosStatus = `<div class="island"></div><div class="status"><span>9:41</span><span class="ind">${ICON.signal}${ICON.wifi}${ICON.batt}</span></div>`;
+  const andStatus = `<div class="cam"></div><div class="status"><span>9:41</span><span class="ind">${ICON.wifi}${ICON.batt}</span></div>`;
+  const ios = (inner, extra = '') => `<div class="dev f-ios">${iosStatus}<div class="body">${inner}</div>${extra}<div class="homebar"></div></div>`;
+  const and = (inner, extra = '') => `<div class="dev f-and">${andStatus}<div class="body">${inner}</div>${extra}<div class="homebar"></div></div>`;
+  const dk = (inner, extra = '', back = false) => `<div class="dev f-dk"><div class="titlebar"><div class="traffic"><i></i><i></i><i></i></div>
+    <div class="tb-actions">${back ? `<span class="tb-btn">${ICON.back}</span>` : ''}<span class="tb-btn">${ICON.shield}</span><span class="tb-btn">${ICON.close}</span></div></div>
+    <div class="dk-body">${inner}</div>${extra}</div>`;
+  const iosNav = (icon) => `<span class="navbtn glass">${ICON[icon]}</span>`;
+  const andNav = (icon) => `<span class="navbtn">${icon === 'close' ? ICON.close : ICON.andBack}</span>`;
+  const notch = `<div class="notch"><svg viewBox="0 0 262 7" preserveAspectRatio="none"><path d="M0 6.5H22L27 1.5 32 6.5H262" stroke="var(--x-sep)" stroke-width="0.6" fill="none"/></svg></div>`;
+  const cells = (digits, len, focusAt) => `<div class="cells">${Array.from({ length: len }, (_, i) =>
+    `<span class="cell${i === focusAt ? ' focus' : ''}">${digits[i] ?? (i === focusAt ? '<i class="caret"></i>' : '')}</span>`).join('')}</div>`;
+
+  const SCREENS = [
+    {
+      id: 'qr', title: 'Вход по QR-коду', state: 'authorizationStateWaitOtherDeviceConfirmation(link)',
+      note: 'Стартовый экран только на десктопе, как в официальном клиенте. Ссылка tg://login обновляется примерно раз в 30 секунд, QR перерисовывается с плавной сменой. Пункт про ключ доступа скрыт: passkey для сторонних клиентов недоступен.',
+      desktop: {
+        html: () => dk(`<div class="qr-tile"><canvas data-qr width="344" height="344" aria-label="QR-код входа (пример)"></canvas></div>
+          <div class="dk-title">Быстрый вход по QR-коду</div>
+          <div class="steps"><div><b>1</b><span>Запустите Telegram на телефоне</span></div>
+          <div><b>2</b><span>Откройте Настройки &gt; Устройства &gt; Подключить устройство</span></div>
+          <div><b>3</b><span>Для подтверждения направьте камеру телефона на этот экран</span></div></div>
+          <div class="dk-links"><span class="link">Вход по номеру телефона</span></div>`),
+        notes: ['qrose 1.3.1: rememberQrCodePainter, коррекция ошибок High', 'Логотип Kotogram в центре, 22% размера', 'Плитка всегда белая с чёрными модулями, в обеих темах', 'Ссылки: TextButton с цветом accent, курсор Hand']
+      }
+    },
+    {
+      id: 'phone', title: 'Номер телефона', state: 'authorizationStateWaitPhoneNumber',
+      note: 'Номер набирается в маске страны: введённые цифры обычным цветом, остаток маски серым. Кнопка «Продолжить» активна, только когда TDLib принимает номер и он набран полностью.',
+      desktop: {
+        html: () => dk(`${logo(72)}<div class="dk-title">Kotogram</div>
+          <div class="dk-sub">Проверьте код страны и введите свой номер телефона.</div>
+          <div class="dk-card"><div class="dk-row"><span>🇺🇿</span><span>Uzbekistan</span></div>
+          <div class="dk-row tnum"><b>+998</b><span>90 123</span><span class="ph">-- --</span></div></div>
+          <div class="dk-links"><span class="link">Вход по QR-коду</span></div>`),
+        notes: ['Карточка 12 dp, без разделителя, как в Telegram Desktop', 'Маска на десктопе из тире, отправка по Enter', 'Во время отправки: 16 dp спиннер справа в строке номера', 'Ошибка заменяет подзаголовок и трясёт карточку 300 мс']
+      },
+      ios: {
+        html: () => ios(`${iosNav('close')}<div class="content"><div class="hero" style="font-size:84px">☎️</div>
+          <div class="title-ios">Телефон</div><div class="sub-ios">Проверьте код страны и введите свой номер телефона.</div>
+          <div class="ios-group"><div class="hair"></div>
+          <div class="ios-row"><span style="font-size:20px">🇺🇿</span><span class="grow link">Узбекистан</span><span class="chev">${ICON.chev}</span></div>
+          ${notch}
+          <div class="ios-row tnum" style="font-size:19px"><span>+998</span><span class="vbar"></span><span>90 123 <span class="ph">00 00</span></span></div>
+          <div class="hair"></div></div>
+          <div class="ios-row" style="width:100%;margin-top:10px"><span class="grow">Синхронизировать контакты</span><span class="switch"></span></div></div>`,
+          `<div class="ios-cta off glass">Продолжить</div>`),
+        notes: ['Кнопки ✕ и «Продолжить»: нативный UIButton с glass-конфигурацией через UIKitView (iOS 26+)', 'iOS ниже 26: CupertinoButton из Calf', 'AdaptiveSwitch из Calf: LiquidGlassSwitch на iOS 26', 'Строки на всю ширину с тонкими разделителями; уголок под флагом указывает вверх']
+      },
+      android: {
+        html: () => and(`${andNav('close')}<div class="content"><div class="hero" style="font-size:92px">☎️</div>
+          <div class="title-and">Телефон</div><div class="sub-and">Проверьте код страны и введите свой номер телефона.</div>
+          <div class="and-group"><div class="and-item"><span style="font-size:20px">🇺🇿</span><span class="grow link">Узбекистан</span><span class="chev" style="color:var(--x-sec)">${ICON.chev}</span></div>
+          <div class="and-item tnum" style="font-size:18px"><span>+998</span><span class="and-vbar"></span><span>90 123 45 67</span></div></div>
+          <div class="and-row"><span class="grow">Синхронизировать контакты</span><span class="m3switch"></span></div></div>`,
+          `<div class="and-cta">Продолжить</div>`),
+        notes: ['M3 Expressive: SegmentedListItem, сегменты с крупными внешними углами', 'FilledTonalIconButton для закрытия, 48 dp', 'Button(shapes = ButtonDefaults.shapes()), 56 dp; при загрузке внутри LoadingIndicator', 'Dynamic color на API 31+, иначе схема от #3390EC']
+      }
+    },
+    {
+      id: 'code', title: 'Код подтверждения', state: 'authorizationStateWaitCode(code_info)',
+      note: 'Ячейки поверх одного скрытого поля ввода, автоотправка при заполнении. Подзаголовок зависит от типа доставки (Telegram, SMS, звонок, Fragment); таймер повторной отправки идёт из code_info.timeout.',
+      desktop: {
+        html: () => dk(`<div class="hero" style="font-size:56px">💬</div><div class="dk-title tnum">+998 90 123 45 67</div>
+          <div class="dk-sub">Мы отправили код в приложение Telegram на другом вашем устройстве.</div>
+          ${cells('482', 5, 3)}
+          <div class="under"><span class="dim">Отправить код по SMS через 0:42</span><span class="link">Неверный номер?</span></div>`, '', true),
+        notes: ['Ячейки 40×48 с подчёркиванием, у активной — цвет accent', 'Назад: круглая кнопка в заголовке окна', 'Смена экранов: fade-through 200 мс']
+      },
+      ios: {
+        html: () => ios(`${iosNav('back')}<div class="content"><div class="hero" style="font-size:72px">💬</div>
+          <div class="title-ios tnum">+998 90 123 45 67</div><div class="sub-ios dim">Мы отправили код в приложение Telegram на другом вашем устройстве.</div>
+          ${cells('482', 5, 3)}
+          <div class="under"><span class="dim">Отправить код по SMS через 0:42</span><span class="link">Неверный номер?</span></div></div>`,
+          `<div class="ios-cta off glass">Продолжить</div>`),
+        notes: ['Ячейки 44×52 pt, радиус 10, активная с обводкой 2 pt', 'Кнопка ✕ меняется на ‹ с кроссфейдом, без анимации шага', 'Переход: push со сдвигом, 350 мс', 'Автозаполнение кода из SMS: проверить на устройстве']
+      },
+      android: {
+        html: () => and(`${andNav('back')}<div class="content"><div class="hero" style="font-size:80px">💬</div>
+          <div class="title-and tnum">+998 90 123 45 67</div><div class="sub-and">Мы отправили код в приложение Telegram на другом вашем устройстве.</div>
+          ${cells('482', 5, 3)}
+          <div class="under"><span class="dim">Отправить код по SMS через 0:42</span><span class="link">Неверный номер?</span></div></div>`,
+          `<div class="and-cta off">Продолжить</div>`),
+        notes: ['Ячейки 48×56 dp, радиус 16, цифры появляются с пружинным масштабом', 'Переход: shared axis X, MotionScheme.expressive()', 'Предиктивный «назад»: страница сжимается до 0.9']
+      }
+    },
+    {
+      id: 'password', title: 'Облачный пароль', state: 'authorizationStateWaitPassword(password_hint, …)',
+      note: 'Подсказка пароля показывается под полем. «Забыли пароль?» отправляет код на почту восстановления; если почты нет, предлагается сброс аккаунта. На десктопном кадре показано состояние ошибки.',
+      desktop: {
+        html: () => dk(`<div class="hero" style="font-size:56px">🔐</div><div class="dk-title">Введите пароль</div>
+          <div class="dk-sub dk-err">Неверный пароль</div>
+          <div class="dk-field err"><span class="grow">••••••••</span><span style="color:var(--x-sec)">${ICON.eye}</span></div>
+          <div class="dk-sub">Подсказка: имя кота</div>
+          <div class="dk-btn">Продолжить</div><div class="dk-links"><span class="link">Забыли пароль?</span></div>`, '', true),
+        notes: ['Ошибка: текст вместо подзаголовка + красная обводка поля + тряска', 'Enter отправляет пароль']
+      },
+      ios: {
+        html: () => ios(`${iosNav('back')}<div class="content"><div class="hero" style="font-size:72px">🔐</div>
+          <div class="title-ios">Облачный пароль</div><div class="sub-ios dim">Вы включили двухэтапную аутентификацию. Ваш аккаунт защищён дополнительным паролем.</div>
+          <div class="ios-field"><span class="grow">•••••</span><span style="color:var(--x-sec)">${ICON.eye}</span></div>
+          <div class="under"><span class="dim">Подсказка: имя кота</span><span class="link">Забыли пароль?</span></div></div>`,
+          `<div class="ios-cta on glass">Продолжить</div>`),
+        notes: ['BasicSecureTextField с переключателем видимости', 'Основная кнопка: prominentGlassButtonConfiguration, когда активна', 'Сброс аккаунта: AdaptiveAlertDialog → UIAlertController']
+      },
+      android: {
+        html: () => and(`${andNav('back')}<div class="content"><div class="hero" style="font-size:80px">🔐</div>
+          <div class="title-and">Облачный пароль</div><div class="sub-and">Вы включили двухэтапную аутентификацию. Ваш аккаунт защищён дополнительным паролем.</div>
+          <div class="and-field focus"><span class="lbl">Подсказка: имя кота</span><span class="grow">•••••</span><span style="color:var(--x-sec)">${ICON.eye}</span></div>
+          <div class="under"><span class="link">Забыли пароль?</span></div></div>`,
+          `<div class="and-cta">Продолжить</div>`),
+        notes: ['OutlinedSecureTextField, подсказка в label', 'Иконка глаза переключает TextObfuscationMode']
+      }
+    },
+    {
+      id: 'registration', title: 'Регистрация', state: 'authorizationStateWaitRegistration(terms_of_service)',
+      note: 'Номер не зарегистрирован в Telegram. Фото профиля опционально (calf-file-picker); если TDLib просит показать условия, они открываются шторкой до отправки.',
+      desktop: {
+        html: () => dk(`<div class="avatar">${ICON.cam}</div><div class="dk-title">Регистрация</div>
+          <div class="dk-sub">Введите имя и добавьте фотографию профиля.</div>
+          <div class="dk-card"><div class="dk-row">Ксения</div><div class="hair"></div><div class="dk-row ph">Фамилия (необязательно)</div></div>
+          <div class="dk-btn">Зарегистрироваться</div>
+          <div class="dk-sub">Регистрируясь, вы принимаете <span class="link">Условия использования</span>.</div>`, '', true),
+        notes: ['Карточка с двумя строками и разделителем', 'Выбор фото: системный диалог файлов (calf-file-picker)']
+      },
+      ios: {
+        html: () => ios(`${iosNav('back')}<div class="content" style="padding-top:64px"><div class="avatar">${ICON.cam}</div>
+          <div class="title-ios">Ваше имя</div><div class="sub-ios dim">Введите имя и добавьте фотографию профиля.</div>
+          <div class="ios-group"><div class="hair"></div><div class="ios-row">Ксения</div><div class="hair"></div>
+          <div class="ios-row ph">Фамилия (необязательно)</div><div class="hair"></div></div>
+          <div class="sub-ios dim" style="font-size:13px;line-height:17px;margin-top:14px">Регистрируясь, вы принимаете <span class="link">Условия использования</span>.</div></div>`,
+          `<div class="ios-cta on glass">Продолжить</div>`),
+        notes: ['Поля строками на всю ширину, как в группе телефона', 'Условия: AdaptiveBottomSheet → нативная шторка']
+      },
+      android: {
+        html: () => and(`${andNav('back')}<div class="content" style="padding-top:64px"><div class="avatar">${ICON.cam}</div>
+          <div class="title-and">Ваше имя</div><div class="sub-and">Введите имя и добавьте фотографию профиля.</div>
+          <div class="and-field focus"><span class="lbl">Имя</span><span class="grow">Ксения</span></div>
+          <div class="and-field" style="margin-top:14px"><span class="grow" style="color:var(--x-sec)">Фамилия (необязательно)</span></div>
+          <div class="sub-and" style="font-size:12px;margin-top:12px">Регистрируясь, вы принимаете <span class="link">Условия использования</span>.</div></div>`,
+          `<div class="and-cta">Продолжить</div>`),
+        notes: ['OutlinedTextField ×2, заглавные буквы, ImeAction.Next', 'Аватар 88 dp с иконкой камеры']
+      }
+    },
+    {
+      id: 'country', title: 'Выбор страны', state: 'getCountries · поверх экрана телефона',
+      note: 'Список стран из TDLib, сверху текущая страна по IP. Поиск по названию на обоих языках, ISO-коду и коду телефона. На каждой платформе своя форма: шторка, полноэкранный список или диалог.',
+      desktop: {
+        html: () => dk(`${logo(72)}<div class="dk-title">Kotogram</div>`,
+          `<div class="dim-layer"></div><div class="dk-dialog"><div class="sheet-head" style="font-size:15px">Выберите страну<span class="x" style="background:var(--x-card)">${ICON.close}</span></div>
+          <div class="search">${ICON.search}<span>Поиск</span></div><div class="list">
+          <div class="sec">Текущая</div><div class="crow hover"><span>🇺🇿</span><span class="grow">Узбекистан</span><span class="cc">+998</span></div>
+          <div class="sec">А</div><div class="crow"><span>🇦🇿</span><span class="grow">Азербайджан</span><span class="cc">+994</span></div>
+          <div class="crow"><span>🇦🇲</span><span class="grow">Армения</span><span class="cc">+374</span></div>
+          <div class="sec">Б</div><div class="crow"><span>🇧🇾</span><span class="grow">Беларусь</span><span class="cc">+375</span></div></div></div>`),
+        notes: ['Диалог 360×520 поверх затемнения, Esc закрывает', 'Стрелки ↑/↓ и Enter для выбора, подсветка при наведении']
+      },
+      ios: {
+        html: () => ios(``, `<div class="dim-layer"></div><div class="sheet"><div class="grabber"></div>
+          <div class="sheet-head">Выберите страну<span class="x">${ICON.close}</span></div>
+          <div class="search">${ICON.search}<span>Поиск</span></div><div class="list">
+          <div class="sec">Текущая</div><div class="crow"><span>🇺🇿</span><span class="grow">Узбекистан</span><span class="cc">+998</span></div>
+          <div class="sec">А</div><div class="crow"><span>🇦🇿</span><span class="grow">Азербайджан</span><span class="cc">+994</span></div>
+          <div class="crow"><span>🇦🇲</span><span class="grow">Армения</span><span class="cc">+374</span></div>
+          <div class="sec">Б</div><div class="crow"><span>🇧🇾</span><span class="grow">Беларусь</span><span class="cc">+375</span></div>
+          <div class="crow"><span>🇧🇪</span><span class="grow">Бельгия</span><span class="cc">+32</span></div>
+          <div class="sec">В</div><div class="crow"><span>🇭🇺</span><span class="grow">Венгрия</span><span class="cc">+36</span></div></div></div>`),
+        notes: ['AdaptiveBottomSheet → UISheetPresentationController, только large detent', 'На iOS 26 края шторки — системное стекло', 'Заголовки секций закреплены при прокрутке']
+      },
+      android: {
+        html: () => and(`<div class="search">${ICON.andBack}<span>Поиск страны</span></div><div class="list">
+          <div class="sec">Текущая</div><div class="crow"><span>🇺🇿</span><span class="grow">Узбекистан</span><span class="cc">+998</span></div>
+          <div class="sec">А</div><div class="crow"><span>🇦🇿</span><span class="grow">Азербайджан</span><span class="cc">+994</span></div>
+          <div class="crow"><span>🇦🇲</span><span class="grow">Армения</span><span class="cc">+374</span></div>
+          <div class="sec">Б</div><div class="crow"><span>🇧🇾</span><span class="grow">Беларусь</span><span class="cc">+375</span></div>
+          <div class="crow"><span>🇧🇪</span><span class="grow">Бельгия</span><span class="cc">+32</span></div>
+          <div class="sec">В</div><div class="crow"><span>🇭🇺</span><span class="grow">Венгрия</span><span class="cc">+36</span></div>
+          <div class="crow"><span>🇻🇳</span><span class="grow">Вьетнам</span><span class="cc">+84</span></div></div>`),
+        notes: ['Отдельный полноэкранный шаг Nav3, как в Telegram для Android', 'M3 SearchBar, заголовки букв цветом primary']
+      }
+    }
+  ];
+
+  const PLATFORM_NAME = { desktop: 'Десктоп · Nucleus', ios: 'iOS 26 · Liquid Glass', android: 'Android · M3 Expressive' };
+  const root = document.getElementById('screens');
+  root.innerHTML = SCREENS.map((s) => {
+    const shots = ['desktop', 'ios', 'android'].filter((p) => s[p]).map((p) => `
+      <figure class="shot ${p}-shot" data-platform="${p}">
+        <div class="scroller">${s[p].html()}</div>
+        <figcaption><span class="plat">${PLATFORM_NAME[p]}</span><ul>${s[p].notes.map((n) => `<li>${n}</li>`).join('')}</ul></figcaption>
+      </figure>`).join('');
+    return `<section class="screen" id="${s.id}"><h2>${s.title}<span class="state">${s.state}</span></h2><p>${s.note}</p><div class="row">${shots}</div></section>`;
+  }).join('');
+
+  // Example QR: finder patterns + seeded modules, so the tile reads as a QR without encoding a real link.
+  document.querySelectorAll('canvas[data-qr]').forEach((cv) => {
+    const ctx = cv.getContext('2d');
+    const n = 29, m = cv.width / n;
+    const css = getComputedStyle(document.documentElement);
+    const dot = css.getPropertyValue('--qr-dot').trim(), tile = css.getPropertyValue('--qr-tile').trim();
+    let seed = 1337;
+    const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    ctx.fillStyle = tile; ctx.fillRect(0, 0, cv.width, cv.height); ctx.fillStyle = dot;
+    const inFinder = (x, y) => (x < 8 && y < 8) || (x > n - 9 && y < 8) || (x < 8 && y > n - 9);
+    const c = (n - 1) / 2, logoR = n * 0.13;
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+      if (inFinder(x, y) || Math.hypot(x - c, y - c) < logoR + 1) continue;
+      if (rnd() > 0.52) { ctx.beginPath(); ctx.arc(x * m + m / 2, y * m + m / 2, m * 0.42, 0, Math.PI * 2); ctx.fill(); }
+    }
+    const finder = (fx, fy) => {
+      const r = m * 1.6;
+      const rr = (x, y, w, h, rad) => { ctx.beginPath(); ctx.roundRect(x, y, w, h, rad); ctx.fill(); };
+      ctx.fillStyle = dot; rr(fx * m, fy * m, 7 * m, 7 * m, r);
+      ctx.fillStyle = tile; rr((fx + 1) * m, (fy + 1) * m, 5 * m, 5 * m, r * 0.7);
+      ctx.fillStyle = dot; rr((fx + 2) * m, (fy + 2) * m, 3 * m, 3 * m, r * 0.5);
+    };
+    finder(0, 0); finder(n - 7, 0); finder(0, n - 7);
+    const img = new Image();
+    img.onload = () => { const s = logoR * 2 * m; ctx.drawImage(img, cv.width / 2 - s / 2, cv.height / 2 - s / 2, s, s); };
+    const a = css.getPropertyValue('--logo-a').trim(), b = css.getPropertyValue('--logo-b').trim(), f = css.getPropertyValue('--logo-fg').trim();
+    img.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(logo(96).replaceAll('var(--logo-a)', a).replaceAll('var(--logo-b)', b).replaceAll('var(--logo-fg)', f));
+  });
+
+  // Filters
+  const pf = document.getElementById('platform-filter'), mf = document.getElementById('mode-filter');
+  const press = (group, btn) => group.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+  const applyPlatform = (p) => {
+    document.querySelectorAll('figure.shot').forEach((f) => { f.hidden = p !== 'all' && f.dataset.platform !== p; });
+    document.querySelectorAll('section.screen').forEach((s) => { s.hidden = !s.querySelector('figure.shot:not([hidden])'); });
+  };
+  pf.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; press(pf, b); applyPlatform(b.dataset.p); });
+  mf.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; press(mf, b);
+    root.classList.toggle('light', b.dataset.m === 'light'); root.classList.toggle('dark', b.dataset.m === 'dark'); });
+})();
+</script>

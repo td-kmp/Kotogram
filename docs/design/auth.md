@@ -2,6 +2,8 @@
 
 Status: design spec for implementation. Target: `feature/KTG-1-login`. Stack: Kotlin 2.4.20, CMP 1.12.1, `org.jetbrains.compose.material3:material3:1.12.0-alpha03`, Calf 0.14.0, Nucleus 2.5.18 (Tao backend).
 
+Mockups: [auth-mockups.html](auth-mockups.html) — every screen per platform, dark/light (open in a browser).
+
 Legend: **[V]** = verified against sources/binaries in this session (Gradle cache, Maven Central, GitHub tag, K/N 2.4.20 platform klib). **[U]** = unverified, check on device or in the IDE before relying on it.
 
 Reference screenshots (read in this session):
