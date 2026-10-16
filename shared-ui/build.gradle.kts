@@ -38,6 +38,9 @@ kotlin {
             implementation(libs.compose.ui)
             implementation(libs.compose.material3)
             implementation(libs.compose.preview)
+            implementation(libs.calf.ui)
+            implementation(libs.calf.permissions)
+            implementation(libs.calf.file.picker)
         }
     }
 }

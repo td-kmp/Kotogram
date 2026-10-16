@@ -8,8 +8,8 @@ android-desugar-jdk = "2.1.5"
 
 # Kotlin
 kotlin = "2.4.20"
-compose-multiplatform = "1.13.0-alpha01"
-compose-material3 = "1.13.0-alpha01"
+compose-multiplatform = "1.12.1"
+compose-material3 = "1.12.0-alpha03"
 
 # AndroidX
 androidx-activity = "1.13.0"
@@ -19,6 +19,8 @@ kotlinx-coroutines = "1.11.0"
 
 # Libraries
 tdlib = "1.8.68-1.0.0-alpha01"
+calf = "0.14.0"
+nucleus = "2.5.18"
 
 # Code quality
 spotless = "8.10.3"
@@ -48,6 +50,12 @@ kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 
 # Libraries
 tdlib-client = { group = "io.github.xephosbot", name = "tdlib-kmp-client", version.ref = "tdlib" }
+calf-ui = { group = "com.mohamedrejeb.calf", name = "calf-ui", version.ref = "calf" }
+calf-permissions = { group = "com.mohamedrejeb.calf", name = "calf-permissions", version.ref = "calf" }
+calf-file-picker = { group = "com.mohamedrejeb.calf", name = "calf-file-picker", version.ref = "calf" }
+nucleus-application = { group = "dev.nucleusframework", name = "nucleus.nucleus-application", version.ref = "nucleus" }
+nucleus-decorated-window-tao = { group = "dev.nucleusframework", name = "nucleus.decorated-window-tao", version.ref = "nucleus" }
+nucleus-decorated-window-material3 = { group = "dev.nucleusframework", name = "nucleus.decorated-window-material3", version.ref = "nucleus" }
 
 # Testing
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
@@ -64,6 +72,9 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 # Compose
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+
+# Desktop
+nucleus = { id = "dev.nucleusframework", version.ref = "nucleus" }
 
 # Code quality
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }

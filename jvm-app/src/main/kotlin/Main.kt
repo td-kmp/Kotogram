@@ -1,12 +1,29 @@
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.application
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.ui.App
+import com.xbot.kotogram.ui.KotogramTheme
+import dev.nucleusframework.application.nucleusApplication
+import dev.nucleusframework.window.material.MaterialDecoratedWindow
+import dev.nucleusframework.window.material.MaterialTitleBar
 
-fun main() = application {
-    Window(
-        onCloseRequest = ::exitApplication,
-        title = "Kotogram"
-    ) {
-        App()
+fun main(args: Array<String>) = nucleusApplication(args) {
+    KotogramTheme {
+        MaterialDecoratedWindow(
+            onCloseRequest = ::exitApplication,
+            title = "Kotogram"
+        ) {
+            MaterialTitleBar {
+                Text(
+                    text = "Kotogram",
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(horizontal = 12.dp)
+                )
+            }
+            App()
+        }
     }
 }

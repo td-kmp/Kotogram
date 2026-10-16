@@ -1,9 +1,10 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import dev.nucleusframework.desktop.application.dsl.TargetFormat
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.compose.multiplatform)
+    alias(libs.plugins.nucleus)
 }
 
 kotlin {
@@ -12,25 +13,26 @@ kotlin {
 
 dependencies {
     implementation(projects.sharedUi)
+    implementation(compose.desktop.currentOs)
     implementation(libs.compose.runtime)
     implementation(libs.compose.ui)
-    implementation(libs.kotlinx.coroutines.swing)
+    implementation(libs.compose.material3)
+    implementation(libs.nucleus.application)
+    implementation(libs.nucleus.decorated.window.tao)
+    implementation(libs.nucleus.decorated.window.material3)
 }
 
-compose.desktop {
-    application {
-        mainClass = "MainKt"
+nucleus.application {
+    mainClass = "MainKt"
 
-        nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "Kotogram"
-            packageVersion = "1.0.0"
+    nativeDistributions {
+        targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+        packageName = "Kotogram"
+        packageVersion = "1.0.0"
 
-            macOS {
-                bundleID = "com.xbot.kotogram"
-                dockName = "Kotogram"
-                jvmArgs("-Dapple.awt.application.appearance=system")
-            }
+        macOS {
+            bundleID = "com.xbot.kotogram"
+            dockName = "Kotogram"
         }
     }
 }
