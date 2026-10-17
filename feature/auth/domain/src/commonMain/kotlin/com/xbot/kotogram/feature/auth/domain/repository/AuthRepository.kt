@@ -1,32 +1,34 @@
 package com.xbot.kotogram.feature.auth.domain.repository
 
-import com.xbot.kotogram.feature.auth.domain.model.AuthException
-import com.xbot.kotogram.feature.auth.domain.model.AuthState
+import arrow.core.Either
+import com.xbot.kotogram.core.domain.model.AuthorizationState
+import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import kotlinx.coroutines.flow.Flow
 
-/** Every suspend function throws [AuthException] on failure. */
+/** TDLib's authorization functions for the account in scope, named like them. */
 interface AuthRepository {
-    val authState: Flow<AuthState>
+    val authorizationState: Flow<AuthorizationState>
 
-    suspend fun setPhoneNumber(phoneNumber: String)
+    /** From QR confirmation too: TDLib refuses a number there, so it leaves QR login first. */
+    suspend fun setAuthenticationPhoneNumber(phoneNumber: String): Either<AuthError, Unit>
 
-    suspend fun requestQrCode()
+    suspend fun requestQrCodeAuthentication(): Either<AuthError, Unit>
 
-    suspend fun checkCode(code: String)
+    suspend fun checkAuthenticationCode(code: String): Either<AuthError, Unit>
 
-    suspend fun resendCode()
+    suspend fun resendAuthenticationCode(): Either<AuthError, Unit>
 
-    suspend fun setEmailAddress(email: String)
+    suspend fun setAuthenticationEmailAddress(emailAddress: String): Either<AuthError, Unit>
 
-    suspend fun checkEmailCode(code: String)
+    suspend fun checkAuthenticationEmailCode(code: String): Either<AuthError, Unit>
 
-    suspend fun checkPassword(password: String)
+    suspend fun checkAuthenticationPassword(password: String): Either<AuthError, Unit>
 
-    suspend fun requestPasswordRecovery()
+    suspend fun requestAuthenticationPasswordRecovery(): Either<AuthError, Unit>
 
-    suspend fun recoverPassword(recoveryCode: String)
+    suspend fun recoverAuthenticationPassword(recoveryCode: String): Either<AuthError, Unit>
 
-    suspend fun register(firstName: String, lastName: String)
+    suspend fun registerUser(firstName: String, lastName: String): Either<AuthError, Unit>
 
-    suspend fun logOut()
+    suspend fun logOut(): Either<AuthError, Unit>
 }

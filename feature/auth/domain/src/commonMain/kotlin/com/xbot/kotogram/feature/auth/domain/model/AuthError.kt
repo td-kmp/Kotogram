@@ -1,5 +1,7 @@
 package com.xbot.kotogram.feature.auth.domain.model
 
+import kotlin.time.Duration
+
 sealed interface AuthError {
     data object InvalidPhoneNumber : AuthError
 
@@ -19,10 +21,7 @@ sealed interface AuthError {
 
     data object PasskeyCancelled : AuthError
 
-    data class TooManyAttempts(val retryAfterSeconds: Int?) : AuthError
+    data class TooManyAttempts(val retryAfter: Duration?) : AuthError
 
     data class Unknown(val message: String) : AuthError
 }
-
-class AuthException(val error: AuthError, cause: Throwable? = null) :
-    Exception(error.toString(), cause)

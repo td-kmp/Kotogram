@@ -74,7 +74,7 @@ kotlin {
 }
 
 dependencies {
-    implementation(projects.sharedUi)
+    implementation(projects.shared)
     coreLibraryDesugaring(libs.android.desugar.jdk.libs)
     implementation(libs.androidx.activity.compose)
     implementation(libs.kotlinx.coroutines.android)

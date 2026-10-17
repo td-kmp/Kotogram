@@ -1,15 +1,20 @@
 package com.xbot.kotogram.feature.auth.domain.usecase
 
+import com.xbot.kotogram.core.domain.model.AccountId
 import com.xbot.kotogram.feature.auth.domain.model.LoginMethod
+import com.xbot.kotogram.feature.auth.domain.repository.LoginCapabilities
 import com.xbot.kotogram.feature.auth.domain.repository.PasskeyAuthenticator
+import org.koin.core.annotation.Factory
+import org.koin.core.annotation.Scope
 
-/** QR login exists only where the user can scan with another device (desktop), as in the official apps. */
+@Scope(AccountId::class)
+@Factory
 class GetLoginMethodsUseCase(
-    private val supportsQrLogin: Boolean,
+    private val loginCapabilities: LoginCapabilities,
     private val passkeyAuthenticator: PasskeyAuthenticator
 ) {
     suspend operator fun invoke(): Set<LoginMethod> = buildSet {
-        if (supportsQrLogin) add(LoginMethod.QrCode)
+        if (loginCapabilities.supportsQrLogin) add(LoginMethod.QrCode)
         add(LoginMethod.PhoneNumber)
         if (passkeyAuthenticator.isAvailable()) add(LoginMethod.Passkey)
     }

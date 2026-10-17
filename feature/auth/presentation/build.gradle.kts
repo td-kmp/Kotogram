@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.compose.multiplatform)
+    alias(libs.plugins.koin.compiler)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -31,6 +33,9 @@ kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     dependencies {
         api(projects.feature.auth.domain)
+        implementation(projects.feature.auth.api)
+        implementation(projects.core.navigation.api)
+        implementation(projects.core.designsystem)
         implementation(libs.compose.runtime)
         implementation(libs.compose.foundation)
         implementation(libs.compose.ui)
@@ -39,14 +44,24 @@ kotlin {
         implementation(libs.compose.preview)
         implementation(libs.calf.ui)
         implementation(libs.androidx.lifecycle.viewmodel.compose)
+        implementation(libs.androidx.lifecycle.runtime.compose)
         implementation(libs.androidx.lifecycle.viewmodel.navigation3)
         implementation(libs.androidx.navigation3.ui)
         implementation(libs.orbit.core)
         implementation(libs.orbit.viewmodel)
         implementation(libs.orbit.compose)
+        implementation(libs.koin.core)
+        implementation(libs.koin.core.viewmodel)
+        implementation(libs.koin.compose)
         implementation(libs.koin.compose.viewmodel)
+        implementation(libs.koin.compose.navigation3)
+        implementation(libs.koin.annotations)
         implementation(libs.kotlinx.coroutines.core)
     }
+}
+
+koinCompiler {
+    compileSafety = true
 }
 
 compose.resources {

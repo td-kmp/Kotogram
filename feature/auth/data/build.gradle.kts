@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 plugins {
     alias(libs.plugins.android.multiplatform.library)
     alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.koin.compiler)
 }
 
 kotlin {
@@ -26,7 +27,13 @@ kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     dependencies {
         api(projects.feature.auth.domain)
-        implementation(projects.shared.data)
+        implementation(projects.core.tdlib)
         implementation(libs.kotlinx.coroutines.core)
+        implementation(libs.koin.core)
+        implementation(libs.koin.annotations)
     }
+}
+
+koinCompiler {
+    compileSafety = true
 }

@@ -12,7 +12,8 @@ kotlin {
 }
 
 dependencies {
-    implementation(projects.sharedUi)
+    implementation(projects.shared)
+    implementation(projects.core.designsystem)
     implementation(compose.desktop.currentOs)
     implementation(libs.compose.runtime)
     implementation(libs.compose.ui)

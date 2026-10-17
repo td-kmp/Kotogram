@@ -3,9 +3,9 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.xbot.kotogram.ui.App
-import com.xbot.kotogram.ui.KotogramTheme
-import com.xbot.kotogram.ui.di.initKoin
+import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.shared.App
+import com.xbot.kotogram.shared.di.initKoin
 import dev.nucleusframework.application.nucleusApplication
 import dev.nucleusframework.window.material.MaterialDecoratedWindow
 import dev.nucleusframework.window.material.MaterialTitleBar
@@ -13,7 +13,7 @@ import org.koin.core.context.stopKoin
 
 fun main(args: Array<String>) {
     initKoin()
-    // Closes Koin's AutoCloseable singletons (TDLib) on window close, Cmd+Q and SIGTERM alike.
+    // stopKoin() runs the onClose callbacks (TDLib) on window close, Cmd+Q and SIGTERM alike.
     Runtime.getRuntime().addShutdownHook(Thread(::stopKoin))
     nucleusApplication(args) {
         KotogramTheme {

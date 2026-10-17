@@ -1,8 +1,10 @@
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-
 plugins {
     alias(libs.plugins.android.multiplatform.library)
     alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.compose.multiplatform)
+    alias(libs.plugins.koin.compiler)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -15,17 +17,68 @@ kotlin {
             version = release(libs.versions.android.minsdk.get().toInt())
         }
     }
-
-    iosArm64()
-    iosSimulatorArm64()
+    listOf(
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "SharedUI"
+            isStatic = true
+            binaryOption("bundleId", "com.xbot.kotogram.sharedui")
+        }
+    }
 
     jvm()
 
     jvmToolchain(21)
 
-    @OptIn(ExperimentalKotlinGradlePluginApi::class)
-    dependencies {
-        api(projects.shared.domain)
-        api(projects.shared.data)
+    sourceSets {
+        commonMain.dependencies {
+            api(projects.core.domain)
+            api(projects.core.tdlib)
+            implementation(projects.core.designsystem)
+            implementation(projects.core.navigation.impl)
+            implementation(projects.feature.auth.api)
+            implementation(projects.feature.auth.data)
+            implementation(projects.feature.auth.presentation)
+            implementation(projects.feature.chats.api)
+            implementation(projects.feature.chats.presentation)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.preview)
+            implementation(libs.calf.ui)
+            implementation(libs.calf.permissions)
+            implementation(libs.calf.file.picker)
+            implementation(libs.androidx.lifecycle.viewmodel.compose)
+            implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+            implementation(libs.androidx.navigation3.ui)
+            implementation(libs.orbit.core)
+            implementation(libs.orbit.viewmodel)
+            implementation(libs.orbit.compose)
+            api(libs.koin.core)
+            implementation(libs.koin.core.viewmodel)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
+            implementation(libs.koin.compose.navigation3)
+            implementation(libs.koin.annotations)
+            implementation(libs.kermit)
+            implementation(libs.kermit.koin)
+        }
     }
+}
+
+koinCompiler {
+    compileSafety = true
+}
+
+// This module holds startKoin, where the Koin compiler validates the whole graph. Incremental Kotlin
+// compilation can reuse a stale result when an upstream module loses a definition, so it is off here.
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile<*>>().configureEach {
+    incremental = false
+}
+
+dependencies {
+    androidRuntimeClasspath(libs.compose.ui.tooling)
 }

@@ -1,13 +1,15 @@
 package com.xbot.kotogram.feature.auth.domain.repository
 
-import com.xbot.kotogram.feature.auth.domain.model.Country
+import arrow.core.Either
+import com.xbot.kotogram.feature.auth.domain.model.AuthError
+import com.xbot.kotogram.feature.auth.domain.model.CountryInfo
 import com.xbot.kotogram.feature.auth.domain.model.PhoneNumberInfo
 
 interface CountryRepository {
-    suspend fun countries(): List<Country>
+    suspend fun getCountries(): Either<AuthError, List<CountryInfo>>
 
     /** The country Telegram guesses from the user's IP, as an ISO code. */
-    suspend fun detectedCountryCode(): String?
+    suspend fun getCountryCode(): Either<AuthError, String>
 
-    suspend fun phoneNumberInfo(phoneNumberPrefix: String): PhoneNumberInfo
+    suspend fun getPhoneNumberInfo(phoneNumberPrefix: String): Either<AuthError, PhoneNumberInfo>
 }
