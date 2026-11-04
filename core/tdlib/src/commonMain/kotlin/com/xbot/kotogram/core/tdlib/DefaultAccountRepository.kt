@@ -12,14 +12,11 @@ import com.xbot.kotogram.core.domain.model.AccountId
 import com.xbot.kotogram.core.domain.model.AuthorizationState
 import com.xbot.kotogram.core.domain.repository.AccountError
 import com.xbot.kotogram.core.domain.repository.AccountRepository
-import com.xbot.kotogram.core.tdlib.mapper.toDomain
-import io.xbot.tdlib.api.GetOption
-import io.xbot.tdlib.api.OptionValueInteger
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -28,11 +25,11 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import okio.Path.Companion.toPath
@@ -41,12 +38,10 @@ import org.koin.core.qualifier.named
 import org.koin.core.scope.Scope
 
 /**
- * Accounts are the TDLib databases under [TdlibEnvironment.databaseDirectory], and their state is
- * TDLib's. The only own data is which account is active. Two rules keep the list tidy, both read from
- * TDLib states:
- * 1. the active account logging out after `Ready` hands the UI to another authorized account;
- * 2. a non-active account waiting for a phone number or a QR confirmation is removed. That is an account
- *    TDLib wiped on log out, an "add account" the user switched away from, or a leftover from an earlier run.
+ * An account is one login's life: one TDLib database, one Koin scope, one id that never repeats. A real
+ * log out ends it, and if none is left a new one shows the login. Only the active account may be
+ * unauthorized: a non-active one at a login step is destroyed. Own data: the active and previous account
+ * and the last id. See docs/design/accounts.md.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 @Singleton
@@ -62,6 +57,9 @@ internal class DefaultAccountRepository(
     /** `null` until the accounts on disk are opened. */
     private val ids = MutableStateFlow<List<AccountId>?>(null)
     private val activeId = MutableStateFlow<AccountId?>(null)
+    private val shownId = MutableStateFlow<AccountId?>(null)
+    private var previousId: AccountId? = null
+    private var lastId = 0
 
     private val preferences = PreferenceDataStoreFactory.createWithPath {
         "${environment.databaseDirectory}/accounts.preferences_pb".toPath()
@@ -73,9 +71,7 @@ internal class DefaultAccountRepository(
             if (ids.isEmpty()) {
                 flowOf(emptyList())
             } else {
-                combine(ids.map(::accountOf)) {
-                    it.toList()
-                }
+                combine(ids.map(koin::accountOf)) { it.toList() }
             }
         }
         .stateIn(scope, SharingStarted.Eagerly, emptyList())
@@ -85,33 +81,25 @@ internal class DefaultAccountRepository(
     }.stateIn(scope, SharingStarted.Eagerly, null)
 
     init {
-        scope.launch {
-            load()
-            keepTidy()
-        }
+        scope.launch { load() }
     }
 
     override suspend fun addAccount(): Either<AccountError, AccountId> = mutex.withLock {
-        val current = ids.value.orEmpty()
-        val id = AccountId((current.maxOfOrNull { it.value } ?: 0) + 1)
-        open(id)
-        // Active before it is listed, so rule 2 never sees it as a non-active unauthorized account.
-        setActive(id)
-        ids.value = current + id
-        Either.Right(id)
+        Either.Right(createAccount())
     }
 
     override suspend fun switchTo(id: AccountId): Either<AccountError, Unit> = either {
-        val account =
-            ensureNotNull(
-                accounts.value.firstOrNull {
-                    it.id == id
-                }
-            ) { AccountError.UnknownAccount }
+        val account = ensureNotNull(accounts.value.firstOrNull { it.id == id }) {
+            AccountError.UnknownAccount
+        }
         ensure(account.authorizationState == AuthorizationState.Ready) {
             AccountError.NotAuthorized
         }
         mutex.withLock { setActive(id) }
+    }
+
+    override fun onAccountShown(id: AccountId?) {
+        shownId.value = id
     }
 
     private suspend fun load() = mutex.withLock {
@@ -122,84 +110,99 @@ internal class DefaultAccountRepository(
             .mapNotNull { it.removePrefix(ACCOUNT_PREFIX).toIntOrNull() }
             .sorted()
             .map(::AccountId)
-        val all = stored.ifEmpty { listOf(AccountId(1)) }
-        all.forEach(::open)
-        val saved = preferences.data.first()[ACTIVE]?.let(::AccountId)
-        setActive(saved?.takeIf { it in all } ?: all.first())
-        ids.value = all
-    }
-
-    private suspend fun keepTidy() {
-        var previous = emptyMap<AccountId, AuthorizationState?>()
-        combine(accounts, activeId, ::Pair).collect { (accounts, activeId) ->
-            for (account in accounts) {
-                val state = account.authorizationState
-                when {
-                    account.id == activeId &&
-                        state == AuthorizationState.LoggingOut &&
-                        previous[account.id] == AuthorizationState.Ready -> handOver(account.id)
-
-                    account.id != activeId &&
-                        (
-                            state == AuthorizationState.WaitPhoneNumber ||
-                                state is AuthorizationState.WaitOtherDeviceConfirmation
-                            ) ->
-                        remove(account.id)
-                }
-            }
-            previous = accounts.associate { it.id to it.authorizationState }
+        val saved = preferences.data.first()
+        lastId = maxOf(saved[LAST_ID] ?: 0, stored.maxOfOrNull { it.value } ?: 0)
+        previousId = saved[PREVIOUS]?.let(::AccountId)
+        val active =
+            saved[ACTIVE]?.let(::AccountId)?.takeIf { it in stored } ?: stored.firstOrNull()
+        if (active == null) {
+            ids.value = emptyList()
+            createAccount()
+        } else {
+            activeId.value = active
+            open(active)
+            (stored - active).forEach(::open)
+            ids.value = stored
         }
     }
 
-    private suspend fun handOver(from: AccountId) = mutex.withLock {
-        val next = accounts.value.firstOrNull {
-            it.id != from &&
-                it.authorizationState == AuthorizationState.Ready
-        }
-        if (next != null) setActive(next.id)
-    }
-
-    private suspend fun remove(id: AccountId) = mutex.withLock {
-        ids.value = ids.value.orEmpty() - id
-        koin.accountScope(id)?.close()
-        deleteRecursively(Path(environment.databaseDirectoryOf(id)))
-        deleteRecursively(Path(environment.filesDirectoryOf(id)))
+    private suspend fun createAccount(): AccountId {
+        val id = AccountId(++lastId)
+        preferences.edit { it[LAST_ID] = id.value }
+        // Active before it opens, so its watcher never sees it as a non-active account at a login step.
+        setActive(id)
+        open(id)
+        ids.value = ids.value.orEmpty() + id
+        return id
     }
 
     private fun open(id: AccountId) {
         SystemFileSystem.createDirectories(Path(environment.databaseDirectoryOf(id)))
-        // Starts the account's TDLib instance; the scope is closed by remove() or by stopKoin().
-        koin.createScope(id.directoryName, named<AccountId>(), source = id).get<ClientHolder>()
-    }
-
-    private fun accountOf(id: AccountId): Flow<Account> {
-        val holder = checkNotNull(koin.accountScope(id)) {
-            "Account ${id.value} is not open"
-        }.get<ClientHolder>()
-        return holder.authorizationState.mapLatest { state ->
-            val domain = state?.toDomain()
-            val userId = if (domain == AuthorizationState.Ready) holder.myId() else null
-            Account(id = id, authorizationState = domain, userId = userId)
+        // Starts the account's TDLib instance.
+        val holder = koin.createScope(
+            id.directoryName,
+            named<AccountId>(),
+            source = id
+        ).get<ClientHolder>()
+        // The lifecycle is sticky and the other condition level-triggered, so conflation can't lose either.
+        scope.launch {
+            val destroyIfAbandoned = launch {
+                combine(holder.authorizationState, activeId) { state, active ->
+                    id != active && state.isLoginStep()
+                }.first { it }
+                holder.destroy()
+            }
+            holder.lifecycle.first { it != AccountLifecycle.Live }
+            handOver(id)
+            holder.lifecycle.first { it == AccountLifecycle.Ended }
+            destroyIfAbandoned.cancel()
+            end(id, holder)
         }
     }
 
-    private suspend fun ClientHolder.myId(): Long? =
-        runCatching { (send(GetOption(name = "my_id")) as? OptionValueInteger)?.value }.getOrNull()
+    /** The UI moves first, when there is an account to move to. */
+    private suspend fun handOver(from: AccountId) = mutex.withLock {
+        if (activeId.value == from) successorOf(from)?.let { setActive(it) }
+    }
+
+    private suspend fun end(id: AccountId, holder: ClientHolder) {
+        mutex.withLock {
+            if (activeId.value == id) {
+                val next = successorOf(id)
+                if (next != null) setActive(next) else createAccount()
+            }
+            ids.value = ids.value.orEmpty() - id
+        }
+        // A stopped activity doesn't recompose until it returns, so this can't wait forever.
+        withTimeoutOrNull(UI_TIMEOUT) { shownId.first { it != id } }
+        val released = holder.shutdown()
+        koin.accountScope(id)?.close()
+        // If TDLib didn't confirm, the directories stay and the next start deals with them.
+        if (released) environment.deleteDirectoriesOf(id)
+    }
+
+    private fun successorOf(id: AccountId): AccountId? {
+        val candidates = ids.value.orEmpty().filter {
+            it != id && !koin.holderOf(it).authorizationState.value.isLoginStep()
+        }
+        return previousId?.takeIf { it in candidates } ?: candidates.firstOrNull()
+    }
 
     private suspend fun setActive(id: AccountId) {
+        val current = activeId.value
+        if (current == id) return
+        previousId = current
         activeId.value = id
-        preferences.edit { it[ACTIVE] = id.value }
-    }
-
-    private fun deleteRecursively(path: Path) {
-        if (!SystemFileSystem.exists(path)) return
-        if (SystemFileSystem.metadataOrNull(path)?.isDirectory == true) {
-            SystemFileSystem.list(path).forEach(::deleteRecursively)
+        preferences.edit { preferences ->
+            preferences[ACTIVE] = id.value
+            if (current != null) preferences[PREVIOUS] = current.value
         }
-        SystemFileSystem.delete(path, mustExist = false)
     }
 
     private companion object {
         val ACTIVE = intPreferencesKey("active_account")
+        val PREVIOUS = intPreferencesKey("previous_account")
+        val LAST_ID = intPreferencesKey("last_account_id")
+        val UI_TIMEOUT = 2.seconds
     }
 }

@@ -20,7 +20,7 @@ The developer writes in Russian; answer in Russian. Docs and code are in English
 - **The published `tdlib-kmp` is a given.** Decide how to use it. If it really blocks something, report that as a finding, separate from the design. Read its published sources, not local branches: those were prototypes.
 - **No ad-hoc patterns.** Back architecture choices with official docs, library sources or reference apps, and say plainly when something is your own design. Mark unverified claims.
 - **Repositories** are an interface plus one `Default…Repository` depending on `ClientHolder`. Commands return `Either<Error, T>` (Arrow).
-- **Domain models mirror TDLib 1:1** with no `Td` prefix, deviating only for Kotlin-idiomatic types. Under review: decision D1 in `docs/design/messaging-core.md`.
+- **The generated `io.xbot.tdlib.api` classes are the domain model** (decided 2026-11-04; own copies are too expensive). No hand-written mirrors, no `Td` prefix on own classes. Kotlin-idiomatic views (`Duration`, `Instant`) are extension properties. Composables get plain row models built off-main in the ViewModel, not DTOs. Only `core:tdlib` and `data` modules may touch `io.xbot.tdlib.client.*`.
 - **DI:** Koin annotations + compiler plugin. Per-account `@Scope(AccountId::class)`. Compile-safety pitfalls are in `docs/architecture.md` §2.5. `getAll` gives no order.
 - **Layout:** `android-app`, `jvm-app`, `shared` at top level; `core:*`; `feature:x:{api,domain,data,presentation}`; presentation sees other features only through `api`.
 - **Test DC** is a build flag (`telegram.test.dc` → BuildKonfig `USE_TEST_DC`). API keys: `telegram.api.id` and `telegram.api.hash` in `local.properties`, via BuildKonfig. Never commit them.

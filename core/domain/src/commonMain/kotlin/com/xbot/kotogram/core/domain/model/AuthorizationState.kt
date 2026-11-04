@@ -97,3 +97,18 @@ sealed interface EmailAddressResetState {
 }
 
 data class TermsOfService(val text: FormattedText, val minUserAge: Int, val showPopup: Boolean)
+
+/** Waiting for the user to log in, as opposed to authorized or between instances. */
+val AuthorizationState?.isLoginStep: Boolean
+    get() = when (this) {
+        AuthorizationState.WaitPhoneNumber,
+        is AuthorizationState.WaitPremiumPurchase,
+        is AuthorizationState.WaitEmailAddress,
+        is AuthorizationState.WaitEmailCode,
+        is AuthorizationState.WaitCode,
+        is AuthorizationState.WaitOtherDeviceConfirmation,
+        is AuthorizationState.WaitRegistration,
+        is AuthorizationState.WaitPassword -> true
+
+        else -> false
+    }

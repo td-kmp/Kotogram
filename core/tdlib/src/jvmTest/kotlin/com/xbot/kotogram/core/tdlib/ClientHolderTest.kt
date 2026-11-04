@@ -8,6 +8,7 @@ import io.xbot.tdlib.api.GetOption
 import io.xbot.tdlib.api.LogOut
 import io.xbot.tdlib.api.OptionValueString
 import io.xbot.tdlib.api.RequestQrCodeAuthentication
+import io.xbot.tdlib.client.TdException
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
@@ -54,6 +55,6 @@ class ClientHolderTest {
         assertIs<OptionValueString>(holder.send(GetOption(name = "version")))
 
         scope.close()
-        assertFailsWith<IllegalStateException> { holder.send(GetOption(name = "version")) }
+        assertFailsWith<TdException> { holder.send(GetOption(name = "version")) }
     }
 }

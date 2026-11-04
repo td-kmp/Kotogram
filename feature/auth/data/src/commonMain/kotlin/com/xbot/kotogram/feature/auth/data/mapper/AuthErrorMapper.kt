@@ -6,14 +6,19 @@ import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import io.xbot.tdlib.client.TdException
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.serialization.SerializationException
 
 private const val TOO_MANY_REQUESTS = 429
 private val retryAfter = Regex("""retry after (\d+)""")
 private val invalidCodeErrors = setOf("PHONE_CODE_INVALID", "PHONE_CODE_EMPTY")
 
 /** Runs a TDLib request, raising TDLib's error as an [AuthError]. */
-internal inline fun <T> Raise<AuthError>.request(block: () -> T): T =
+internal inline fun <T> Raise<AuthError>.request(block: () -> T): T = catch({
     catch(block) { e: TdException -> raise(e.toAuthError()) }
+}) { e: SerializationException ->
+    // The library surfaces an answer it can't decode this way.
+    raise(AuthError.Unknown(e.message.orEmpty()))
+}
 
 internal fun TdException.toAuthError(): AuthError {
     val message = error.message

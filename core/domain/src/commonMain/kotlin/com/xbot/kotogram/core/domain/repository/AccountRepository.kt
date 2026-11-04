@@ -13,14 +13,17 @@ interface AccountRepository {
     /** In the order they were added. */
     val accounts: StateFlow<List<Account>>
 
-    /** The account the UI shows; `null` only while the accounts are loading. */
+    /** The account the UI should show; `null` only while the accounts are loading. */
     val active: StateFlow<Account?>
 
-    /** Adds an account and makes it active, so its login shows. Switching away before it logs in drops it. */
+    /** Adds an account and makes it active, so its login shows. Switching away before it is authorized ends it. */
     suspend fun addAccount(): Either<AccountError, AccountId>
 
     /** Switches to an authorized account. */
     suspend fun switchTo(id: AccountId): Either<AccountError, Unit>
+
+    /** Which account composition really shows. An account's scope closes only after it left the screen. */
+    fun onAccountShown(id: AccountId?)
 }
 
 sealed interface AccountError {

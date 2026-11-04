@@ -7,41 +7,32 @@ For the next agent or machine. Durable rules are in [CLAUDE.md](../CLAUDE.md). T
 The developer could not settle the app's architecture around `tdlib-kmp`: which entities exist, and how they relate from an update to a pixel. We surveyed the
 TDLib clients and wrote a proposal.
 
-- **Read first:** [design/messaging-core.md](design/messaging-core.md), the proposal. Nothing in it is implemented. Then [research/tdlib-survey/](research/tdlib-survey/) as needed.
+- **Read first:** [design/messaging-core.md](design/messaging-core.md) and [design/accounts.md](design/accounts.md), the proposals. Nothing in them is implemented. Then [research/tdlib-survey/](research/tdlib-survey/) as needed.
 - **Its core idea:** one ordered applier, one immutable per-account snapshot as a pure fold of updates, a separate after-apply update stream, a message window per open chat, memoised row models, a file
   store outside the snapshot.
-- Next task number: **KTG-4** (KTG-3 is this survey and proposal).
+- Next task number: **KTG-5** (KTG-3 is the survey and proposals, KTG-4 is M0 and accounts).
 
-## This branch does not compile right now
+## What M0 did (KTG-4)
 
-`tdlib-kmp` was bumped from `1.8.68-1.0.0-alpha02` (Maven Local, a prototype with an interface `TdClient`) to the published `1.8.69-1.0.0-alpha02` (a final class), and `mavenLocal()` was
-removed. That was asked for, because the other machine won't have the Maven Local artifact, but the code was not adapted. All breaks are in `core:tdlib` (table in [05-kotogram-fit.md](research/tdlib-survey/05-kotogram-fit.md) §1.3):
+The branch compiles on the published `tdlib-kmp`. `ClientHolder` (ordered, nothing lost before the first `send`), the `AccountStore` skeleton (`state`, `updates`; `reduce` handles only options and `Closed`) and the accounts design ([design/accounts.md](design/accounts.md), §8 lists what is proven) are in.
 
-| Where | Fix |
-|---|---|
-| `DefaultClientHolder.kt:81` `TdClient.create()` | `import io.xbot.tdlib.client.create` |
-| `TdlibLog.kt:24-25` `TdClient.execute(...)` | suspend; `parseTdObject(checkNotNull(NativeTdLib.execute(fn.toTdJson())))` |
-| `TdlibLog.kt:4,28` `TdLib.setLogMessageHandler` | `NativeTdLib.setLogMessageHandler` |
-| `DefaultClientHolder.kt:58` `flatMapConcat { it.updates }` | **Compiles, silently wrong**: `updates` never completes. Nothing collects it yet. Replaced by design §3 |
+`:core:tdlib:jvmTest` and `:shared:jvmTest` pass; JVM, Android and iOS compile. **Not run in a real UI, on a device, or with a logged-in account.** Worth doing first by hand on a test-DC account: log in, log out, add an account, go back from its login. `-Ptelegram.test.dc=true` keeps away from real data, because the real data directory holds real accounts and the new rules delete non-active unauthorized ones.
 
-These are milestone M0 in the design. None of this analysis has been compiled: no build was run in this work.
+## Decisions
 
-## Waiting on the developer
+- **D1 decided (2026-11-04):** generated DTOs are the domain model, composables get row models. `architecture.md` §1.1, §2.4, §4, §5 and `research/tdlib-clients.md` §2 still say otherwise. They weren't updated here because `architecture.md` has uncommitted work on the first Mac.
+- **Accounts design accepted** (2026-11-04) and implemented.
 
-Design §13. Don't decide these alone:
+Waiting on the developer (design §13):
 
-1. **D1, the model above `data`.** Recommendation: generated DTOs as the domain model, composables get row models. This revisits the existing 1:1 mirror rule, whose cost was measured at about 8.5k lines for
-   M1–M4, so it is the developer's call. It was only presented, not answered.
-2. **D2, where the store lives.** Recommendation: `core:tdlib`.
-3. **D3, push.** The developer has to log in at my.telegram.org and check whether a third-party `api_id` can upload FCM/APNs credentials. Nobody could verify it from outside. It decides the whole notification design.
+1. **D2, where the store lives.** It went into `core:tdlib`, as recommended. Split it when it grows.
+2. **D3, push.** The developer has to log in at my.telegram.org and check whether a third-party `api_id` can upload FCM/APNs credentials. Nobody could verify it from outside. It decides the whole notification design.
 
 ## Next steps, in order
 
-1. Present the proposal, and get D1 and D3.
-2. Optional, one agent at most: a focused review of design §4.2, §6 and §7 against the TDLib contract (`td_api.tl`, `MessagesManager.cpp`). Of the four planned reviews, only mechanics finished ([06-review-mechanics.md](research/tdlib-survey/06-review-mechanics.md)). The reviews against Telegram X's rules, the
-   contract and the Kotlin clients were cut off by a usage limit and left nothing.
-3. M0 on a new task. Its tests decide whether `onSubscription` and Koin behave as the design assumes.
-4. M1, including the measurements the design defers: cold-start update count, JSON decode cost, sort cost, and TDLib on an iOS device.
+1. Try the account flows by hand (above), and get D3.
+2. M1: chat list. Reducers, `ChatListOrder`, row mapper, `loadChats`, avatars. Measure cold-start update count, JSON decode cost and sort cost, and run TDLib on an iOS device.
+3. Optional, one agent at most: a focused review of design §4.2, §6 and §7 against the TDLib contract (`td_api.tl`, `MessagesManager.cpp`). Of the four planned reviews, only mechanics finished ([06-review-mechanics.md](research/tdlib-survey/06-review-mechanics.md)). The reviews against Telegram X's rules, the contract and the Kotlin clients were cut off by a usage limit and left nothing.
 
 ## What is not done, or weak
 
@@ -51,10 +42,10 @@ Design §13. Don't decide these alone:
 
 ## Left on the first Mac, not pushed
 
-Uncommitted work that predates this session and isn't part of this push: `@KotogramPreview` previews for the auth and chats screens, `core/designsystem/.../KotogramPreview.kt`, `shared/.../root/SplashScreen.kt`, `AppFeatureModule.kt`,
+Uncommitted work that predates this session and isn't part of any push: `@KotogramPreview` previews for the auth and chats screens, `core/designsystem/.../KotogramPreview.kt`, `shared/.../root/SplashScreen.kt`, `AppFeatureModule.kt`,
 `strings.xml`, and a section in `docs/architecture.md` §6.3. If those files look missing on another machine, that's why.
 
 ## Also true
 
-- `docs/design/sessions.md`, `docs/research/tdlib-clients.md` and the `ClientHolder.kt` KDoc still say `updates` completes on `Closed`, and `sessions.md` §7 still expects ordered `getAll`. Both are out of date (05 §7). M0 updates them.
+- `docs/research/tdlib-clients.md` still says `updates` completes on `Closed` (05 §7).
 - The local `tdlib-kmp` clone is on `feature/web-target`, which diverges from `main`; only `main` is published.

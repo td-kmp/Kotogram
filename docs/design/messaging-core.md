@@ -1,7 +1,7 @@
 # Kotogram — messaging core: from a TDLib update to a pixel (design v1)
 
-Status: **proposal, nothing implemented.** It fills the gap left by [architecture.md](../architecture.md)
-(modules, DI, navigation) and [sessions.md](sessions.md) (accounts, login): which entities exist between
+Status: **proposal; M0 is implemented** (§14). It fills the gap left by [architecture.md](../architecture.md)
+(modules, DI, navigation) and [accounts.md](accounts.md) (accounts, scopes, login): which entities exist between
 `TdClient` and Compose, and how they relate.
 
 Given: the published `tdlib-kmp` `1.8.69-1.0.0-alpha02` as it is. No library changes are proposed. §12 lists
@@ -112,44 +112,30 @@ Replaces `instances.flatMapConcat { it.updates }`, which never advances past the
 `TdClient.updates` never completes (05 §1.3), and which also loses the startup burst because `MutableSharedFlow`
 with replay 0 drops everything while nobody is subscribed (05 §2.1).
 
-```kotlin
-// One coroutine per account: the restart loop and the collector are the same thing, so nothing interleaves.
-private suspend fun runInstances() {
-    while (!isClosed.load()) {
-        val client = TdClient.create(tdLib)                 // a failure here is terminal: surfaced, no respin
-        try {
-            supervisorScope {                               // a failed session must not cancel the collector
-                val session = launch(Dispatchers.Default, CoroutineStart.LAZY) { accountSession.run(client) }
-                client.updates
-                    // Documented: emissions inside or right after this action reach this subscription.
-                    .onSubscription { instance.value = client; session.start() }
-                    .transformWhile { update -> emit(update); !update.isClosed() }
-                    .collect { update -> store.apply(update) }
-                session.cancel()                            // or supervisorScope waits for it forever
-            }
-        } finally {
-            // Only a failed or cancelled iteration gets here with a live instance. Never leak one.
-            withContext(NonCancellable) { client.close() }
-        }
-    }
-}
+The code is `DefaultClientHolder.kt`: `runInstances` loops, and for each instance `runInstance` does this:
 
-override fun close() {                                      // from the scope callback
-    if (isClosed.exchange(true)) return
-    runBlocking { withTimeoutOrNull(CLOSE_TIMEOUT) { lane.cancelAndJoin() } }   // the finally above closes TDLib
+```kotlin
+supervisorScope {                                   // a failed setup must not cancel the collector
+    val setup = launch(Dispatchers.Default, CoroutineStart.LAZY) { setUp(client) }
+    client.updates
+        // Documented: emissions inside or right after this action reach this subscription.
+        .onSubscription { instance.value = client; setup.start() }
+        .transformWhile { update -> emit(update); !update.closesInstance() }
+        .collect { update -> /* lifecycle, see accounts.md */ store.apply(update) }
+    setup.cancel()                                  // or supervisorScope waits for it forever
 }
+// finally: withContext(NonCancellable) { client.close() }. Never leak a live instance.
 ```
 
 - `SharedFlow.onSubscription` gives the guarantee in its KDoc (kotlinx-coroutines `Share.kt`): the subscription exists
   before the action runs. **The instance is published to `send` inside that action**, so no caller can reach it first.
-- `session` is a child that outlives setup (it follows connectivity and foreground), so it is cancelled when the stream
-  ends. `AccountSession.run` catches `TdException` itself: a failed `SetTdlibParameters` is reported, and in a
-  `supervisorScope` an uncaught child failure would go to the crash handler.
+- `setup` will outlive setup once it follows connectivity and foreground (§8), so it is cancelled when the stream ends. It catches
+  `TdException` itself: in a `supervisorScope` an uncaught child failure goes to the crash handler. Today it only sends the parameters.
 - `Closed` is read **from the stream**, in order, never from the conflated `authorizationState` (B1). The next instance
   starts only after the old one's last update was applied.
-- `close()` cancels the lane first, so the loop can't start an instance after the account's directories are deleted.
+- `shutdown()` cancels the loop first, so it can't start an instance after the account's directories are deleted (accounts.md).
 - `apply` catches an exception from `reduce`, reports it and skips that update: a reducer bug must not take the account
-  down. Debug builds rethrow.
+  down.
 - `apply` runs on **one lane shared by all accounts** (a root `Dispatchers.Default.limitedParallelism(1)`), like Telegram
   X's one thread. N lanes could saturate a 2-core device during cold start, ahead of the row mappers (06 §1.7). It never
   suspends and never does IO.
@@ -436,12 +422,13 @@ The design makes the important parts deterministic. N11: nobody tests interleavi
 | Each event is parsed twice (tree, then decode), with a mutex per event | `TdReceiver.kt:75-79` | Measure at M1 (N12) |
 | `close()` returns on `Closed`, before the receive loop stops | `TdClient.kt:50-55` | §8 |
 | One loop per process: one account's storm delays another | `TdReceiver.kt` | Accepted, same as Telegram X |
+| One receive loop **per `TdLib` object**: a second wrapper object means a second loop stealing events | `TdReceiver.kt:103-108`; found as a hang in tests | `TdLibProvider` hands out `NativeTdLib` itself. A recording decorator (§11) must be one object per process |
 
 ---
 
 ## 13. Decisions for the developer
 
-**D1. The model above `data`.** This revisits a rule, so it is yours to make. The design works either way.
+**D1. The model above `data`. Decided 2026-11-04: option A.** "Own copies are too expensive." Generated DTOs are the domain model, composables get row models. The table stays as the record.
 
 | Option | Cost (05 §3.2) | What it gives |
 |---|---|---|
@@ -472,7 +459,7 @@ foreground service and iOS has no background delivery.
 
 | # | Scope | Done when |
 |---|---|---|
-| M0 | Fix the three compile breaks (05 §1.3). `ClientHolder` per §3, `AccountStore`, empty `reduce` skeleton. A `@Singleton` class delegating to `NativeTdLib`, so tests can swap `TdLib`. `TestKoin.kt:21` constructs the holder by hand and must change. `request` catches `SerializationException` (§10). Update stale docs (05 §7) | `ClientHolderTest` passes; test: nothing lost before first `send`, restart order, no instance started after `close()` |
+| M0 ✅ | Fix the three compile breaks (05 §1.3). `ClientHolder` per §3, `AccountStore`, empty `reduce` skeleton. A `@Singleton` class delegating to `NativeTdLib`, so tests can swap `TdLib`. `TestKoin.kt:21` constructs the holder by hand and must change. `request` catches `SerializationException` (§10). Update stale docs (05 §7) | `ClientHolderTest` passes; test: nothing lost before first `send`, restart order, no instance started after `close()` |
 | M1 | Chat list: reducers, `ChatListOrder`, row mapper, `loadChats`, avatars with minithumbnail | Real account on all three platforms. **Measure cold-start update count and decode time (N12), sort cost (N10).** iOS on a device (N2) |
 | M2 | `ChatHistory` for text: all §6 rules, `OpenChats`, `MessageViews` | Permutation tests pass; scrolling recomposition budget |
 | M3 | `FileStore`, `FileDownloads`, Coil fetcher, photos | Prefetch can't downgrade a visible image; account switch shows the right images |
@@ -488,7 +475,5 @@ foreground service and iOS has no background delivery.
   done.
 - **iOS is the largest unknown**: no Compose client runs TDLib on iOS (N2). M1 checks it on a device, early on purpose.
 - Cold-start update counts and JSON decode cost are unmeasured (N12); "thousands" is folklore. §3's batching waits for that number.
-- `onSubscription` behaviour is from its KDoc and `SharedFlowImpl`; M0's test confirms it against the library.
-- Koin compile safety for `DefaultClientHolder(store: AccountStore)` inside one module follows the rules in `architecture.md` §2.5, unverified until M0.
 - `LazyLayoutCacheWindow` and `requestScrollToItem` availability in CMP 1.12.1 (02 §7).
-- Nothing in this document was compiled or run. Client consequences in the research are inferred from reading code.
+- Beyond M0 nothing here was compiled or run. Client consequences in the research are inferred from reading code.

@@ -33,6 +33,7 @@ kotlin {
     dependencies {
         api(projects.core.domain)
         api(libs.tdlib.client)
+        api(libs.kotlinx.collections.immutable)
         implementation(libs.kotlinx.coroutines.core)
         implementation(libs.kotlinx.io.core)
         implementation(libs.androidx.datastore.preferences.core)

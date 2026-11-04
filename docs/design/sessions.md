@@ -1,5 +1,7 @@
 # Kotogram — accounts, TDLib clients and the login flow (design v2)
 
+> **Superseded in part.** Accounts, scopes and the root logic are now in [accounts.md](accounts.md), and the 1:1 mirror rule (§3) was dropped: generated DTOs are the domain model ([messaging-core.md](messaging-core.md) D1). `getAll` gives no order, so §7's handler list is out. Kept for the reasoning.
+
 Status: **implemented** on `feature/KTG-2-td-client-api` (with the review changes below). v1 (`TdSession`, `TdAccounts`, an `AccountStatus` enum, an
 `accounts.json` manifest) is replaced. Nothing below is implemented yet; §8 lists what changes in the code.
 

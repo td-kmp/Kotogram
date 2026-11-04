@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
@@ -44,6 +45,11 @@ internal fun RootNavigation(
             AccountNavigation(SplashRoute)
         } else {
             saveableStateHolder.SaveableStateProvider(accountId.value) {
+                // Tells the repository when the account has really left the screen: only then its scope closes.
+                DisposableEffect(accountId) {
+                    viewModel.onAction(RootScreenAction.OnAccountShown(accountId))
+                    onDispose { viewModel.onAction(RootScreenAction.OnAccountShown(null)) }
+                }
                 // DefaultAccountRepository closes the scope; composition only provides it.
                 UnboundKoinScope(scope = accountScope) {
                     CompositionLocalProvider(

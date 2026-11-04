@@ -3,6 +3,9 @@ package com.xbot.kotogram.shared.root
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import com.xbot.kotogram.core.domain.model.AccountId
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.koin.core.annotation.Scope
 import org.koin.core.annotation.Scoped
 import org.koin.core.scope.Scope as KoinScope
@@ -21,7 +24,10 @@ internal class AccountViewModelStoreOwner(koinScope: KoinScope) : ViewModelStore
     init {
         koinScope.registerCallback(
             object : ScopeCallback {
-                override fun onScopeClose(scope: KoinScope) = viewModelStore.clear()
+                // ViewModel.clear() is @MainThread, and a scope closes on whichever thread closed it.
+                override fun onScopeClose(scope: KoinScope) {
+                    CoroutineScope(Dispatchers.Main.immediate).launch { viewModelStore.clear() }
+                }
             }
         )
     }

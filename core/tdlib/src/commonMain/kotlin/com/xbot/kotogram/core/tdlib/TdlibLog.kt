@@ -5,7 +5,7 @@ import io.xbot.tdlib.TdLib
 import io.xbot.tdlib.api.LogStreamEmpty
 import io.xbot.tdlib.api.SetLogStream
 import io.xbot.tdlib.api.SetLogVerbosityLevel
-import io.xbot.tdlib.client.TdClient
+import io.xbot.tdlib.api.toTdJson
 import kotlin.concurrent.atomics.AtomicBoolean
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
@@ -18,14 +18,14 @@ internal object TdlibLog {
     private val installed = AtomicBoolean(false)
     private val logger = Logger.withTag("TDLib")
 
-    fun install() {
+    suspend fun install(tdLib: TdLib) {
         if (installed.exchange(true)) return
         val verbosity = TelegramApiConfig.TDLIB_LOG_VERBOSITY
-        TdClient.execute(SetLogStream(logStream = LogStreamEmpty))
-        TdClient.execute(SetLogVerbosityLevel(newVerbosityLevel = verbosity))
+        tdLib.execute(SetLogStream(logStream = LogStreamEmpty).toTdJson())
+        tdLib.execute(SetLogVerbosityLevel(newVerbosityLevel = verbosity).toTdJson())
         // Called on TDLib's threads, which must not call TDLib back; a level 0 message is fatal and
         // TDLib aborts right after it returns.
-        TdLib.setLogMessageHandler(verbosity) { level, message ->
+        tdLib.setLogMessageHandler(verbosity) { level, message ->
             when (level) {
                 FATAL -> logger.a(message)
                 ERROR -> logger.e(message)

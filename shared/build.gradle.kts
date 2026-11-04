@@ -33,6 +33,10 @@ kotlin {
     jvmToolchain(21)
 
     sourceSets {
+        jvmTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+        }
         commonMain.dependencies {
             api(projects.core.domain)
             api(projects.core.tdlib)

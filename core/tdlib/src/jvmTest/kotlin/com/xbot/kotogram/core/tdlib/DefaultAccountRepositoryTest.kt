@@ -60,7 +60,7 @@ class DefaultAccountRepositoryTest {
 
         assertEquals(Either.Right(AccountId(2)), accounts.addAccount())
         assertEquals(AccountId(2), accounts.active.first { it?.id == AccountId(2) }?.id)
-        assertEquals(Either.Left(AccountError.NotAuthorized), accounts.switchTo(AccountId(1)))
+        assertEquals(Either.Left(AccountError.NotAuthorized), accounts.switchTo(AccountId(2)))
         assertEquals(Either.Left(AccountError.UnknownAccount), accounts.switchTo(AccountId(9)))
         app.close()
     }
