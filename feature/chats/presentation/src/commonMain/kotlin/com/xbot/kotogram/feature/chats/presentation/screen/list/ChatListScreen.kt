@@ -21,8 +21,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.feature.chats.presentation.stub.SampleChat
 import com.xbot.kotogram.feature.chats.presentation.stub.sampleChats
 
@@ -75,10 +75,8 @@ internal fun Avatar(title: String, modifier: Modifier = Modifier) {
     }
 }
 
-@Preview
+@KotogramPreview
 @Composable
 private fun ChatListScreenPreview() {
-    MaterialTheme {
-        ChatListScreen(onChatClick = {})
-    }
+    ChatListScreen(onChatClick = {})
 }

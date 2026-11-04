@@ -327,6 +327,11 @@ private fun PhoneScreenContent(
   state and side effects, receives navigation callbacks and never touches the `Navigator`.
 - `XScreenContent` takes `state`, `onAction` and the navigation callbacks. It has no ViewModel and is
   previewable.
+- Every screen has a `private` `XScreenPreview` under its `XScreenContent`, annotated `@KotogramPreview`
+  (`:core:designsystem`: `@PreviewLightDark` plus a `@PreviewWrapper` with `KotogramTheme` and a `Surface`, so
+  the preview calls only the content). States come from a `private class XScreenStateProvider :
+  PreviewParameterProvider<XScreenState>` in the same file, one value per state worth seeing (empty, filled,
+  in progress, error). Presentation modules add `androidRuntimeClasspath(libs.compose.ui.tooling)`.
 - Adaptive layout decisions are made by the caller (the nav entry), not by the screen.
 - Parameter order follows the Compose API guidelines: required parameters, then
   `modifier: Modifier = Modifier`, then optional parameters, then the trailing content lambda.

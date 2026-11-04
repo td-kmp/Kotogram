@@ -13,6 +13,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import com.xbot.kotogram.feature.auth.presentation.component.AuthErrorText
 import com.xbot.kotogram.feature.auth.presentation.component.AuthScaffold
 import com.xbot.kotogram.feature.auth.presentation.component.AuthSubtitle
@@ -110,4 +114,26 @@ private fun PasswordScreenContent(
             }
         }
     }
+}
+
+@KotogramPreview
+@Composable
+private fun PasswordScreenPreview(
+    @PreviewParameter(PasswordScreenStateProvider::class) state: PasswordScreenState
+) {
+    PasswordScreenContent(state = state, onAction = {})
+}
+
+private class PasswordScreenStateProvider : PreviewParameterProvider<PasswordScreenState> {
+    private val protected = PasswordScreenState(
+        hint = "first pet",
+        hasRecoveryEmail = true,
+        recoveryEmailPattern = "j*****@g****.com"
+    )
+
+    override val values = sequenceOf(
+        protected,
+        protected.copy(password = "password", error = AuthError.InvalidPassword),
+        protected.copy(isRecovering = true, recoveryCode = "123")
+    )
 }

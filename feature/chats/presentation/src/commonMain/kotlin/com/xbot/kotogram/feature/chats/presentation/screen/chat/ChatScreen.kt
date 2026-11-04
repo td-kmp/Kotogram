@@ -18,8 +18,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.feature.chats.presentation.stub.SampleMessage
 import com.xbot.kotogram.feature.chats.presentation.stub.sampleChats
 import com.xbot.kotogram.feature.chats.presentation.stub.sampleMessages
@@ -68,10 +68,8 @@ private fun MessageBubble(message: SampleMessage) {
     }
 }
 
-@Preview
+@KotogramPreview
 @Composable
 private fun ChatScreenPreview() {
-    MaterialTheme {
-        ChatScreen(chatId = 1, onBackClick = {})
-    }
+    ChatScreen(chatId = 1, onBackClick = {})
 }

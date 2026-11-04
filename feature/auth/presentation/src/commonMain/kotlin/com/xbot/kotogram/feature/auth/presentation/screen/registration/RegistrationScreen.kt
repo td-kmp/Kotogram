@@ -14,6 +14,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import com.xbot.kotogram.feature.auth.presentation.component.AuthErrorText
 import com.xbot.kotogram.feature.auth.presentation.component.AuthScaffold
 import com.xbot.kotogram.feature.auth.presentation.component.AuthSubtitle
@@ -100,4 +104,20 @@ private fun RegistrationScreenContent(
             }
         )
     }
+}
+
+@KotogramPreview
+@Composable
+private fun RegistrationScreenPreview(
+    @PreviewParameter(RegistrationScreenStateProvider::class) state: RegistrationScreenState
+) {
+    RegistrationScreenContent(state = state, onAction = {})
+}
+
+private class RegistrationScreenStateProvider : PreviewParameterProvider<RegistrationScreenState> {
+    override val values = sequenceOf(
+        RegistrationScreenState(),
+        RegistrationScreenState(firstName = "Ivan", lastName = "Petrov"),
+        RegistrationScreenState(firstName = " ", error = AuthError.InvalidName)
+    )
 }

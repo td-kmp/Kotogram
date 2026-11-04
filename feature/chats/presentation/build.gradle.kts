@@ -40,3 +40,7 @@ kotlin {
         implementation(libs.koin.compose.navigation3)
     }
 }
+
+dependencies {
+    androidRuntimeClasspath(libs.compose.ui.tooling)
+}

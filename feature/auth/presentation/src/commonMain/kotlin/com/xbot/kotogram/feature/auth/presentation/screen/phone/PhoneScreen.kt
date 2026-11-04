@@ -19,7 +19,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.feature.auth.domain.model.AuthError
+import com.xbot.kotogram.feature.auth.domain.model.CountryInfo
 import com.xbot.kotogram.feature.auth.presentation.component.AuthErrorText
 import com.xbot.kotogram.feature.auth.presentation.component.AuthScaffold
 import com.xbot.kotogram.feature.auth.presentation.component.AuthSubtitle
@@ -155,4 +160,44 @@ private fun PhoneScreenContent(
             onDismiss = { onAction(PhoneScreenAction.OnCountryPickerVisibilityChange(false)) }
         )
     }
+}
+
+@KotogramPreview
+@Composable
+private fun PhoneScreenPreview(
+    @PreviewParameter(PhoneScreenStateProvider::class) state: PhoneScreenState
+) {
+    PhoneScreenContent(
+        state = state,
+        canUseQr = true,
+        canUsePasskey = false,
+        onAction = {},
+        onQrLoginClick = {},
+        onPasskeyLoginClick = {}
+    )
+}
+
+private class PhoneScreenStateProvider : PreviewParameterProvider<PhoneScreenState> {
+    private val country = CountryInfo(
+        countryCode = "UZ",
+        name = "Uzbekistan",
+        englishName = "Uzbekistan",
+        flagEmoji = "\uD83C\uDDFA\uD83C\uDDFF",
+        isHidden = false,
+        callingCodes = listOf("998")
+    )
+    private val entered = PhoneScreenState(
+        countries = listOf(country),
+        country = country,
+        callingCode = "998",
+        number = "901234567",
+        isAcceptingNumber = true
+    )
+
+    override val values = sequenceOf(
+        PhoneScreenState(isAcceptingNumber = true),
+        entered,
+        entered.copy(isSubmitting = true),
+        entered.copy(error = AuthError.InvalidPhoneNumber)
+    )
 }

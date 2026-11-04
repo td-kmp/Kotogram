@@ -67,3 +67,7 @@ koinCompiler {
 compose.resources {
     packageOfResClass = "com.xbot.kotogram.feature.auth.presentation.resources"
 }
+
+dependencies {
+    androidRuntimeClasspath(libs.compose.ui.tooling)
+}

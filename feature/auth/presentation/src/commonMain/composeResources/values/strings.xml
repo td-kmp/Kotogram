@@ -19,14 +19,14 @@
     <string name="sync_contacts">Sync contacts</string>
 
     <string name="code_hint">Code</string>
-    <string name="code_sent_telegram">We\'ve sent the code to the Telegram app on your other device.</string>
-    <string name="code_sent_sms">We\'ve sent an SMS with an activation code to %1$s.</string>
-    <string name="code_sent_sms_word">We\'ve sent an SMS to %1$s. The code word starts with %2$s.</string>
-    <string name="code_sent_sms_phrase">We\'ve sent an SMS to %1$s. The code phrase starts with \"%2$s\".</string>
-    <string name="code_sent_call">We\'re calling %1$s to dictate the code.</string>
-    <string name="code_sent_flash_call">We\'re calling %1$s. You don\'t need to answer.</string>
-    <string name="code_sent_missed_call">We\'re calling you. Enter the last %2$d digits of the number that starts with %1$s.</string>
-    <string name="code_sent_fragment">We\'ve sent the code to your anonymous number on Fragment.</string>
+    <string name="code_sent_telegram">We've sent the code to the Telegram app on your other device.</string>
+    <string name="code_sent_sms">We've sent an SMS with an activation code to %1$s.</string>
+    <string name="code_sent_sms_word">We've sent an SMS to %1$s. The code word starts with %2$s.</string>
+    <string name="code_sent_sms_phrase">We've sent an SMS to %1$s. The code phrase starts with "%2$s".</string>
+    <string name="code_sent_call">We're calling %1$s to dictate the code.</string>
+    <string name="code_sent_flash_call">We're calling %1$s. You don't need to answer.</string>
+    <string name="code_sent_missed_call">We're calling you. Enter the last %2$d digits of the number that starts with %1$s.</string>
+    <string name="code_sent_fragment">We've sent the code to your anonymous number on Fragment.</string>
     <string name="code_resend">Resend code</string>
     <string name="code_resend_in">Resend code in %1$s</string>
     <string name="wrong_number">Wrong number?</string>
@@ -36,14 +36,14 @@
     <string name="password_placeholder">Password</string>
     <string name="password_hint">Hint: %1$s</string>
     <string name="password_forgot">Forgot password?</string>
-    <string name="password_recovery_sent">We\'ve sent a recovery code to %1$s.</string>
+    <string name="password_recovery_sent">We've sent a recovery code to %1$s.</string>
     <string name="password_recovery_code">Recovery code</string>
 
     <string name="email_title">Email</string>
     <string name="email_subtitle">Add an email to receive login codes.</string>
     <string name="email_placeholder">Email</string>
     <string name="email_code_title">Check your email</string>
-    <string name="email_code_subtitle">Please enter the code we\'ve sent to %1$s.</string>
+    <string name="email_code_subtitle">Please enter the code we've sent to %1$s.</string>
 
     <string name="registration_title">Your name</string>
     <string name="registration_subtitle">Enter your name and add a profile photo.</string>
@@ -62,7 +62,7 @@
     <string name="error_invalid_password">Invalid password.</string>
     <string name="error_invalid_email">Invalid email.</string>
     <string name="error_invalid_name">Invalid name.</string>
-    <string name="error_passkey_unavailable">Passkeys aren\'t available on this device.</string>
+    <string name="error_passkey_unavailable">Passkeys aren't available on this device.</string>
     <string name="error_passkey_cancelled">Passkey login cancelled.</string>
     <string name="error_too_many_attempts">Too many attempts. Try again later.</string>
     <string name="error_too_many_attempts_seconds">Too many attempts. Try again in %1$d s.</string>

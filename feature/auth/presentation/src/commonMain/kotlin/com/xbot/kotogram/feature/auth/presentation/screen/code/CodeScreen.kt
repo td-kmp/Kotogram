@@ -12,7 +12,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.core.domain.model.AuthenticationCodeInfo
 import com.xbot.kotogram.core.domain.model.AuthenticationCodeType
+import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import com.xbot.kotogram.feature.auth.presentation.component.AuthErrorText
 import com.xbot.kotogram.feature.auth.presentation.component.AuthScaffold
 import com.xbot.kotogram.feature.auth.presentation.component.AuthSubtitle
@@ -32,6 +37,7 @@ import com.xbot.kotogram.feature.auth.presentation.resources.code_sent_sms_phras
 import com.xbot.kotogram.feature.auth.presentation.resources.code_sent_sms_word
 import com.xbot.kotogram.feature.auth.presentation.resources.code_sent_telegram
 import com.xbot.kotogram.feature.auth.presentation.resources.wrong_number
+import kotlin.time.Duration.Companion.seconds
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.orbitmvi.orbit.compose.collectAsState
@@ -144,3 +150,36 @@ private const val SECONDS_PER_MINUTE = 60
 
 private fun formatSeconds(seconds: Int): String =
     "${seconds / SECONDS_PER_MINUTE}:${(seconds % SECONDS_PER_MINUTE).toString().padStart(2, '0')}"
+
+@KotogramPreview
+@Composable
+private fun CodeScreenPreview(
+    @PreviewParameter(CodeScreenStateProvider::class) state: CodeScreenState
+) {
+    CodeScreenContent(state = state, onAction = {}, onChangeNumberClick = {})
+}
+
+private class CodeScreenStateProvider : PreviewParameterProvider<CodeScreenState> {
+    private val info = AuthenticationCodeInfo(
+        phoneNumber = "+998 90 123 45 67",
+        type = AuthenticationCodeType.TelegramMessage(length = 5),
+        nextType = AuthenticationCodeType.Sms(length = 5),
+        timeout = 60.seconds
+    )
+
+    override val values = sequenceOf(
+        CodeScreenState(info = info, resendSecondsLeft = 45),
+        CodeScreenState(
+            info = info.copy(
+                type = AuthenticationCodeType.Sms(length = 5),
+                nextType = AuthenticationCodeType.Call(length = 5)
+            ),
+            code = "12"
+        ),
+        CodeScreenState(
+            info = info.copy(nextType = null),
+            code = "11111",
+            error = AuthError.InvalidCode
+        )
+    )
+}

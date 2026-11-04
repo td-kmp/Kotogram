@@ -10,7 +10,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import com.xbot.kotogram.feature.auth.presentation.component.AuthErrorText
 import com.xbot.kotogram.feature.auth.presentation.component.AuthScaffold
 import com.xbot.kotogram.feature.auth.presentation.component.asString
@@ -22,6 +26,7 @@ import com.xbot.kotogram.feature.auth.presentation.resources.qr_step_1
 import com.xbot.kotogram.feature.auth.presentation.resources.qr_step_2
 import com.xbot.kotogram.feature.auth.presentation.resources.qr_step_3
 import com.xbot.kotogram.feature.auth.presentation.resources.qr_title
+import kotlin.time.Duration.Companion.seconds
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.orbitmvi.orbit.compose.collectAsState
@@ -77,4 +82,23 @@ private fun QrScreenContent(
             }
         }
     }
+}
+
+@KotogramPreview
+@Composable
+private fun QrScreenPreview(@PreviewParameter(QrScreenStateProvider::class) state: QrScreenState) {
+    QrScreenContent(
+        state = state,
+        canUsePasskey = true,
+        onPhoneLoginClick = {},
+        onPasskeyLoginClick = {}
+    )
+}
+
+private class QrScreenStateProvider : PreviewParameterProvider<QrScreenState> {
+    override val values = sequenceOf(
+        QrScreenState(),
+        QrScreenState(link = "tg://login?token=AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHw"),
+        QrScreenState(error = AuthError.TooManyAttempts(retryAfter = 30.seconds))
+    )
 }

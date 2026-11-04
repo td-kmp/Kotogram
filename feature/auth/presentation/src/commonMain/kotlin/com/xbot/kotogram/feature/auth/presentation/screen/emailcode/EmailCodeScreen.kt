@@ -11,6 +11,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import com.xbot.kotogram.feature.auth.presentation.component.AuthErrorText
 import com.xbot.kotogram.feature.auth.presentation.component.AuthScaffold
 import com.xbot.kotogram.feature.auth.presentation.component.AuthSubtitle
@@ -72,4 +76,21 @@ private fun EmailCodeScreenContent(
             Text(stringResource(Res.string.action_continue))
         }
     }
+}
+
+@KotogramPreview
+@Composable
+private fun EmailCodeScreenPreview(
+    @PreviewParameter(EmailCodeScreenStateProvider::class) state: EmailCodeScreenState
+) {
+    EmailCodeScreenContent(state = state, onAction = {})
+}
+
+private class EmailCodeScreenStateProvider : PreviewParameterProvider<EmailCodeScreenState> {
+    private val sent = EmailCodeScreenState(emailPattern = "j*****@g****.com", codeLength = 6)
+
+    override val values = sequenceOf(
+        sent,
+        sent.copy(code = "123456", error = AuthError.InvalidCode)
+    )
 }
