@@ -24,12 +24,6 @@ dependencyResolutionManagement {
                 includeGroupAndSubgroups("com.google")
             }
         }
-        // tdlib-kmp releases not yet on Maven Central: `./gradlew publishToMavenLocal` in tdlib-kmp.
-        mavenLocal {
-            mavenContent {
-                includeGroup("io.github.xephosbot")
-            }
-        }
         mavenCentral()
     }
 }

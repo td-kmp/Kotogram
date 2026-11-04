@@ -27,7 +27,7 @@ androidx-navigation3 = "1.2.0-rc01"
 androidx-navigation3-runtime = "1.2.0"
 
 # Libraries
-tdlib = "1.8.68-1.0.0-alpha02"
+tdlib = "1.8.69-1.0.0-alpha02"
 calf = "0.14.0"
 nucleus = "2.5.18"
 orbit = "12.0.1"
