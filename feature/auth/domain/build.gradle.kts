@@ -32,8 +32,9 @@ kotlin {
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     dependencies {
-        api(projects.core.domain)
-        implementation(libs.kotlinx.coroutines.core)
+        api(projects.core.model)
+        api(libs.arrow.core)
+        api(libs.kotlinx.coroutines.core)
         implementation(libs.koin.core)
         implementation(libs.koin.annotations)
     }

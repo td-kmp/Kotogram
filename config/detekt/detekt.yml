@@ -14,7 +14,7 @@ style:
     active: true
     forbiddenImports:
       - value: 'io.xbot.tdlib.client.*'
-        reason: 'Only core:data and feature data modules talk to TDLib.'
-    excludes: ['**/core/data/**', '**/feature/*/data/**']
+        reason: 'Only core:tdlib and feature data modules talk to TDLib.'
+    excludes: ['**/core/tdlib/**', '**/feature/*/data/**']
   MagicNumber:
     ignoreAnnotated: ['Composable', 'Preview']

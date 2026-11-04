@@ -1,9 +1,9 @@
 package com.xbot.kotogram.shared
 
-import com.xbot.kotogram.core.data.account.accountScope
-import com.xbot.kotogram.core.data.environment.TdlibEnvironment
-import com.xbot.kotogram.core.domain.model.AccountId
-import com.xbot.kotogram.core.domain.repository.AccountRepository
+import com.xbot.kotogram.core.model.AccountId
+import com.xbot.kotogram.core.tdlib.account.AccountRepository
+import com.xbot.kotogram.core.tdlib.environment.TdlibEnvironment
+import com.xbot.kotogram.core.tdlib.extensions.accountScope
 import com.xbot.kotogram.shared.di.initKoin
 import io.xbot.tdlib.api.AuthorizationState
 import io.xbot.tdlib.api.AuthorizationStateWaitPhoneNumber

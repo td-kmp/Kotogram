@@ -1,10 +1,10 @@
 package com.xbot.kotogram.shared.root
 
 import androidx.lifecycle.ViewModel
-import com.xbot.kotogram.core.domain.model.AccountId
-import com.xbot.kotogram.core.domain.model.isLoginStep
-import com.xbot.kotogram.core.domain.repository.AccountRepository
+import com.xbot.kotogram.core.model.AccountId
+import com.xbot.kotogram.core.model.extensions.isLoginStep
 import com.xbot.kotogram.core.navigation.NavKey
+import com.xbot.kotogram.core.tdlib.account.AccountRepository
 import com.xbot.kotogram.feature.auth.api.AuthRoute
 import com.xbot.kotogram.feature.chats.api.ChatListRoute
 import io.xbot.tdlib.api.AuthorizationState

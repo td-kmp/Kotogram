@@ -17,10 +17,6 @@ sealed interface AuthError {
 
     data object InvalidName : AuthError
 
-    data object PasskeyUnavailable : AuthError
-
-    data object PasskeyCancelled : AuthError
-
     data class TooManyAttempts(val retryAfter: Duration?) : AuthError
 
     data class Unknown(val message: String) : AuthError

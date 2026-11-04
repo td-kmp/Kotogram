@@ -33,7 +33,7 @@ kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     dependencies {
         api(projects.feature.auth.domain)
-        implementation(projects.core.data)
+        implementation(projects.core.tdlib)
         implementation(libs.kotlinx.coroutines.core)
         implementation(libs.koin.core)
         implementation(libs.koin.annotations)

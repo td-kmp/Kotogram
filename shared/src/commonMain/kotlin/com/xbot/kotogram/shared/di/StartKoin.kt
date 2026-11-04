@@ -2,8 +2,6 @@ package com.xbot.kotogram.shared.di
 
 import co.touchlab.kermit.Logger
 import co.touchlab.kermit.koin.KermitKoinLogger
-import com.xbot.kotogram.feature.auth.presentation.di.authFeatureModule
-import com.xbot.kotogram.feature.chats.presentation.di.chatsFeatureModule
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Configuration
 import org.koin.core.annotation.KoinApplication
@@ -29,6 +27,5 @@ fun initKoin(config: KoinConfiguration? = null) {
     startKoin<KotogramApp> {
         logger(KermitKoinLogger(Logger.withTag("Koin")))
         includes(config)
-        modules(appFeatureModule, authFeatureModule, chatsFeatureModule)
     }
 }

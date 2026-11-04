@@ -5,8 +5,7 @@ feature follows. Where the current code disagrees, the code is migrated (§10). 
 navigation rules are borrowed from the user's AnilibriaRefresh project (`AGENTS.md`,
 `shared-ui/navigation`) and adapted to Kotogram's layered features.
 
-Stack: Kotlin 2.4.20, CMP 1.12.1, Koin 4.2.2 + Koin Compiler Plugin 1.2.1 (annotations + compiler
-DSL), `koin-compose-navigation3`, Navigation 3 (runtime 1.2.0, JetBrains `navigation3-ui`
+Stack: Kotlin 2.4.20, CMP 1.12.1, Koin 4.2.2 + Koin Compiler Plugin 1.2.1 (annotations), Navigation 3 (runtime 1.2.0, JetBrains `navigation3-ui`
 1.2.0-rc01), Orbit MVI 12, TDLib via `tdlib-kmp`. Targets: Android, iOS, JVM desktop, web (`wasmJs`).
 
 Legend: **[V]** verified against sources in this session (library sources and docs, reference
@@ -16,22 +15,23 @@ projects). **[U]** unverified, check before relying on it.
 
 ## 0. Decisions (TL;DR)
 
-1. **A feature has four modules**: `api` (navigation keys and `navigateTo…` extensions, what other
-   features may see), `domain`, `data` and `presentation`. A feature sees other features only through
-   their `api`.
+1. **A feature has four modules**: `api` (navigation keys and `navigateTo…` extensions), `domain`
+   (its repository interfaces and types), `data` and `impl` (screens, ViewModels, navigation). A feature
+   owns its entity. Another feature may use its `api` and `domain`, never its `data` or `impl`.
 2. **One assembly point**, `:shared`: the `@KoinApplication`, the root `NavDisplay` and the iOS
    framework. The platform shells `:android-app`, `:jvm-app` and `:web-app` only start Koin and host the UI.
-3. **DI is Koin with the compiler plugin.** Annotations (`@Module @Configuration @ComponentScan`,
-   `@Singleton`, `@Factory`, `@KoinViewModel`, `@Scope`/`@Scoped`) declare everything other code
-   depends on. The DSL is used only for leaf contributions: navigation entries and NavKey
-   serializers. Compile safety validates the whole graph at `startKoin` (§2.5).
-4. **Lifetimes are Koin scopes.** Each Telegram account is a Koin scope (`AccountId`), the
-   documented "session scope" pattern **[V]**. A scoped class that owns a resource closes it from a
-   `ScopeCallback` on its own scope. `stopKoin()` closes every scope, root included, so this also
-   runs at exit **[V, Koin sources + test]**.
-5. **Navigation is Navigation 3 through `koin-compose-navigation3`**: features declare
-   `navigation<Route> { … }` entries in their Koin module and the app uses `koinEntryProvider()`
-   **[V]**. One global `Navigator` (`LocalNavigator`) keeps a saved back stack.
+3. **DI is Koin with the compiler plugin, and it stays at the edges.** Annotations (`@Module @Configuration
+   @ComponentScan`, `@Singleton`, `@Factory`, `@KoinViewModel`, `@Scope`/`@Scoped`) declare the graph.
+   Entities never see Koin's runtime API: `Scope`, `ScopeCallback` and `createScope` live in `di` packages,
+   `koinViewModel()` in navigation entries. Compile safety validates the whole graph at `startKoin` (§2.5).
+4. **Lifetimes are Koin scopes behind two small interfaces.** Each Telegram account is a Koin scope
+   (`AccountId`), the documented "session scope" pattern **[V]**. `AccountSessions` opens and finds them;
+   a class that owns a resource registers it with `AccountLifetime.addCloseable`, the contract of
+   `ViewModel.addCloseable`. `stopKoin()` closes every scope, root included, so this also runs at exit
+   **[V, Koin sources + test]**.
+5. **Navigation is plain Navigation 3**: each feature's `impl` has one `FeatureNavigation` object
+   with `entry<Route> { … }` entries, and `shared` lists the features in one place. No Koin here.
+   One global `Navigator` (`LocalNavigator`) keeps a saved back stack.
 6. **Naming follows AnilibriaRefresh**:
    - `XRoute` is a navigation key;
    - `XScreen` is the stateful composable, `XScreenContent` the stateless one;
@@ -50,8 +50,8 @@ projects). **[U]** unverified, check before relying on it.
 :shared                      ASSEMBLY POINT: @KoinApplication, root App composable, iOS framework
 ios-app/                     Xcode project, thin Swift host (not a Gradle module)
 
-:core:domain                 cross-feature interfaces; exposes TDLib's generated classes as the model
-:core:data                   ClientHolder, AccountStore, accounts, TDLib environment, the web worker
+:core:model                  AccountId, Account, isLoginStep; exposes TDLib's generated classes as the model
+:core:tdlib                  the engine: ClientHolder, AccountStore, reducers, accounts, environment, web worker
 :core:navigation:api         NavKey, Navigator, LocalNavigator, navigation helpers
 :core:navigation:impl        rememberNavigator, NavigationState, deep links
 :core:designsystem           KotogramTheme, tokens, components used by 2+ features
@@ -59,18 +59,26 @@ ios-app/                     Xcode project, thin Swift host (not a Gradle module
 :feature:<name>:api
 :feature:<name>:domain
 :feature:<name>:data
-:feature:<name>:presentation
+:feature:<name>:impl
 ```
 
-`core:data` is laid out by entity, under `com.xbot.kotogram.core.data`:
+Own design: no TDLib client splits its data layer by feature (they have one), and the reports' verdict
+stands that the snapshot can't be split (05 §4.1). So the engine is one module and grows by one reducer
+file and one `AccountState` field per entity. Repositories, projections and history windows live in features.
+
+`core:tdlib` is laid out by entity, under `com.xbot.kotogram.core.tdlib`:
 
 ```
-account/      DefaultAccountRepository, AccountStorage, scope lookups
-client/       ClientHolder, AccountLifecycle, TdLibProvider, UpdateLane, TdlibLog
-environment/  TdlibEnvironment, account directories
-store/        AccountStore, AccountState, ChatListOrder, reducers
-di/           CoreDataModule
+account/      AccountRepository + Default, AccountSessions, AccountLifetime, AccountStorage, AccountPointerStore
+client/       ClientHolder (public) : TdSender, ManagedClientHolder (internal), UpdateLane, TdlibLog, runAtExit
+environment/  TdlibEnvironment, TdlibEnvironmentValues
+store/        AccountStore (public), MutableAccountStore (internal), AccountState, ChatListOrder, Reducer + one per entity
+di/           CoreTdlibModule (provider functions), Koin adapters (KoinAccountSessions, KoinAccountLifetime), platform* expect/actual
+extensions/   one <Receiver>Ext.kt per type: ErrorExt, TdSenderExt, AccountStoreExt, TdlibEnvironmentExt, KoinExt, ...
 ```
+
+Public on purpose: `ClientHolder`, `TdSender`, `sendCatching`, `ErrorExt`, `AccountStore`, `AccountState`, `select`,
+`AccountRepository`, `AccountLifetime`, `TdlibEnvironment`, `accountScope`. The rest is `internal`.
 
 Its source sets split on where TDLib runs: `nonWebMain` (in the process) and `webMain` (in a Web Worker,
 `core/data/worker`).
@@ -79,18 +87,20 @@ Its source sets split on where TDLib runs: `nonWebMain` (in the process) and `we
 
 | Module | May depend on | Must not contain |
 |---|---|---|
-| `feature:x:api` | `core:navigation:api`, `core:domain` (keys carrying domain types), serialization | screens, ViewModels, logic |
-| `feature:x:domain` | `core:domain`, coroutines, `koin-annotations` | Compose, `io.xbot.tdlib.client.*` |
-| `feature:x:data` | its `domain`, `core:domain`, `core:data` | Compose, ViewModels |
-| `feature:x:presentation` | its `api` and `domain`, other features' **`api` only**, `core:designsystem`, `core:navigation:api` | `data`, `io.xbot.tdlib.client.*` |
-| `core:*` | other `core:*`, no cycles | anything feature-specific |
+| `core:model` | `tdlib-client` | everything else |
+| `core:tdlib` | `core:model`, Koin, DataStore, collections-immutable | Compose, anything feature-specific |
+| `feature:x:api` | `core:navigation:api`, `core:model` (keys carrying own types), serialization | screens, ViewModels, logic |
+| `feature:x:domain` | `core:model`, other features' `domain`, coroutines, Arrow, `koin-annotations` | `core:tdlib`, Compose, `io.xbot.tdlib.client.*` |
+| `feature:x:data` | its `domain`, `core:tdlib` | Compose, ViewModels |
+| `feature:x:impl` | its `api` and `domain`, other features' `api` and `domain`, `core:designsystem`, `core:navigation:api` | any `data`, `core:tdlib`, other `impl`, `io.xbot.tdlib.client.*` |
+| other `core:*` | other `core:*`, no cycles | anything feature-specific |
 | `shared` | everything | business logic |
 | `android-app`, `jvm-app`, `web-app` | `shared` | DI declarations, UI |
 
-- `presentation` never sees `data`. They meet only in the Koin graph started by `shared`.
-- A model or interface needed by two features moves to `core:domain`. It is never imported from
-  another feature.
-- `api` never depends on `presentation` or `data`. Only `shared` wires everything together.
+- `impl` never sees `data`. They meet only in the Koin graph started by `shared`.
+- A feature owns its entity: `feature:chats` owns chats for everyone. A feature that needs chats depends on
+  `feature:chats:domain`. Nothing flows into core just because two features want it.
+- `api` never depends on `impl` or `data`. Only `shared` wires everything together.
 
 ---
 
@@ -102,9 +112,8 @@ Its source sets split on where TDLib runs: `nonWebMain` (in the process) and `we
   `koinCompiler { compileSafety = true }`. That is how AnilibriaRefresh is set up; the plugin's
   compatibility list includes Kotlin 2.4.20 **[V]**.
 - `shared`: `@KoinApplication internal object KotogramApp` and `fun initKoin(config)` →
-  `startKoin<KotogramApp> { includes(config); modules(<feature>FeatureModule, …) }`. Modules annotated
-  `@Configuration` are included automatically **[V]**. The DSL feature modules are listed by hand, as in
-  AnilibriaRefresh's `StartKoin.kt`.
+  `startKoin<KotogramApp> { includes(config) }`. Modules annotated `@Configuration` are included
+  automatically **[V]**.
 
 ### 2.2 Annotation layers (`domain`, `data`, `core:*`)
 
@@ -115,28 +124,28 @@ Its source sets split on where TDLib runs: `nonWebMain` (in the process) and `we
   - `@Factory` on use cases;
   - `@Singleton` on app-wide services;
   - `@Scope(AccountId::class) @Scoped` on anything bound to one account (repositories, caches);
-  - `@KoinViewModel` on ViewModels, which live in `presentation`.
+  - `@KoinViewModel` on ViewModels, which live in `impl`.
 - **Implementations stay `internal`.** `@Singleton`/`@Scoped` on an internal class binds it to the
-  interface it implements.
+  interface it implements. A class behind a public interface and an internal one lists both:
+  `@Scoped(binds = [AccountStore::class, MutableAccountStore::class])`.
+- **Annotations are all an entity knows about Koin.** A constructor never takes a Koin `Scope`. Platform
+  values come from provider functions in `CoreTdlibModule`; `tdlibEnvironment(scope)` is the one that
+  sees a scope, because Android reads its `Context` from it.
 
-### 2.3 DSL layer (`presentation` feature module)
+### 2.3 No DSL in production
 
-`val <feature>FeatureModule = module { … }` in `presentation/di/<Feature>FeatureModule.kt`. It holds:
-
-- `polymorphic<NavKey> { subclass(XRoute::class) }`, the back-stack serializers (§3.3);
-- `navigation<XRoute> { key -> … }`, the navigation entries (§3.2).
-
-Everything else in the feature uses annotations.
+Everything uses annotations. Tests are the only place with DSL modules.
 
 ### 2.4 Account scope and lifetimes
 
 ```
-root (app)            @Singleton: AccountRepository, AccountStorage, TdlibEnvironment, TdLibProvider, UpdateLane
- └─ AccountId scope   one Koin scope per account: ClientHolder, AccountStore, repositories, ViewModels
+root (app)            @Singleton: AccountRepository, AccountSessions, AccountStorage, TdlibEnvironment, TdLib, UpdateLane
+ └─ AccountId scope   one Koin scope per account: AccountLifetime, ClientHolder, AccountStore, repositories, ViewModels
 ```
 
 An account is one login's life: see [design/accounts.md](design/accounts.md). Scopes are opened and closed only by
-`DefaultAccountRepository`; composition only provides one (`UnboundKoinScope`) and reports when it stopped showing it.
+`DefaultAccountRepository`, through `AccountSessions`; composition only provides one (`UnboundKoinScope`) and reports when it
+stopped showing it.
 
 ### 2.5 Compile safety: rules learned in this migration
 
@@ -147,13 +156,13 @@ rule below comes from a case where the check was silently skipped or gave a fals
    whole check is then **skipped** (`SKIPPED: some dependency modules have incomplete definitions`).
    Keep the definition in common code and make only a plain function `expect`
    (`platformTdlibEnvironment`).
-2. **Define with classes, not provider functions, across modules.** A `@Singleton fun` (top-level or
-   in a `@Module` class) consumed from another module was validated against the returned type's
-   constructor. Example: `TdlibEnvironment` became an interface with a `@Singleton` class
-   implementation.
+2. **A provider function returns an interface, never a concrete class.** A `@Singleton fun` (top-level or
+   in a `@Module` class) returning a concrete class was validated against that class's constructor
+   (KOIN-D001 on the old `TdlibEnvironment` data class). `CoreTdlibModule`'s functions return interfaces,
+   as AnilibriaRefresh's `DataModule.createDataStore` does on the same plugin. `tdLib()` passed the
+   developer's build; `tdlibEnvironment` and `accountStorage` follow it **[U until the next build]**.
 3. **DSL modules from other Gradle modules are invisible to the check.** `modules(someModule)` lives
-   in a lambda body, which isn't ABI. So anything other code depends on is annotated; DSL is only
-   for leaf contributions.
+   in a lambda body, which isn't ABI. So production has no DSL modules.
 4. **`@Provided` goes on the parameter, not the class,** when the type is in another module.
 5. **`shared` compiles non-incrementally.** Incremental compilation reused a stale result after
    an upstream definition was removed, and the error appeared only on a full recompile. The
@@ -183,6 +192,16 @@ val LocalNavigator = compositionLocalOf<Navigator> { error("No navigator provide
 Copied in shape from AnilibriaRefresh. `TopLevelNavKey` (tab title and icons) and `ExternalUriNavKey`
 (t.me links opened outside the back stack) are added when the main screen gets tabs and links.
 
+```kotlin
+interface FeatureNavigation {
+    fun PolymorphicModuleBuilder<NavKey>.routes()
+    fun EntryProviderScope<NavKey>.entries()
+}
+```
+
+Own design, of the same shape as Koin's `EntryProviderInstaller` (`EntryProviderScope<Any>.() -> Unit`) **[V]**, without
+the container: the list of features is code, so its order is known and nothing is looked up at runtime.
+
 ### 3.2 A feature
 
 `feature:chats:api`:
@@ -191,21 +210,28 @@ Copied in shape from AnilibriaRefresh. `TopLevelNavKey` (tab title and icons) an
 @Serializable
 data class ChatRoute(val chatId: Long) : NavKey
 
+// extensions/NavigatorExt.kt
 fun Navigator.navigateToChat(chatId: Long) = navigate(ChatRoute(chatId))
 ```
 
-`feature:chats:presentation`, `di/ChatsFeatureModule.kt`:
+`feature:chats:impl`, `navigation/ChatsNavigation.kt`:
 
 ```kotlin
-val chatsFeatureModule = module {
-    polymorphic<NavKey> { subclass(ChatListRoute::class); subclass(ChatRoute::class) }
+object ChatsNavigation : FeatureNavigation {
+    override fun PolymorphicModuleBuilder<NavKey>.routes() {
+        subclass(ChatListRoute::class)
+        subclass(ChatRoute::class)
+    }
 
-    navigation<ChatListRoute> {
-        val navigator = LocalNavigator.current
-        val lifecycleOwner = LocalLifecycleOwner.current
-        ChatListScreen(
-            onChatClick = { chatId -> lifecycleOwner.dropUnlessResumed { navigator.navigateToChat(chatId) }.invoke() }
-        )
+    override fun EntryProviderScope<NavKey>.entries() {
+        entry<ChatListRoute> {
+            val navigator = LocalNavigator.current
+            val lifecycleOwner = LocalLifecycleOwner.current
+            ChatListScreen(
+                viewModel = koinViewModel(),
+                onChatClick = { chatId -> lifecycleOwner.dropUnlessResumed { navigator.navigateToChat(chatId) }.invoke() }
+            )
+        }
     }
 }
 ```
@@ -213,7 +239,7 @@ val chatsFeatureModule = module {
 - Other features navigate here **only** through `navigateTo…` extensions from `api`.
 - **Navigation callbacks are wrapped in `dropUnlessResumed`**, so a double tap during a transition
   doesn't push twice.
-- Screens never touch the `Navigator`; only `navigation<…>` entries do.
+- Screens never touch the `Navigator` or Koin; only entries do.
 
 ### 3.3 `core:navigation:impl` and the app
 
@@ -221,12 +247,11 @@ val chatsFeatureModule = module {
   `rememberNavBackStack(SavedStateConfiguration { serializersModule = … }, …)`, so it survives
   configuration changes and process death. On iOS and desktop that call **requires** a `SerializersModule`
   registering every `NavKey` subtype, and throws otherwise **[V]**.
-- The `SerializersModule` is built from all `polymorphic<NavKey>` contributions in Koin
-  (`getAll<PolymorphicSerializerConfig<NavKey>>()`), as AnilibriaRefresh's `KoinNavigation.kt` does
-  **[V]**. Only keys that can reach the back stack are registered.
+- `appNavigation.navSerializersModule()` builds the `SerializersModule` from every feature's `routes()`. Only keys
+  that can reach the back stack are registered.
 - `shared` provides `LocalNavigator` and renders
-  `NavDisplay(backStack = navigator.backStack, onBack = navigator::navigateBack, entryProvider = koinEntryProvider<NavKey>())`
-  **[V]**, with `rememberSaveableStateHolderNavEntryDecorator()` and the ViewModel-store entry decorator.
+  `NavDisplay(backStack = navigator.backStack, onBack = navigator::navigateBack, entryProvider = appNavigation.navEntryProvider())`,
+  with `rememberSaveableStateHolderNavEntryDecorator()` and the ViewModel-store entry decorator.
 - **The root is state-driven.** Splash, auth and main are chosen from the session state
   (`RootViewModel`). On a session change, such as auth → main or an account switch, the navigator's back
   stack is replaced.
@@ -254,7 +279,7 @@ repositories.
 ## 5. Data layer
 
 - `Default{Noun}Repository` is `internal` and annotated (`@Scope(AccountId::class) @Scoped`). Commands go through
-  `ClientHolder`, reads through `AccountStore.state`.
+  `ClientHolder.sendCatching`, reads through `AccountStore.select` or `AccountStore.state`.
 - There is no mapping layer: TDLib's generated classes are the model.
 - Each account has **one** collector of `TdClient.updates`, inside `ClientHolder`, because TDLib requires in-order
   processing. It feeds `AccountStore`. Everyone else reads the store. See
@@ -264,11 +289,13 @@ repositories.
 
 ## 6. Presentation layer
 
-### 6.1 Package layout (`com.xbot.kotogram.feature.<feature>.presentation`)
+### 6.1 Package layout (`com.xbot.kotogram.feature.<feature>.impl`)
 
 ```
 di/
-  <Feature>FeatureModule.kt           # DSL: polymorphic<NavKey> + navigation<Route> entries
+  <Feature>ImplModule.kt              # @Module @Configuration @ComponentScan
+navigation/
+  <Feature>Navigation.kt              # object : FeatureNavigation; resolves ViewModels
 screen/
   <screen>/                           # one folder per screen, always (also for one-screen features)
     <Screen>Screen.kt                 # stateful XScreen + stateless XScreenContent + previews
@@ -281,7 +308,7 @@ component/                            # optional: composables shared by 2+ scree
 
 - No `ui/`, `util/` or `utils/` folders. Helpers live next to the screen that uses them.
 - Platform code (`expect`/`actual`) mirrors the same package path in `androidMain`/`iosMain`/`jvmMain`.
-- Everything is `internal` except `val <feature>FeatureModule`.
+- Everything is `internal` except `object <Feature>Navigation` and the Koin module.
 
 ### 6.2 Where a composable lives
 
@@ -295,9 +322,9 @@ component/                            # optional: composables shared by 2+ scree
 // Stateful
 @Composable
 internal fun PhoneScreen(
+    viewModel: PhoneViewModel,
     onQrLoginClick: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: PhoneViewModel = koinViewModel(),
 ) {
     val state by viewModel.collectAsState()
     viewModel.collectSideEffect { /* one-off events */ }
@@ -314,8 +341,9 @@ private fun PhoneScreenContent(
 )
 ```
 
-- `XScreen` (or `XPane` for an adaptive pane) takes the ViewModel as a defaulted parameter. It collects
-  state and side effects, receives navigation callbacks and never touches the `Navigator`.
+- `XScreen` (or `XPane` for an adaptive pane) takes the ViewModel as a required parameter, which the entry
+  resolves with `koinViewModel()`. It collects state and side effects, receives navigation callbacks and
+  never touches the `Navigator` or Koin.
 - `XScreenContent` takes `state`, `onAction` and the navigation callbacks. It has no ViewModel and is
   previewable.
 - Every screen has a `private` `XScreenPreview` under its `XScreenContent`, annotated `@KotogramPreview`
@@ -359,7 +387,7 @@ internal class PhoneViewModel(
 | Thing | Pattern | Example |
 |---|---|---|
 | Navigation key | `{Feature}Route`, `{Screen}Route` (`@Serializable`, implements `NavKey`) | `ChatRoute(chatId)` |
-| Navigation helper | `Navigator.navigateTo{Target}()` in `api` | `navigateToChat(chatId)` |
+| Navigation helper | `Navigator.navigateTo{Target}()` in `api/extensions` | `navigateToChat(chatId)` |
 | Flow-internal step (not a NavKey) | `{Flow}Step` | `AuthStep.Code` (today `AuthRoute`) |
 | Stateful composable | `{Screen}Screen` or `{Screen}Pane` | `PhoneScreen` |
 | Stateless composable | `{Screen}ScreenContent` | `PhoneScreenContent` |
@@ -371,12 +399,25 @@ internal class PhoneViewModel(
 | Navigation callback | `on[Target]Click`: name the target, not the layout role | `onChatClick`, `onQrLoginClick`, `onBackClick` |
 | Use case | `{Verb}{Noun}UseCase` | `ObserveAuthStateUseCase` |
 | Repository | `{Noun}Repository`, impl `Default{Noun}Repository` | `DefaultAuthRepository` |
-| Koin, annotated | `{Feature}{Layer}Module` | `AuthDataModule` |
-| Koin, DSL | `{feature}FeatureModule` (`val`) | `authFeatureModule` |
+| Koin module | `{Feature}{Layer}Module` | `AuthDataModule` |
+| A feature's navigation | `{Feature}Navigation` (`object`) | `AuthNavigation` |
 | Scope | the scope's source type | `AccountId` |
 | Boolean state | `is…`, `can…`, `has…` | `isSubmitting`, `canSubmit` |
 
 ## 8. Code style
+
+Androidx habits, applied:
+
+- **Abstraction first.** Interface, then `Default…` in its own file. Read from the top, not from the implementation.
+- **Narrow read interfaces.** `AccountStore` is public, `MutableAccountStore : AccountStore` internal, like `MutableStateFlow`.
+  `ClientHolder` is what repositories see, `ManagedClientHolder` what the account's owner sees.
+- **Delegation over inheritance chains.** `DirectoryAccountStorage : AccountStorage, AccountPointerStore by …`,
+  `ChatListRowMapper : RowMapper<…> by MemoizingRowMapper(…)`, `AccountReducer : Reducer by CompositeReducer(…)`.
+- **One responsibility per class.** A new entity is one more reducer in the list, not one more branch.
+- **Extensions live in each module's `extensions` package, one `<Receiver>Ext.kt` per receiver type** (`ErrorExt`, `TdSenderExt`,
+  `NavigatorExt`), never `util/`. A private member extension that is an implementation detail of one class stays in that class.
+- **`platform*` lives in each module's `di` package**: the `expect` declaration and its `actual`s. A platform class it builds
+  (`DirectoryAccountStorage`) stays with its entity.
 
 - Prefer `internal`. Feature implementation details, repository implementations and helpers **must**
   be `internal`.
@@ -396,10 +437,12 @@ Current status and open items are in [handoff.md](handoff.md).
 - Koin docs (`docs/reference`): `koin-core/scopes.md` (session scope, close, onClose),
   `koin-core/definitions.md` (onClose), `koin-annotations/scope.md`,
   `koin-annotations/annotations-inventory.md` (@Configuration, @Scope + @KoinViewModel),
-  `koin-compose/navigation3.md`, `koin-compose/compose-scopes.md` (KoinScope, UnboundKoinScope):
+  `koin-compose/compose-scopes.md` (KoinScope, UnboundKoinScope):
   https://github.com/InsertKoinIO/koin/tree/main/docs/reference
 - Koin Compiler Plugin README (setup, Kotlin 2.3.20 → 2.4.20 compatibility):
   https://github.com/InsertKoinIO/koin-compiler-plugin
-- `androidx.navigation3:navigation3-runtime:1.2.0` sources, `RememberNavBackStack.kt`.
+- `androidx.navigation3:navigation3-runtime:1.2.0` sources, `RememberNavBackStack.kt`, `EntryProvider.kt`.
+- `koin-compose-navigation3:4.2.2` sources, `EntryProviderInstaller.kt`.
+- `androidx.datastore:datastore-preferences-core:1.3.0-rc01` wasmJs sources, `PreferenceDataStoreFactory.web.kt`, `WebStorage.web.kt`.
 - AnilibriaRefresh: `AGENTS.md`, `shared-ui/navigation/{api,impl}`, `shared-ui/src/.../di/{StartKoin,KoinNavigation}.kt`,
   `shared-ui/feature/title/{api,impl}`.

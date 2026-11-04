@@ -1,6 +1,6 @@
 # Kotogram — messaging core: from a TDLib update to a pixel (design v1)
 
-Status: **proposal; M0 and the start of M1 are implemented** (§14). It fills the gap left by [architecture.md](../architecture.md)
+Status: **proposal; M0 and the start of M1 are implemented** (§14). Module names follow KTG-6 (`core:tdlib`, `core:model`, `feature:x:impl`); reducers are now one `Reducer` per entity in a `CompositeReducer`, not one dispatching `when`. It fills the gap left by [architecture.md](../architecture.md)
 (modules, DI, navigation) and [accounts.md](accounts.md) (accounts, scopes, login): which entities exist between
 `TdClient` and Compose, and how they relate.
 
@@ -59,22 +59,22 @@ applier (Telegram X, Unigram), reducers and persistent snapshots (Pingogram), de
 | Entity | Responsibility | Lifetime | Thread | Owner | Module |
 |---|---|---|---|---|---|
 | `TdLib` (`NativeTdLib`) | the library seam; a fake or recording decorator goes here (§11) | process | library | Koin root | library |
-| `DefaultAccountRepository` (exists) | accounts, active account, opens and closes account scopes | process | Default | Koin root | `core:data` |
-| Update lane | one `limitedParallelism(1)` dispatcher that `apply` runs on, for all accounts (§3) | process | — | Koin root | `core:data` |
-| `AppPresence`, `NetworkMonitor` | platform seams: foreground, connectivity | process | Main | Koin root, `expect` function | `core:data` |
-| `DefaultClientHolder` (changes) | one account's instances; the only subscriber of `TdClient.updates`; `send` | account | lane + any | account scope | `core:data` |
-| `DefaultAccountStore` | `apply(update)`; publishes `state` and `updates` | account | written on the lane, read anywhere | account scope | `core:data` |
-| `AccountState` + `reduce` | the snapshot and the pure fold | value | any | store | `core:data` |
-| `FileStore` | per-file `StateFlow<File>` for observed files (§7) | account | written on the lane | account scope | `core:data` |
-| `FileDownloads` | the single arbiter of `DownloadFile`/`CancelDownloadFile` per file (§7) | account | serial | account scope | `core:data` |
-| `OpenChats` | balanced `openChat`/`closeChat`, delayed close, "is this chat open" | account | any | account scope | `core:data` |
-| `AccountSession` | per-instance setup: parameters, options, `online`, network type (§8) | instance | Default | account scope | `core:data` |
-| `Default…Repository` | read projections over `state`; commands via `ClientHolder`, returning `Either` | account | any | account scope | `core:data` when cross-feature, else `feature:x:data` |
+| `DefaultAccountRepository` (exists) | accounts, active account, opens and closes account scopes | process | Default | Koin root | `core:tdlib` |
+| Update lane | one `limitedParallelism(1)` dispatcher that `apply` runs on, for all accounts (§3) | process | — | Koin root | `core:tdlib` |
+| `AppPresence`, `NetworkMonitor` | platform seams: foreground, connectivity | process | Main | Koin root, `expect` function | `core:tdlib` |
+| `DefaultClientHolder` (changes) | one account's instances; the only subscriber of `TdClient.updates`; `send` | account | lane + any | account scope | `core:tdlib` |
+| `DefaultAccountStore` | `apply(update)`; publishes `state` and `updates` | account | written on the lane, read anywhere | account scope | `core:tdlib` |
+| `AccountState` + `reduce` | the snapshot and the pure fold | value | any | store | `core:tdlib` |
+| `FileStore` | per-file `StateFlow<File>` for observed files (§7) | account | written on the lane | account scope | `core:tdlib` |
+| `FileDownloads` | the single arbiter of `DownloadFile`/`CancelDownloadFile` per file (§7) | account | serial | account scope | `core:tdlib` |
+| `OpenChats` | balanced `openChat`/`closeChat`, delayed close, "is this chat open" | account | any | account scope | `core:tdlib` |
+| `InstanceSetup` | per-instance setup: parameters, options, `online`, network type (§8) | instance | Default | account scope | `core:tdlib` |
+| `Default…Repository` | read projections over `state`; commands via `ClientHolder`, returning `Either` | account | any | account scope | the owning `feature:x:data` |
 | `ChatHistory` + `ChatHistoryFactory` | the message window of one open chat (§6) | screen | own serial lane | ViewModel | interface in `feature:chats:domain`, implementation in `feature:chats:data` |
-| `MessageViews` | visible items → `viewMessages` (§6) | screen | Main → any | ViewModel | `feature:chats:presentation` |
-| `ChatListViewModel`, `ChatViewModel` | Orbit state; memoising mappers (§5) | screen | mapping on Default | account `ViewModelStoreOwner` | `feature:chats:presentation` |
-| `TdImageFetcher` + `Keyer` | Coil 3 bridge from `TdImage` to pixels (§7) | process | Coil, bounded | process `ImageLoader` built in `shared` | `core:data`; `TdImage` in `core:domain` |
-| `NotificationController` | snapshot's notification groups → platform renderer (§9) | account | serial | account scope | `core:data` + platform |
+| `MessageViews` | visible items → `viewMessages` (§6) | screen | Main → any | ViewModel | `feature:chats:impl` |
+| `ChatListViewModel`, `ChatViewModel` | Orbit state; memoising mappers (§5) | screen | mapping on Default | account `ViewModelStoreOwner` | `feature:chats:impl` |
+| `TdImageFetcher` + `Keyer` | Coil 3 bridge from `TdImage` to pixels (§7) | process | Coil, bounded | process `ImageLoader` built in `shared` | `feature:files:data`, or `core:tdlib` if every feature needs it: undecided; `TdImage` in `core:model` |
+| `NotificationController` | snapshot's notification groups → platform renderer (§9) | account | serial | account scope | `core:tdlib` + platform |
 
 ### Relations
 
@@ -85,7 +85,7 @@ Koin root
  └─ account scope
      ├─ DefaultClientHolder ──apply──► DefaultAccountStore ──► AccountState (value)
      │        │                              ├─► FileStore
-     │        └─ AccountSession (setup per instance)
+     │        └─ InstanceSetup (setup per instance)
      ├─ FileDownloads ──send──► ClientHolder
      │        └──reads──► FileStore
      ├─ OpenChats ──send──► ClientHolder
@@ -100,9 +100,9 @@ Direction is one-way: the holder pushes into the store, and the store knows noth
 reducer can be tested without TDLib, and why a late resolve in Koin can't lose updates: the store is a constructor
 parameter of the holder, so it exists before the first `send`.
 
-Only `core:data` sees `TdClient`. `ClientHolder.updates` is removed from the interface: consumers get
+Only `core:tdlib` sees `TdClient`. `ClientHolder.updates` is removed from the interface: consumers get
 `AccountStore.updates`, which is after-apply, so a consumer reacting to an update always finds `state` at least that
-new. `TdClient.updatesOf<T>()` must not leave `core:data` (A2).
+new. `TdClient.updatesOf<T>()` must not leave `core:tdlib` (A2).
 
 ---
 
@@ -270,7 +270,7 @@ end of the list, so no window is needed until that proves wrong.
 Own state machine, owned by the `ChatViewModel`. Paging 3 doesn't fit: no in-place updates, and no serious client pages
 history with it (05 §5, A17).
 
-Wiring (06 §4): the interface is in `feature:chats:domain` because presentation can't see `data`, and the implementation is in
+Wiring (06 §4): the interface is in `feature:chats:domain` because `impl` can't see `data`, and the implementation is in
 `feature:chats:data`. The ViewModel gets it from a `@Scoped ChatHistoryFactory` with `create(chatId)`: a plain class keeps the graph
 under compile safety, while `@InjectedParam` is skipped by it. The lane is `viewModelScope` on its own `limitedParallelism(1)`,
 so it dies in `onCleared`. An account switch clears the account's ViewModel store, so histories reload on return.
@@ -352,7 +352,7 @@ Everything else a chat screen needs (M2 detail, from Pingogram, not yet reviewed
   arbiter a prefetch can downgrade a visible image (TGX#22, N6). It holds consumers per file with a priority ladder
   (B15), re-issues only when the effective priority or range changes, cancels with `only_if_pending` after a debounce when the
   last consumer leaves, adopts downloads it did not start, and treats completion idempotently (TGX#23-24, UNI#9).
-- `TdImageFetcher` + `Keyer` (Coil 3): data is `TdImage(accountId, fileId, uniqueId, minithumbnail)`, primitives in `core:domain`, so
+- `TdImageFetcher` + `Keyer` (Coil 3): data is `TdImage(accountId, fileId, uniqueId, minithumbnail)`, primitives in `core:model`, so
   a composable never holds a DTO. **Key is `remote.unique_id`**, stable across restarts and shared between accounts ("the same for
   the same file even for different users", CS§1.8), so one process-wide `ImageLoader` is correct (Pingogram's singleton bug is N7).
   It can be empty: fall back to `(accountId, fileId)`. No disk cache: TDLib owns the files. Subscribe, then request, then wait for
@@ -366,7 +366,7 @@ Everything else a chat screen needs (M2 detail, from Pingogram, not yet reviewed
 
 ## 8. Lifecycle
 
-`AccountSession.run(client)` runs once per instance, started from `onSubscription`, in one coroutine off the lane, and is
+`InstanceSetup.run(client)` runs once per instance, started from `onSubscription`, in one coroutine off the lane, and is
 cancelled when the instance's stream ends (§3):
 
 1. `SetTdlibParameters` first (Telegram X, Unigram; already done).
@@ -423,7 +423,7 @@ The design makes the important parts deterministic. N11: nobody tests interleavi
 | Each event is parsed twice (tree, then decode), with a mutex per event | `TdReceiver.kt:75-79` | Measure at M1 (N12) |
 | `close()` returns on `Closed`, before the receive loop stops | `TdClient.kt:50-55` | §8 |
 | One loop per process: one account's storm delays another | `TdReceiver.kt` | Accepted, same as Telegram X |
-| One receive loop **per `TdLib` object**: a second wrapper object means a second loop stealing events | `TdReceiver.kt:103-108`; found as a hang in tests | `TdLibProvider` hands out `NativeTdLib` itself. A recording decorator (§11) must be one object per process |
+| One receive loop **per `TdLib` object**: a second wrapper object means a second loop stealing events | `TdReceiver.kt:103-108`; found as a hang in tests | `CoreTdlibModule.tdLib()` hands out `NativeTdLib` itself. A recording decorator (§11) must be one object per process |
 
 ---
 
@@ -438,18 +438,18 @@ The design makes the important parts deterministic. N11: nobody tests interleavi
 | C. Hand-written mirror (the current rule) | about 8.5k lines for M1–M4, re-synced on each TDLib bump; 23 types changed in 1.8.68 → 1.8.69 | The same as B, by hand. Mategram: 77% of its main code, and it still drops `positions` (A5) |
 | D. Hand-written subset | Pingogram: about 12k domain and 22k data lines for a nearly full client | Readable UI; not 1:1 |
 
-Neither mirror buys Compose stability: `core:domain` isn't compiled with the Compose compiler either (05 §3.4). Row models are needed
+Neither mirror buys Compose stability: `core:model` isn't compiled with the Compose compiler either (05 §3.4). Row models are needed
 in all four (02 §4.5), so with B or C the path is DTO → mirror → row. The iOS framework doesn't decide this: `shared` has no `export()`, so
 no DTO reaches the Swift header under any option, and the DTOs are in the binary anyway (06 §7.2).
 
-Consequences of A, honestly: two rows of `architecture.md` §1.1 change (`feature:x:domain` and `feature:x:presentation`, whose ViewModels
-map DTOs), and `core:domain` gets `api(libs.tdlib.client)`, so the client artifact is on every presentation classpath. "Composables get
+Consequences of A, honestly: two rows of `architecture.md` §1.1 change (`feature:x:domain` and `feature:x:impl`, whose ViewModels
+map DTOs), and `core:model` gets `api(libs.tdlib.client)`, so the client artifact is on every presentation classpath. "Composables get
 row models" is then a convention plus review, not something the build enforces (06 §6).
 
 Under B, C or D, the `ChatHistory` window and the file seam carry the mirror type instead, which is a real but contained change.
 
-**D2. Where the store lives. Decided: `core:data`,** the renamed `core:tdlib`. Was recommended: `core:data`, with `DefaultAccountRepository`. Split into `core:data` when it grows past comfort;
-the holder → store direction allows that with one interface.
+**D2. Where the store lives. Decided: `core:tdlib`,** with `DefaultAccountRepository`. Repositories over it live in features (KTG-6).
+The holder → store direction allows splitting the store out with one interface.
 
 **D3. Push.** Log in at my.telegram.org and check whether the app settings accept FCM/APNs credentials. If not, Android needs a
 foreground service and iOS has no background delivery.

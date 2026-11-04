@@ -1,6 +1,6 @@
 package com.xbot.kotogram.feature.auth.domain.usecase
 
-import com.xbot.kotogram.core.domain.model.AccountId
+import com.xbot.kotogram.core.model.AccountId
 import com.xbot.kotogram.feature.auth.domain.repository.AuthRepository
 import io.xbot.tdlib.api.AuthorizationState
 import kotlinx.coroutines.flow.Flow

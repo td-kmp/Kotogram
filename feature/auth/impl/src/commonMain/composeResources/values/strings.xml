@@ -1,0 +1,67 @@
+<resources>
+    <string name="action_continue">Continue</string>
+    <string name="action_back">Back</string>
+
+    <string name="login_by_phone">Log in by phone number</string>
+    <string name="login_by_qr">Log in by QR code</string>
+
+    <string name="qr_title">Log in to Telegram by QR code</string>
+    <string name="qr_step_1">Open Telegram on your phone</string>
+    <string name="qr_step_2">Go to Settings &gt; Devices &gt; Link Desktop Device</string>
+    <string name="qr_step_3">Point your phone at this screen to confirm login</string>
+
+    <string name="phone_title">Phone</string>
+    <string name="phone_subtitle">Please confirm your country code and enter your phone number.</string>
+    <string name="phone_hint">Phone number</string>
+    <string name="country_placeholder">Country</string>
+    <string name="country_search">Search</string>
+    <string name="sync_contacts">Sync contacts</string>
+
+    <string name="code_hint">Code</string>
+    <string name="code_sent_telegram">We've sent the code to the Telegram app on your other device.</string>
+    <string name="code_sent_sms">We've sent an SMS with an activation code to %1$s.</string>
+    <string name="code_sent_sms_word">We've sent an SMS to %1$s. The code word starts with %2$s.</string>
+    <string name="code_sent_sms_phrase">We've sent an SMS to %1$s. The code phrase starts with "%2$s".</string>
+    <string name="code_sent_call">We're calling %1$s to dictate the code.</string>
+    <string name="code_sent_flash_call">We're calling %1$s. You don't need to answer.</string>
+    <string name="code_sent_missed_call">We're calling you. Enter the last %2$d digits of the number that starts with %1$s.</string>
+    <string name="code_sent_fragment">We've sent the code to your anonymous number on Fragment.</string>
+    <string name="code_resend">Resend code</string>
+    <string name="code_resend_in">Resend code in %1$s</string>
+    <string name="wrong_number">Wrong number?</string>
+
+    <string name="password_title">Two-Step Verification</string>
+    <string name="password_subtitle">Your account is protected with an additional password.</string>
+    <string name="password_placeholder">Password</string>
+    <string name="password_hint">Hint: %1$s</string>
+    <string name="password_forgot">Forgot password?</string>
+    <string name="password_recovery_sent">We've sent a recovery code to %1$s.</string>
+    <string name="password_recovery_code">Recovery code</string>
+
+    <string name="email_title">Email</string>
+    <string name="email_subtitle">Add an email to receive login codes.</string>
+    <string name="email_placeholder">Email</string>
+    <string name="email_code_title">Check your email</string>
+    <string name="email_code_subtitle">Please enter the code we've sent to %1$s.</string>
+
+    <string name="registration_title">Your name</string>
+    <string name="registration_subtitle">Enter your name and add a profile photo.</string>
+    <string name="first_name">First name</string>
+    <string name="last_name">Last name (optional)</string>
+    <string name="tos_title">Terms of Service</string>
+    <string name="tos_accept">By signing up, you agree to the Terms of Service.</string>
+
+    <string name="unsupported_title">Login unavailable</string>
+    <string name="unsupported_subtitle">This account needs a step only the official Telegram apps support.</string>
+
+    <string name="error_invalid_phone">Invalid phone number.</string>
+    <string name="error_phone_banned">This phone number is banned.</string>
+    <string name="error_invalid_code">Invalid code.</string>
+    <string name="error_code_expired">The code has expired. Request a new one.</string>
+    <string name="error_invalid_password">Invalid password.</string>
+    <string name="error_invalid_email">Invalid email.</string>
+    <string name="error_invalid_name">Invalid name.</string>
+    <string name="error_too_many_attempts">Too many attempts. Try again later.</string>
+    <string name="error_too_many_attempts_seconds">Too many attempts. Try again in %1$d s.</string>
+    <string name="error_unknown">Error: %1$s</string>
+</resources>

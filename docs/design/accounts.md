@@ -125,7 +125,7 @@ interface AccountRepository {
 }
 ```
 
-Own data: the active and previous account and the last id, behind `AccountStorage`. On disk the directories stay the truth for which accounts exist and DataStore holds the rest; on the web TDLib's files are the worker's, so `localStorage` holds it all.
+Own data: the active and previous account and the last id, behind `AccountStorage`, in DataStore on every platform. On disk the directories stay the truth for which accounts exist; on the web TDLib's files are the worker's, so a preferences key holds the list too.
 
 One small watcher per open account replaces `keepTidy`:
 
@@ -235,7 +235,9 @@ DisposableEffect(accountId) {
 
 Differences from the sections above, and what is proven.
 
-- **`TdLibProvider`, not a `TdLib` binding.** `TdReceiver` runs one receive loop per `TdLib` object. A wrapper (`TdLib by NativeTdLib`) created twice started a second loop that stole the first one's events, and tests hung. The provider hands out `NativeTdLib` itself.
+- **`TdLib` is bound by a provider function, never by a wrapper class.** `TdReceiver` runs one receive loop per `TdLib` object. A wrapper (`TdLib by NativeTdLib`) created twice started a second loop that stole the first one's events, and tests hung. `CoreTdlibModule.tdLib()` hands out `NativeTdLib` itself.
+- **KTG-6 moved the controls and Koin out of sight (not compiled yet).** The interface in §4.1 is `ManagedClientHolder`, internal; repositories see `ClientHolder` (`send`, `authorizationState`). `DefaultAccountRepository` goes through `AccountSessions` and `AccountPointerKeeper` instead of Koin, and a scoped class registers its end with `AccountLifetime.addCloseable` instead of a `ScopeCallback`.
+- **Web storage is DataStore (KTG-6, not run yet).** `WebLocalStorage`, because `createWithPath` means `sessionStorage` on the web. Pointers are common code; only the account list differs by platform. Old `localStorage` keys are not migrated.
 - **`saveableStateHolder.removeState` is not done.** Ids never repeat, so this only leaves a little memory until the process ends.
 - **`routeOf` has no direct test,** and the same-user checks (§4.3) wait for the switcher.
 

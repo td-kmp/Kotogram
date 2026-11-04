@@ -2,10 +2,10 @@ package com.xbot.kotogram.feature.auth.data.repository
 
 import arrow.core.Either
 import arrow.core.raise.either
-import com.xbot.kotogram.core.data.client.ClientHolder
-import com.xbot.kotogram.core.domain.model.AccountId
-import com.xbot.kotogram.core.domain.repository.AccountRepository
-import com.xbot.kotogram.feature.auth.data.mapper.request
+import com.xbot.kotogram.core.model.AccountId
+import com.xbot.kotogram.core.tdlib.account.AccountRepository
+import com.xbot.kotogram.core.tdlib.client.ClientHolder
+import com.xbot.kotogram.feature.auth.data.extensions.request
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import com.xbot.kotogram.feature.auth.domain.repository.AuthRepository
 import io.xbot.tdlib.api.AuthorizationState
@@ -51,10 +51,10 @@ internal class DefaultAuthRepository(
     ): Either<AuthError, Unit> = either {
         if (client.authorizationState.value is AuthorizationStateWaitOtherDeviceConfirmation) {
             // TDLib leaves QR login only through a log out; the holder starts a fresh instance after it.
-            request { client.send(LogOut) }
+            client.request(LogOut).bind()
             client.authorizationState.first { it is AuthorizationStateWaitPhoneNumber }
         }
-        request { client.send(SetAuthenticationPhoneNumber(phoneNumber = phoneNumber)) }
+        client.request(SetAuthenticationPhoneNumber(phoneNumber = phoneNumber)).bind()
     }
 
     override suspend fun requestQrCodeAuthentication(): Either<AuthError, Unit> {
@@ -90,7 +90,6 @@ internal class DefaultAuthRepository(
 
     override suspend fun logOut() = call(LogOut)
 
-    private suspend fun call(function: TdFunction<TdObject>): Either<AuthError, Unit> = either {
-        request { client.send(function) }
-    }
+    private suspend fun call(function: TdFunction<TdObject>): Either<AuthError, Unit> =
+        client.request(function).map {}
 }

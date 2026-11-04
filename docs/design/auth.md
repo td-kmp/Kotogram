@@ -1,5 +1,7 @@
 # Kotogram — Auth flow UI/UX spec (KTG-1)
 
+> Module names here predate KTG-6: `presentation` is now `impl`. Passkey parts are out of the code: third-party clients can't use them (see CLAUDE.md).
+
 Status: design spec for implementation. Target: `feature/KTG-1-login`. Stack: Kotlin 2.4.20, CMP 1.12.1, `org.jetbrains.compose.material3:material3:1.12.0-alpha03`, Calf 0.14.0, Nucleus 2.5.18 (Tao backend).
 
 Mockups: [auth-mockups.html](auth-mockups.html) — every screen per platform, dark/light (open in a browser).
