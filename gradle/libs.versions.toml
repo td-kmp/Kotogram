@@ -18,6 +18,8 @@ androidx-activity = "1.13.0"
 kotlinx-coroutines = "1.11.0"
 kotlinx-serialization = "1.11.0"
 kotlinx-collections-immutable = "0.5.2"
+kotlinx-browser = "0.5.0"
+kotlinx-datetime = "0.8.0"
 kotlinx-io = "0.9.1"
 arrow = "2.2.3"
 kermit = "2.2.0"
@@ -61,6 +63,8 @@ androidx-activity-compose = { group = "androidx.activity", name = "activity-comp
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kermit = { group = "co.touchlab", name = "kermit", version.ref = "kermit" }
 kermit-koin = { group = "co.touchlab", name = "kermit-koin", version.ref = "kermit" }
+kotlinx-browser = { group = "org.jetbrains.kotlinx", name = "kotlinx-browser", version.ref = "kotlinx-browser" }
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-collections-immutable = { group = "org.jetbrains.kotlinx", name = "kotlinx-collections-immutable", version.ref = "kotlinx-collections-immutable" }
 arrow-core = { group = "io.arrow-kt", name = "arrow-core", version.ref = "arrow" }
 androidx-datastore-preferences-core = { group = "androidx.datastore", name = "datastore-preferences-core", version.ref = "androidx-datastore" }

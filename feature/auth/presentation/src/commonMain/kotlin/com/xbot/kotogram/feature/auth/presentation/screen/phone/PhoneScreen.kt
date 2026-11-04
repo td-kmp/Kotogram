@@ -24,7 +24,6 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
-import com.xbot.kotogram.feature.auth.domain.model.CountryInfo
 import com.xbot.kotogram.feature.auth.presentation.component.AuthErrorText
 import com.xbot.kotogram.feature.auth.presentation.component.AuthScaffold
 import com.xbot.kotogram.feature.auth.presentation.component.AuthSubtitle
@@ -39,6 +38,7 @@ import com.xbot.kotogram.feature.auth.presentation.resources.phone_hint
 import com.xbot.kotogram.feature.auth.presentation.resources.phone_subtitle
 import com.xbot.kotogram.feature.auth.presentation.resources.phone_title
 import com.xbot.kotogram.feature.auth.presentation.resources.sync_contacts
+import io.xbot.tdlib.api.CountryInfo
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.orbitmvi.orbit.compose.collectAsState

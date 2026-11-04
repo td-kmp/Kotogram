@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+
 plugins {
     alias(libs.plugins.android.multiplatform.library)
     alias(libs.plugins.kotlin.multiplatform)
@@ -30,6 +32,11 @@ kotlin {
 
     jvm()
 
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        browser()
+    }
+
     jvmToolchain(21)
 
     sourceSets {
@@ -38,14 +45,15 @@ kotlin {
             implementation(libs.kotlinx.coroutines.test)
         }
         commonMain.dependencies {
-            api(projects.core.domain)
-            api(projects.core.tdlib)
+            implementation(projects.core.domain)
+            implementation(projects.core.data)
             implementation(projects.core.designsystem)
             implementation(projects.core.navigation.impl)
             implementation(projects.feature.auth.api)
             implementation(projects.feature.auth.data)
             implementation(projects.feature.auth.presentation)
             implementation(projects.feature.chats.api)
+            implementation(projects.feature.chats.data)
             implementation(projects.feature.chats.presentation)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)

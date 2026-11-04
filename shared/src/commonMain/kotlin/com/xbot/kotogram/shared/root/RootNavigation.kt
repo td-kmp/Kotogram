@@ -12,12 +12,12 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.xbot.kotogram.core.data.account.accountScope
 import com.xbot.kotogram.core.navigation.LocalNavigator
 import com.xbot.kotogram.core.navigation.NavKey
 import com.xbot.kotogram.core.navigation.koinNavSerializersModule
 import com.xbot.kotogram.core.navigation.rememberNavigator
 import com.xbot.kotogram.core.navigation.rememberSharedViewModelStoreNavEntryDecorator
-import com.xbot.kotogram.core.tdlib.accountScope
 import org.koin.compose.getKoin
 import org.koin.compose.navigation3.koinEntryProvider
 import org.koin.compose.scope.UnboundKoinScope

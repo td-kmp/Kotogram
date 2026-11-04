@@ -13,9 +13,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.xbot.kotogram.feature.auth.domain.model.CountryInfo
 import com.xbot.kotogram.feature.auth.presentation.resources.Res
 import com.xbot.kotogram.feature.auth.presentation.resources.country_search
+import io.xbot.tdlib.api.CountryInfo
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

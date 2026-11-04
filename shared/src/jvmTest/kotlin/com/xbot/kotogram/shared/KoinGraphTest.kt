@@ -1,11 +1,12 @@
 package com.xbot.kotogram.shared
 
+import com.xbot.kotogram.core.data.account.accountScope
+import com.xbot.kotogram.core.data.environment.TdlibEnvironment
 import com.xbot.kotogram.core.domain.model.AccountId
-import com.xbot.kotogram.core.domain.model.AuthorizationState
 import com.xbot.kotogram.core.domain.repository.AccountRepository
-import com.xbot.kotogram.core.tdlib.TdlibEnvironment
-import com.xbot.kotogram.core.tdlib.accountScope
 import com.xbot.kotogram.shared.di.initKoin
+import io.xbot.tdlib.api.AuthorizationState
+import io.xbot.tdlib.api.AuthorizationStateWaitPhoneNumber
 import java.nio.file.Files
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -40,7 +41,7 @@ class KoinGraphTest {
                     // Nullable requests aren't validated in a test compilation: architecture.md §2.5.
                     val accounts = checkNotNull(koin.getOrNull<AccountRepository>())
                     val active = accounts.active.first {
-                        it?.authorizationState == AuthorizationState.WaitPhoneNumber
+                        it?.authorizationState == AuthorizationStateWaitPhoneNumber
                     }
                     assertEquals(AccountId(1), active?.id)
                     assertNotNull(koin.accountScope(AccountId(1)))

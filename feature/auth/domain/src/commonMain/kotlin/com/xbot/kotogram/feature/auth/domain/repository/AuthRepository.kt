@@ -1,8 +1,8 @@
 package com.xbot.kotogram.feature.auth.domain.repository
 
 import arrow.core.Either
-import com.xbot.kotogram.core.domain.model.AuthorizationState
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
+import io.xbot.tdlib.api.AuthorizationState
 import kotlinx.coroutines.flow.Flow
 
 /** TDLib's authorization functions for the account in scope, named like them. */

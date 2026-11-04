@@ -2,11 +2,16 @@ package com.xbot.kotogram.feature.auth.presentation.screen.phone
 
 import androidx.lifecycle.ViewModel
 import com.xbot.kotogram.core.domain.model.AccountId
-import com.xbot.kotogram.core.domain.model.AuthorizationState
-import com.xbot.kotogram.feature.auth.domain.model.CountryInfo
 import com.xbot.kotogram.feature.auth.domain.repository.AuthRepository
 import com.xbot.kotogram.feature.auth.domain.repository.CountryRepository
 import com.xbot.kotogram.feature.auth.domain.usecase.ObserveAuthorizationStateUseCase
+import io.xbot.tdlib.api.AuthorizationState
+import io.xbot.tdlib.api.AuthorizationStateClosed
+import io.xbot.tdlib.api.AuthorizationStateClosing
+import io.xbot.tdlib.api.AuthorizationStateLoggingOut
+import io.xbot.tdlib.api.AuthorizationStateReady
+import io.xbot.tdlib.api.AuthorizationStateWaitTdlibParameters
+import io.xbot.tdlib.api.CountryInfo
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
@@ -132,11 +137,11 @@ internal class PhoneViewModel(
  */
 private val AuthorizationState.acceptsPhoneNumber: Boolean
     get() = when (this) {
-        AuthorizationState.WaitTdlibParameters,
-        AuthorizationState.Ready,
-        AuthorizationState.LoggingOut,
-        AuthorizationState.Closing,
-        AuthorizationState.Closed -> false
+        AuthorizationStateWaitTdlibParameters,
+        AuthorizationStateReady,
+        AuthorizationStateLoggingOut,
+        AuthorizationStateClosing,
+        AuthorizationStateClosed -> false
 
         else -> true
     }

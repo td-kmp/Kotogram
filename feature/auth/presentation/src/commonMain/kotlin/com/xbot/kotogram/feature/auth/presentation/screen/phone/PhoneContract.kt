@@ -1,7 +1,7 @@
 package com.xbot.kotogram.feature.auth.presentation.screen.phone
 
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
-import com.xbot.kotogram.feature.auth.domain.model.CountryInfo
+import io.xbot.tdlib.api.CountryInfo
 
 internal data class PhoneScreenState(
     val countries: List<CountryInfo> = emptyList(),

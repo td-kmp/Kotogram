@@ -125,7 +125,7 @@ interface AccountRepository {
 }
 ```
 
-Own data: `active_account`, `previous_account`, `last_account_id` in the existing DataStore. The directory list stays the truth for which accounts exist.
+Own data: the active and previous account and the last id, behind `AccountStorage`. On disk the directories stay the truth for which accounts exist and DataStore holds the rest; on the web TDLib's files are the worker's, so `localStorage` holds it all.
 
 One small watcher per open account replaces `keepTidy`:
 

@@ -15,8 +15,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.xbot.kotogram.core.designsystem.KotogramPreview
-import com.xbot.kotogram.core.domain.model.AuthenticationCodeInfo
-import com.xbot.kotogram.core.domain.model.AuthenticationCodeType
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import com.xbot.kotogram.feature.auth.presentation.component.AuthErrorText
 import com.xbot.kotogram.feature.auth.presentation.component.AuthScaffold
@@ -37,6 +35,18 @@ import com.xbot.kotogram.feature.auth.presentation.resources.code_sent_sms_phras
 import com.xbot.kotogram.feature.auth.presentation.resources.code_sent_sms_word
 import com.xbot.kotogram.feature.auth.presentation.resources.code_sent_telegram
 import com.xbot.kotogram.feature.auth.presentation.resources.wrong_number
+import io.xbot.tdlib.api.AuthenticationCodeInfo
+import io.xbot.tdlib.api.AuthenticationCodeType
+import io.xbot.tdlib.api.AuthenticationCodeTypeCall
+import io.xbot.tdlib.api.AuthenticationCodeTypeFirebaseAndroid
+import io.xbot.tdlib.api.AuthenticationCodeTypeFirebaseIos
+import io.xbot.tdlib.api.AuthenticationCodeTypeFlashCall
+import io.xbot.tdlib.api.AuthenticationCodeTypeFragment
+import io.xbot.tdlib.api.AuthenticationCodeTypeMissedCall
+import io.xbot.tdlib.api.AuthenticationCodeTypeSms
+import io.xbot.tdlib.api.AuthenticationCodeTypeSmsPhrase
+import io.xbot.tdlib.api.AuthenticationCodeTypeSmsWord
+import io.xbot.tdlib.api.AuthenticationCodeTypeTelegramMessage
 import kotlin.time.Duration.Companion.seconds
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -114,36 +124,36 @@ private fun CodeScreenContent(
 
 @Composable
 private fun codeDescription(type: AuthenticationCodeType, phoneNumber: String) = when (type) {
-    is AuthenticationCodeType.TelegramMessage -> stringResource(Res.string.code_sent_telegram)
+    is AuthenticationCodeTypeTelegramMessage -> stringResource(Res.string.code_sent_telegram)
 
-    is AuthenticationCodeType.Sms,
-    is AuthenticationCodeType.FirebaseAndroid,
-    is AuthenticationCodeType.FirebaseIos -> stringResource(Res.string.code_sent_sms, phoneNumber)
+    is AuthenticationCodeTypeSms,
+    is AuthenticationCodeTypeFirebaseAndroid,
+    is AuthenticationCodeTypeFirebaseIos -> stringResource(Res.string.code_sent_sms, phoneNumber)
 
-    is AuthenticationCodeType.SmsWord -> stringResource(
+    is AuthenticationCodeTypeSmsWord -> stringResource(
         Res.string.code_sent_sms_word,
         phoneNumber,
         type.firstLetter
     )
 
-    is AuthenticationCodeType.SmsPhrase -> stringResource(
+    is AuthenticationCodeTypeSmsPhrase -> stringResource(
         Res.string.code_sent_sms_phrase,
         phoneNumber,
         type.firstWord
     )
 
-    is AuthenticationCodeType.Call -> stringResource(Res.string.code_sent_call, phoneNumber)
+    is AuthenticationCodeTypeCall -> stringResource(Res.string.code_sent_call, phoneNumber)
 
-    is AuthenticationCodeType.FlashCall ->
+    is AuthenticationCodeTypeFlashCall ->
         stringResource(Res.string.code_sent_flash_call, phoneNumber)
 
-    is AuthenticationCodeType.MissedCall -> stringResource(
+    is AuthenticationCodeTypeMissedCall -> stringResource(
         Res.string.code_sent_missed_call,
         type.phoneNumberPrefix,
         type.length
     )
 
-    is AuthenticationCodeType.Fragment -> stringResource(Res.string.code_sent_fragment)
+    is AuthenticationCodeTypeFragment -> stringResource(Res.string.code_sent_fragment)
 }
 
 private const val SECONDS_PER_MINUTE = 60
@@ -162,17 +172,17 @@ private fun CodeScreenPreview(
 private class CodeScreenStateProvider : PreviewParameterProvider<CodeScreenState> {
     private val info = AuthenticationCodeInfo(
         phoneNumber = "+998 90 123 45 67",
-        type = AuthenticationCodeType.TelegramMessage(length = 5),
-        nextType = AuthenticationCodeType.Sms(length = 5),
-        timeout = 60.seconds
+        type = AuthenticationCodeTypeTelegramMessage(length = 5),
+        nextType = AuthenticationCodeTypeSms(length = 5),
+        timeout = 60
     )
 
     override val values = sequenceOf(
         CodeScreenState(info = info, resendSecondsLeft = 45),
         CodeScreenState(
             info = info.copy(
-                type = AuthenticationCodeType.Sms(length = 5),
-                nextType = AuthenticationCodeType.Call(length = 5)
+                type = AuthenticationCodeTypeSms(length = 5),
+                nextType = AuthenticationCodeTypeCall(length = 5)
             ),
             code = "12"
         ),

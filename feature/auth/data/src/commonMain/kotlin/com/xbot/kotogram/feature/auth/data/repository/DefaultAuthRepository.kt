@@ -2,14 +2,13 @@ package com.xbot.kotogram.feature.auth.data.repository
 
 import arrow.core.Either
 import arrow.core.raise.either
+import com.xbot.kotogram.core.data.client.ClientHolder
 import com.xbot.kotogram.core.domain.model.AccountId
-import com.xbot.kotogram.core.domain.model.AuthorizationState
 import com.xbot.kotogram.core.domain.repository.AccountRepository
-import com.xbot.kotogram.core.tdlib.ClientHolder
-import com.xbot.kotogram.core.tdlib.mapper.toDomain
 import com.xbot.kotogram.feature.auth.data.mapper.request
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import com.xbot.kotogram.feature.auth.domain.repository.AuthRepository
+import io.xbot.tdlib.api.AuthorizationState
 import io.xbot.tdlib.api.AuthorizationStateWaitOtherDeviceConfirmation
 import io.xbot.tdlib.api.AuthorizationStateWaitPhoneNumber
 import io.xbot.tdlib.api.CheckAuthenticationCode
@@ -30,7 +29,6 @@ import io.xbot.tdlib.api.TdObject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.Provided
 import org.koin.core.annotation.Scope
 import org.koin.core.annotation.Scoped
@@ -46,7 +44,7 @@ internal class DefaultAuthRepository(
 ) : AuthRepository {
 
     override val authorizationState: Flow<AuthorizationState> =
-        client.authorizationState.filterNotNull().map { it.toDomain() }
+        client.authorizationState.filterNotNull()
 
     override suspend fun setAuthenticationPhoneNumber(
         phoneNumber: String

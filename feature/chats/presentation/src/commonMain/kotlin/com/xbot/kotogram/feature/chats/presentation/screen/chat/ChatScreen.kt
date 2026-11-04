@@ -1,69 +1,61 @@
 package com.xbot.kotogram.feature.chats.presentation.screen.chat
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
-import com.xbot.kotogram.feature.chats.presentation.stub.SampleMessage
-import com.xbot.kotogram.feature.chats.presentation.stub.sampleChats
-import com.xbot.kotogram.feature.chats.presentation.stub.sampleMessages
+import com.xbot.kotogram.feature.chats.presentation.resources.Res
+import com.xbot.kotogram.feature.chats.presentation.resources.chat_back
+import com.xbot.kotogram.feature.chats.presentation.resources.chat_history_placeholder
+import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
+import org.orbitmvi.orbit.compose.collectAsState
+
+@Composable
+internal fun ChatScreen(
+    chatId: Long,
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: ChatViewModel = koinViewModel { parametersOf(chatId) }
+) {
+    val state by viewModel.collectAsState()
+    ChatScreenContent(state = state, onBackClick = onBackClick, modifier = modifier)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun ChatScreen(chatId: Long, onBackClick: () -> Unit, modifier: Modifier = Modifier) {
-    val chat = sampleChats.first { it.id == chatId }
+private fun ChatScreenContent(
+    state: ChatScreenState,
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Scaffold(
         modifier = modifier,
         topBar = {
             TopAppBar(
-                title = { Text(chat.title) },
-                navigationIcon = { TextButton(onClick = onBackClick) { Text("Back") } }
+                title = { Text(state.title) },
+                navigationIcon = {
+                    TextButton(onClick = onBackClick) { Text(stringResource(Res.string.chat_back)) }
+                }
             )
         }
     ) { innerPadding ->
-        LazyColumn(
-            contentPadding = innerPadding,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(sampleMessages) { message ->
-                MessageBubble(message)
-            }
-        }
-    }
-}
-
-@Composable
-private fun MessageBubble(message: SampleMessage) {
-    Box(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-        contentAlignment = if (message.isOutgoing) Alignment.CenterEnd else Alignment.CenterStart
-    ) {
-        Surface(
-            modifier = Modifier.widthIn(max = 280.dp),
-            shape = RoundedCornerShape(16.dp),
-            color = if (message.isOutgoing) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant
-            }
-        ) {
-            Text(message.text, modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp))
+        Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+            Text(
+                stringResource(Res.string.chat_history_placeholder),
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }
@@ -71,5 +63,5 @@ private fun MessageBubble(message: SampleMessage) {
 @KotogramPreview
 @Composable
 private fun ChatScreenPreview() {
-    ChatScreen(chatId = 1, onBackClick = {})
+    ChatScreenContent(state = ChatScreenState(title = "Kotogram"), onBackClick = {})
 }

@@ -2,9 +2,10 @@ package com.xbot.kotogram.feature.auth.presentation.screen.code
 
 import androidx.lifecycle.ViewModel
 import com.xbot.kotogram.core.domain.model.AccountId
-import com.xbot.kotogram.core.domain.model.AuthorizationState
 import com.xbot.kotogram.feature.auth.domain.repository.AuthRepository
 import com.xbot.kotogram.feature.auth.domain.usecase.ObserveAuthorizationStateUseCase
+import io.xbot.tdlib.api.AuthorizationState
+import io.xbot.tdlib.api.AuthorizationStateWaitCode
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterIsInstance
@@ -23,13 +24,13 @@ internal class CodeViewModel(
 
     override val container = orbitContainer<CodeScreenState, Nothing>(CodeScreenState()) {
         observeAuthorizationState()
-            .filterIsInstance<AuthorizationState.WaitCode>()
+            .filterIsInstance<AuthorizationStateWaitCode>()
             .collectLatest { authState ->
                 reduce {
                     state.copy(
                         info = authState.codeInfo,
                         code = "",
-                        resendSecondsLeft = authState.codeInfo.timeout.inWholeSeconds.toInt()
+                        resendSecondsLeft = authState.codeInfo.timeout
                     )
                 }
                 while (state.resendSecondsLeft > 0) {

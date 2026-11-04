@@ -2,9 +2,11 @@ package com.xbot.kotogram.feature.auth.presentation.screen.qr
 
 import androidx.lifecycle.ViewModel
 import com.xbot.kotogram.core.domain.model.AccountId
-import com.xbot.kotogram.core.domain.model.AuthorizationState
 import com.xbot.kotogram.feature.auth.domain.repository.AuthRepository
 import com.xbot.kotogram.feature.auth.domain.usecase.ObserveAuthorizationStateUseCase
+import io.xbot.tdlib.api.AuthorizationState
+import io.xbot.tdlib.api.AuthorizationStateWaitOtherDeviceConfirmation
+import io.xbot.tdlib.api.AuthorizationStateWaitPhoneNumber
 import org.koin.core.annotation.KoinViewModel
 import org.koin.core.annotation.Scope
 import org.orbitmvi.orbit.OrbitContainerHost
@@ -22,9 +24,9 @@ internal class QrViewModel(
         observeAuthorizationState().collect { authorizationState ->
             reduce {
                 state.copy(
-                    link = (authorizationState as? AuthorizationState.WaitOtherDeviceConfirmation)
+                    link = (authorizationState as? AuthorizationStateWaitOtherDeviceConfirmation)
                         ?.link,
-                    needsQrCode = authorizationState == AuthorizationState.WaitPhoneNumber
+                    needsQrCode = authorizationState == AuthorizationStateWaitPhoneNumber
                 )
             }
         }

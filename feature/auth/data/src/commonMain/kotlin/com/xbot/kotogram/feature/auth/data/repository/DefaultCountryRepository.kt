@@ -2,17 +2,16 @@ package com.xbot.kotogram.feature.auth.data.repository
 
 import arrow.core.Either
 import arrow.core.raise.either
+import com.xbot.kotogram.core.data.client.ClientHolder
 import com.xbot.kotogram.core.domain.model.AccountId
-import com.xbot.kotogram.core.tdlib.ClientHolder
 import com.xbot.kotogram.feature.auth.data.mapper.request
-import com.xbot.kotogram.feature.auth.data.mapper.toDomain
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
-import com.xbot.kotogram.feature.auth.domain.model.CountryInfo
-import com.xbot.kotogram.feature.auth.domain.model.PhoneNumberInfo
 import com.xbot.kotogram.feature.auth.domain.repository.CountryRepository
+import io.xbot.tdlib.api.CountryInfo
 import io.xbot.tdlib.api.GetCountries
 import io.xbot.tdlib.api.GetCountryCode
 import io.xbot.tdlib.api.GetPhoneNumberInfo
+import io.xbot.tdlib.api.PhoneNumberInfo
 import org.koin.core.annotation.Scope
 import org.koin.core.annotation.Scoped
 
@@ -21,7 +20,7 @@ import org.koin.core.annotation.Scoped
 internal class DefaultCountryRepository(private val client: ClientHolder) : CountryRepository {
 
     override suspend fun getCountries(): Either<AuthError, List<CountryInfo>> = either {
-        request { client.send(GetCountries) }.countries.map { it.toDomain() }
+        request { client.send(GetCountries) }.countries
     }
 
     override suspend fun getCountryCode(): Either<AuthError, String> = either {
@@ -31,8 +30,6 @@ internal class DefaultCountryRepository(private val client: ClientHolder) : Coun
     override suspend fun getPhoneNumberInfo(
         phoneNumberPrefix: String
     ): Either<AuthError, PhoneNumberInfo> = either {
-        request {
-            client.send(GetPhoneNumberInfo(phoneNumberPrefix = phoneNumberPrefix))
-        }.toDomain()
+        request { client.send(GetPhoneNumberInfo(phoneNumberPrefix = phoneNumberPrefix)) }
     }
 }

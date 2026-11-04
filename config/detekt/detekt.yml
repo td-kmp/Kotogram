@@ -9,5 +9,12 @@ complexity:
     ignoreAnnotated: ['Composable']
 
 style:
+  # Everything above `data` sees TDLib's classes, but only `data` talks to TDLib.
+  ForbiddenImport:
+    active: true
+    forbiddenImports:
+      - value: 'io.xbot.tdlib.client.*'
+        reason: 'Only core:data and feature data modules talk to TDLib.'
+    excludes: ['**/core/data/**', '**/feature/*/data/**']
   MagicNumber:
     ignoreAnnotated: ['Composable', 'Preview']

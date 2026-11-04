@@ -2,7 +2,6 @@ package com.xbot.kotogram.feature.auth.presentation.screen.auth
 
 import androidx.lifecycle.ViewModel
 import com.xbot.kotogram.core.domain.model.AccountId
-import com.xbot.kotogram.core.domain.model.AuthorizationState
 import com.xbot.kotogram.feature.auth.domain.model.LoginMethod
 import com.xbot.kotogram.feature.auth.domain.repository.LoginCapabilities
 import com.xbot.kotogram.feature.auth.domain.usecase.GetLoginMethodsUseCase
@@ -15,6 +14,15 @@ import com.xbot.kotogram.feature.auth.presentation.navigation.EmailCodeRoute
 import com.xbot.kotogram.feature.auth.presentation.navigation.PasswordRoute
 import com.xbot.kotogram.feature.auth.presentation.navigation.PremiumPurchaseRoute
 import com.xbot.kotogram.feature.auth.presentation.navigation.RegistrationRoute
+import io.xbot.tdlib.api.AuthorizationState
+import io.xbot.tdlib.api.AuthorizationStateWaitCode
+import io.xbot.tdlib.api.AuthorizationStateWaitEmailAddress
+import io.xbot.tdlib.api.AuthorizationStateWaitEmailCode
+import io.xbot.tdlib.api.AuthorizationStateWaitOtherDeviceConfirmation
+import io.xbot.tdlib.api.AuthorizationStateWaitPassword
+import io.xbot.tdlib.api.AuthorizationStateWaitPhoneNumber
+import io.xbot.tdlib.api.AuthorizationStateWaitPremiumPurchase
+import io.xbot.tdlib.api.AuthorizationStateWaitRegistration
 import org.koin.core.annotation.KoinViewModel
 import org.koin.core.annotation.Scope
 import org.orbitmvi.orbit.OrbitContainerHost
@@ -77,8 +85,8 @@ internal class AuthViewModel(
         state: AuthorizationState
     ) {
         when (state) {
-            AuthorizationState.WaitPhoneNumber,
-            is AuthorizationState.WaitOtherDeviceConfirmation -> postSideEffect(
+            AuthorizationStateWaitPhoneNumber,
+            is AuthorizationStateWaitOtherDeviceConfirmation -> postSideEffect(
                 AuthScreenSideEffect.ClearSteps
             )
 
@@ -87,12 +95,12 @@ internal class AuthViewModel(
     }
 
     private fun AuthorizationState.stepRoute(): AuthStepRoute? = when (this) {
-        is AuthorizationState.WaitCode -> CodeRoute
-        is AuthorizationState.WaitPassword -> PasswordRoute
-        is AuthorizationState.WaitEmailAddress -> EmailAddressRoute
-        is AuthorizationState.WaitEmailCode -> EmailCodeRoute
-        is AuthorizationState.WaitRegistration -> RegistrationRoute
-        is AuthorizationState.WaitPremiumPurchase -> PremiumPurchaseRoute
+        is AuthorizationStateWaitCode -> CodeRoute
+        is AuthorizationStateWaitPassword -> PasswordRoute
+        is AuthorizationStateWaitEmailAddress -> EmailAddressRoute
+        is AuthorizationStateWaitEmailCode -> EmailCodeRoute
+        is AuthorizationStateWaitRegistration -> RegistrationRoute
+        is AuthorizationStateWaitPremiumPurchase -> PremiumPurchaseRoute
         else -> null
     }
 }

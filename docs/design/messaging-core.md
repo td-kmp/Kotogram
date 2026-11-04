@@ -1,6 +1,6 @@
 # Kotogram — messaging core: from a TDLib update to a pixel (design v1)
 
-Status: **proposal; M0 is implemented** (§14). It fills the gap left by [architecture.md](../architecture.md)
+Status: **proposal; M0 and the start of M1 are implemented** (§14). It fills the gap left by [architecture.md](../architecture.md)
 (modules, DI, navigation) and [accounts.md](accounts.md) (accounts, scopes, login): which entities exist between
 `TdClient` and Compose, and how they relate.
 
@@ -59,22 +59,22 @@ applier (Telegram X, Unigram), reducers and persistent snapshots (Pingogram), de
 | Entity | Responsibility | Lifetime | Thread | Owner | Module |
 |---|---|---|---|---|---|
 | `TdLib` (`NativeTdLib`) | the library seam; a fake or recording decorator goes here (§11) | process | library | Koin root | library |
-| `DefaultAccountRepository` (exists) | accounts, active account, opens and closes account scopes | process | Default | Koin root | `core:tdlib` |
-| Update lane | one `limitedParallelism(1)` dispatcher that `apply` runs on, for all accounts (§3) | process | — | Koin root | `core:tdlib` |
-| `AppPresence`, `NetworkMonitor` | platform seams: foreground, connectivity | process | Main | Koin root, `expect` function | `core:tdlib` |
-| `DefaultClientHolder` (changes) | one account's instances; the only subscriber of `TdClient.updates`; `send` | account | lane + any | account scope | `core:tdlib` |
-| `DefaultAccountStore` | `apply(update)`; publishes `state` and `updates` | account | written on the lane, read anywhere | account scope | `core:tdlib` |
-| `AccountState` + `reduce` | the snapshot and the pure fold | value | any | store | `core:tdlib` |
-| `FileStore` | per-file `StateFlow<File>` for observed files (§7) | account | written on the lane | account scope | `core:tdlib` |
-| `FileDownloads` | the single arbiter of `DownloadFile`/`CancelDownloadFile` per file (§7) | account | serial | account scope | `core:tdlib` |
-| `OpenChats` | balanced `openChat`/`closeChat`, delayed close, "is this chat open" | account | any | account scope | `core:tdlib` |
-| `AccountSession` | per-instance setup: parameters, options, `online`, network type (§8) | instance | Default | account scope | `core:tdlib` |
-| `Default…Repository` | read projections over `state`; commands via `ClientHolder`, returning `Either` | account | any | account scope | `core:tdlib` when cross-feature, else `feature:x:data` |
+| `DefaultAccountRepository` (exists) | accounts, active account, opens and closes account scopes | process | Default | Koin root | `core:data` |
+| Update lane | one `limitedParallelism(1)` dispatcher that `apply` runs on, for all accounts (§3) | process | — | Koin root | `core:data` |
+| `AppPresence`, `NetworkMonitor` | platform seams: foreground, connectivity | process | Main | Koin root, `expect` function | `core:data` |
+| `DefaultClientHolder` (changes) | one account's instances; the only subscriber of `TdClient.updates`; `send` | account | lane + any | account scope | `core:data` |
+| `DefaultAccountStore` | `apply(update)`; publishes `state` and `updates` | account | written on the lane, read anywhere | account scope | `core:data` |
+| `AccountState` + `reduce` | the snapshot and the pure fold | value | any | store | `core:data` |
+| `FileStore` | per-file `StateFlow<File>` for observed files (§7) | account | written on the lane | account scope | `core:data` |
+| `FileDownloads` | the single arbiter of `DownloadFile`/`CancelDownloadFile` per file (§7) | account | serial | account scope | `core:data` |
+| `OpenChats` | balanced `openChat`/`closeChat`, delayed close, "is this chat open" | account | any | account scope | `core:data` |
+| `AccountSession` | per-instance setup: parameters, options, `online`, network type (§8) | instance | Default | account scope | `core:data` |
+| `Default…Repository` | read projections over `state`; commands via `ClientHolder`, returning `Either` | account | any | account scope | `core:data` when cross-feature, else `feature:x:data` |
 | `ChatHistory` + `ChatHistoryFactory` | the message window of one open chat (§6) | screen | own serial lane | ViewModel | interface in `feature:chats:domain`, implementation in `feature:chats:data` |
 | `MessageViews` | visible items → `viewMessages` (§6) | screen | Main → any | ViewModel | `feature:chats:presentation` |
 | `ChatListViewModel`, `ChatViewModel` | Orbit state; memoising mappers (§5) | screen | mapping on Default | account `ViewModelStoreOwner` | `feature:chats:presentation` |
-| `TdImageFetcher` + `Keyer` | Coil 3 bridge from `TdImage` to pixels (§7) | process | Coil, bounded | process `ImageLoader` built in `shared` | `core:tdlib`; `TdImage` in `core:domain` |
-| `NotificationController` | snapshot's notification groups → platform renderer (§9) | account | serial | account scope | `core:tdlib` + platform |
+| `TdImageFetcher` + `Keyer` | Coil 3 bridge from `TdImage` to pixels (§7) | process | Coil, bounded | process `ImageLoader` built in `shared` | `core:data`; `TdImage` in `core:domain` |
+| `NotificationController` | snapshot's notification groups → platform renderer (§9) | account | serial | account scope | `core:data` + platform |
 
 ### Relations
 
@@ -100,9 +100,9 @@ Direction is one-way: the holder pushes into the store, and the store knows noth
 reducer can be tested without TDLib, and why a late resolve in Koin can't lose updates: the store is a constructor
 parameter of the holder, so it exists before the first `send`.
 
-Only `core:tdlib` sees `TdClient`. `ClientHolder.updates` is removed from the interface: consumers get
+Only `core:data` sees `TdClient`. `ClientHolder.updates` is removed from the interface: consumers get
 `AccountStore.updates`, which is after-apply, so a consumer reacting to an update always finds `state` at least that
-new. `TdClient.updatesOf<T>()` must not leave `core:tdlib` (A2).
+new. `TdClient.updatesOf<T>()` must not leave `core:data` (A2).
 
 ---
 
@@ -190,8 +190,9 @@ capacity, `tryEmit` returns false whenever a subscriber isn't parked at that ins
 - `fun AccountState.reduce(update: Update): AccountState` is pure and returns `this` when nothing changed (B2). It lives
   in per-entity files (`ChatReducer.kt`, `UserReducer.kt`, …) with one dispatching `when`, so the single writer does
   not become one god class (A24).
-- **No `else` in the dispatching `when`**: ignored updates are listed by name. A new update in a TDLib bump is then a
-  compile error and a decision, the same effect Telegram X gets from generated `assert` stubs (03 C9).
+- **A new update type in a TDLib bump is a decision, not a silent skip.** `UpdateCoverageTest` compares `Update`'s subtypes with
+  a checked-in list and fails, the same effect Telegram X gets from generated `assert` stubs (03 C9). A compile-time `when`
+  with no `else` would need 170 listed names in production code.
 - `AuthorizationStateClosed` returns `Empty`. TDLib re-sends what the app needs on the next instance (TGX#3).
 - A field update for an unknown chat or user is ignored and logged. TDLib guarantees the order (CS§1.2), so this means
   a bug or a dropped decode (§12). Reads repair on demand with `GetChat` (§4.3), not the reducer: it stays pure.
@@ -447,7 +448,7 @@ row models" is then a convention plus review, not something the build enforces (
 
 Under B, C or D, the `ChatHistory` window and the file seam carry the mirror type instead, which is a real but contained change.
 
-**D2. Where the store lives.** Recommended: `core:tdlib`, with `DefaultAccountRepository`. Split into `core:data` when it grows past comfort;
+**D2. Where the store lives. Decided: `core:data`,** the renamed `core:tdlib`. Was recommended: `core:data`, with `DefaultAccountRepository`. Split into `core:data` when it grows past comfort;
 the holder → store direction allows that with one interface.
 
 **D3. Push.** Log in at my.telegram.org and check whether the app settings accept FCM/APNs credentials. If not, Android needs a
@@ -460,7 +461,7 @@ foreground service and iOS has no background delivery.
 | # | Scope | Done when |
 |---|---|---|
 | M0 ✅ | Fix the three compile breaks (05 §1.3). `ClientHolder` per §3, `AccountStore`, empty `reduce` skeleton. A `@Singleton` class delegating to `NativeTdLib`, so tests can swap `TdLib`. `TestKoin.kt:21` constructs the holder by hand and must change. `request` catches `SerializationException` (§10). Update stale docs (05 §7) | `ClientHolderTest` passes; test: nothing lost before first `send`, restart order, no instance started after `close()` |
-| M1 | Chat list: reducers, `ChatListOrder`, row mapper, `loadChats`, avatars with minithumbnail | Real account on all three platforms. **Measure cold-start update count and decode time (N12), sort cost (N10).** iOS on a device (N2) |
+| M1, started | Chat list: reducers, `ChatListOrder`, row mapper, `loadChats` are in. **Left:** avatars with minithumbnail, folders, typing, scope mute settings | Real account on all three platforms. **Measure cold-start update count and decode time (N12), sort cost (N10).** iOS on a device (N2) |
 | M2 | `ChatHistory` for text: all §6 rules, `OpenChats`, `MessageViews` | Permutation tests pass; scrolling recomposition budget |
 | M3 | `FileStore`, `FileDownloads`, Coil fetcher, photos | Prefetch can't downgrade a visible image; account switch shows the right images |
 | M4 | Sending: pending, succeeded, failed, retries; drafts | Stable key; no double bubble |

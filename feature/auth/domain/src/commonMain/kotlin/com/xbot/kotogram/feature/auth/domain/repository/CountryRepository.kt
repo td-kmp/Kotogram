@@ -2,8 +2,8 @@ package com.xbot.kotogram.feature.auth.domain.repository
 
 import arrow.core.Either
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
-import com.xbot.kotogram.feature.auth.domain.model.CountryInfo
-import com.xbot.kotogram.feature.auth.domain.model.PhoneNumberInfo
+import io.xbot.tdlib.api.CountryInfo
+import io.xbot.tdlib.api.PhoneNumberInfo
 
 interface CountryRepository {
     suspend fun getCountries(): Either<AuthError, List<CountryInfo>>

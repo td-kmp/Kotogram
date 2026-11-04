@@ -2,8 +2,8 @@ package com.xbot.kotogram.feature.auth.data.repository
 
 import arrow.core.Either
 import arrow.core.raise.either
+import com.xbot.kotogram.core.data.client.ClientHolder
 import com.xbot.kotogram.core.domain.model.AccountId
-import com.xbot.kotogram.core.tdlib.ClientHolder
 import com.xbot.kotogram.feature.auth.data.mapper.request
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import com.xbot.kotogram.feature.auth.domain.model.PasskeyCredential

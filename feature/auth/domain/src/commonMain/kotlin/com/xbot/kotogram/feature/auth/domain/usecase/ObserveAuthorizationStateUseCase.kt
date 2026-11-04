@@ -1,8 +1,8 @@
 package com.xbot.kotogram.feature.auth.domain.usecase
 
 import com.xbot.kotogram.core.domain.model.AccountId
-import com.xbot.kotogram.core.domain.model.AuthorizationState
 import com.xbot.kotogram.feature.auth.domain.repository.AuthRepository
+import io.xbot.tdlib.api.AuthorizationState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.koin.core.annotation.Factory

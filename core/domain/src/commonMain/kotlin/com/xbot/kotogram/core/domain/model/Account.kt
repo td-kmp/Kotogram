@@ -1,5 +1,7 @@
 package com.xbot.kotogram.core.domain.model
 
+import io.xbot.tdlib.api.AuthorizationState
+
 /** What TDLib reports about an [AccountId]. */
 data class Account(
     val id: AccountId,

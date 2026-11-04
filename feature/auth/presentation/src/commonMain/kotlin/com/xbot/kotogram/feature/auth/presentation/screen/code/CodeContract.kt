@@ -1,8 +1,18 @@
 package com.xbot.kotogram.feature.auth.presentation.screen.code
 
-import com.xbot.kotogram.core.domain.model.AuthenticationCodeInfo
-import com.xbot.kotogram.core.domain.model.AuthenticationCodeType
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
+import io.xbot.tdlib.api.AuthenticationCodeInfo
+import io.xbot.tdlib.api.AuthenticationCodeType
+import io.xbot.tdlib.api.AuthenticationCodeTypeCall
+import io.xbot.tdlib.api.AuthenticationCodeTypeFirebaseAndroid
+import io.xbot.tdlib.api.AuthenticationCodeTypeFirebaseIos
+import io.xbot.tdlib.api.AuthenticationCodeTypeFlashCall
+import io.xbot.tdlib.api.AuthenticationCodeTypeFragment
+import io.xbot.tdlib.api.AuthenticationCodeTypeMissedCall
+import io.xbot.tdlib.api.AuthenticationCodeTypeSms
+import io.xbot.tdlib.api.AuthenticationCodeTypeSmsPhrase
+import io.xbot.tdlib.api.AuthenticationCodeTypeSmsWord
+import io.xbot.tdlib.api.AuthenticationCodeTypeTelegramMessage
 
 internal data class CodeScreenState(
     val info: AuthenticationCodeInfo? = null,
@@ -26,21 +36,21 @@ internal sealed interface CodeScreenAction {
 /** The code's length when TDLib knows it; words, phrases and flash calls have none. */
 internal val AuthenticationCodeType.length: Int?
     get() = when (this) {
-        is AuthenticationCodeType.TelegramMessage -> length
+        is AuthenticationCodeTypeTelegramMessage -> length
 
-        is AuthenticationCodeType.Sms -> length
+        is AuthenticationCodeTypeSms -> length
 
-        is AuthenticationCodeType.Call -> length
+        is AuthenticationCodeTypeCall -> length
 
-        is AuthenticationCodeType.MissedCall -> length
+        is AuthenticationCodeTypeMissedCall -> length
 
-        is AuthenticationCodeType.Fragment -> length
+        is AuthenticationCodeTypeFragment -> length
 
-        is AuthenticationCodeType.FirebaseAndroid -> length
+        is AuthenticationCodeTypeFirebaseAndroid -> length
 
-        is AuthenticationCodeType.FirebaseIos -> length
+        is AuthenticationCodeTypeFirebaseIos -> length
 
-        is AuthenticationCodeType.SmsWord,
-        is AuthenticationCodeType.SmsPhrase,
-        is AuthenticationCodeType.FlashCall -> null
+        is AuthenticationCodeTypeSmsWord,
+        is AuthenticationCodeTypeSmsPhrase,
+        is AuthenticationCodeTypeFlashCall -> null
     }

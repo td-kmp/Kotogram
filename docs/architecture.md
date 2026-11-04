@@ -1,13 +1,13 @@
-# Kotogram — Architecture (KTG-2)
+# Kotogram — Architecture
 
-Status: **accepted; migration done on `feature/KTG-2-td-client-api`** (§10). It fixes the module layout, DI, navigation and naming rules that every
+Status: **accepted.** Accounts and scopes are in [design/accounts.md](design/accounts.md), the path from an update to a pixel in [design/messaging-core.md](design/messaging-core.md). It fixes the module layout, DI, navigation and naming rules that every
 feature follows. Where the current code disagrees, the code is migrated (§10). The naming and
 navigation rules are borrowed from the user's AnilibriaRefresh project (`AGENTS.md`,
 `shared-ui/navigation`) and adapted to Kotogram's layered features.
 
 Stack: Kotlin 2.4.20, CMP 1.12.1, Koin 4.2.2 + Koin Compiler Plugin 1.2.1 (annotations + compiler
 DSL), `koin-compose-navigation3`, Navigation 3 (runtime 1.2.0, JetBrains `navigation3-ui`
-1.2.0-rc01), Orbit MVI 12, TDLib via `tdlib-kmp`.
+1.2.0-rc01), Orbit MVI 12, TDLib via `tdlib-kmp`. Targets: Android, iOS, JVM desktop, web (`wasmJs`).
 
 Legend: **[V]** verified against sources in this session (library sources and docs, reference
 projects). **[U]** unverified, check before relying on it.
@@ -20,12 +20,12 @@ projects). **[U]** unverified, check before relying on it.
    features may see), `domain`, `data` and `presentation`. A feature sees other features only through
    their `api`.
 2. **One assembly point**, `:shared`: the `@KoinApplication`, the root `NavDisplay` and the iOS
-   framework. The platform shells `:android-app` and `:jvm-app` only start Koin and host the UI.
+   framework. The platform shells `:android-app`, `:jvm-app` and `:web-app` only start Koin and host the UI.
 3. **DI is Koin with the compiler plugin.** Annotations (`@Module @Configuration @ComponentScan`,
    `@Singleton`, `@Factory`, `@KoinViewModel`, `@Scope`/`@Scoped`) declare everything other code
    depends on. The DSL is used only for leaf contributions: navigation entries and NavKey
    serializers. Compile safety validates the whole graph at `startKoin` (§2.5).
-4. **Lifetimes are Koin scopes.** Each Telegram account is a Koin scope (`AccountScope`), the
+4. **Lifetimes are Koin scopes.** Each Telegram account is a Koin scope (`AccountId`), the
    documented "session scope" pattern **[V]**. A scoped class that owns a resource closes it from a
    `ScopeCallback` on its own scope. `stopKoin()` closes every scope, root included, so this also
    runs at exit **[V, Koin sources + test]**.
@@ -46,15 +46,15 @@ projects). **[U]** unverified, check before relying on it.
 ```
 :android-app                 Android shell: Application, Activity
 :jvm-app                     Desktop shell: main(), Nucleus window
+:web-app                     Web shell: main(), ComposeViewport, index.html
 :shared                      ASSEMBLY POINT: @KoinApplication, root App composable, iOS framework
 ios-app/                     Xcode project, thin Swift host (not a Gradle module)
 
-:core:domain                 cross-feature models and interfaces             (today :shared:domain)
-:core:tdlib                  TdClient adapter, TdAccounts, AccountScope, TdlibEnvironment (today :shared:data)
+:core:domain                 cross-feature interfaces; exposes TDLib's generated classes as the model
+:core:data                   ClientHolder, AccountStore, accounts, TDLib environment, the web worker
 :core:navigation:api         NavKey, Navigator, LocalNavigator, navigation helpers
 :core:navigation:impl        rememberNavigator, NavigationState, deep links
 :core:designsystem           KotogramTheme, tokens, components used by 2+ features
-:core:resources              shared Compose resources (Res), if more than one module needs them
 
 :feature:<name>:api
 :feature:<name>:domain
@@ -62,17 +62,30 @@ ios-app/                     Xcode project, thin Swift host (not a Gradle module
 :feature:<name>:presentation
 ```
 
+`core:data` is laid out by entity, under `com.xbot.kotogram.core.data`:
+
+```
+account/      DefaultAccountRepository, AccountStorage, scope lookups
+client/       ClientHolder, AccountLifecycle, TdLibProvider, UpdateLane, TdlibLog
+environment/  TdlibEnvironment, account directories
+store/        AccountStore, AccountState, ChatListOrder, reducers
+di/           CoreDataModule
+```
+
+Its source sets split on where TDLib runs: `nonWebMain` (in the process) and `webMain` (in a Web Worker,
+`core/data/worker`).
+
 ### 1.1 Dependency rules
 
 | Module | May depend on | Must not contain |
 |---|---|---|
 | `feature:x:api` | `core:navigation:api`, `core:domain` (keys carrying domain types), serialization | screens, ViewModels, logic |
-| `feature:x:domain` | `core:domain`, coroutines, `koin-annotations` | Compose, TDLib types |
-| `feature:x:data` | its `domain`, `core:domain`, `core:tdlib` | Compose, ViewModels |
-| `feature:x:presentation` | its `api` and `domain`, other features' **`api` only**, `core:designsystem`, `core:navigation:api` | `data`, TDLib types |
+| `feature:x:domain` | `core:domain`, coroutines, `koin-annotations` | Compose, `io.xbot.tdlib.client.*` |
+| `feature:x:data` | its `domain`, `core:domain`, `core:data` | Compose, ViewModels |
+| `feature:x:presentation` | its `api` and `domain`, other features' **`api` only**, `core:designsystem`, `core:navigation:api` | `data`, `io.xbot.tdlib.client.*` |
 | `core:*` | other `core:*`, no cycles | anything feature-specific |
 | `shared` | everything | business logic |
-| `android-app`, `jvm-app` | `shared` | DI declarations, UI |
+| `android-app`, `jvm-app`, `web-app` | `shared` | DI declarations, UI |
 
 - `presentation` never sees `data`. They meet only in the Koin graph started by `shared`.
 - A model or interface needed by two features moves to `core:domain`. It is never imported from
@@ -101,7 +114,7 @@ ios-app/                     Xcode project, thin Swift host (not a Gradle module
 - **Classes are annotated directly**:
   - `@Factory` on use cases;
   - `@Singleton` on app-wide services;
-  - `@Scope(AccountScope::class) @Scoped` on anything bound to one account (repositories, caches);
+  - `@Scope(AccountId::class) @Scoped` on anything bound to one account (repositories, caches);
   - `@KoinViewModel` on ViewModels, which live in `presentation`.
 - **Implementations stay `internal`.** `@Singleton`/`@Scoped` on an internal class binds it to the
   interface it implements.
@@ -115,37 +128,15 @@ ios-app/                     Xcode project, thin Swift host (not a Gradle module
 
 Everything else in the feature uses annotations.
 
-### 2.4 Account scope and lifetimes (superseded: see [design/sessions.md](design/sessions.md))
+### 2.4 Account scope and lifetimes
 
 ```
-root (app)            @Singleton: TdAccounts, TdlibEnvironment, app CoroutineScope
- └─ AccountScope      one Koin scope per account (scope id = account id):
-                      TdClient, the account CoroutineScope, Td*Repository, update caches, account ViewModels
+root (app)            @Singleton: AccountRepository, AccountStorage, TdlibEnvironment, TdLibProvider, UpdateLane
+ └─ AccountId scope   one Koin scope per account: ClientHolder, AccountStore, repositories, ViewModels
 ```
 
-- **`TdAccounts`** (`core:tdlib`, `@Singleton`, binds `core:domain` `SessionRepository`) owns
-  the accounts, one directory each (`<tdlib>/account-N`). It opens an account with
-  `koin.createScope<AccountScope>(accountId)`, declares the `Account` in it, and closes the scope
-  when the account logs out (then deletes its directories and opens another one).
-- **`TdSession`** (`@Scope(AccountScope::class) @Scoped`) is the account's TDLib session. It answers
-  setTdlibParameters with the account's directories. Before authorization it replaces the instance
-  after `Closed`: the QR → phone switch logs out, and the login flow keeps running. After
-  authorization, `Closed` means the account logged out (`isLoggedOut`).
-- **Closing.** `TdSession` registers a `ScopeCallback` on its own scope (it takes the `Scope` as a
-  constructor parameter) and closes TDLib when the scope closes: on log out, and on `stopKoin()` at
-  exit, which closes every scope **[V: `Koin.close()` → `ScopeRegistry.close()` closes all scopes;
-  `TdAccountsTest`]**. The desktop shell's shutdown hook calls `stopKoin()`. There is no DSL `onClose`
-  and no `Set<AutoCloseable>`.
-- **Account-bound definitions** use `@Scope(AccountScope::class)`: `Td*Repository` (`@Scoped`), use
-  cases (`@Factory`) and ViewModels (`@KoinViewModel`). A root-level definition can't depend on a
-  scoped one.
-- **UI:** `RootNavigation` looks up the account scope (scope id = account id), provides it with
-  `UnboundKoinScope` (the scope is closed by `TdAccounts`, not by composition) and provides
-  `AccountViewModelStoreOwner` (`@Scoped`, cleared from its `ScopeCallback`) as
-  `LocalViewModelStoreOwner`. Screens of one account never reuse another account's ViewModels, and
-  they survive configuration changes because the store lives in the Koin scope **[V: desktop run]**.
-- **`TdClient.create()` stays `suspend`.** `TdSession` creates its clients in a coroutine, so Koin
-  never has to construct a `TdClient`.
+An account is one login's life: see [design/accounts.md](design/accounts.md). Scopes are opened and closed only by
+`DefaultAccountRepository`; composition only provides one (`UnboundKoinScope`) and reports when it stopped showing it.
 
 ### 2.5 Compile safety: rules learned in this migration
 
@@ -252,7 +243,7 @@ val chatsFeatureModule = module {
 
 | Kind | Name | Rules |
 |---|---|---|
-| Model | `Chat`, `AuthState` | immutable `data class` / `sealed interface`; no TDLib types |
+| Model | `Chat`, `AuthorizationState` | TDLib's generated classes (`io.xbot.tdlib.api`), not copies. Own types only for what TDLib doesn't have: `AccountId`, `ChatListEntry`, errors |
 | Repository | `{Noun}Repository` | interface; `Flow` to observe, `suspend` for one-shot calls |
 | Use case | `{Verb}{Noun}UseCase` | concrete `@Factory` class, no interface and no `Default` prefix; `operator fun invoke`; input as a nested `data class Params` when there is more than one value |
 | Error | `{Feature}Error` | mapped from `TdException` in data |
@@ -262,12 +253,12 @@ repositories.
 
 ## 5. Data layer
 
-- `Default{Noun}Repository` is `internal` and annotated (`@Scope(AccountScope::class) @Scoped`). It
-  implements the domain interface on top of the account's `TdClient`.
-- Mappers live in `mapper/{Type}Mapper.kt` as `fun TdType.toDomain()`. TDLib types never leave
-  `data`.
-- Each account has **one** collector of `TdClient.updates` that builds the caches, because TDLib
-  requires in-order processing. Repositories read the caches and don't collect `updates` themselves.
+- `Default{Noun}Repository` is `internal` and annotated (`@Scope(AccountId::class) @Scoped`). Commands go through
+  `ClientHolder`, reads through `AccountStore.state`.
+- There is no mapping layer: TDLib's generated classes are the model.
+- Each account has **one** collector of `TdClient.updates`, inside `ClientHolder`, because TDLib requires in-order
+  processing. It feeds `AccountStore`. Everyone else reads the store. See
+  [design/messaging-core.md](design/messaging-core.md).
 
 ---
 
@@ -359,7 +350,7 @@ internal class PhoneViewModel(
 - Its public surface is `container` and a single `fun onAction(action)`.
 - One-off events (snackbar, a navigation request) are side effects, not state. Use `Nothing` when a
   screen has none.
-- No Compose types and no `Navigator`. Account-bound ViewModels add `@Scope(AccountScope::class)`.
+- No Compose types and no `Navigator`. Account-bound ViewModels add `@Scope(AccountId::class)`.
 
 ---
 
@@ -382,7 +373,7 @@ internal class PhoneViewModel(
 | Repository | `{Noun}Repository`, impl `Default{Noun}Repository` | `DefaultAuthRepository` |
 | Koin, annotated | `{Feature}{Layer}Module` | `AuthDataModule` |
 | Koin, DSL | `{feature}FeatureModule` (`val`) | `authFeatureModule` |
-| Scope | `{Name}Scope` | `AccountScope` |
+| Scope | the scope's source type | `AccountId` |
 | Boolean state | `is…`, `can…`, `has…` | `isSubmitting`, `canSubmit` |
 
 ## 8. Code style
@@ -394,45 +385,9 @@ internal class PhoneViewModel(
   public API.
 - Before committing, run `./gradlew spotlessApply`, then `:detekt`.
 
-## 9. Verification and open items
+## 9. Status
 
-Verified in this migration:
-
-- `@Scope(AccountScope::class)` together with `@KoinViewModel` compiles under `compileSafety = true`,
-  and a ViewModel declared that way resolves at runtime through a `navigation<AuthRoute>` entry inside
-  `UnboundKoinScope` **[V: desktop run, QR screen with a live `tg://login` link]**.
-- A missing definition fails the build (`KOIN-D001`), incremental builds included.
-- The QR → phone restart keeps the account, and closing Koin closes TDLib **[V: `TdAccountsTest`]**.
-- Desktop exits cleanly on SIGTERM (`stopKoin()` → scope callbacks → TDLib closed).
-
-Open:
-
-- Session behavior to reproduce from Telegram X (eager startup, pausing idle accounts, switch rules,
-  log out order, existing-number check, `other_user_ids`): see
-  [research/telegram-x-sessions.md](research/telegram-x-sessions.md) §8 and the comparison of seven
-  TDLib clients in [research/tdlib-clients.md](research/tdlib-clients.md) §7.
-- **[U]** Android and iOS runtime. Both build, but they haven't been run on a device in this
-  migration.
-- Switching between several accounts in the UI. `TdAccounts` supports several on disk but shows one.
-- The pre-migration single database in `<tdlib>/` (`td.binlog`, `db.sqlite`) is ignored. Accounts live
-  in `<tdlib>/account-N`, so existing installs log in again.
-- On iOS, compile safety didn't find `koinInject<TdAccounts>()` while the JVM check did. The UI now
-  looks up the scope by id instead. Worth a minimal repro for the Koin compiler plugin.
-- Whether `:core:resources` is needed.
-
----
-
-## 10. Migration status
-
-1. ✅ DI back on Koin, with the compiler plugin and annotations. Metro, `AppGraph` and the
-   `Set<AutoCloseable>` hook are removed.
-2. ✅ Modules: `android-app`, `jvm-app`, `shared` at the top level (the user prefers them there), `core:{domain,tdlib}`.
-3. ✅ Created `core:navigation:{api,impl}`, `core:designsystem` and `feature:auth:api`. The root graph
-   is built from Koin `navigation<…>` entries.
-4. ✅ Auth follows §6 and §7: `screen/<screen>/`, `XScreen`/`XScreenContent`, `XScreenAction` +
-   `onAction`, `AuthStep`.
-5. ✅ Accounts per [design/sessions.md](design/sessions.md): `ClientHolder`, `DefaultAccountRepository`, `@Scope(AccountId::class)`, `Either` repositories, domain models 1:1 with TDLib, the login steps as graph entries with a shared `AuthViewModel`. `feature:chats` is a UI stub.
-6. ⏳ Port the `TdClient` prototype into `tdlib-kmp` (separate repository).
+Current status and open items are in [handoff.md](handoff.md).
 
 ---
 

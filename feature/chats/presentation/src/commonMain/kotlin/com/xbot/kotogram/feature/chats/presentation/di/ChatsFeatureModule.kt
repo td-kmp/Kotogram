@@ -15,7 +15,6 @@ import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
 
-/** UI-only stub: the screens show sample data until the chats feature gets its domain and data. */
 @OptIn(KoinExperimentalAPI::class)
 val chatsFeatureModule = module {
     polymorphic<NavKey> {

@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     alias(libs.plugins.android.multiplatform.library)
@@ -21,11 +22,17 @@ kotlin {
 
     jvm()
 
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        browser()
+    }
+
     jvmToolchain(21)
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     dependencies {
         api(libs.kotlinx.coroutines.core)
         api(libs.arrow.core)
+        api(libs.tdlib.client)
     }
 }

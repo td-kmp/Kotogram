@@ -2,12 +2,13 @@ package com.xbot.kotogram.shared.root
 
 import androidx.lifecycle.ViewModel
 import com.xbot.kotogram.core.domain.model.AccountId
-import com.xbot.kotogram.core.domain.model.AuthorizationState
 import com.xbot.kotogram.core.domain.model.isLoginStep
 import com.xbot.kotogram.core.domain.repository.AccountRepository
 import com.xbot.kotogram.core.navigation.NavKey
 import com.xbot.kotogram.feature.auth.api.AuthRoute
 import com.xbot.kotogram.feature.chats.api.ChatListRoute
+import io.xbot.tdlib.api.AuthorizationState
+import io.xbot.tdlib.api.AuthorizationStateReady
 import org.koin.core.annotation.KoinViewModel
 import org.orbitmvi.orbit.OrbitContainerHost
 import org.orbitmvi.orbit.viewmodel.orbitContainer
@@ -54,7 +55,7 @@ internal fun routeOf(
     current: NavKey,
     sameAccount: Boolean
 ): NavKey = when {
-    authorizationState == AuthorizationState.Ready -> ChatListRoute
+    authorizationState == AuthorizationStateReady -> ChatListRoute
 
     authorizationState.isLoginStep -> AuthRoute
 
