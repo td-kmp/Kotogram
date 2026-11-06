@@ -6,6 +6,7 @@
     <string name="login_by_qr">Вход по QR-коду</string>
 
     <string name="qr_title">Быстрый вход по QR-коду</string>
+    <string name="qr_code_description">QR-код для входа</string>
     <string name="qr_step_1">Запустите Telegram на телефоне</string>
     <string name="qr_step_2">Откройте Настройки &gt; Устройства &gt; Подключить устройство</string>
     <string name="qr_step_3">Для подтверждения направьте камеру телефона на этот экран</string>

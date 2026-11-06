@@ -34,6 +34,8 @@ androidx-navigationevent = "1.1.0"
 # Libraries
 tdlib = "1.8.69-1.0.0-alpha02"
 calf = "0.14.0"
+compottie = "2.3.3"
+qrose = "1.3.1"
 nucleus = "2.5.18"
 orbit = "12.0.1"
 koin = "4.2.2"
@@ -88,6 +90,10 @@ androidx-navigationevent-compose = { group = "org.jetbrains.androidx.navigatione
 # Libraries
 tdlib-client = { group = "io.github.xephosbot", name = "tdlib-kmp-client", version.ref = "tdlib" }
 calf-ui = { group = "com.mohamedrejeb.calf", name = "calf-ui", version.ref = "calf" }
+compottie = { group = "io.github.alexzhirkevich", name = "compottie", version.ref = "compottie" }
+compottie-dot = { group = "io.github.alexzhirkevich", name = "compottie-dot", version.ref = "compottie" }
+qrose = { group = "io.github.alexzhirkevich", name = "qrose", version.ref = "qrose" }
+qrose-encoder-matrix = { group = "io.github.alexzhirkevich", name = "qrose-encoder-matrix", version.ref = "qrose" }
 calf-permissions = { group = "com.mohamedrejeb.calf", name = "calf-permissions", version.ref = "calf" }
 calf-file-picker = { group = "com.mohamedrejeb.calf", name = "calf-file-picker", version.ref = "calf" }
 nucleus-application = { group = "dev.nucleusframework", name = "nucleus.nucleus-application", version.ref = "nucleus" }

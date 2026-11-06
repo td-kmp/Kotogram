@@ -6,6 +6,7 @@
     <string name="login_by_qr">Log in by QR code</string>
 
     <string name="qr_title">Log in to Telegram by QR code</string>
+    <string name="qr_code_description">QR code to log in</string>
     <string name="qr_step_1">Open Telegram on your phone</string>
     <string name="qr_step_2">Go to Settings &gt; Devices &gt; Link Desktop Device</string>
     <string name="qr_step_3">Point your phone at this screen to confirm login</string>

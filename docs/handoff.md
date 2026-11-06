@@ -26,6 +26,7 @@ Next task number after it: **KTG-8**.
 - **The login flow is a `NavDisplay` of its own** inside the `AuthRoute` entry, over a back stack `AuthViewModel` derives from TDLib (`AuthViewModelTest`). Its steps are `AuthStep` in `feature:auth:api`; the screens use a plain `Scaffold` each. The side effects, `AuthEntry` and `clearSteps` are gone.
 - **Navigation is in Koin again**, as in AnilibriaRefresh: `navigation<Route>` and `polymorphic<NavKey>` in each impl module, `koinEntryProvider()` in `shared`. `FeatureNavigation` (KTG-6) is gone.
 - **`LoginFlow`** replaces `LoginCapabilities`: `PhoneNumberOnly` on Android and iOS, `QrCodeFirst` on desktop and web, from one `platformLoginFlow` in `feature:auth:data`.
+- **QR code** in `core:designsystem` (`component/QrCode`): qrose draws the code with an empty cutout for a future icon; Telegram for macOS's matrix animation plays until it (compottie, `files/qr_placeholder.lottie`). Licensing of that animation: [licensing.md](licensing.md).
 - **Start-up as in Telegram's apps:** a blank `SplashScreen`; Android holds its system splash (`core-splashscreen`) while `isStarting()`, i.e. until TDLib reports where the shown account stands, and the web page has the theme's background while the wasm loads.
 - **Polish:** comments only on hacks and workarounds. Each screen keeps its state, actions and side effects in files of their own, and the splash screen moved to `shared/screen/splash`.
 - **New:** a database key per account on Android (Keystore), `android:allowBackup="false"`, and data under `accounts/N/{db,files}`. Old `tdlib/account-N` directories aren't migrated, so an existing install logs in again.
@@ -59,7 +60,7 @@ Waiting on the developer: **D3, push.** Log in at my.telegram.org and check whet
 3. Try it with a real account, and get D3.
 4. Finish M1: avatars (`FileStore`, `FileDownloads`, Coil fetcher, §7 of [messaging-core.md](design/messaging-core.md)), folders, typing, scope mute settings. Its entities use the old names: `FileStore` and the like become `AccountUpdates` followers.
 5. M2: `ChatHistory` (design §6).
-6. Web: the QR screen shows the link as text everywhere, not an image. `index.html` has no favicon.
+6. Web: `index.html` has no favicon.
 
 ## What is not done, or weak
 

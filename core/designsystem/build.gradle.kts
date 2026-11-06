@@ -37,7 +37,12 @@ kotlin {
         api(libs.compose.foundation)
         api(libs.compose.ui)
         api(libs.compose.material3)
+        implementation(projects.core.resources)
         implementation(libs.compose.preview)
+        implementation(libs.compottie)
+        implementation(libs.compottie.dot)
+        implementation(libs.qrose)
+        implementation(libs.qrose.encoder.matrix)
     }
 }
 

@@ -7,12 +7,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -27,8 +25,10 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.core.designsystem.component.QrCode
 import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.login_by_phone
+import com.xbot.kotogram.core.resources.qr_code_description
 import com.xbot.kotogram.core.resources.qr_step_1
 import com.xbot.kotogram.core.resources.qr_step_2
 import com.xbot.kotogram.core.resources.qr_step_3
@@ -80,11 +80,10 @@ private fun QrScreenContent(
                 style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center
             )
-            if (state.link == null) {
-                CircularProgressIndicator(Modifier.size(48.dp))
-            } else {
-                Text(state.link, style = MaterialTheme.typography.bodySmall)
-            }
+            QrCode(
+                data = state.link,
+                contentDescription = stringResource(Res.string.qr_code_description)
+            )
             state.error?.let { error ->
                 Text(
                     text = stringResource(error.localizedMessage()),
