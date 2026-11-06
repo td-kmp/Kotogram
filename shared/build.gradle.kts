@@ -47,6 +47,7 @@ kotlin {
             implementation(projects.core.account)
             implementation(projects.core.designsystem)
             implementation(projects.core.navigation.impl)
+            implementation(projects.core.resources)
             implementation(projects.feature.auth.api)
             implementation(projects.feature.auth.data)
             implementation(projects.feature.auth.impl)

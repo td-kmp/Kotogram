@@ -1,3 +1,5 @@
+@file:Suppress("ForbiddenImport")
+
 package com.xbot.kotogram.core.resources
 
 import androidx.compose.runtime.Composable
@@ -5,7 +7,16 @@ import org.jetbrains.compose.resources.PluralStringResource
 import org.jetbrains.compose.resources.getPluralString
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.pluralStringResource
-import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.stringResource as bundledStringResource
+
+@Composable
+fun stringResource(
+    resource: org.jetbrains.compose.resources.StringResource,
+    vararg formatArgs: Any
+): String {
+    val bundled = bundledStringResource(resource, *formatArgs)
+    return languagePackString(resource.key)?.formatTelegram(formatArgs) ?: bundled
+}
 
 @Composable
 fun stringResource(res: StringResource): String = when (res) {

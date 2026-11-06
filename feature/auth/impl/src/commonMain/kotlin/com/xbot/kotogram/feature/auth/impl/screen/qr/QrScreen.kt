@@ -40,17 +40,16 @@ import androidx.compose.ui.unit.sp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.designsystem.component.QrCode
 import com.xbot.kotogram.core.resources.Res
-import com.xbot.kotogram.core.resources.login_by_phone
-import com.xbot.kotogram.core.resources.qr_code_description
-import com.xbot.kotogram.core.resources.qr_step_1
-import com.xbot.kotogram.core.resources.qr_step_2
-import com.xbot.kotogram.core.resources.qr_step_3
-import com.xbot.kotogram.core.resources.qr_title
+import com.xbot.kotogram.core.resources.login_qr1_help1
+import com.xbot.kotogram.core.resources.login_qr1_help3
+import com.xbot.kotogram.core.resources.login_qr2_help2
+import com.xbot.kotogram.core.resources.login_qr_cancel
+import com.xbot.kotogram.core.resources.login_qr_title
 import com.xbot.kotogram.core.resources.stringResource
+import com.xbot.kotogram.core.resources.voiceover_login_qrcode
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import com.xbot.kotogram.feature.auth.impl.extensions.localizedMessage
 import kotlin.time.Duration.Companion.seconds
-import org.jetbrains.compose.resources.stringResource
 import org.orbitmvi.orbit.compose.collectAsState
 
 @Composable
@@ -89,11 +88,11 @@ private fun QrScreenContent(
             ) {
                 QrCode(
                     data = state.link,
-                    contentDescription = stringResource(Res.string.qr_code_description)
+                    contentDescription = stringResource(Res.string.voiceover_login_qrcode)
                 )
                 Spacer(Modifier.height(QrScreenTokens.BetweenHeader))
                 Text(
-                    text = stringResource(Res.string.qr_title),
+                    text = stringResource(Res.string.login_qr_title),
                     style = QrScreenTokens.TitleStyle,
                     color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
@@ -114,7 +113,7 @@ private fun QrScreenContent(
                 // 20 to the label, as on macOS: the button's own padding gives the other 10.
                 Spacer(Modifier.height(QrScreenTokens.BeforeButton))
                 TextButton(onClick = onPhoneLoginClick) {
-                    Text(stringResource(Res.string.login_by_phone))
+                    Text(stringResource(Res.string.login_qr_cancel))
                 }
             }
         }
@@ -127,7 +126,7 @@ private fun QrSteps(modifier: Modifier = Modifier) {
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(QrScreenTokens.BetweenSteps)
     ) {
-        listOf(Res.string.qr_step_1, Res.string.qr_step_2, Res.string.qr_step_3)
+        listOf(Res.string.login_qr1_help1, Res.string.login_qr2_help2, Res.string.login_qr1_help3)
             .forEachIndexed { index, step ->
                 QrStep(number = index + 1, text = stringResource(step))
             }

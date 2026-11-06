@@ -1,6 +1,6 @@
 # Kotogram — strings from Telegram's language packs
 
-Status: **design, not implemented.** Open questions at the end; the first one decides whether this can ship.
+Status: **first step implemented** (the QR screen's strings); the language list, switching and plurals are not. Open questions at the end.
 
 ## What the reference clients do
 
@@ -23,53 +23,61 @@ What the user sees there: on a cold start the pack is already in the database, s
 ## Design (our own, after Telegram X and Unigram)
 
 ```
-core:account
-  Localization          the chosen pack: strings, apply(id), suggestion; one per app, not per account
-  AccountManager.open   sets the three options on every new client, before its parameters
-  AppSettingsStore      language_pack_id in the same DataStore as the registry
 core:resources
-  LanguagePack          a read interface: get(key) -> value; LocalLanguagePack, null = bundled only
-  stringResource(...)   pack first, bundled second; the only entry to strings
-  TelegramFormat        %@ %1$@ %d %1$d %% → arguments
+  langpack/macos-keys.txt   macOS's 9260 keys, one per line (licensing.md)
+  generateLanguagePackKeys  Gradle: LanguagePackKeys, resource name -> pack key, for our names only
+  LanguagePack              revision + suspend string(key); LocalLanguagePack, null = bundled only
+  stringResource(res, args) the pack's string for res.key, else the bundled one of the same name
+  formatTelegram            %1$@ %@ %1$d %d %% and ** of macOS's strings
+core:account
+  Localization              one per app: getLanguagePackString through TdLib.execute, a cache, a revision
+  LanguagePackOptions       an AccountUpdates follower: the three options, updateLanguagePackStrings
 shared
-  App                   provides LocalLanguagePack and the layout direction; waits for the pack on start
+  App                       provides LocalLanguagePack from Localization
 ```
+
+### Keys
+
+- **Resource names are snake_case**: the macOS key lowercased with `.` as `_`, `Login.QR.Title` → `login_qr_title`. The rule maps all 9260 macOS keys apart (no two meet); the 59 Interface Builder ids (`1Xt-HY-uBw.title`) are left out of the list.
+- **The pack key can't be read back** from a snake_case name, and TDLib's keys are case-sensitive, so `generateLanguagePackKeys` writes `LanguagePackKeys` from `langpack/macos-keys.txt` and the names in `values/strings.xml`. A name with no macOS key is ours and is never looked up.
+- **The bundled English is macOS's own text**; other bundled languages (`values-ru`) are what shows before the pack has arrived.
+- New macOS keys: rebuild `macos-keys.txt` from telegram-macos's `Telegram-Mac/en.lproj/Localizable.strings` (UTF-16).
 
 ### Where the pack lives
 
-- **`core:account`**, because only it talks to `TdClient`. `Localization` is a root singleton in `accountsModule`, like `AccountManager`: the pack is the app's, every client only shares its database.
-- **Options.** `AccountManager.open` sends `SetOption` for `language_pack_database_path`, `localization_target` and, if one is chosen, `language_pack_id` right after `TdClient.create`. TDLib queues them until `setTdlibParameters`. Every client gets them, as in Telegram X and Unigram.
-- **Database path:** `<app data>/langpack` next to `accounts`; on the web `/tdlib/langpack`, inside the worker's IndexedDB like the accounts. Test DC gets `langpack-test`, as accounts get `accounts-test` (see question 2).
-- **The chosen pack** is our own state, `language_pack_id` in the registry's DataStore. TDLib's option is per client, and the app needs the value before any client runs. Telegram X (`Settings`) and Unigram (`AppSettings`) keep it the same way. `null` means none chosen: bundled strings in the system language.
-- **Loading.** `strings: StateFlow<LanguagePack?>` is filled by one `getLanguagePackStrings(id, emptyList())` through any running client: from the database when the pack is full, else downloaded. A pack with a `base_language_pack_id` is merged over its base. `tdlib-kmp`'s `TdLib.execute` is `suspend` (the web runs TDLib in a worker), so lookups during composition read this map, not TDLib.
-- **Updates.** `updateLanguagePackStrings` of the chosen pack patches the map; with empty `strings` it reloads. Every client may deliver it; applying it twice changes nothing.
-- **Switching** (`apply(id)`), as Telegram X: `synchronizeLanguagePack(id)` and its base, `language_pack_id` on every client, save, reload the map. Compose recomposes every string at once.
-- **Suggestion.** `suggested_language_pack_id` (an `updateOption` of any client) and its `LanguagePackInfo` are exposed for a later "Continue in …" on the login screen.
+- **`core:account`**, the only module that talks to TDLib. `Localization` is a root singleton in `accountsModule`, like `AccountManager`: the pack belongs to the app, every client only shares its database.
+- **Options**, as Telegram X and Unigram: `LanguagePackOptions` gives every account's client `language_pack_database_path`, `localization_target` = `macos` and `language_pack_id`. It waits until the client is past `authorizationStateWaitTdlibParameters`: the first request starts an instance, and that stays `AccountManager`'s. TDLib then downloads the whole pack once and keeps it.
+- **Database:** `AccountStorage.languagePackDatabase`, `<accounts root>/langpack`; the root is `accounts-test` on the test DC, and `/tdlib/…` inside the worker's IndexedDB on the web.
+- **Language:** the system language (`TdlibConfig.systemLanguageCode`) for now. A chosen one needs a store of our own once there is a screen to choose it (Telegram X keeps it in `Settings`, Unigram in `AppSettings`).
+- **Reading:** `Localization.string(key)` runs `getLanguagePackString` through `TdLib.execute`, offline from the database, and caches the answer; null until the pack has it.
+- **Updates:** `updateLanguagePackStrings` of our target and language empties the cache and raises `revision`. TDLib sends it after the first full download too (`is_diff || (new_is_full && is_first)`).
 
-### Reading a string
+### Reading a string in Compose
 
-- **Keys.** A resource name is the pack key with `.` written as `__`: `Login.QR.Title` → `Login__QR__Title`. macOS's 9356 keys never contain `__`, so the mapping goes both ways; besides 59 Interface Builder ids (`1Xt-HY-uBw.title`), every key is letters, digits, `.` and `_`. Strings Telegram doesn't have keep ordinary names and simply never match. The bundled English is macOS's own text.
-- **`stringResource(Res.string.x, vararg args)`** in `core:resources` reads `LocalLanguagePack.current?.get(key)`, else CMP's `stringResource`. CMP itself hides a `suspend` loader the same way (`rememberResourceState`: `runBlocking` on Android, JVM and iOS; a default first and the value later on the web); `runBlocking` is out of common code here, so the map is the synchronous part. The `StringResource` from AnilibriaRefresh resolves through it too.
-- **One entry.** A detekt `ForbiddenImport` keeps `org.jetbrains.compose.resources.stringResource` and `getString` inside `core:resources`.
-- **Formatting.** macOS strings use `%1$@` (945), `%@` (844), `%d` (367), `%1$d` (69) and `%%` (1). CMP formats only `%1$s`/`%1$d`, and internally, so `TelegramFormat` replaces them, numbering bare `%@`/`%d` in order.
-- **Bold.** 352 strings carry `**…**` (macOS: `detectBoldColorInString`). The plain `stringResource` drops the markers; `annotatedStringResource` makes them bold.
-
-### Start-up
-
-`Localization` loads the chosen pack before the first frame: offline from the database, so quickly (not measured). Android's `isStarting()` waits for it as it waits for TDLib's state; desktop and web show the blank start screen meanwhile. With no pack chosen nothing waits. Layout direction follows `LanguagePackInfo.is_rtl`.
+- `stringResource(Res.string.x, vararg args)` in `core:resources` is the only entry: a detekt `ForbiddenImport` keeps Compose's own inside `core:resources`.
+- It reads the pack through `LocalLanguagePack` by `LanguagePackKeys[res.key]`, and falls back to Compose's string of the same name.
+- **Waiting, as Compose does for its own strings** (`rememberResourceState` in components-resources 1.12.1): on Android, JVM and iOS `runBlocking` in the first composition, since TDLib runs in the process and reads its database at once; on the web the bundled string first and the pack's when the worker answers.
+- **Formatting:** macOS strings use `%1$@` (945), `%@` (844), `%d` (367), `%1$d` (69) and `%%` (1); `formatTelegram` numbers bare ones in order and drops `**` (352 strings bold something; an annotated variant is for later).
 
 ## Not in the first step
 
-- A language list and settings screen (`getLocalizationTargetInfo`).
-- Plurals: TDLib gives `languagePackStringValuePluralized` with its forms and `plural_code` names the rule, but CMP's CLDR rules aren't public API (unchecked), so a rule table of our own is needed.
-- Custom and beta packs (`addCustomServerLanguagePack`).
+- A language list, switching (`synchronizeLanguagePack` before `language_pack_id`, as Telegram X) and the "Continue in …" suggestion (`suggested_language_pack_id`).
+- Plurals: TDLib gives `languagePackStringValuePluralized`, but the forms need a CLDR rule by `plural_code`, and Compose's aren't public (unchecked).
+- Bold and links in pack strings; layout direction by `LanguagePackInfo.is_rtl`.
+- The rest of the login screens: their strings get macOS's keys when the screens are redrawn after macOS.
 
 ## Tests
 
-`TelegramFormat` and the key mapping are plain functions. `Localization` runs on the `FakeTdLib` of `AccountManagerTest`: options reach every client, a switch syncs before it applies, an update patches the map.
+`TelegramFormatTest` (core:resources). `AccountManagerTest` runs without the follower; `KoinGraphTest` resolves it on real TDLib. Nothing has run against the servers yet: whether the strings arrive and replace the bundled ones is to be seen by hand.
 
 ## Open questions
 
-1. **Whose pack.** Our texts are macOS's, so the natural target is `macos`. Telegram X and Unigram use targets of their own; whether a third-party client may read an official app's pack wasn't checked. Without an answer the design waits.
+1. **Whose pack.** Decided 2026-11-06: `macos`, our texts being macOS's. What was checked:
+   - The [API Terms of Service](https://core.telegram.org/api/terms) say nothing about language packs; they cover privacy, the name ("Telegram" only after "Unofficial"), the logo, advertising and AI training.
+   - [`langpack.getLangPack`](https://core.telegram.org/method/langpack.getLangPack) describes `lang_pack` as a "platform identifier (i.e. android, tdesktop, etc)" and works without authorization; TDLib's `localization_target` lists the official targets as examples, with no restriction.
+   - Unofficial clients do it: Nagram (GPL-3.0, a fork of Telegram for Android) sends `lang_pack = "android"` in its connection (`TMessagesProj/jni/tgnet/ConnectionsManager.cpp`); Nekogram has the same file, not opened. Both are forks, so they inherited it.
+   - Own targets (`android_x`, `unigram`) belong to apps Telegram works with; no way for a third party to get one was found.
+
+   So nothing forbids it and nothing allows it. The risk is that keys are the macOS app's: a removed key falls back to our bundled text, a reworded one shows its new text.
 2. **Test DC.** Whether the test servers serve language packs at all wasn't checked; hence a database of its own.
 3. **Pack size.** macOS's English source is 1.2 MB with 9356 keys; the Russian pack and its database weren't measured.

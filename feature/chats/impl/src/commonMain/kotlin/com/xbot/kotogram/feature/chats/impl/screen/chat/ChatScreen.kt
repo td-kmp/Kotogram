@@ -17,7 +17,7 @@ import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.action_back
 import com.xbot.kotogram.core.resources.chat_history_placeholder
-import org.jetbrains.compose.resources.stringResource
+import com.xbot.kotogram.core.resources.stringResource
 import org.orbitmvi.orbit.compose.collectAsState
 
 @Composable

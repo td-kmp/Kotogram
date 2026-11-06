@@ -15,6 +15,8 @@ style:
     forbiddenImports:
       - value: 'io.xbot.tdlib.client.*'
         reason: 'Only core:account and feature data modules talk to TDLib.'
+      - value: 'org.jetbrains.compose.resources.stringResource'
+        reason: 'Strings come from Telegram''s language pack first: use com.xbot.kotogram.core.resources.stringResource.'
     excludes: ['**/core/account/**', '**/feature/*/data/**']
   MagicNumber:
     ignoreAnnotated: ['Composable', 'Preview']

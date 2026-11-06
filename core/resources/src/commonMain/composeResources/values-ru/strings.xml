@@ -2,14 +2,14 @@
     <string name="action_continue">Продолжить</string>
     <string name="action_back">Назад</string>
 
-    <string name="login_by_phone">Вход по номеру телефона</string>
-    <string name="login_by_qr">Вход по QR-коду</string>
+    <string name="login_qr_cancel">Вход по номеру телефона</string>
+    <string name="login_qr_login">Вход по QR-коду</string>
 
-    <string name="qr_title">Быстрый вход по QR-коду</string>
-    <string name="qr_code_description">QR-код для входа</string>
-    <string name="qr_step_1">Запустите Telegram на телефоне</string>
-    <string name="qr_step_2">Откройте Настройки &gt; Устройства &gt; Подключить устройство</string>
-    <string name="qr_step_3">Для подтверждения направьте камеру телефона на этот экран</string>
+    <string name="login_qr_title">Быстрый вход по QR-коду</string>
+    <string name="voiceover_login_qrcode">QR-код для входа</string>
+    <string name="login_qr1_help1">Запустите Telegram на телефоне</string>
+    <string name="login_qr2_help2">Откройте Настройки &gt; Устройства &gt; Подключить устройство</string>
+    <string name="login_qr1_help3">Для подтверждения направьте камеру телефона на этот экран</string>
 
     <string name="phone_title">Телефон</string>
     <string name="phone_subtitle">Проверьте код страны и введите свой номер телефона.</string>

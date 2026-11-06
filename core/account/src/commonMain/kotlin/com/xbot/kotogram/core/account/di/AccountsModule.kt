@@ -2,13 +2,19 @@ package com.xbot.kotogram.core.account.di
 
 import com.xbot.kotogram.core.account.AccountManager
 import com.xbot.kotogram.core.account.AccountRegistryStore
+import com.xbot.kotogram.core.account.AccountScope
 import com.xbot.kotogram.core.account.AccountStorage
+import com.xbot.kotogram.core.account.AccountUpdates
 import com.xbot.kotogram.core.account.DatabaseKeys
+import com.xbot.kotogram.core.account.LanguagePackOptions
+import com.xbot.kotogram.core.account.Localization
 import com.xbot.kotogram.core.account.TdlibConfig
 import io.xbot.tdlib.TdLib
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import org.koin.core.module.dsl.bind
+import org.koin.core.module.dsl.scopedOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
@@ -32,5 +38,10 @@ val accountsModule = module {
             keys = get(),
             koin = getKoin()
         )
+    }
+    single { Localization(tdLib = get(), storage = get(), config = get()) }
+
+    scope(AccountScope) {
+        scopedOf(::LanguagePackOptions) { bind<AccountUpdates>() }
     }
 }

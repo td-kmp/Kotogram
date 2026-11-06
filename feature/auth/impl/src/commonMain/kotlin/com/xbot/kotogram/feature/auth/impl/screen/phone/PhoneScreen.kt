@@ -38,7 +38,7 @@ import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.action_continue
 import com.xbot.kotogram.core.resources.country_placeholder
-import com.xbot.kotogram.core.resources.login_by_qr
+import com.xbot.kotogram.core.resources.login_qr_login
 import com.xbot.kotogram.core.resources.phone_hint
 import com.xbot.kotogram.core.resources.phone_subtitle
 import com.xbot.kotogram.core.resources.phone_title
@@ -47,7 +47,6 @@ import com.xbot.kotogram.core.resources.sync_contacts
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import com.xbot.kotogram.feature.auth.impl.extensions.localizedMessage
 import io.xbot.tdlib.api.CountryInfo
-import org.jetbrains.compose.resources.stringResource
 import org.orbitmvi.orbit.compose.collectAsState
 import org.orbitmvi.orbit.compose.collectSideEffect
 
@@ -166,7 +165,7 @@ private fun PhoneScreenContent(
             }
             if (canUseQr) {
                 TextButton(onClick = onQrLoginClick) {
-                    Text(stringResource(Res.string.login_by_qr))
+                    Text(stringResource(Res.string.login_qr_login))
                 }
             }
         }

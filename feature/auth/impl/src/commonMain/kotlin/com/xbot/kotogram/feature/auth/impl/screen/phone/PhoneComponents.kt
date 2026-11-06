@@ -15,8 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.country_search
+import com.xbot.kotogram.core.resources.stringResource
 import io.xbot.tdlib.api.CountryInfo
-import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun CountryPickerDialog(

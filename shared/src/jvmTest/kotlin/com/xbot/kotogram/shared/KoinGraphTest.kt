@@ -102,6 +102,8 @@ private class TemporaryAccountStorage : AccountStorage {
 
     override fun filesDirectory(id: AccountId) = "$root/${id.value}/files"
 
+    override val languagePackDatabase = "$root/langpack"
+
     override suspend fun delete(id: AccountId) = Unit
 }
 

@@ -37,7 +37,6 @@ import com.xbot.kotogram.core.resources.email_code_title
 import com.xbot.kotogram.core.resources.stringResource
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import com.xbot.kotogram.feature.auth.impl.extensions.localizedMessage
-import org.jetbrains.compose.resources.stringResource
 import org.orbitmvi.orbit.compose.collectAsState
 
 @Composable

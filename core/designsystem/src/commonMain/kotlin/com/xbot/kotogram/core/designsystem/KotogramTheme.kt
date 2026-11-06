@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 @Composable
 fun KotogramTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme(),
+        colorScheme = if (true) darkColorScheme() else lightColorScheme(),
         content = content
     )
 }

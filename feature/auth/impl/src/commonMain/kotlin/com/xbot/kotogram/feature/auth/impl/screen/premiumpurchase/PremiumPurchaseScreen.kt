@@ -22,9 +22,9 @@ import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.action_back
+import com.xbot.kotogram.core.resources.stringResource
 import com.xbot.kotogram.core.resources.unsupported_subtitle
 import com.xbot.kotogram.core.resources.unsupported_title
-import org.jetbrains.compose.resources.stringResource
 
 // TDLib asks for a Premium purchase to log in, which only the official apps' store billing can make.
 @Composable

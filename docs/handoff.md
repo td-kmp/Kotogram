@@ -61,7 +61,7 @@ Waiting on the developer: **D3, push.** Log in at my.telegram.org and check whet
 4. Finish M1: avatars (`FileStore`, `FileDownloads`, Coil fetcher, §7 of [messaging-core.md](design/messaging-core.md)), folders, typing, scope mute settings. Its entities use the old names: `FileStore` and the like become `AccountUpdates` followers.
 5. M2: `ChatHistory` (design §6).
 6. Web: `index.html` has no favicon.
-7. Strings from Telegram's language packs: [design/localization.md](design/localization.md), waiting on its open question 1.
+7. Strings from Telegram's language packs, first step in (QR screen): [design/localization.md](design/localization.md). Checked by hand on 2026-11-06 (desktop, `de`): the pack downloads and replaces the bundled strings. Fix the review's findings first ([review-ktg-7.md](review-ktg-7.md), above all `language_pack_database_path` set too late); then switching, plurals, the other login screens.
 
 ## What is not done, or weak
 

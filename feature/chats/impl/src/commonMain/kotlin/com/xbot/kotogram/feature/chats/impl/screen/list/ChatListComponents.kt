@@ -22,8 +22,8 @@ import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.chats_draft
 import com.xbot.kotogram.core.resources.chats_sender
 import com.xbot.kotogram.core.resources.preview_other
+import com.xbot.kotogram.core.resources.stringResource
 import com.xbot.kotogram.feature.chats.impl.extensions.label
-import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun ChatRow(row: ChatListRow, onClick: () -> Unit, modifier: Modifier = Modifier) {

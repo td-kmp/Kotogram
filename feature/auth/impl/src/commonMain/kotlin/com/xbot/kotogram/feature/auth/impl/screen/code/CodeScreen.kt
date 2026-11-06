@@ -44,7 +44,6 @@ import io.xbot.tdlib.api.AuthenticationCodeInfo
 import io.xbot.tdlib.api.AuthenticationCodeTypeCall
 import io.xbot.tdlib.api.AuthenticationCodeTypeSms
 import io.xbot.tdlib.api.AuthenticationCodeTypeTelegramMessage
-import org.jetbrains.compose.resources.stringResource
 import org.orbitmvi.orbit.compose.collectAsState
 
 @Composable

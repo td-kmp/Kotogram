@@ -2,14 +2,14 @@
     <string name="action_continue">Continue</string>
     <string name="action_back">Back</string>
 
-    <string name="login_by_phone">Log in by phone number</string>
-    <string name="login_by_qr">Log in by QR code</string>
+    <string name="login_qr_cancel">Log in by phone number</string>
+    <string name="login_qr_login">Log in by QR Code</string>
 
-    <string name="qr_title">Log in to Telegram by QR Code</string>
-    <string name="qr_code_description">QR code for login</string>
-    <string name="qr_step_1">Open Telegram on your phone</string>
-    <string name="qr_step_2">Go to Settings &gt; Devices &gt; Link Desktop Device</string>
-    <string name="qr_step_3">Point your phone at this screen to confirm login</string>
+    <string name="login_qr_title">Log in to Telegram by QR Code</string>
+    <string name="voiceover_login_qrcode">QR code for login</string>
+    <string name="login_qr1_help1">Open Telegram on your phone</string>
+    <string name="login_qr2_help2">Go to Settings &gt; Devices &gt; Link Desktop Device</string>
+    <string name="login_qr1_help3">Point your phone at this screen to confirm login</string>
 
     <string name="phone_title">Phone</string>
     <string name="phone_subtitle">Please confirm your country code and enter your phone number.</string>

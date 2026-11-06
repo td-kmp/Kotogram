@@ -24,9 +24,9 @@ import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.chats_empty
 import com.xbot.kotogram.core.resources.chats_load_failed
 import com.xbot.kotogram.core.resources.chats_title
+import com.xbot.kotogram.core.resources.stringResource
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
-import org.jetbrains.compose.resources.stringResource
 import org.orbitmvi.orbit.compose.collectAsState
 
 private const val END_THRESHOLD = 10
