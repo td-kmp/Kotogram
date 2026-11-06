@@ -61,6 +61,7 @@ Waiting on the developer: **D3, push.** Log in at my.telegram.org and check whet
 4. Finish M1: avatars (`FileStore`, `FileDownloads`, Coil fetcher, §7 of [messaging-core.md](design/messaging-core.md)), folders, typing, scope mute settings. Its entities use the old names: `FileStore` and the like become `AccountUpdates` followers.
 5. M2: `ChatHistory` (design §6).
 6. Web: `index.html` has no favicon.
+7. Strings from Telegram's language packs: [design/localization.md](design/localization.md), waiting on its open question 1.
 
 ## What is not done, or weak
 
