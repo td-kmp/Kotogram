@@ -22,10 +22,11 @@ Next task number after it: **KTG-8**.
 - **Koin's DSL replaces annotations and the compiler plugin.** A client declared at runtime can't pass compile safety. `KoinGraphTest` resolves every definition of an account instead.
 - **Accounts run at once**, one `TdClient` and one Koin scope each. `shared` provides the scope with `UnboundKoinScope`, and screens use plain `koinViewModel()`. `ClientHolder`, `AccountRepository`, `AccountSessions`, `AccountLifetime`, `UpdateLane` and `AccountPointerStore` are gone.
 - **`AccountStore` → `ChatStore`** in `feature:chats:impl`, an `AccountUpdates` follower. Its reducers moved as they were. `options`, `connectionState` and the group maps had no reader, so they went with `SessionReducer` and `GroupReducer`.
-- **QR → phone** restarts the sign-in on the click. `PhoneNumberRoute` is gone, and system back on the phone screen no longer returns to QR: its button does. QR from the phone screen past a step restarts it too, as Unigram does.
+- **QR → phone** is only a screen change; submitting the number during QR confirmation restarts the sign-in and the next account sends it, as Unigram does (`LoginEntry.pendingPhoneNumber`). `AccountManager` shows a replacing account only at its first screen, so the restart doesn't flash. `local.properties` has `telegram.test.dc=true` for IDE runs. `PhoneNumberRoute` is gone, and system back on the phone screen no longer returns to QR: its button does. QR from the phone screen past a step restarts it too, as Unigram does.
 - **The login flow is a `NavDisplay` of its own** inside the `AuthRoute` entry, over a back stack `AuthViewModel` derives from TDLib (`AuthViewModelTest`). Its steps are `AuthStep` in `feature:auth:api`; the screens use a plain `Scaffold` each. The side effects, `AuthEntry` and `clearSteps` are gone.
 - **Navigation is in Koin again**, as in AnilibriaRefresh: `navigation<Route>` and `polymorphic<NavKey>` in each impl module, `koinEntryProvider()` in `shared`. `FeatureNavigation` (KTG-6) is gone.
 - **`LoginFlow`** replaces `LoginCapabilities`: `PhoneNumberOnly` on Android and iOS, `QrCodeFirst` on desktop and web, from one `platformLoginFlow` in `feature:auth:data`.
+- **Start-up as in Telegram's apps:** a blank `SplashScreen`; Android holds its system splash (`core-splashscreen`) while `isStarting()`, i.e. until TDLib reports where the shown account stands, and the web page has the theme's background while the wasm loads.
 - **Polish:** comments only on hacks and workarounds. Each screen keeps its state, actions and side effects in files of their own, and the splash screen moved to `shared/screen/splash`.
 - **New:** a database key per account on Android (Keystore), `android:allowBackup="false"`, and data under `accounts/N/{db,files}`. Old `tdlib/account-N` directories aren't migrated, so an existing install logs in again.
 
@@ -42,7 +43,7 @@ Next task number after it: **KTG-8**.
 - **Web:** `web-app` (`wasmJs`), worker in `core/account/worker`, one tab at a time through `navigator.locks`.
 - **Tests:** `AccountManagerTest` and `AccountRegistryTest` on a fake TDLib, `ReduceTest` and `UpdateCoverageTest` in `feature:chats:data`, `KoinGraphTest` on real TDLib.
 
-**Not checked: nothing past the login screen has run anywhere,** and KTG-7 hasn't run at all. By hand on a test-DC account (`-Ptelegram.test.dc=true` keeps away from real data): log in, see the list, restart the app, QR → phone → QR on desktop.
+**Not checked: nothing past the login screen has run anywhere,** and KTG-7 hasn't run at all. By hand on a test-DC account (`-Ptelegram.test.dc=true` keeps away from real data): log in, see the list, restart the app, QR → phone → QR on desktop (the same QR code), and a number submitted from QR.
 
 ## Decisions
 

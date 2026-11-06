@@ -7,7 +7,6 @@ import com.xbot.kotogram.feature.auth.domain.model.LoginFlow
 import com.xbot.kotogram.feature.auth.domain.model.LoginMethod
 import com.xbot.kotogram.feature.auth.domain.repository.AuthRepository
 import com.xbot.kotogram.feature.auth.impl.extensions.toAuthStep
-import io.xbot.tdlib.api.AuthorizationStateWaitOtherDeviceConfirmation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
@@ -31,14 +30,6 @@ internal class AuthViewModel(
     ) {
         combine(loginEntry.method, authRepository.authorizationState, dismissedStep, ::Triple)
             .collect { (method, authorizationState, dismissed) ->
-                // Here and not on the click: a QR request already on its way lands in this state too.
-                if (
-                    method == LoginMethod.PhoneNumber &&
-                    authorizationState is AuthorizationStateWaitOtherDeviceConfirmation
-                ) {
-                    authRepository.restartSignIn()
-                    return@collect
-                }
                 val step = authorizationState.toAuthStep()
                 if (dismissed != null && step != dismissed) dismissedStep.value = null
                 reduce { state.copy(backStack = backStack(method, step, dismissed)) }

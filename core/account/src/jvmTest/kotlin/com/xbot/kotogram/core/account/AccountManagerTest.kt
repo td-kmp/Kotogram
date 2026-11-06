@@ -281,6 +281,17 @@ class AccountManagerTest {
     }
 
     @Test
+    fun aRestartShowsTheNewAccountOnlyAtItsFirstScreen() = test {
+        val app = TestApp().started()
+        val session = app.active { it is AuthorizationStateWaitPhoneNumber }
+
+        app.manager.restartSignIn(session.id)
+
+        val next = app.manager.shown.first { it.active?.id != session.id }.active
+        assertIs<AuthorizationStateWaitPhoneNumber>(next?.authorizationState?.value)
+    }
+
+    @Test
     fun restartingTheAddingSignInKeepsItAboveTheActiveAccount() = test {
         val store = InMemoryRegistryStore(registryOf(signedIn(1)))
         val app = TestApp(FakeTdLib(mapOf(1 to ready)), store).started()

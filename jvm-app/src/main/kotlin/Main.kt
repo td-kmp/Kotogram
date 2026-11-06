@@ -15,7 +15,6 @@ import org.koin.core.context.stopKoin
 
 fun main(args: Array<String>) {
     initKoin()
-    // TDLib crashes the JVM if it exits during td_receive.
     Runtime.getRuntime().addShutdownHook(
         Thread {
             runBlocking { closeAccounts() }

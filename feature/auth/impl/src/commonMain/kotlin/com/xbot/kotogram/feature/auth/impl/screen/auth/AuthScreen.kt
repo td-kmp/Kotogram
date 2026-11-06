@@ -47,13 +47,36 @@ internal fun AuthScreen(viewModel: AuthViewModel, modifier: Modifier = Modifier)
                 )
             }
             entry<AuthStep.Code> {
-                CodeScreen(viewModel = koinViewModel(), onChangeNumberClick = onBack)
+                CodeScreen(
+                    viewModel = koinViewModel(),
+                    onChangeNumberClick = onBack
+                )
             }
-            entry<AuthStep.Password> { PasswordScreen(viewModel = koinViewModel()) }
-            entry<AuthStep.EmailAddress> { EmailAddressScreen(viewModel = koinViewModel()) }
-            entry<AuthStep.EmailCode> { EmailCodeScreen(viewModel = koinViewModel()) }
-            entry<AuthStep.Registration> { RegistrationScreen(viewModel = koinViewModel()) }
-            entry<AuthStep.PremiumPurchase> { PremiumPurchaseScreen(onBackClick = onBack) }
+            entry<AuthStep.Password> {
+                PasswordScreen(
+                    viewModel = koinViewModel()
+                )
+            }
+            entry<AuthStep.EmailAddress> {
+                EmailAddressScreen(
+                    viewModel = koinViewModel()
+                )
+            }
+            entry<AuthStep.EmailCode> {
+                EmailCodeScreen(
+                    viewModel = koinViewModel()
+                )
+            }
+            entry<AuthStep.Registration> {
+                RegistrationScreen(
+                    viewModel = koinViewModel()
+                )
+            }
+            entry<AuthStep.PremiumPurchase> {
+                PremiumPurchaseScreen(
+                    onBackClick = onBack
+                )
+            }
         }
     )
 }

@@ -17,14 +17,12 @@ fun initKoin(config: KoinConfiguration? = null) {
     val koin = startKoin {
         logger(KermitKoinLogger(Logger.withTag("Koin")))
         modules(
-            appModule,
             accountsModule,
             authDataModule,
             authImplModule,
             chatsDataModule,
             chatsImplModule
         )
-        // After the modules, so a test's definitions override them.
         includes(config)
     }.koin
     koin.get<AccountManager>().start()

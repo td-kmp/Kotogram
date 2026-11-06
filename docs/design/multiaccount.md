@@ -53,7 +53,7 @@ val chatsImplModule = module {
 | Any `Closed` not caused by the app deletes the account | Only after `LoggingOut` | A failed web worker closes every client, which would erase all accounts. `follow` reads `updates`, because the `authorizationState` StateFlow can conflate `LoggingOut` away |
 | `Close` for a cancelled sign-in | `LogOut` | Before authorization it only erases local data, and the web can't delete the worker's files itself |
 | No QR login | `restartSignIn` | See below |
-| `if (Ready) main else signIn` | Splash until TDLib reports, `routeOf` in `shared` | A signed-in account would flash the login on each cold start. One `AccountNavigation` replaces the root with `setRoot`, so popped entries clear their ViewModels |
+| `if (Ready) main else signIn` | Splash until TDLib reports, `toRoute()` in `shared`; starting and closing states decide no screen, so an account keeps its last one | A signed-in account would flash the login on each cold start. One `AccountNavigation` replaces the root with `setRoot`, so popped entries clear their ViewModels |
 | `runCatching` around requests | `sendCatching` | `runCatching` swallows `CancellationException` |
 | An unreadable key throws | `getOrCreate` returns null; a signed-in account is removed, a new one waits | Throwing crashes the app, and a broken Keystore would otherwise open new accounts in a loop |
 | JSON file per platform | DataStore everywhere | Already in the project, with a known web path (`WebLocalStorage`) |
@@ -61,13 +61,13 @@ val chatsImplModule = module {
 
 ### Leaving QR login
 
-TDLib leaves QR login only through a log out, which ends the client (`AuthorizationStateClosed`), and a session is one client. So choosing the phone during QR confirmation restarts the sign-in in a new account:
+TDLib takes no phone number during QR confirmation, and leaves it only through a log out, which ends the client (`AuthorizationStateClosed`): "call `logOut`, wait while the current authorization is canceled, and reopen the instance" (levlam, tdlib/td#2433). A session is one client, so the sign-in goes on in a new account. As in Unigram, the restart waits for the number:
 
-1. `LoginEntry.method` becomes `PhoneNumber`. It's a root singleton, because it has to outlive the session.
-2. `AuthViewModel` sees `WaitOtherDeviceConfirmation` with that method and calls `AccountManager.restartSignIn`. It reacts to the state and not to the click, so a QR request already on its way is covered too.
-3. The new account opens as the phone screen. Going back to QR needs no restart: TDLib takes `requestQrCodeAuthentication` in `WaitPhoneNumber`.
+1. QR ↔ phone is only `LoginEntry.method`. TDLib stays in `WaitOtherDeviceConfirmation`, the QR code stays valid while the number is typed, and coming back shows the same code.
+2. Submitting the number in that state puts it in `LoginEntry.pendingPhoneNumber` and calls `AccountManager.restartSignIn`. `LoginEntry` is a root singleton, because it has to outlive the session.
+3. The new account's `PhoneViewModel` takes the number, shows it as submitting and sends it once TDLib waits for a phone number. An invalid number shows its error in place, with the number kept.
 
-This happens on the click rather than on submit as before, so nothing typed is lost and an invalid number shows its error in place. The cost is one instance restart, and a new QR code when coming back. `PhoneNumberRoute` is gone.
+The restart stays behind the submit button. An account that replaces the shown one, after a restart or the last log out, is published only at its first screen (a login step or `Ready`, at most `REPLACE_TIMEOUT`), and until then the closing account keeps its own: its `LoggingOut`, `Closing` and `Closed` decide no screen. The new phone screen starts with the number, so the swap doesn't show.
 
 The other way, as in Unigram: TDLib gives no fresh QR code past a step (code, password, email, registration), so the entry under a step is always the phone screen, and choosing QR there restarts the sign-in too. Where QR exists at all is `LoginFlow`, chosen per platform: phones have only the phone number, desktop and web start with the QR code ([auth.md](auth.md)).
 

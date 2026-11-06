@@ -1,6 +1,7 @@
 package com.xbot.kotogram.core.account
 
 import co.touchlab.kermit.Logger
+import com.xbot.kotogram.core.account.extensions.isLoginStep
 import com.xbot.kotogram.core.account.extensions.sendCatching
 import io.xbot.tdlib.TdLib
 import io.xbot.tdlib.api.AuthorizationStateClosed
@@ -78,6 +79,7 @@ class AccountManager(
                 }
                 setRegistry(next)
                 next.accounts.forEach { open(it.id) }
+                publish()
             }
         }
     }
@@ -90,7 +92,7 @@ class AccountManager(
         val next = registry.value.withNewAccount()
         setRegistry(next)
         addingId = next.newestId
-        open(next.newestId)
+        open(next.newestId).also { publish() }
     }
 
     fun cancelAdding() {
@@ -162,7 +164,6 @@ class AccountManager(
         coroutines.launch(start = CoroutineStart.UNDISPATCHED) { follow(session) }
 
         sessions = sessions + (id to session)
-        publish()
         // TDLib starts an instance on its first request.
         client.sendCatching(GetOption(name = "version")).onLeft {
             logger.e { "Account ${id.value} didn't start: ${it.message}" }
@@ -256,27 +257,39 @@ class AccountManager(
     }
 
     private suspend fun remove(id: AccountId, restart: Boolean = false) {
+        var replacement: AccountSession? = null
         val session = mutex.withLock {
             val session = sessions[id]
             sessions = sessions - id
             val wasAdding = addingId == id
             if (wasAdding) addingId = null
             val rest = registry.value.without(id)
-            // No account left on screen: show sign-in. Published together so nothing else flashes.
+            // No account left on screen: show sign-in.
             if (rest.active == null || restart) {
                 val next = rest.withNewAccount()
                 val isAboveActive = restart && wasAdding && rest.active != null
                 setRegistry(if (isAboveActive) next else next.copy(active = next.newestId))
                 if (isAboveActive) addingId = next.newestId
-                open(next.newestId)
+                replacement = open(next.newestId)
             } else {
                 setRegistry(rest)
                 publish()
             }
             session
         }
+        replacement?.let {
+            awaitFirstScreen(it)
+            mutex.withLock { publish() }
+        }
         session?.let(::retire)
         deleteData(id)
+    }
+
+    // The account being replaced stays on screen meanwhile, so a restarted sign-in doesn't flash.
+    private suspend fun awaitFirstScreen(session: AccountSession) {
+        withTimeoutOrNull(REPLACE_TIMEOUT) {
+            session.authorizationState.first { it.isLoginStep || it == AuthorizationStateReady }
+        }
     }
 
     private fun retire(session: AccountSession) {
@@ -325,6 +338,7 @@ class AccountManager(
     private companion object {
         val CLOSE_TIMEOUT = 3.seconds
         val SCOPE_CLOSE_DELAY = 1.seconds
+        val REPLACE_TIMEOUT = 5.seconds
     }
 }
 

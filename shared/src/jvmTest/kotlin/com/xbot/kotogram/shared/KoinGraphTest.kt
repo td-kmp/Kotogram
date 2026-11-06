@@ -14,7 +14,6 @@ import com.xbot.kotogram.feature.auth.api.AuthRoute
 import com.xbot.kotogram.feature.chats.api.ChatListRoute
 import com.xbot.kotogram.feature.chats.api.ChatRoute
 import com.xbot.kotogram.shared.di.initKoin
-import com.xbot.kotogram.shared.navigation.SplashRoute
 import io.xbot.tdlib.api.AuthorizationStateWaitPhoneNumber
 import java.nio.file.Files
 import kotlin.test.Test
@@ -74,7 +73,7 @@ class KoinGraphTest {
                         @Suppress("UNCHECKED_CAST")
                         installers.forEach { (this as EntryProviderScope<Any>).it() }
                     }
-                    listOf(SplashRoute, AuthRoute, ChatListRoute, ChatRoute(chatId = 1)).forEach {
+                    listOf(AuthRoute, ChatListRoute, ChatRoute(chatId = 1)).forEach {
                         screens(it)
                     }
                 } finally {
