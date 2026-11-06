@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.compose.multiplatform)
-    alias(libs.plugins.koin.compiler)
 }
 
 kotlin {
@@ -34,7 +33,8 @@ kotlin {
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     dependencies {
-        api(projects.feature.chats.domain)
+        implementation(projects.feature.chats.domain)
+        implementation(projects.core.account)
         implementation(projects.feature.chats.api)
         implementation(projects.core.navigation.api)
         implementation(projects.core.designsystem)
@@ -53,14 +53,10 @@ kotlin {
         implementation(libs.koin.core.viewmodel)
         implementation(libs.koin.compose)
         implementation(libs.koin.compose.viewmodel)
-        implementation(libs.koin.annotations)
+        implementation(libs.koin.compose.navigation3)
         implementation(libs.kotlinx.coroutines.core)
         implementation(libs.kotlinx.datetime)
     }
-}
-
-koinCompiler {
-    compileSafety = true
 }
 
 compose.resources {

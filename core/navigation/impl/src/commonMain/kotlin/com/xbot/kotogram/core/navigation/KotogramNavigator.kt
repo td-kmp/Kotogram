@@ -9,13 +9,9 @@ import androidx.savedstate.serialization.SavedStateConfiguration
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.modules.SerializersModule
 
-/**
- * The back stack is saved, so it survives configuration changes and process death. Outside Android
- * that needs every [NavKey] subtype registered in [serializersModule].
- */
 @Composable
 fun rememberNavigator(startRoute: NavKey, serializersModule: SerializersModule): Navigator {
-    // Our own NavKey is the polymorphic base, so features register `polymorphic<NavKey>` against it.
+    // Outside Android every key has to be registered, against our own NavKey as the polymorphic base.
     val backStack = rememberSerializable(
         configuration = SavedStateConfiguration { this.serializersModule = serializersModule },
         serializer = NavBackStackSerializer(PolymorphicSerializer(NavKey::class))

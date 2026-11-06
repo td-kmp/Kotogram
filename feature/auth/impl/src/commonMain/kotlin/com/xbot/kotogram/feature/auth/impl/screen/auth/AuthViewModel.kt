@@ -1,93 +1,70 @@
 package com.xbot.kotogram.feature.auth.impl.screen.auth
 
 import androidx.lifecycle.ViewModel
-import com.xbot.kotogram.core.model.AccountId
+import com.xbot.kotogram.feature.auth.domain.LoginEntry
+import com.xbot.kotogram.feature.auth.domain.model.LoginFlow
 import com.xbot.kotogram.feature.auth.domain.model.LoginMethod
-import com.xbot.kotogram.feature.auth.domain.repository.LoginCapabilities
-import com.xbot.kotogram.feature.auth.domain.usecase.ObserveAuthorizationStateUseCase
-import com.xbot.kotogram.feature.auth.impl.navigation.AuthStepRoute
-import com.xbot.kotogram.feature.auth.impl.navigation.CodeRoute
-import com.xbot.kotogram.feature.auth.impl.navigation.EmailAddressRoute
-import com.xbot.kotogram.feature.auth.impl.navigation.EmailCodeRoute
-import com.xbot.kotogram.feature.auth.impl.navigation.PasswordRoute
-import com.xbot.kotogram.feature.auth.impl.navigation.PremiumPurchaseRoute
-import com.xbot.kotogram.feature.auth.impl.navigation.RegistrationRoute
-import io.xbot.tdlib.api.AuthorizationState
-import io.xbot.tdlib.api.AuthorizationStateWaitCode
-import io.xbot.tdlib.api.AuthorizationStateWaitEmailAddress
-import io.xbot.tdlib.api.AuthorizationStateWaitEmailCode
+import com.xbot.kotogram.feature.auth.domain.repository.AuthRepository
+import com.xbot.kotogram.feature.auth.impl.extensions.toAuthStep
+import com.xbot.kotogram.feature.auth.impl.navigation.AuthStep
+import com.xbot.kotogram.feature.auth.impl.navigation.authBackStack
 import io.xbot.tdlib.api.AuthorizationStateWaitOtherDeviceConfirmation
-import io.xbot.tdlib.api.AuthorizationStateWaitPassword
-import io.xbot.tdlib.api.AuthorizationStateWaitPhoneNumber
-import io.xbot.tdlib.api.AuthorizationStateWaitPremiumPurchase
-import io.xbot.tdlib.api.AuthorizationStateWaitRegistration
-import org.koin.core.annotation.KoinViewModel
-import org.koin.core.annotation.Scope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import org.orbitmvi.orbit.OrbitContainerHost
-import org.orbitmvi.orbit.syntax.Syntax
 import org.orbitmvi.orbit.viewmodel.orbitContainer
 
-/**
- * Shared by every entry of the login flow (they declare [com.xbot.kotogram.feature.auth.api.AuthRoute]
- * as their parent). Routes between the steps from TDLib's authorization state.
- */
-@Scope(AccountId::class)
-@KoinViewModel
 internal class AuthViewModel(
-    loginCapabilities: LoginCapabilities,
-    private val observeAuthorizationState: ObserveAuthorizationStateUseCase
+    private val flow: LoginFlow,
+    private val loginEntry: LoginEntry,
+    private val authRepository: AuthRepository
 ) : ViewModel(),
-    OrbitContainerHost<AuthScreenState, AuthScreenState, AuthScreenSideEffect> {
+    OrbitContainerHost<AuthScreenState, AuthScreenState, Nothing> {
 
-    private var authorizationState: AuthorizationState? = null
+    private val dismissedStep = MutableStateFlow<AuthStep?>(null)
 
-    override val container = orbitContainer<AuthScreenState, AuthScreenSideEffect>(
+    override val container = orbitContainer<AuthScreenState, Nothing>(
         AuthScreenState(
-            entryMethod = if (loginCapabilities.supportsQrLogin) {
-                LoginMethod.QrCode
-            } else {
-                LoginMethod.PhoneNumber
-            }
+            flow = flow,
+            backStack = authBackStack(loginEntry.method.value, step = null, dismissed = null)
         )
     ) {
-        observeAuthorizationState().collect { authorizationState ->
-            this@AuthViewModel.authorizationState = authorizationState
-            route(authorizationState)
-        }
+        combine(loginEntry.method, authRepository.authorizationState, dismissedStep, ::Triple)
+            .collect { (method, authorizationState, dismissed) ->
+                // Here and not on the click: a QR request already on its way lands in this state too.
+                if (
+                    method == LoginMethod.PhoneNumber &&
+                    authorizationState is AuthorizationStateWaitOtherDeviceConfirmation
+                ) {
+                    authRepository.restartSignIn()
+                    return@collect
+                }
+                val step = authorizationState.toAuthStep()
+                if (dismissed != null && step != dismissed) dismissedStep.value = null
+                reduce { state.copy(backStack = authBackStack(method, step, dismissed)) }
+            }
     }
 
     fun onAction(action: AuthScreenAction) {
         when (action) {
-            AuthScreenAction.OnEntrySubmitted -> onEntrySubmitted()
+            AuthScreenAction.OnBack -> onBack()
+            AuthScreenAction.OnEntrySubmitted -> dismissedStep.value = null
+            AuthScreenAction.OnPhoneLoginClick -> loginEntry.method.value = LoginMethod.PhoneNumber
+            AuthScreenAction.OnQrLoginClick -> onQrLoginClick()
         }
     }
 
-    private fun onEntrySubmitted() = intent {
-        authorizationState?.let { route(it) }
+    private fun onBack() = intent {
+        if (state.backStack.size > 1) dismissedStep.value = state.backStack.last()
     }
 
-    // Routing on transitions keeps back working: back from a step shows the entry screen again,
-    // and TDLib accepts a new phone number from any step.
-    private suspend fun Syntax<AuthScreenState, AuthScreenSideEffect>.route(
-        state: AuthorizationState
-    ) {
-        when (state) {
-            AuthorizationStateWaitPhoneNumber,
-            is AuthorizationStateWaitOtherDeviceConfirmation -> postSideEffect(
-                AuthScreenSideEffect.ClearSteps
-            )
-
-            else -> state.stepRoute()?.let { postSideEffect(AuthScreenSideEffect.ShowStep(it)) }
+    private fun onQrLoginClick() = intent {
+        if (flow != LoginFlow.QrCodeFirst) return@intent
+        loginEntry.method.value = LoginMethod.QrCode
+        // As Unigram does: past a step the sign-in starts over, or the server answers AUTH_TOKEN_ALREADY_ACCEPTED.
+        if (authRepository.authorizationState.first().toAuthStep() != null) {
+            authRepository.restartSignIn()
         }
-    }
-
-    private fun AuthorizationState.stepRoute(): AuthStepRoute? = when (this) {
-        is AuthorizationStateWaitCode -> CodeRoute
-        is AuthorizationStateWaitPassword -> PasswordRoute
-        is AuthorizationStateWaitEmailAddress -> EmailAddressRoute
-        is AuthorizationStateWaitEmailCode -> EmailCodeRoute
-        is AuthorizationStateWaitRegistration -> RegistrationRoute
-        is AuthorizationStateWaitPremiumPurchase -> PremiumPurchaseRoute
-        else -> null
     }
 }

@@ -1,69 +1,64 @@
-# Handoff (2026-11-04)
+# Handoff (2026-11-05)
 
 For the next agent or machine. Durable rules are in [CLAUDE.md](../CLAUDE.md). This file is status: replace it when it goes stale.
 
 ## Where things stand
 
-**KTG-6 is in the working tree, uncommitted.** The developer built it and reports that it seems to work; which targets and tests they ran isn't recorded. After that build `PlatformTdlibEnvironment` and `PlatformAccountStorage` became provider functions in `CoreTdlibModule`, and extensions and `platform*` moved to their packages. Studio's analyzer sees no errors in the moved files, but those steps haven't been built. Run the full set before committing:
+**KTG-7 is in the working tree on `refactoring/KTG-7-multiaccount-koin`, uncommitted.** The developer brought a new multi-account design and asked to delete everything except the UI and rebuild on it. KTG-6 and everything before it are at `ba53a20` on `feature/KTG-1-login`, pushed.
+
+Checked on the JVM only: every JVM module and `jvm-app` compile, all 42 tests pass (`KoinGraphTest` on real TDLib included), and spotless and detekt are clean. Android, iOS and web have not been compiled, and `AndroidDatabaseKeys` has never run. Before committing:
 
 ```
-./gradlew :core:tdlib:jvmTest :shared:jvmTest
-./gradlew compileKotlinJvm compileAndroidMain compileKotlinIosSimulatorArm64 compileKotlinWasmJs
-./gradlew spotlessApply :detekt
+./gradlew compileAndroidMain compileKotlinIosSimulatorArm64 compileKotlinWasmJs
 ```
 
-Next task number after it: **KTG-7**.
+Next task number after it: **KTG-8**.
 
-What to watch, each one not confirmed on every target:
+## What KTG-7 changed
 
-- `KoinGraphTest`: `CoreTdlibModule.tdlibEnvironment` must still let the test's `single<TdlibEnvironment>` override it, or the test opens the real accounts. Its first assertion checks that.
-- `tdlibEnvironment(scope)` on Android: the scope passed to a provider function must reach `androidContext()`.
-- `WebLocalStorage` and `PreferencesSerializer` from `commonMain`'s DataStore dependency on wasmJs.
-- Test DSL under compile safety (`TestKoin.kt`).
-
-## What KTG-6 changed
-
-- **Modules.** `core:data` → `core:tdlib`, `core:domain` → `core:model`, `feature:x:presentation` → `feature:x:impl`. `AccountRepository` moved to `core:tdlib`. Features keep their `domain` and `data`, and a feature owns its entity.
-- **Koin at the edges.** Entities carry annotations only. `AccountSessions` and `AccountLifetime` hide scopes; `KoinAccountSessions` and `KoinAccountLifetime` in `core:tdlib/di` are the adapters. Screens take the ViewModel as a parameter, and entries resolve it.
-- **Navigation without Koin.** `FeatureNavigation` objects with Navigation 3's `entry<…>`, listed in `shared/root/AppNavigation.kt`. `koin-compose-navigation3` is gone.
-- **Entities split.** `ManagedClientHolder : ClientHolder`, `MutableAccountStore : AccountStore`, one `Reducer` per entity in a `CompositeReducer`, `AccountPointerKeeper`, `MemoizingRowMapper`, and `sendCatching` and `ErrorExt` shared by features.
-- **Packages.** Extensions in `extensions/<Receiver>Ext.kt` per module, `platform*` expect/actual in `di`.
-- **Web storage is DataStore** through `WebLocalStorage`. Old `localStorage` keys aren't migrated, so an existing web profile logs in again.
-- **Passkey code is deleted.** It could never work (CLAUDE.md).
+- **Design:** [design/multiaccount.md](design/multiaccount.md), including where it differs from the sketch and why.
+- **Modules.** `core:tdlib` and `core:model` → `core:account`, which has no UI dependencies. Features keep `{api,domain,data,impl}`. `core:navigation`, `core:designsystem` and `feature:x:api` didn't change.
+- **Kept from the UI:** every screen, contract, component, resource, the design system and the navigation. ViewModels keep their logic and lose their annotations and `ObserveAuthorizationStateUseCase`.
+- **Koin's DSL replaces annotations and the compiler plugin.** A client declared at runtime can't pass compile safety. `KoinGraphTest` resolves every definition of an account instead.
+- **Accounts run at once**, one `TdClient` and one Koin scope each. `shared` provides the scope with `UnboundKoinScope`, and screens use plain `koinViewModel()`. `ClientHolder`, `AccountRepository`, `AccountSessions`, `AccountLifetime`, `UpdateLane` and `AccountPointerStore` are gone.
+- **`AccountStore` → `ChatStore`** in `feature:chats:impl`, an `AccountUpdates` follower. Its reducers moved as they were. `options`, `connectionState` and the group maps had no reader, so they went with `SessionReducer` and `GroupReducer`.
+- **QR → phone** restarts the sign-in on the click. `PhoneNumberRoute` is gone, and system back on the phone screen no longer returns to QR: its button does. QR from the phone screen past a step restarts it too, as Unigram does.
+- **The login flow is a `NavDisplay` of its own** inside the `AuthRoute` entry, over a back stack `AuthViewModel` derives from TDLib (`authBackStack`, tested). The side effects, `AuthEntry` and `clearSteps` are gone.
+- **Navigation is in Koin again**, as in AnilibriaRefresh: `navigation<Route>` and `polymorphic<NavKey>` in each impl module, `koinEntryProvider()` in `shared`. `FeatureNavigation` (KTG-6) is gone.
+- **`LoginFlow`** replaces `LoginCapabilities`: `PhoneNumberOnly` on Android and iOS, `QrCodeFirst` on desktop and web, from one `platformLoginFlow` in `feature:auth:data`.
+- **Polish:** comments only on hacks and workarounds. Each screen keeps its state, actions and side effects in files of their own, and the splash screen moved to `shared/screen/splash`.
+- **New:** a database key per account on Android (Keystore), `android:allowBackup="false"`, and data under `accounts/N/{db,files}`. Old `tdlib/account-N` directories aren't migrated, so an existing install logs in again.
 
 ## Left on purpose
 
-- **`build-logic`**: 14 build files repeat about 40 lines each. Convention plugins can't be checked without running Gradle, so they wait for the first build.
-- **`Scope` in `platformTdlibEnvironment`**: the last Koin type outside adapters' reach, because Android reads its `Context` from it. Other platforms ignore it.
+- **No UI to add, switch or log out of an account.** There wasn't one before either. `AccountManager` has the operations and tests; the sign-in above the active account is wired in `RootNavigation` but nothing opens it.
+- **Push** isn't ported (D3). **iOS** has no database key. See the design's "Not ported".
+- **`build-logic`**: the build files still repeat about 40 lines each.
 
 ## What exists
 
-- **`core:tdlib`**, by entity: `client`, `store`, `account`, `environment`, `di`. See `architecture.md` §1.
-- **No mirror.** TDLib's generated classes are the domain model everywhere above `data`. `core:model` exposes them through `api(libs.tdlib.client)`, and a detekt `ForbiddenImport` keeps `io.xbot.tdlib.client.*` out of `domain` and `impl`.
-- **`feature:chats:{api,domain,data,impl}`.** The chat list is real: `DefaultChatRepository`, `ChatListViewModel`, a memoising `ChatListRowMapper`, `loadChats` paging. No avatars yet. The chat screen only shows its title: history is M2.
-- **Web:** `web-app` (`wasmJs`), worker in `core/tdlib/worker`, `AccountStorage` as the platform seam, one tab at a time through `navigator.locks`.
+- **`feature:auth:{api,domain,data,impl}`**: the login flow.
+- **`feature:chats:{api,domain,data,impl}`**: the chat list is real: `ChatStore`, `DefaultChatRepository`, `ChatListViewModel`, a memoising `ChatListRowMapper`, `loadChats` paging. No avatars yet. The chat screen only shows its title: history is M2.
+- **Web:** `web-app` (`wasmJs`), worker in `core/account/worker`, one tab at a time through `navigator.locks`.
+- **Tests:** `AccountManagerTest` and `AccountRegistryTest` on a fake TDLib, `ReduceTest` and `UpdateCoverageTest` in `feature:chats:data`, `KoinGraphTest` on real TDLib.
 
-**Checked before KTG-6, on the layout it replaced.** `jvmTest` passed with real TDLib. JVM, Android, iOS and web compiled. Headless Chrome: the web bundle started TDLib 1.8.69 in the worker, connected over WebSocket, reached `authorizationStateWaitOtherDeviceConfirmation` and showed the QR screen with a real token; the database is in IndexedDB.
-
-**Not checked: nothing past the login screen has run anywhere.** The chat list has never seen a real account. No device, no logged-in account, no web production bundle. Do this by hand on a test-DC account: log in, see the list, log out, add an account, go back from its login. `-Ptelegram.test.dc=true` keeps away from real data, because the real data directory holds real accounts and the rules delete non-active unauthorized ones.
+**Not checked: nothing past the login screen has run anywhere,** and KTG-7 hasn't run at all. By hand on a test-DC account (`-Ptelegram.test.dc=true` keeps away from real data): log in, see the list, restart the app, QR → phone → QR on desktop.
 
 ## Decisions
 
-- **D1 decided and applied (2026-11-04):** generated DTOs are the domain model.
-- **D2 decided:** the store lives in `core:tdlib`.
-- **Accounts design accepted** and implemented.
-- **Module layout decided (2026-11-04):** one low-level core module, `domain` and `data` per feature, `impl` instead of `presentation`.
+- **D1:** generated DTOs are the domain model.
+- **Multi-account (2026-11-05):** the design above; it replaces the accepted accounts design and the module layout of KTG-6.
 
 Waiting on the developer: **D3, push.** Log in at my.telegram.org and check whether a third-party `api_id` can upload FCM/APNs credentials. Nobody could verify it from outside. It decides the whole notification design.
 
 ## Next steps, in order
 
-1. Run the full KTG-6 set (above), then commit it. Consider `build-logic` right after.
-2. Try it by hand with a real account, and get D3.
-3. Finish M1: avatars (`FileStore`, `FileDownloads`, Coil fetcher, §7 of the design), folders, typing, scope mute settings. Measure cold-start update count, JSON decode cost and sort cost, and run TDLib on an iOS device.
-4. M2: `ChatHistory` (design §6).
-5. Web: the QR screen shows the link as text everywhere, not an image. `index.html` has no favicon.
-6. Optional, one agent at most: a focused review of design §4.2, §6 and §7 against the TDLib contract (`td_api.tl`, `MessagesManager.cpp`). Of the four planned reviews, only mechanics finished ([06-review-mechanics.md](research/tdlib-survey/06-review-mechanics.md)).
+1. Build and test (above), then commit.
+2. A small account menu in the chat list (add, switch, log out), so multi-account can be tried by hand.
+3. Try it with a real account, and get D3.
+4. Finish M1: avatars (`FileStore`, `FileDownloads`, Coil fetcher, §7 of [messaging-core.md](design/messaging-core.md)), folders, typing, scope mute settings. Its entities use the old names: `FileStore` and the like become `AccountUpdates` followers.
+5. M2: `ChatHistory` (design §6).
+6. Web: the QR screen shows the link as text everywhere, not an image. `index.html` has no favicon.
 
 ## What is not done, or weak
 
@@ -73,5 +68,5 @@ Waiting on the developer: **D3, push.** Log in at my.telegram.org and check whet
 
 ## Also true
 
-- `docs/research/tdlib-clients.md`, `docs/design/sessions.md` and the research reports use older module names and are kept for the reasoning.
-- The local `tdlib-kmp` clone is on `feature/web-target`, which diverges from `main`; only `main` is published.
+- `docs/research/`, `docs/design/sessions.md`, `accounts.md` and `messaging-core.md` use older module and class names and are kept for the reasoning.
+- The local `tdlib-kmp` clone is on `feature/web-target` and its `origin/main` is behind the published tag. Read `v1.8.69-1.0.0-alpha02` on GitHub.

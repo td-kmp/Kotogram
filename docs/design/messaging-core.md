@@ -1,3 +1,5 @@
+> **KTG-7 replaced the engine this describes** (`ClientHolder`, `AccountStore`, the update lane) with [multiaccount.md](multiaccount.md). The history, file and notification designs still stand; their entities become `AccountUpdates` followers and scoped classes in features.
+
 # Kotogram — messaging core: from a TDLib update to a pixel (design v1)
 
 Status: **proposal; M0 and the start of M1 are implemented** (§14). Module names follow KTG-6 (`core:tdlib`, `core:model`, `feature:x:impl`); reducers are now one `Reducer` per entity in a `CompositeReducer`, not one dispatching `when`. It fills the gap left by [architecture.md](../architecture.md)

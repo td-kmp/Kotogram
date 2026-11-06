@@ -1,3 +1,5 @@
+> **Superseded by [multiaccount.md](multiaccount.md) in KTG-7.** Kept for the reasoning: the classes and modules here no longer exist.
+
 # Kotogram — accounts and scopes: review and design v3
 
 Status: **implemented** on `feature/KTG-1-login` (2026-11-04), see §8. Replaces [sessions.md](sessions.md) §1, §2 and the root logic in §5 where they differ. Fits

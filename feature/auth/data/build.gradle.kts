@@ -4,7 +4,6 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 plugins {
     alias(libs.plugins.android.multiplatform.library)
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.koin.compiler)
 }
 
 kotlin {
@@ -33,13 +32,8 @@ kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     dependencies {
         api(projects.feature.auth.domain)
-        implementation(projects.core.tdlib)
-        implementation(libs.kotlinx.coroutines.core)
+        implementation(projects.core.account)
         implementation(libs.koin.core)
-        implementation(libs.koin.annotations)
+        implementation(libs.kotlinx.coroutines.core)
     }
-}
-
-koinCompiler {
-    compileSafety = true
 }

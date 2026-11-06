@@ -1,7 +1,7 @@
 package com.xbot.kotogram.feature.auth.data.extensions
 
-import com.xbot.kotogram.core.tdlib.extensions.isFlood
-import com.xbot.kotogram.core.tdlib.extensions.retryAfter
+import com.xbot.kotogram.core.account.extensions.isFlood
+import com.xbot.kotogram.core.account.extensions.retryAfter
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import io.xbot.tdlib.api.Error
 

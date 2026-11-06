@@ -29,10 +29,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.orbitmvi.orbit.compose.collectAsState
 
 @Composable
-internal fun EmailAddressScreen(
-    viewModel: EmailAddressViewModel,
-    modifier: Modifier = Modifier
-) {
+internal fun EmailAddressScreen(viewModel: EmailAddressViewModel, modifier: Modifier = Modifier) {
     val state by viewModel.collectAsState()
     EmailAddressScreenContent(state = state, onAction = viewModel::onAction, modifier = modifier)
 }

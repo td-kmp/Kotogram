@@ -4,78 +4,85 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
+import com.xbot.kotogram.core.account.AccountManager
+import com.xbot.kotogram.core.account.AccountSession
+import com.xbot.kotogram.core.account.extensions.isLoginStep
 import com.xbot.kotogram.core.navigation.LocalNavigator
 import com.xbot.kotogram.core.navigation.NavKey
-import com.xbot.kotogram.core.navigation.extensions.navEntryProvider
-import com.xbot.kotogram.core.navigation.extensions.navSerializersModule
+import com.xbot.kotogram.core.navigation.koinNavSerializersModule
 import com.xbot.kotogram.core.navigation.rememberNavigator
 import com.xbot.kotogram.core.navigation.rememberSharedViewModelStoreNavEntryDecorator
-import com.xbot.kotogram.core.tdlib.extensions.accountScope
-import org.koin.compose.getKoin
+import com.xbot.kotogram.feature.auth.api.AuthRoute
+import com.xbot.kotogram.feature.chats.api.ChatListRoute
+import com.xbot.kotogram.shared.navigation.SplashRoute
+import com.xbot.kotogram.shared.screen.splash.SplashScreen
+import io.xbot.tdlib.api.AuthorizationState
+import io.xbot.tdlib.api.AuthorizationStateReady
+import org.koin.compose.koinInject
+import org.koin.compose.navigation3.koinEntryProvider
 import org.koin.compose.scope.UnboundKoinScope
-import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinDelicateAPI
 import org.koin.core.annotation.KoinExperimentalAPI
-import org.koin.core.scope.Scope
-import org.orbitmvi.orbit.compose.collectAsState
 
-/**
- * Shows the active account. Each account keeps its own back stack (saved per account), resolves its
- * screens from its Koin scope and keeps their ViewModels in its own store.
- */
 @Composable
-internal fun RootNavigation(
-    modifier: Modifier = Modifier,
-    viewModel: RootViewModel = koinViewModel()
-) {
-    val state by viewModel.collectAsState()
-    val accountScope = state.accountId?.let(getKoin()::accountScope)
-    val saveableStateHolder = rememberSaveableStateHolder()
+internal fun RootNavigation(modifier: Modifier = Modifier) {
+    val manager = koinInject<AccountManager>()
+    val shown by manager.shown.collectAsStateWithLifecycle()
     Surface(modifier.fillMaxSize()) {
-        val accountId = state.accountId
-        if (accountId == null || accountScope == null) {
-            AccountNavigation(SplashRoute)
-        } else {
-            saveableStateHolder.SaveableStateProvider(accountId.value) {
-                // Tells the repository when the account has really left the screen: only then its scope closes.
-                DisposableEffect(accountId) {
-                    viewModel.onAction(RootScreenAction.OnAccountShown(accountId))
-                    onDispose { viewModel.onAction(RootScreenAction.OnAccountShown(null)) }
-                }
-                ProvideAccount(accountScope) { AccountNavigation(state.route) }
+        val active = shown.active
+        if (active == null) SplashScreen() else Account(active)
+        shown.adding?.let { Account(it, onRootBack = manager::cancelAdding) }
+    }
+}
+
+// Not KoinScope { } or rememberKoinScope: they close the scope with the composition, and an account runs without UI.
+@OptIn(KoinExperimentalAPI::class, KoinDelicateAPI::class)
+@Composable
+private fun Account(session: AccountSession, onRootBack: (() -> Unit)? = null) {
+    // ViewModel stores hang on this position in the composition, so they stay apart and clear with the account.
+    key(session.id) {
+        val authorizationState by session.authorizationState.collectAsStateWithLifecycle()
+        UnboundKoinScope(session.koinScope) {
+            // A Surface of its own: the sign-in of a new account covers the active one and takes its touches.
+            Surface(Modifier.fillMaxSize()) {
+                AccountNavigation(root = routeOf(authorizationState), onRootBack = onRootBack)
             }
         }
     }
 }
 
-/** The account repository closes the scope; composition only provides it. */
-@OptIn(KoinExperimentalAPI::class, KoinDelicateAPI::class)
-@Composable
-private fun ProvideAccount(accountScope: Scope, content: @Composable () -> Unit) {
-    UnboundKoinScope(scope = accountScope) {
-        CompositionLocalProvider(
-            LocalViewModelStoreOwner provides accountScope.get<AccountViewModelStoreOwner>(),
-            content = content
-        )
-    }
+private fun routeOf(authorizationState: AuthorizationState?): NavKey = when {
+    authorizationState == AuthorizationStateReady -> ChatListRoute
+    authorizationState.isLoginStep -> AuthRoute
+    else -> SplashRoute
 }
 
+@OptIn(KoinExperimentalAPI::class)
 @Composable
-private fun AccountNavigation(root: NavKey) {
+private fun AccountNavigation(root: NavKey, onRootBack: (() -> Unit)?) {
     val navigator = rememberNavigator(
         startRoute = SplashRoute,
-        serializersModule = remember { appNavigation.navSerializersModule() }
+        serializersModule = koinNavSerializersModule()
     )
     LaunchedEffect(navigator, root) { navigator.setRoot(root) }
+    // Before NavDisplay: back handlers are LIFO, so the stacks inside it, the login flow's too, go first.
+    if (onRootBack != null) {
+        NavigationBackHandler(
+            state = rememberNavigationEventState(NavigationEventInfo.None),
+            isBackEnabled = navigator.backStack.size <= 1,
+            onBackCompleted = onRootBack
+        )
+    }
     CompositionLocalProvider(LocalNavigator provides navigator) {
         NavDisplay(
             backStack = navigator.backStack,
@@ -84,7 +91,7 @@ private fun AccountNavigation(root: NavKey) {
                 rememberSaveableStateHolderNavEntryDecorator(),
                 rememberSharedViewModelStoreNavEntryDecorator()
             ),
-            entryProvider = remember { appNavigation.navEntryProvider() }
+            entryProvider = koinEntryProvider<NavKey>()
         )
     }
 }

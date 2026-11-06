@@ -1,19 +1,14 @@
 package com.xbot.kotogram.feature.chats.impl.screen.list
 
 import androidx.lifecycle.ViewModel
-import com.xbot.kotogram.core.model.AccountId
 import com.xbot.kotogram.feature.chats.domain.repository.ChatRepository
 import io.xbot.tdlib.api.ChatListMain
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import org.koin.core.annotation.KoinViewModel
-import org.koin.core.annotation.Scope
 import org.orbitmvi.orbit.OrbitContainerHost
 import org.orbitmvi.orbit.viewmodel.orbitContainer
 
-@Scope(AccountId::class)
-@KoinViewModel
 internal class ChatListViewModel(private val repository: ChatRepository) :
     ViewModel(),
     OrbitContainerHost<ChatListScreenState, ChatListScreenState, Nothing> {

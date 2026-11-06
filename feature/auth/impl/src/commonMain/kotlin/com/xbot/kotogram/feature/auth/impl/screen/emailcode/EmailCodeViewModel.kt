@@ -1,27 +1,18 @@
 package com.xbot.kotogram.feature.auth.impl.screen.emailcode
 
 import androidx.lifecycle.ViewModel
-import com.xbot.kotogram.core.model.AccountId
 import com.xbot.kotogram.feature.auth.domain.repository.AuthRepository
-import com.xbot.kotogram.feature.auth.domain.usecase.ObserveAuthorizationStateUseCase
-import io.xbot.tdlib.api.AuthorizationState
 import io.xbot.tdlib.api.AuthorizationStateWaitEmailCode
 import kotlinx.coroutines.flow.filterIsInstance
-import org.koin.core.annotation.KoinViewModel
-import org.koin.core.annotation.Scope
 import org.orbitmvi.orbit.OrbitContainerHost
 import org.orbitmvi.orbit.viewmodel.orbitContainer
 
-@Scope(AccountId::class)
-@KoinViewModel
-internal class EmailCodeViewModel(
-    private val observeAuthorizationState: ObserveAuthorizationStateUseCase,
-    private val authRepository: AuthRepository
-) : ViewModel(),
+internal class EmailCodeViewModel(private val authRepository: AuthRepository) :
+    ViewModel(),
     OrbitContainerHost<EmailCodeScreenState, EmailCodeScreenState, Nothing> {
 
     override val container = orbitContainer<EmailCodeScreenState, Nothing>(EmailCodeScreenState()) {
-        observeAuthorizationState()
+        authRepository.authorizationState
             .filterIsInstance<AuthorizationStateWaitEmailCode>()
             .collect { authState ->
                 reduce {

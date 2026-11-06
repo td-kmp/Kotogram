@@ -1,24 +1,17 @@
 package com.xbot.kotogram.feature.auth.impl.screen.phone
 
 import androidx.lifecycle.ViewModel
-import com.xbot.kotogram.core.model.AccountId
 import com.xbot.kotogram.feature.auth.domain.repository.AuthRepository
 import com.xbot.kotogram.feature.auth.domain.repository.CountryRepository
-import com.xbot.kotogram.feature.auth.domain.usecase.ObserveAuthorizationStateUseCase
 import com.xbot.kotogram.feature.auth.impl.extensions.acceptsPhoneNumber
 import io.xbot.tdlib.api.CountryInfo
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.KoinViewModel
-import org.koin.core.annotation.Scope
 import org.orbitmvi.orbit.OrbitContainerHost
 import org.orbitmvi.orbit.syntax.Syntax
 import org.orbitmvi.orbit.viewmodel.orbitContainer
 
-@Scope(AccountId::class)
-@KoinViewModel
 internal class PhoneViewModel(
-    private val observeAuthorizationState: ObserveAuthorizationStateUseCase,
     private val countryRepository: CountryRepository,
     private val authRepository: AuthRepository
 ) : ViewModel(),
@@ -28,7 +21,7 @@ internal class PhoneViewModel(
         orbitContainer<PhoneScreenState, PhoneScreenSideEffect>(PhoneScreenState()) {
             coroutineScope {
                 launch { loadCountries() }
-                observeAuthorizationState().collect { authState ->
+                authRepository.authorizationState.collect { authState ->
                     reduce { state.copy(isAcceptingNumber = authState.acceptsPhoneNumber) }
                 }
             }

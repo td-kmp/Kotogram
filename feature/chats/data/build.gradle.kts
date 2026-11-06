@@ -4,7 +4,6 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 plugins {
     alias(libs.plugins.android.multiplatform.library)
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.koin.compiler)
 }
 
 kotlin {
@@ -33,13 +32,16 @@ kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     dependencies {
         api(projects.feature.chats.domain)
-        implementation(projects.core.tdlib)
-        implementation(libs.kotlinx.coroutines.core)
+        implementation(projects.core.account)
         implementation(libs.koin.core)
-        implementation(libs.koin.annotations)
+        implementation(libs.kotlinx.coroutines.core)
+        implementation(libs.kotlinx.collections.immutable)
+        implementation(libs.kermit)
     }
-}
 
-koinCompiler {
-    compileSafety = true
+    sourceSets {
+        jvmTest.dependencies {
+            implementation(libs.kotlin.test)
+        }
+    }
 }

@@ -31,7 +31,7 @@ kotlin {
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     dependencies {
-        api(projects.core.model)
+        api(libs.tdlib.client)
         api(libs.arrow.core)
         api(libs.kotlinx.coroutines.core)
     }

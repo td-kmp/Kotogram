@@ -28,6 +28,7 @@ okio = "3.18.2"
 androidx-lifecycle = "2.11.0"
 androidx-navigation3 = "1.2.0-rc01"
 androidx-navigation3-runtime = "1.2.0"
+androidx-navigationevent = "1.1.0"
 
 # Libraries
 tdlib = "1.8.69-1.0.0-alpha02"
@@ -35,7 +36,6 @@ calf = "0.14.0"
 nucleus = "2.5.18"
 orbit = "12.0.1"
 koin = "4.2.2"
-koin-plugin = "1.2.1"
 buildkonfig = "0.23.0"
 
 # Code quality
@@ -71,6 +71,7 @@ androidx-datastore-preferences-core = { group = "androidx.datastore", name = "da
 okio = { group = "com.squareup.okio", name = "okio", version.ref = "okio" }
 kotlinx-io-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-io-core", version.ref = "kotlinx-io" }
 kotlinx-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
@@ -80,6 +81,7 @@ androidx-lifecycle-viewmodel-compose = { group = "org.jetbrains.androidx.lifecyc
 androidx-lifecycle-viewmodel-navigation3 = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-navigation3", version.ref = "androidx-lifecycle" }
 androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "androidx-navigation3-runtime" }
 androidx-navigation3-ui = { group = "org.jetbrains.androidx.navigation3", name = "navigation3-ui", version.ref = "androidx-navigation3" }
+androidx-navigationevent-compose = { group = "org.jetbrains.androidx.navigationevent", name = "navigationevent-compose", version.ref = "androidx-navigationevent" }
 
 # Libraries
 tdlib-client = { group = "io.github.xephosbot", name = "tdlib-kmp-client", version.ref = "tdlib" }
@@ -98,7 +100,7 @@ koin-core-viewmodel = { group = "io.insert-koin", name = "koin-core-viewmodel", 
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 koin-compose = { group = "io.insert-koin", name = "koin-compose", version.ref = "koin" }
 koin-compose-viewmodel = { group = "io.insert-koin", name = "koin-compose-viewmodel", version.ref = "koin" }
-koin-annotations = { group = "io.insert-koin", name = "koin-annotations", version.ref = "koin" }
+koin-compose-navigation3 = { group = "io.insert-koin", name = "koin-compose-navigation3", version.ref = "koin" }
 
 # Testing
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
@@ -116,9 +118,6 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 # Compose
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
-
-# DI
-koin-compiler = { id = "io.insert-koin.compiler.plugin", version.ref = "koin-plugin" }
 
 # Desktop
 nucleus = { id = "dev.nucleusframework", version.ref = "nucleus" }

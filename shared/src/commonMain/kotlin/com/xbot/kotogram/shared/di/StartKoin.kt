@@ -2,30 +2,34 @@ package com.xbot.kotogram.shared.di
 
 import co.touchlab.kermit.Logger
 import co.touchlab.kermit.koin.KermitKoinLogger
-import org.koin.core.annotation.ComponentScan
-import org.koin.core.annotation.Configuration
-import org.koin.core.annotation.KoinApplication
-import org.koin.core.annotation.Module
+import com.xbot.kotogram.core.account.AccountManager
+import com.xbot.kotogram.core.account.di.accountsModule
+import com.xbot.kotogram.feature.auth.data.di.authDataModule
+import com.xbot.kotogram.feature.auth.impl.di.authImplModule
+import com.xbot.kotogram.feature.chats.data.di.chatsDataModule
+import com.xbot.kotogram.feature.chats.impl.di.chatsImplModule
+import org.koin.core.context.startKoin
 import org.koin.dsl.KoinConfiguration
 import org.koin.dsl.includes
-import org.koin.plugin.module.dsl.startKoin
+import org.koin.mp.KoinPlatform
 
-@Module
-@Configuration
-@ComponentScan("com.xbot.kotogram.shared")
-class AppModule
-
-/** Every `@Configuration` module on the classpath is included automatically. */
-@KoinApplication
-internal object KotogramApp
-
-/**
- * Starts Koin once per process; platform shells add their own configuration (Android context).
- * `stopKoin()` closes every account scope, which closes its TDLib session.
- */
 fun initKoin(config: KoinConfiguration? = null) {
-    startKoin<KotogramApp> {
+    val koin = startKoin {
         logger(KermitKoinLogger(Logger.withTag("Koin")))
+        modules(
+            appModule,
+            accountsModule,
+            authDataModule,
+            authImplModule,
+            chatsDataModule,
+            chatsImplModule
+        )
+        // After the modules, so a test's definitions override them.
         includes(config)
-    }
+    }.koin
+    koin.get<AccountManager>().start()
+}
+
+suspend fun closeAccounts() {
+    KoinPlatform.getKoin().get<AccountManager>().closeAll()
 }

@@ -13,7 +13,7 @@ import com.xbot.kotogram.feature.auth.impl.resources.unsupported_subtitle
 import com.xbot.kotogram.feature.auth.impl.resources.unsupported_title
 import org.jetbrains.compose.resources.stringResource
 
-/** TDLib asks for a Telegram Premium purchase to log in, which needs the official app's store billing. */
+// TDLib asks for a Premium purchase to log in, which only the official apps' store billing can make.
 @Composable
 internal fun PremiumPurchaseScreen(onBackClick: () -> Unit, modifier: Modifier = Modifier) {
     AuthScaffold(

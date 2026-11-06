@@ -36,7 +36,6 @@ internal fun QrScreen(
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.collectAsState()
-    // Only while this screen is shown: under the phone screen, a QR request would race the number.
     LaunchedEffect(state.needsQrCode) {
         if (state.needsQrCode) viewModel.onAction(QrScreenAction.OnRequestQrCode)
     }
@@ -54,7 +53,6 @@ private fun QrScreenContent(
     modifier: Modifier = Modifier
 ) {
     AuthScaffold(title = stringResource(Res.string.qr_title), modifier = modifier) {
-        // TODO(KTG-1): render state.link as a QR code with the logo once the design spec picks the library.
         if (state.link == null) {
             CircularProgressIndicator(Modifier.size(48.dp))
         } else {

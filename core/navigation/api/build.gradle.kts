@@ -38,5 +38,6 @@ kotlin {
         implementation(libs.compose.runtime)
         api(libs.androidx.lifecycle.viewmodel.compose)
         implementation(libs.androidx.lifecycle.runtime)
+        api(libs.koin.core)
     }
 }

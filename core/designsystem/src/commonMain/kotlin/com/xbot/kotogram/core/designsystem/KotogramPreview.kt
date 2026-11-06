@@ -8,7 +8,6 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.tooling.preview.PreviewWrapperProvider
 
-/** Light and dark previews in [KotogramTheme]; the preview function shows only its content. */
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.FUNCTION)
 @PreviewLightDark

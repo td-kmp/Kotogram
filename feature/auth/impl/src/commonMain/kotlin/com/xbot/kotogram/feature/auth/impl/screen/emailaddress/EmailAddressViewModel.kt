@@ -1,15 +1,10 @@
 package com.xbot.kotogram.feature.auth.impl.screen.emailaddress
 
 import androidx.lifecycle.ViewModel
-import com.xbot.kotogram.core.model.AccountId
 import com.xbot.kotogram.feature.auth.domain.repository.AuthRepository
-import org.koin.core.annotation.KoinViewModel
-import org.koin.core.annotation.Scope
 import org.orbitmvi.orbit.OrbitContainerHost
 import org.orbitmvi.orbit.viewmodel.orbitContainer
 
-@Scope(AccountId::class)
-@KoinViewModel
 internal class EmailAddressViewModel(private val authRepository: AuthRepository) :
     ViewModel(),
     OrbitContainerHost<EmailAddressScreenState, EmailAddressScreenState, Nothing> {

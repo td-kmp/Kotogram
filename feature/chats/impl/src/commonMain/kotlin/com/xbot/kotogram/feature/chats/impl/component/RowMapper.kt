@@ -1,14 +1,10 @@
 package com.xbot.kotogram.feature.chats.impl.component
 
-/** Display rows of a list, built off the main thread. */
 internal fun interface RowMapper<E, R> {
     fun map(entries: List<E>): List<R>
 }
 
-/**
- * Reuses a row while its entry has the same inputs, so strong skipping's `===` skips unchanged rows.
- * Not thread-safe: one collector at a time.
- */
+// Reuses a row while its inputs are the same, so strong skipping's === skips it. One collector at a time.
 internal class MemoizingRowMapper<E, K, R>(
     private val key: (E) -> K,
     private val hasSameInputs: (old: E, new: E) -> Boolean,
@@ -27,7 +23,6 @@ internal class MemoizingRowMapper<E, K, R>(
             next[id] = memo
             memo.row
         }
-        // Dropping what left the list also forgets a previous login: its snapshot was emptied.
         memos = next
         return rows
     }

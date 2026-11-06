@@ -1,9 +1,6 @@
 package com.xbot.kotogram.feature.chats.impl.screen.list
 
-/**
- * Display values of one row, previewable and free of DTOs. A plain class: the mapper keeps the
- * instance while the row's inputs are the same, so strong skipping's `===` skips unchanged rows.
- */
+// A plain class: the mapper keeps the instance while the inputs are the same, so strong skipping's === skips it.
 internal class ChatListRow(
     val chatId: Long,
     val title: String,

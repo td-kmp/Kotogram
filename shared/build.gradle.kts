@@ -5,7 +5,6 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.compose.multiplatform)
-    alias(libs.plugins.koin.compiler)
     alias(libs.plugins.kotlin.serialization)
 }
 
@@ -45,8 +44,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.test)
         }
         commonMain.dependencies {
-            implementation(projects.core.model)
-            implementation(projects.core.tdlib)
+            implementation(projects.core.account)
             implementation(projects.core.designsystem)
             implementation(projects.core.navigation.impl)
             implementation(projects.feature.auth.api)
@@ -63,31 +61,18 @@ kotlin {
             implementation(libs.calf.ui)
             implementation(libs.calf.permissions)
             implementation(libs.calf.file.picker)
+            implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.androidx.lifecycle.viewmodel.compose)
             implementation(libs.androidx.lifecycle.viewmodel.navigation3)
             implementation(libs.androidx.navigation3.ui)
-            implementation(libs.orbit.core)
-            implementation(libs.orbit.viewmodel)
-            implementation(libs.orbit.compose)
+            implementation(libs.androidx.navigationevent.compose)
             api(libs.koin.core)
-            implementation(libs.koin.core.viewmodel)
             implementation(libs.koin.compose)
-            implementation(libs.koin.compose.viewmodel)
-            implementation(libs.koin.annotations)
+            implementation(libs.koin.compose.navigation3)
             implementation(libs.kermit)
             implementation(libs.kermit.koin)
         }
     }
-}
-
-koinCompiler {
-    compileSafety = true
-}
-
-// This module holds startKoin, where the Koin compiler validates the whole graph. Incremental Kotlin
-// compilation can reuse a stale result when an upstream module loses a definition, so it is off here.
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile<*>>().configureEach {
-    incremental = false
 }
 
 dependencies {

@@ -1,30 +1,21 @@
 package com.xbot.kotogram.feature.auth.impl.screen.code
 
 import androidx.lifecycle.ViewModel
-import com.xbot.kotogram.core.model.AccountId
 import com.xbot.kotogram.feature.auth.domain.repository.AuthRepository
-import com.xbot.kotogram.feature.auth.domain.usecase.ObserveAuthorizationStateUseCase
 import com.xbot.kotogram.feature.auth.impl.extensions.length
-import io.xbot.tdlib.api.AuthorizationState
 import io.xbot.tdlib.api.AuthorizationStateWaitCode
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterIsInstance
-import org.koin.core.annotation.KoinViewModel
-import org.koin.core.annotation.Scope
 import org.orbitmvi.orbit.OrbitContainerHost
 import org.orbitmvi.orbit.viewmodel.orbitContainer
 
-@Scope(AccountId::class)
-@KoinViewModel
-internal class CodeViewModel(
-    private val observeAuthorizationState: ObserveAuthorizationStateUseCase,
-    private val authRepository: AuthRepository
-) : ViewModel(),
+internal class CodeViewModel(private val authRepository: AuthRepository) :
+    ViewModel(),
     OrbitContainerHost<CodeScreenState, CodeScreenState, Nothing> {
 
     override val container = orbitContainer<CodeScreenState, Nothing>(CodeScreenState()) {
-        observeAuthorizationState()
+        authRepository.authorizationState
             .filterIsInstance<AuthorizationStateWaitCode>()
             .collectLatest { authState ->
                 reduce {

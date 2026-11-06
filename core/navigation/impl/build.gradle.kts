@@ -36,5 +36,7 @@ kotlin {
         api(projects.core.navigation.api)
         implementation(libs.compose.runtime)
         implementation(libs.androidx.navigation3.ui)
+        implementation(libs.koin.core)
+        implementation(libs.koin.compose)
     }
 }

@@ -2,6 +2,10 @@
 
 > Module names here predate KTG-6: `presentation` is now `impl`. Passkey parts are out of the code: third-party clients can't use them (see CLAUDE.md).
 
+> **Where QR login is offered is the client's decision.** TDLib's `requestQrCodeAuthentication` checks only the authorization state and a bot token, not the platform. The server's `qr_login_code` and `qr_login_camera` can't be read through TDLib: `ConfigManager::process_app_config` drops them, so `getApplicationConfig` never returns them (checked live on 2026-11-05: 10 keys, none of these, for desktop, Android and iPhone device models). Hence `LoginFlow` from `platformLoginFlow`: `QrCodeFirst` on desktop and web, `PhoneNumberOnly` on phones, which matches the official apps, because the code has to be scanned by another device. If the server refuses, the QR screen shows the error and keeps its phone button.
+>
+> History: Telegram Desktop read `qr_login_code` from 2019-11 (`e6c86b19d`) and has ignored it since 2021-08 ("Always start with QR-code login", `ae40ea933`). Telegram for macOS, on its own MTProto, still shows QR unless it is `disabled`. TDLib passed the key through `getApplicationConfig` until `dc8ffea5b8` (2025-06-16, "Add more ignored config options") and `00f352a052` (2025-06-17, `qr_login_camera`); Unigram still reads it and so only gets its own defaults. On 2026-11-05 the server issued QR tokens to our `api_id` for desktop, Android and iPhone device models alike.
+
 Status: design spec for implementation. Target: `feature/KTG-1-login`. Stack: Kotlin 2.4.20, CMP 1.12.1, `org.jetbrains.compose.material3:material3:1.12.0-alpha03`, Calf 0.14.0, Nucleus 2.5.18 (Tao backend).
 
 Mockups: [auth-mockups.html](auth-mockups.html) — every screen per platform, dark/light (open in a browser).

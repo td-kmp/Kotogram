@@ -1,28 +1,19 @@
 package com.xbot.kotogram.feature.auth.impl.screen.registration
 
 import androidx.lifecycle.ViewModel
-import com.xbot.kotogram.core.model.AccountId
 import com.xbot.kotogram.feature.auth.domain.repository.AuthRepository
-import com.xbot.kotogram.feature.auth.domain.usecase.ObserveAuthorizationStateUseCase
-import io.xbot.tdlib.api.AuthorizationState
 import io.xbot.tdlib.api.AuthorizationStateWaitRegistration
 import kotlinx.coroutines.flow.filterIsInstance
-import org.koin.core.annotation.KoinViewModel
-import org.koin.core.annotation.Scope
 import org.orbitmvi.orbit.OrbitContainerHost
 import org.orbitmvi.orbit.viewmodel.orbitContainer
 
-@Scope(AccountId::class)
-@KoinViewModel
-internal class RegistrationViewModel(
-    private val observeAuthorizationState: ObserveAuthorizationStateUseCase,
-    private val authRepository: AuthRepository
-) : ViewModel(),
+internal class RegistrationViewModel(private val authRepository: AuthRepository) :
+    ViewModel(),
     OrbitContainerHost<RegistrationScreenState, RegistrationScreenState, Nothing> {
 
     override val container =
         orbitContainer<RegistrationScreenState, Nothing>(RegistrationScreenState()) {
-            observeAuthorizationState()
+            authRepository.authorizationState
                 .filterIsInstance<AuthorizationStateWaitRegistration>()
                 .collect { authState ->
                     reduce { state.copy(termsOfService = authState.termsOfService.text.text) }

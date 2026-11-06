@@ -35,12 +35,6 @@ import androidx.navigation3.runtime.get
 import androidx.navigation3.runtime.metadata
 import androidx.savedstate.compose.LocalSavedStateRegistryOwner
 
-/**
- * Returns a [SharedViewModelStoreNavEntryDecorator] that is remembered across recompositions.
- *
- * @param [viewModelStoreOwner] The [ViewModelStoreOwner] that provides the [ViewModelStore] to
- *   NavEntries
- */
 @Composable
 fun <T : Any> rememberSharedViewModelStoreNavEntryDecorator(
     viewModelStoreOwner: ViewModelStoreOwner =
@@ -56,22 +50,6 @@ fun <T : Any> rememberSharedViewModelStoreNavEntryDecorator(
     }
 }
 
-/**
- * Provides the content of a [NavEntry] with a new [ViewModelStoreOwner] and provides that
- * [ViewModelStoreOwner] as a [LocalViewModelStoreOwner] so that it is available within the content.
- *
- * If the [NavEntry] specifies that it has a parent in its metadata, the parent's
- * [ViewModelStoreOwner] will also be supplied along with the new one. This allows the
- * entry to access both its own [ViewModel] and its parent's [ViewModel]s.
- *
- * This requires the usage of [SaveableStateHolderNavEntryDecorator] to ensure that the [NavEntry]
- * scoped [ViewModel]s can properly provide access to [androidx.lifecycle.SavedStateHandle]s.
- *
- * @see [SharedViewModelStoreNavEntryDecorator.parent]
- *
- * @param [viewModelStoreProvider] The [ViewModelStoreProvider] scoped to
- * the parent [ViewModelStoreOwner]
- */
 class SharedViewModelStoreNavEntryDecorator<T : Any>(
     viewModelStoreProvider: ViewModelStoreProvider
 ) : NavEntryDecorator<T>(
@@ -88,7 +66,6 @@ class SharedViewModelStoreNavEntryDecorator<T : Any>(
         val localValues: MutableList<ProvidedValue<*>> =
             mutableListOf(LocalViewModelStoreOwner provides localOwner)
 
-        // If the entry indicates it has a parent, also provide its parent's ViewModelStore
         val parentContentKey = entry.metadata[ParentKey]
         if (parentContentKey != null) {
             val parentOwner = rememberViewModelStoreOwner(
@@ -105,10 +82,6 @@ class SharedViewModelStoreNavEntryDecorator<T : Any>(
     }
 ) {
     companion object {
-        /**
-         * Use this function to specify a `NavEntry`'s parent. The parent's
-         * `ViewModelStoreOwner` will be supplied via `LocalSharedViewModelStoreOwner`
-         */
         fun parent(key: Any) = metadata {
             put(ParentKey, key)
         }

@@ -36,10 +36,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.orbitmvi.orbit.compose.collectAsState
 
 @Composable
-internal fun RegistrationScreen(
-    viewModel: RegistrationViewModel,
-    modifier: Modifier = Modifier
-) {
+internal fun RegistrationScreen(viewModel: RegistrationViewModel, modifier: Modifier = Modifier) {
     val state by viewModel.collectAsState()
     RegistrationScreenContent(state = state, onAction = viewModel::onAction, modifier = modifier)
 }

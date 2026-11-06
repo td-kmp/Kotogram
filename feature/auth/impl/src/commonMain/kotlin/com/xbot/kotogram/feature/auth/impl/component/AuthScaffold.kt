@@ -20,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
-/** Shared layout of the login screens: a centered column with a title and a subtitle. */
 @Composable
 internal fun AuthScaffold(
     title: String,

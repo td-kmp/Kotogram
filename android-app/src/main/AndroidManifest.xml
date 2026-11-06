@@ -6,7 +6,7 @@
 
     <application
         android:name=".KotogramApplication"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:enableOnBackInvokedCallback="true"
         android:label="Kotogram"
         android:supportsRtl="true"

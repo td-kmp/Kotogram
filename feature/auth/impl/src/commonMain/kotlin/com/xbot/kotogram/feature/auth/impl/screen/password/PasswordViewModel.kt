@@ -1,27 +1,18 @@
 package com.xbot.kotogram.feature.auth.impl.screen.password
 
 import androidx.lifecycle.ViewModel
-import com.xbot.kotogram.core.model.AccountId
 import com.xbot.kotogram.feature.auth.domain.repository.AuthRepository
-import com.xbot.kotogram.feature.auth.domain.usecase.ObserveAuthorizationStateUseCase
-import io.xbot.tdlib.api.AuthorizationState
 import io.xbot.tdlib.api.AuthorizationStateWaitPassword
 import kotlinx.coroutines.flow.filterIsInstance
-import org.koin.core.annotation.KoinViewModel
-import org.koin.core.annotation.Scope
 import org.orbitmvi.orbit.OrbitContainerHost
 import org.orbitmvi.orbit.viewmodel.orbitContainer
 
-@Scope(AccountId::class)
-@KoinViewModel
-internal class PasswordViewModel(
-    private val observeAuthorizationState: ObserveAuthorizationStateUseCase,
-    private val authRepository: AuthRepository
-) : ViewModel(),
+internal class PasswordViewModel(private val authRepository: AuthRepository) :
+    ViewModel(),
     OrbitContainerHost<PasswordScreenState, PasswordScreenState, Nothing> {
 
     override val container = orbitContainer<PasswordScreenState, Nothing>(PasswordScreenState()) {
-        observeAuthorizationState()
+        authRepository.authorizationState
             .filterIsInstance<AuthorizationStateWaitPassword>()
             .collect { authState ->
                 reduce {

@@ -35,10 +35,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.orbitmvi.orbit.compose.collectAsState
 
 @Composable
-internal fun PasswordScreen(
-    viewModel: PasswordViewModel,
-    modifier: Modifier = Modifier
-) {
+internal fun PasswordScreen(viewModel: PasswordViewModel, modifier: Modifier = Modifier) {
     val state by viewModel.collectAsState()
     PasswordScreenContent(state = state, onAction = viewModel::onAction, modifier = modifier)
 }

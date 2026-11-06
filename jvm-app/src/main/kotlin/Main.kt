@@ -5,16 +5,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.shared.App
+import com.xbot.kotogram.shared.di.closeAccounts
 import com.xbot.kotogram.shared.di.initKoin
 import dev.nucleusframework.application.nucleusApplication
 import dev.nucleusframework.window.material.MaterialDecoratedWindow
 import dev.nucleusframework.window.material.MaterialTitleBar
+import kotlinx.coroutines.runBlocking
 import org.koin.core.context.stopKoin
 
 fun main(args: Array<String>) {
     initKoin()
-    // stopKoin() runs the onClose callbacks (TDLib) on window close, Cmd+Q and SIGTERM alike.
-    Runtime.getRuntime().addShutdownHook(Thread(::stopKoin))
+    // TDLib crashes the JVM if it exits during td_receive.
+    Runtime.getRuntime().addShutdownHook(
+        Thread {
+            runBlocking { closeAccounts() }
+            stopKoin()
+        }
+    )
     nucleusApplication(args) {
         KotogramTheme {
             MaterialDecoratedWindow(

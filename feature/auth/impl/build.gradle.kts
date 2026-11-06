@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.compose.multiplatform)
-    alias(libs.plugins.koin.compiler)
     alias(libs.plugins.kotlin.serialization)
 }
 
@@ -38,7 +37,8 @@ kotlin {
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     dependencies {
-        api(projects.feature.auth.domain)
+        implementation(projects.feature.auth.domain)
+        implementation(projects.core.account)
         implementation(projects.feature.auth.api)
         implementation(projects.core.navigation.api)
         implementation(projects.core.designsystem)
@@ -60,13 +60,15 @@ kotlin {
         implementation(libs.koin.core.viewmodel)
         implementation(libs.koin.compose)
         implementation(libs.koin.compose.viewmodel)
-        implementation(libs.koin.annotations)
+        implementation(libs.koin.compose.navigation3)
         implementation(libs.kotlinx.coroutines.core)
     }
-}
 
-koinCompiler {
-    compileSafety = true
+    sourceSets {
+        jvmTest.dependencies {
+            implementation(libs.kotlin.test)
+        }
+    }
 }
 
 compose.resources {
