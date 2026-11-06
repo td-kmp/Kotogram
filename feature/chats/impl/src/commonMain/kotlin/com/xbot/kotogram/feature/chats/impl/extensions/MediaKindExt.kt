@@ -1,15 +1,15 @@
 package com.xbot.kotogram.feature.chats.impl.extensions
 
 import androidx.compose.runtime.getValue
-import com.xbot.kotogram.feature.chats.impl.resources.Res
-import com.xbot.kotogram.feature.chats.impl.resources.preview_animation
-import com.xbot.kotogram.feature.chats.impl.resources.preview_audio
-import com.xbot.kotogram.feature.chats.impl.resources.preview_document
-import com.xbot.kotogram.feature.chats.impl.resources.preview_photo
-import com.xbot.kotogram.feature.chats.impl.resources.preview_sticker
-import com.xbot.kotogram.feature.chats.impl.resources.preview_video
-import com.xbot.kotogram.feature.chats.impl.resources.preview_video_note
-import com.xbot.kotogram.feature.chats.impl.resources.preview_voice_note
+import com.xbot.kotogram.core.resources.Res
+import com.xbot.kotogram.core.resources.preview_animation
+import com.xbot.kotogram.core.resources.preview_audio
+import com.xbot.kotogram.core.resources.preview_document
+import com.xbot.kotogram.core.resources.preview_photo
+import com.xbot.kotogram.core.resources.preview_sticker
+import com.xbot.kotogram.core.resources.preview_video
+import com.xbot.kotogram.core.resources.preview_video_note
+import com.xbot.kotogram.core.resources.preview_voice_note
 import com.xbot.kotogram.feature.chats.impl.screen.list.MediaKind
 import org.jetbrains.compose.resources.StringResource
 

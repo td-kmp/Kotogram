@@ -49,6 +49,7 @@ ios-app/                     Xcode project, thin Swift host (not a Gradle module
 :core:navigation:api         NavKey, Navigator, LocalNavigator, navigation helpers
 :core:navigation:impl        rememberNavigator, NavigationState, deep links
 :core:designsystem           KotogramTheme, tokens, components used by 2+ features
+:core:resources              every string, StringResource, localising extensions of TDLib's classes
 
 :feature:<name>:api
 :feature:<name>:domain
@@ -68,7 +69,7 @@ Its source sets split on where TDLib runs: `nonWebMain` (in the process) and `we
 | `feature:x:api` | `core:navigation:api`, serialization | screens, ViewModels, logic |
 | `feature:x:domain` | `tdlib-client` (the DTOs), other features' `domain`, coroutines, Arrow | `core:account`, Compose, `io.xbot.tdlib.client.*` |
 | `feature:x:data` | its `domain`, `core:account`, Koin | Compose, ViewModels |
-| `feature:x:impl` | its `api` and `domain`, other features' `api` and `domain`, `core:designsystem`, `core:navigation:api`, `core:account` for `AccountScope` in `di` | any `data`, other `impl`, `io.xbot.tdlib.client.*` |
+| `feature:x:impl` | its `api` and `domain`, other features' `api` and `domain`, `core:designsystem`, `core:resources`, `core:navigation:api`, `core:account` for `AccountScope` in `di` | any `data`, other `impl`, `io.xbot.tdlib.client.*` |
 | other `core:*` | other `core:*`, no cycles | anything feature-specific |
 | `shared` | everything | business logic |
 | `android-app`, `jvm-app`, `web-app` | `shared` | DI declarations, UI |
@@ -255,6 +256,7 @@ component/                            # optional: composables shared by 2+ scree
 `:shared` follows the same layout for its own screen: `navigation/SplashRoute.kt`, `screen/splash/SplashScreen.kt`;
 `root/` holds the account host.
 
+- Strings live only in `core:resources`, as in AnilibriaRefresh. State carries text as its `StringResource`; a feature's own types (`AuthError`) get theirs in the feature's `impl` `extensions`, since `core` sees no feature.
 - No `ui/`, `util/` or `utils/` folders. Helpers live next to the screen that uses them.
 - Platform code (`expect`/`actual`) mirrors the same package path in `androidMain`/`iosMain`/`jvmMain`.
 - Everything is `internal` except the Koin module.

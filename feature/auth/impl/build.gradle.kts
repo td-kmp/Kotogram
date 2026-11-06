@@ -18,9 +18,6 @@ kotlin {
         minSdk {
             version = release(libs.versions.android.minsdk.get().toInt())
         }
-        androidResources {
-            enable = true
-        }
     }
 
     iosArm64()
@@ -42,11 +39,11 @@ kotlin {
         implementation(projects.feature.auth.api)
         implementation(projects.core.navigation.api)
         implementation(projects.core.designsystem)
+        implementation(projects.core.resources)
         implementation(libs.compose.runtime)
         implementation(libs.compose.foundation)
         implementation(libs.compose.ui)
         implementation(libs.compose.material3)
-        implementation(libs.compose.resources)
         implementation(libs.compose.preview)
         implementation(libs.calf.ui)
         implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -67,12 +64,10 @@ kotlin {
     sourceSets {
         jvmTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.orbit.test)
         }
     }
-}
-
-compose.resources {
-    packageOfResClass = "com.xbot.kotogram.feature.auth.impl.resources"
 }
 
 dependencies {

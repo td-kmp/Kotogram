@@ -14,9 +14,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.xbot.kotogram.core.designsystem.KotogramPreview
-import com.xbot.kotogram.feature.chats.impl.resources.Res
-import com.xbot.kotogram.feature.chats.impl.resources.chat_back
-import com.xbot.kotogram.feature.chats.impl.resources.chat_history_placeholder
+import com.xbot.kotogram.core.resources.Res
+import com.xbot.kotogram.core.resources.action_back
+import com.xbot.kotogram.core.resources.chat_history_placeholder
 import org.jetbrains.compose.resources.stringResource
 import org.orbitmvi.orbit.compose.collectAsState
 
@@ -43,7 +43,9 @@ private fun ChatScreenContent(
             TopAppBar(
                 title = { Text(state.title) },
                 navigationIcon = {
-                    TextButton(onClick = onBackClick) { Text(stringResource(Res.string.chat_back)) }
+                    TextButton(onClick = onBackClick) {
+                        Text(stringResource(Res.string.action_back))
+                    }
                 }
             )
         }

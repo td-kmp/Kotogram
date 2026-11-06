@@ -64,4 +64,20 @@
     <string name="error_too_many_attempts">Too many attempts. Try again later.</string>
     <string name="error_too_many_attempts_seconds">Too many attempts. Try again in %1$d s.</string>
     <string name="error_unknown">Error: %1$s</string>
+
+    <string name="chats_title">Chats</string>
+    <string name="chats_empty">No chats yet</string>
+    <string name="chats_load_failed">Couldn\'t load chats</string>
+    <string name="chats_draft">Draft: %1$s</string>
+    <string name="chats_sender">%1$s: %2$s</string>
+    <string name="preview_photo">Photo</string>
+    <string name="preview_video">Video</string>
+    <string name="preview_document">File</string>
+    <string name="preview_audio">Audio</string>
+    <string name="preview_voice_note">Voice message</string>
+    <string name="preview_video_note">Video message</string>
+    <string name="preview_animation">GIF</string>
+    <string name="preview_sticker">Sticker</string>
+    <string name="preview_other">Message</string>
+    <string name="chat_history_placeholder">Messages will appear here</string>
 </resources>

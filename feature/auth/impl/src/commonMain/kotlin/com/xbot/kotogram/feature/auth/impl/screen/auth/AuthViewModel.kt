@@ -1,13 +1,12 @@
 package com.xbot.kotogram.feature.auth.impl.screen.auth
 
 import androidx.lifecycle.ViewModel
+import com.xbot.kotogram.feature.auth.api.AuthStep
 import com.xbot.kotogram.feature.auth.domain.LoginEntry
 import com.xbot.kotogram.feature.auth.domain.model.LoginFlow
 import com.xbot.kotogram.feature.auth.domain.model.LoginMethod
 import com.xbot.kotogram.feature.auth.domain.repository.AuthRepository
 import com.xbot.kotogram.feature.auth.impl.extensions.toAuthStep
-import com.xbot.kotogram.feature.auth.impl.navigation.AuthStep
-import com.xbot.kotogram.feature.auth.impl.navigation.authBackStack
 import io.xbot.tdlib.api.AuthorizationStateWaitOtherDeviceConfirmation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -27,7 +26,7 @@ internal class AuthViewModel(
     override val container = orbitContainer<AuthScreenState, Nothing>(
         AuthScreenState(
             flow = flow,
-            backStack = authBackStack(loginEntry.method.value, step = null, dismissed = null)
+            backStack = backStack(loginEntry.method.value, step = null, dismissed = null)
         )
     ) {
         combine(loginEntry.method, authRepository.authorizationState, dismissedStep, ::Triple)
@@ -42,7 +41,7 @@ internal class AuthViewModel(
                 }
                 val step = authorizationState.toAuthStep()
                 if (dismissed != null && step != dismissed) dismissedStep.value = null
-                reduce { state.copy(backStack = authBackStack(method, step, dismissed)) }
+                reduce { state.copy(backStack = backStack(method, step, dismissed)) }
             }
     }
 
@@ -66,5 +65,19 @@ internal class AuthViewModel(
         if (authRepository.authorizationState.first().toAuthStep() != null) {
             authRepository.restartSignIn()
         }
+    }
+
+    private fun backStack(
+        method: LoginMethod,
+        step: AuthStep?,
+        dismissed: AuthStep?
+    ): List<AuthStep> {
+        // TDLib shows a QR code only before the first step, so past it the entry is the phone.
+        val entry = if (method == LoginMethod.QrCode && step == null) {
+            AuthStep.QrCode
+        } else {
+            AuthStep.PhoneNumber
+        }
+        return listOfNotNull(entry, step?.takeUnless { it == dismissed })
     }
 }

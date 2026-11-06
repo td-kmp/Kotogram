@@ -7,7 +7,7 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.xbot.kotogram.feature.auth.impl.navigation.AuthStep
+import com.xbot.kotogram.feature.auth.api.AuthStep
 import com.xbot.kotogram.feature.auth.impl.screen.code.CodeScreen
 import com.xbot.kotogram.feature.auth.impl.screen.emailaddress.EmailAddressScreen
 import com.xbot.kotogram.feature.auth.impl.screen.emailcode.EmailCodeScreen
@@ -28,8 +28,8 @@ internal fun AuthScreen(viewModel: AuthViewModel, modifier: Modifier = Modifier)
         modifier = modifier,
         onBack = onBack,
         entryDecorators = listOf(
-            rememberSaveableStateHolderNavEntryDecorator<AuthStep>(),
-            rememberViewModelStoreNavEntryDecorator<AuthStep>()
+            rememberSaveableStateHolderNavEntryDecorator(),
+            rememberViewModelStoreNavEntryDecorator()
         ),
         entryProvider = entryProvider {
             entry<AuthStep.QrCode> {

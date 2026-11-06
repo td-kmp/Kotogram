@@ -18,11 +18,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.xbot.kotogram.core.resources.Res
+import com.xbot.kotogram.core.resources.chats_draft
+import com.xbot.kotogram.core.resources.chats_sender
+import com.xbot.kotogram.core.resources.preview_other
 import com.xbot.kotogram.feature.chats.impl.extensions.label
-import com.xbot.kotogram.feature.chats.impl.resources.Res
-import com.xbot.kotogram.feature.chats.impl.resources.chats_draft
-import com.xbot.kotogram.feature.chats.impl.resources.chats_sender
-import com.xbot.kotogram.feature.chats.impl.resources.preview_other
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

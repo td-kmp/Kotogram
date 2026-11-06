@@ -20,10 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.xbot.kotogram.core.designsystem.KotogramPreview
-import com.xbot.kotogram.feature.chats.impl.resources.Res
-import com.xbot.kotogram.feature.chats.impl.resources.chats_empty
-import com.xbot.kotogram.feature.chats.impl.resources.chats_load_failed
-import com.xbot.kotogram.feature.chats.impl.resources.chats_title
+import com.xbot.kotogram.core.resources.Res
+import com.xbot.kotogram.core.resources.chats_empty
+import com.xbot.kotogram.core.resources.chats_load_failed
+import com.xbot.kotogram.core.resources.chats_title
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import org.jetbrains.compose.resources.stringResource

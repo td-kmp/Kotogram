@@ -46,13 +46,7 @@ internal class EmailCodeViewModel(private val authRepository: AuthRepository) :
             state.copy(
                 isSubmitting = false,
                 error = error,
-                code = if (error !=
-                    null
-                ) {
-                    ""
-                } else {
-                    state.code
-                }
+                code = if (error != null) "" else state.code
             )
         }
     }

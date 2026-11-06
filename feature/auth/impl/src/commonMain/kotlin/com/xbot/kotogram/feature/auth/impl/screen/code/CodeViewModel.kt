@@ -1,8 +1,8 @@
 package com.xbot.kotogram.feature.auth.impl.screen.code
 
 import androidx.lifecycle.ViewModel
+import com.xbot.kotogram.feature.auth.domain.extensions.length
 import com.xbot.kotogram.feature.auth.domain.repository.AuthRepository
-import com.xbot.kotogram.feature.auth.impl.extensions.length
 import io.xbot.tdlib.api.AuthorizationStateWaitCode
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -62,13 +62,7 @@ internal class CodeViewModel(private val authRepository: AuthRepository) :
             state.copy(
                 isSubmitting = false,
                 error = error,
-                code = if (error !=
-                    null
-                ) {
-                    ""
-                } else {
-                    state.code
-                }
+                code = if (error != null) "" else state.code
             )
         }
     }

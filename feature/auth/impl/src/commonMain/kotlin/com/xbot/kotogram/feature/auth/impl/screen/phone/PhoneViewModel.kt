@@ -1,9 +1,9 @@
 package com.xbot.kotogram.feature.auth.impl.screen.phone
 
 import androidx.lifecycle.ViewModel
+import com.xbot.kotogram.feature.auth.domain.extensions.acceptsPhoneNumber
 import com.xbot.kotogram.feature.auth.domain.repository.AuthRepository
 import com.xbot.kotogram.feature.auth.domain.repository.CountryRepository
-import com.xbot.kotogram.feature.auth.impl.extensions.acceptsPhoneNumber
 import io.xbot.tdlib.api.CountryInfo
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch

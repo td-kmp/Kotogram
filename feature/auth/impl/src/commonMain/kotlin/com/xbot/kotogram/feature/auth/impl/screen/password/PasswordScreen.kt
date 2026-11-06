@@ -1,36 +1,48 @@
 package com.xbot.kotogram.feature.auth.impl.screen.password
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.core.resources.Res
+import com.xbot.kotogram.core.resources.action_continue
+import com.xbot.kotogram.core.resources.password_forgot
+import com.xbot.kotogram.core.resources.password_hint
+import com.xbot.kotogram.core.resources.password_placeholder
+import com.xbot.kotogram.core.resources.password_recovery_code
+import com.xbot.kotogram.core.resources.password_recovery_sent
+import com.xbot.kotogram.core.resources.password_subtitle
+import com.xbot.kotogram.core.resources.password_title
+import com.xbot.kotogram.core.resources.stringResource
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
-import com.xbot.kotogram.feature.auth.impl.component.AuthErrorText
-import com.xbot.kotogram.feature.auth.impl.component.AuthScaffold
-import com.xbot.kotogram.feature.auth.impl.component.AuthSubtitle
-import com.xbot.kotogram.feature.auth.impl.extensions.asString
-import com.xbot.kotogram.feature.auth.impl.extensions.toUiText
-import com.xbot.kotogram.feature.auth.impl.resources.Res
-import com.xbot.kotogram.feature.auth.impl.resources.action_continue
-import com.xbot.kotogram.feature.auth.impl.resources.password_forgot
-import com.xbot.kotogram.feature.auth.impl.resources.password_hint
-import com.xbot.kotogram.feature.auth.impl.resources.password_placeholder
-import com.xbot.kotogram.feature.auth.impl.resources.password_recovery_code
-import com.xbot.kotogram.feature.auth.impl.resources.password_recovery_sent
-import com.xbot.kotogram.feature.auth.impl.resources.password_subtitle
-import com.xbot.kotogram.feature.auth.impl.resources.password_title
+import com.xbot.kotogram.feature.auth.impl.extensions.localizedMessage
 import org.jetbrains.compose.resources.stringResource
 import org.orbitmvi.orbit.compose.collectAsState
 
@@ -46,67 +58,87 @@ private fun PasswordScreenContent(
     onAction: (PasswordScreenAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    AuthScaffold(
-        title = stringResource(Res.string.password_title),
-        subtitle = {
-            AuthSubtitle(
-                if (state.isRecovering) {
+    Scaffold(modifier = modifier, contentWindowInsets = WindowInsets.safeDrawing) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+                .wrapContentWidth()
+                .widthIn(max = 420.dp)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = stringResource(Res.string.password_title),
+                style = MaterialTheme.typography.headlineSmall,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = if (state.isRecovering) {
                     stringResource(Res.string.password_recovery_sent, state.recoveryEmailPattern)
                 } else {
                     stringResource(Res.string.password_subtitle)
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+            if (state.isRecovering) {
+                OutlinedTextField(
+                    value = state.recoveryCode,
+                    onValueChange = { onAction(PasswordScreenAction.OnRecoveryCodeChange(it)) },
+                    placeholder = { Text(stringResource(Res.string.password_recovery_code)) },
+                    singleLine = true,
+                    isError = state.error != null,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.NumberPassword,
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(onDone = {
+                        onAction(PasswordScreenAction.OnSubmit)
+                    }),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                OutlinedTextField(
+                    value = state.password,
+                    onValueChange = { onAction(PasswordScreenAction.OnPasswordChange(it)) },
+                    placeholder = { Text(stringResource(Res.string.password_placeholder)) },
+                    supportingText = state.hint.takeIf { it.isNotEmpty() }
+                        ?.let { { Text(stringResource(Res.string.password_hint, it)) } },
+                    singleLine = true,
+                    isError = state.error != null,
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(onDone = {
+                        onAction(PasswordScreenAction.OnSubmit)
+                    }),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            state.error?.let { error ->
+                Text(
+                    text = stringResource(error.localizedMessage()),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            Button(
+                onClick = { onAction(PasswordScreenAction.OnSubmit) },
+                enabled = !state.isSubmitting,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(Res.string.action_continue))
+            }
+            if (!state.isRecovering && state.hasRecoveryEmail) {
+                TextButton(onClick = { onAction(PasswordScreenAction.OnForgotPassword) }) {
+                    Text(stringResource(Res.string.password_forgot))
                 }
-            )
-        },
-        modifier = modifier
-    ) {
-        if (state.isRecovering) {
-            OutlinedTextField(
-                value = state.recoveryCode,
-                onValueChange = { onAction(PasswordScreenAction.OnRecoveryCodeChange(it)) },
-                placeholder = { Text(stringResource(Res.string.password_recovery_code)) },
-                singleLine = true,
-                isError = state.error != null,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.NumberPassword,
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(onDone = {
-                    onAction(PasswordScreenAction.OnSubmit)
-                }),
-                modifier = Modifier.fillMaxWidth()
-            )
-        } else {
-            OutlinedTextField(
-                value = state.password,
-                onValueChange = { onAction(PasswordScreenAction.OnPasswordChange(it)) },
-                placeholder = { Text(stringResource(Res.string.password_placeholder)) },
-                supportingText = state.hint.takeIf {
-                    it.isNotEmpty()
-                }?.let { { Text(stringResource(Res.string.password_hint, it)) } },
-                singleLine = true,
-                isError = state.error != null,
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(onDone = {
-                    onAction(PasswordScreenAction.OnSubmit)
-                }),
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-        AuthErrorText(state.error?.toUiText()?.asString())
-        Button(
-            onClick = { onAction(PasswordScreenAction.OnSubmit) },
-            enabled = !state.isSubmitting,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(Res.string.action_continue))
-        }
-        if (!state.isRecovering && state.hasRecoveryEmail) {
-            TextButton(onClick = { onAction(PasswordScreenAction.OnForgotPassword) }) {
-                Text(stringResource(Res.string.password_forgot))
             }
         }
     }

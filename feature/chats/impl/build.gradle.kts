@@ -38,11 +38,11 @@ kotlin {
         implementation(projects.feature.chats.api)
         implementation(projects.core.navigation.api)
         implementation(projects.core.designsystem)
+        implementation(projects.core.resources)
         implementation(libs.compose.runtime)
         implementation(libs.compose.foundation)
         implementation(libs.compose.ui)
         implementation(libs.compose.material3)
-        implementation(libs.compose.resources)
         implementation(libs.compose.preview)
         implementation(libs.androidx.lifecycle.viewmodel.compose)
         implementation(libs.androidx.lifecycle.runtime.compose)
@@ -57,10 +57,6 @@ kotlin {
         implementation(libs.kotlinx.coroutines.core)
         implementation(libs.kotlinx.datetime)
     }
-}
-
-compose.resources {
-    packageOfResClass = "com.xbot.kotogram.feature.chats.impl.resources"
 }
 
 dependencies {
