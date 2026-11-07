@@ -1,0 +1,31 @@
+package com.xbot.kotogram.feature.language.data.account
+
+import com.xbot.kotogram.core.account.AccountUpdates
+import io.xbot.tdlib.api.OptionValueString
+import io.xbot.tdlib.api.UpdateOption
+import io.xbot.tdlib.client.TdClient
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
+
+// The server's pick for the system_language_code this instance sent, before authorization too.
+internal class SuggestedLanguagePack : AccountUpdates {
+    private val mutableLanguagePackId = MutableStateFlow("")
+    val languagePackId: StateFlow<String> = mutableLanguagePackId.asStateFlow()
+
+    override fun start(scope: CoroutineScope, client: TdClient) {
+        scope.launch(start = CoroutineStart.UNDISPATCHED) {
+            client.updatesOf<UpdateOption>()
+                .filter { it.name == SUGGESTED_LANGUAGE_PACK_ID }
+                .collect { mutableLanguagePackId.value = (it.value as? OptionValueString)?.value.orEmpty() }
+        }
+    }
+
+    private companion object {
+        const val SUGGESTED_LANGUAGE_PACK_ID = "suggested_language_pack_id"
+    }
+}

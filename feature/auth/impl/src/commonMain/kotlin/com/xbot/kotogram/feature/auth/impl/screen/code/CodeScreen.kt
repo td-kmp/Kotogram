@@ -23,6 +23,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -31,13 +33,15 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.resources.Res
-import com.xbot.kotogram.core.resources.action_continue
-import com.xbot.kotogram.core.resources.code_hint
-import com.xbot.kotogram.core.resources.code_resend
-import com.xbot.kotogram.core.resources.code_resend_in
+import com.xbot.kotogram.core.resources.annotatedStringResource
+import com.xbot.kotogram.core.resources.editaccount_changenumber
 import com.xbot.kotogram.core.resources.extensions.description
+import com.xbot.kotogram.core.resources.login_header_code
+import com.xbot.kotogram.core.resources.login_next
+import com.xbot.kotogram.core.resources.login_sendsmsifnotreceivedappcode
+import com.xbot.kotogram.core.resources.login_willcall
+import com.xbot.kotogram.core.resources.login_willsendsms
 import com.xbot.kotogram.core.resources.stringResource
-import com.xbot.kotogram.core.resources.wrong_number
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import com.xbot.kotogram.feature.auth.impl.extensions.localizedMessage
 import io.xbot.tdlib.api.AuthenticationCodeInfo
@@ -69,6 +73,13 @@ private fun CodeScreenContent(
     modifier: Modifier = Modifier
 ) {
     val info = state.info
+    val description = info?.let {
+        annotatedStringResource(
+            it.description,
+            linkStyles = TextLinkStyles(SpanStyle(color = MaterialTheme.colorScheme.primary)),
+            onLinkClick = { onChangeNumberClick() }
+        )
+    }
     Scaffold(modifier = modifier, contentWindowInsets = WindowInsets.safeDrawing) { innerPadding ->
         Column(
             modifier = Modifier
@@ -86,9 +97,9 @@ private fun CodeScreenContent(
                 style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center
             )
-            if (info != null) {
+            if (description != null) {
                 Text(
-                    text = stringResource(info.description),
+                    text = description,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
@@ -97,7 +108,7 @@ private fun CodeScreenContent(
             OutlinedTextField(
                 value = state.code,
                 onValueChange = { onAction(CodeScreenAction.OnCodeChange(it)) },
-                placeholder = { Text(stringResource(Res.string.code_hint)) },
+                placeholder = { Text(stringResource(Res.string.login_header_code)) },
                 singleLine = true,
                 isError = state.error != null,
                 enabled = !state.isSubmitting,
@@ -120,7 +131,7 @@ private fun CodeScreenContent(
                 enabled = state.code.isNotEmpty() && !state.isSubmitting,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(stringResource(Res.string.action_continue))
+                Text(stringResource(Res.string.login_next))
             }
             if (info?.nextType != null) {
                 TextButton(
@@ -129,27 +140,33 @@ private fun CodeScreenContent(
                 ) {
                     Text(
                         if (state.canResend) {
-                            stringResource(Res.string.code_resend)
+                            stringResource(Res.string.login_sendsmsifnotreceivedappcode)
                         } else {
+                            val countdown = if (info.nextType is AuthenticationCodeTypeCall) {
+                                Res.string.login_willcall
+                            } else {
+                                Res.string.login_willsendsms
+                            }
                             stringResource(
-                                Res.string.code_resend_in,
-                                formatSeconds(state.resendSecondsLeft)
+                                countdown,
+                                state.resendSecondsLeft / SECONDS_PER_MINUTE,
+                                (state.resendSecondsLeft % SECONDS_PER_MINUTE).toString().padStart(2, '0')
                             )
                         }
                     )
                 }
             }
-            TextButton(onClick = onChangeNumberClick) {
-                Text(stringResource(Res.string.wrong_number))
+            // Word and phrase codes have no "· Edit" in their text.
+            if (description == null || description.getLinkAnnotations(0, description.length).isEmpty()) {
+                TextButton(onClick = onChangeNumberClick) {
+                    Text(stringResource(Res.string.editaccount_changenumber))
+                }
             }
         }
     }
 }
 
 private const val SECONDS_PER_MINUTE = 60
-
-private fun formatSeconds(seconds: Int): String =
-    "${seconds / SECONDS_PER_MINUTE}:${(seconds % SECONDS_PER_MINUTE).toString().padStart(2, '0')}"
 
 @KotogramPreview
 @Composable

@@ -4,6 +4,9 @@ import io.xbot.tdlib.api.AuthorizationState
 import io.xbot.tdlib.api.AuthorizationStateReady
 import io.xbot.tdlib.api.AuthorizationStateWaitPhoneNumber
 import io.xbot.tdlib.api.AuthorizationStateWaitTdlibParameters
+import io.xbot.tdlib.api.OptionValue
+import io.xbot.tdlib.api.OptionValueEmpty
+import io.xbot.tdlib.api.OptionValueString
 import io.xbot.tdlib.api.Update
 import io.xbot.tdlib.api.UpdateAuthorizationState
 import io.xbot.tdlib.client.TdClient
@@ -24,6 +27,8 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
@@ -58,6 +63,29 @@ class AccountManagerTest {
             listOf("1 getOption", "1 setTdlibParameters"),
             app.tdLib.requests.take(2)
         )
+    }
+
+    @Test
+    fun optionsGoBeforeTheParameters() = test {
+        val options = MutableStateFlow(mapOf("a" to OptionValueString("1"), "b" to OptionValueEmpty))
+        val app = TestApp(options = FakeOptions(options)).started()
+        app.active { it is AuthorizationStateWaitPhoneNumber }
+        assertEquals(
+            listOf("1 getOption", "1 setOption a", "1 setOption b", "1 setTdlibParameters"),
+            app.tdLib.requests.take(4)
+        )
+    }
+
+    @Test
+    fun onlyAChangedOptionIsSentAgain() = test {
+        val options = MutableStateFlow(mapOf("a" to OptionValueString("1"), "b" to OptionValueEmpty))
+        val app = TestApp(options = FakeOptions(options)).started()
+        app.active { it is AuthorizationStateWaitPhoneNumber }
+
+        options.value = mapOf("a" to OptionValueString("2"), "b" to OptionValueEmpty)
+
+        while (app.tdLib.requests.count { it == "1 setOption a" } < 2) delay(10)
+        assertEquals(1, app.tdLib.requests.count { it == "1 setOption b" })
     }
 
     @Test
@@ -375,7 +403,8 @@ class AccountManagerTest {
 private class TestApp(
     val tdLib: FakeTdLib = FakeTdLib(),
     val store: InMemoryRegistryStore = InMemoryRegistryStore(),
-    val keys: FakeDatabaseKeys = FakeDatabaseKeys()
+    val keys: FakeDatabaseKeys = FakeDatabaseKeys(),
+    options: TdlibOptions? = null
 ) {
     val root = Files.createTempDirectory("kotogram-accounts")
 
@@ -399,6 +428,7 @@ private class TestApp(
                 module {
                     scope(AccountScope) {
                         scopedOf(::UpdateRecorder) { bind<AccountUpdates>() }
+                        options?.let { owner -> scoped<TdlibOptions> { owner } }
                     }
                 }
             )
@@ -448,6 +478,8 @@ private class FakeDatabaseKeys(private val lost: Set<AccountId> = emptySet()) : 
         const val KEY_SIZE = 32
     }
 }
+
+private class FakeOptions(override val options: Flow<Map<String, OptionValue>>) : TdlibOptions
 
 private class UpdateRecorder : AccountUpdates {
     val updates = CopyOnWriteArrayList<Update>()

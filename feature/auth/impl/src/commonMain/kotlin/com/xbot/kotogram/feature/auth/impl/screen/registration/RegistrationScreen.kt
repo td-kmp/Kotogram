@@ -23,6 +23,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
@@ -31,15 +33,16 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.resources.Res
-import com.xbot.kotogram.core.resources.action_back
-import com.xbot.kotogram.core.resources.action_continue
-import com.xbot.kotogram.core.resources.first_name
-import com.xbot.kotogram.core.resources.last_name
-import com.xbot.kotogram.core.resources.registration_subtitle
-import com.xbot.kotogram.core.resources.registration_title
+import com.xbot.kotogram.core.resources.annotatedStringResource
+import com.xbot.kotogram.core.resources.login_new_register_footer
+import com.xbot.kotogram.core.resources.login_new_register_header
+import com.xbot.kotogram.core.resources.login_new_register_info
+import com.xbot.kotogram.core.resources.login_new_register_next
+import com.xbot.kotogram.core.resources.login_register_firstname_placeholder
+import com.xbot.kotogram.core.resources.login_register_lastname_placeholder
+import com.xbot.kotogram.core.resources.navigation_back
 import com.xbot.kotogram.core.resources.stringResource
-import com.xbot.kotogram.core.resources.tos_accept
-import com.xbot.kotogram.core.resources.tos_title
+import com.xbot.kotogram.core.resources.termsofservice_title
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import com.xbot.kotogram.feature.auth.impl.extensions.localizedMessage
 import org.orbitmvi.orbit.compose.collectAsState
@@ -69,12 +72,12 @@ private fun RegistrationScreenContent(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = stringResource(Res.string.registration_title),
+                text = stringResource(Res.string.login_new_register_header),
                 style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center
             )
             Text(
-                text = stringResource(Res.string.registration_subtitle),
+                text = stringResource(Res.string.login_new_register_info),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -87,7 +90,7 @@ private fun RegistrationScreenContent(
             OutlinedTextField(
                 value = state.firstName,
                 onValueChange = { onAction(RegistrationScreenAction.OnFirstNameChange(it)) },
-                placeholder = { Text(stringResource(Res.string.first_name)) },
+                placeholder = { Text(stringResource(Res.string.login_register_firstname_placeholder)) },
                 singleLine = true,
                 keyboardOptions = nameOptions,
                 modifier = Modifier.fillMaxWidth()
@@ -95,7 +98,7 @@ private fun RegistrationScreenContent(
             OutlinedTextField(
                 value = state.lastName,
                 onValueChange = { onAction(RegistrationScreenAction.OnLastNameChange(it)) },
-                placeholder = { Text(stringResource(Res.string.last_name)) },
+                placeholder = { Text(stringResource(Res.string.login_register_lastname_placeholder)) },
                 singleLine = true,
                 keyboardOptions = nameOptions.copy(imeAction = ImeAction.Done),
                 modifier = Modifier.fillMaxWidth()
@@ -112,11 +115,17 @@ private fun RegistrationScreenContent(
                 enabled = state.canSubmit,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(stringResource(Res.string.action_continue))
+                Text(stringResource(Res.string.login_new_register_next))
             }
-            TextButton(onClick = {
-                onAction(RegistrationScreenAction.OnTermsVisibilityChange(true))
-            }) { Text(stringResource(Res.string.tos_accept)) }
+            Text(
+                text = annotatedStringResource(
+                    Res.string.login_new_register_footer,
+                    linkStyles = TextLinkStyles(SpanStyle(color = MaterialTheme.colorScheme.primary)),
+                    onLinkClick = { onAction(RegistrationScreenAction.OnTermsVisibilityChange(true)) }
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                textAlign = TextAlign.Center
+            )
         }
     }
 
@@ -125,12 +134,12 @@ private fun RegistrationScreenContent(
             onDismissRequest = {
                 onAction(RegistrationScreenAction.OnTermsVisibilityChange(false))
             },
-            title = { Text(stringResource(Res.string.tos_title)) },
+            title = { Text(stringResource(Res.string.termsofservice_title)) },
             text = { Text(state.termsOfService, Modifier.verticalScroll(rememberScrollState())) },
             confirmButton = {
                 TextButton(onClick = {
                     onAction(RegistrationScreenAction.OnTermsVisibilityChange(false))
-                }) { Text(stringResource(Res.string.action_back)) }
+                }) { Text(stringResource(Res.string.navigation_back)) }
             }
         )
     }

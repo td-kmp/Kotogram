@@ -5,8 +5,6 @@ interface AccountStorage {
 
     fun filesDirectory(id: AccountId): String
 
-    val languagePackDatabase: String
-
     suspend fun delete(id: AccountId)
 }
 

@@ -23,7 +23,9 @@ import io.xbot.tdlib.api.TdFunction
 import io.xbot.tdlib.api.TdObject
 import io.xbot.tdlib.client.TdClient
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 
 // One method per TDLib authorization function.
 @Suppress("TooManyFunctions")
@@ -35,6 +37,10 @@ internal class DefaultAuthRepository(
 
     override val authorizationState: Flow<AuthorizationState> =
         client.authorizationState.filterNotNull()
+
+    override val isFirstSignIn: Flow<Boolean> = accounts.registry
+        .map { registry -> registry.signedIn.none { it.id != context.id } }
+        .distinctUntilChanged()
 
     override suspend fun setAuthenticationPhoneNumber(phoneNumber: String) =
         call(SetAuthenticationPhoneNumber(phoneNumber = phoneNumber))

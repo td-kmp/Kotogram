@@ -17,7 +17,7 @@ internal actual fun Scope.platformAccountsRoot(): String =
 internal actual fun Scope.platformTdlibConfig(): TdlibConfig {
     val context = androidContext()
     return tdlibConfigOf(
-        systemLanguageCode = Locale.getDefault().language,
+        systemLanguageCode = Locale.getDefault().toLanguageTag(),
         deviceModel = "${Build.MANUFACTURER} ${Build.MODEL}",
         systemVersion = "Android ${Build.VERSION.RELEASE}",
         applicationVersion =

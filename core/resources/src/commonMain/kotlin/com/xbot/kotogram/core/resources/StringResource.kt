@@ -1,39 +1,13 @@
-@file:Suppress("ForbiddenImport")
-
 package com.xbot.kotogram.core.resources
 
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import org.jetbrains.compose.resources.PluralStringResource
-import org.jetbrains.compose.resources.getPluralString
-import org.jetbrains.compose.resources.getString
-import org.jetbrains.compose.resources.pluralStringResource
-import org.jetbrains.compose.resources.stringResource as bundledStringResource
 
-@Composable
-fun stringResource(
-    resource: org.jetbrains.compose.resources.StringResource,
-    vararg formatArgs: Any
-): String {
-    val bundled = bundledStringResource(resource, *formatArgs)
-    return languagePackString(resource.key)?.formatTelegram(formatArgs) ?: bundled
-}
-
-@Composable
-fun stringResource(res: StringResource): String = when (res) {
-    is StringResource.String -> res.text
-    is StringResource.Text -> stringResource(res.resource, *res.formatArgs)
-    is StringResource.Plural -> pluralStringResource(res.resource, res.quantity, *res.formatArgs)
-}
-
-suspend fun getString(res: StringResource): String = when (res) {
-    is StringResource.String -> res.text
-    is StringResource.Text -> getString(res.resource, *res.formatArgs)
-    is StringResource.Plural -> getPluralString(res.resource, res.quantity, *res.formatArgs)
-}
-
+@Immutable
 sealed interface StringResource {
     data class String(val text: kotlin.String) : StringResource
 
+    @Immutable
     class Text(
         val resource: org.jetbrains.compose.resources.StringResource,
         vararg val formatArgs: Any
@@ -45,6 +19,7 @@ sealed interface StringResource {
         override fun hashCode(): Int = 31 * resource.hashCode() + formatArgs.contentHashCode()
     }
 
+    @Immutable
     class Plural(
         val resource: PluralStringResource,
         val quantity: Int,

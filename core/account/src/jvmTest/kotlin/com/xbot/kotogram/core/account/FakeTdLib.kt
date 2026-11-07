@@ -34,7 +34,8 @@ internal class FakeTdLib(
         val json = Json.parseToJsonElement(request).jsonObject
         val type = json.getValue("@type").jsonPrimitive.content
         val extra = json.getValue("@extra").jsonPrimitive.content
-        requests += "$clientId $type"
+        val option = if (type == "setOption") " ${json.getValue("name").jsonPrimitive.content}" else ""
+        requests += "$clientId $type$option"
         // TDLib starts an instance on its first request.
         if (started.add(clientId)) emitState(clientId, "authorizationStateWaitTdlibParameters")
         val answer = when (type) {

@@ -11,8 +11,7 @@ import platform.Foundation.NSBundle
 import platform.Foundation.NSLocale
 import platform.Foundation.NSSearchPathForDirectoriesInDomains
 import platform.Foundation.NSUserDomainMask
-import platform.Foundation.currentLocale
-import platform.Foundation.languageCode
+import platform.Foundation.preferredLanguages
 import platform.UIKit.UIDevice
 
 internal actual fun Scope.platformAccountsRoot(): String {
@@ -28,7 +27,7 @@ internal actual fun Scope.platformAccountsRoot(): String {
 internal actual fun Scope.platformTdlibConfig(): TdlibConfig {
     val device = UIDevice.currentDevice
     return tdlibConfigOf(
-        systemLanguageCode = NSLocale.currentLocale.languageCode,
+        systemLanguageCode = NSLocale.preferredLanguages.firstOrNull() as? String ?: "en",
         deviceModel = device.model,
         systemVersion = "${device.systemName} ${device.systemVersion}",
         applicationVersion =

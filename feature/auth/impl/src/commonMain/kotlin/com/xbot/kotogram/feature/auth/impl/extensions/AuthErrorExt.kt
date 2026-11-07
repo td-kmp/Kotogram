@@ -2,39 +2,33 @@ package com.xbot.kotogram.feature.auth.impl.extensions
 
 import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.StringResource
-import com.xbot.kotogram.core.resources.error_code_expired
-import com.xbot.kotogram.core.resources.error_invalid_code
-import com.xbot.kotogram.core.resources.error_invalid_email
-import com.xbot.kotogram.core.resources.error_invalid_name
-import com.xbot.kotogram.core.resources.error_invalid_password
-import com.xbot.kotogram.core.resources.error_invalid_phone
-import com.xbot.kotogram.core.resources.error_phone_banned
-import com.xbot.kotogram.core.resources.error_too_many_attempts
-import com.xbot.kotogram.core.resources.error_too_many_attempts_seconds
-import com.xbot.kotogram.core.resources.error_unknown
+import com.xbot.kotogram.core.resources.email_invalidemailerror
+import com.xbot.kotogram.core.resources.login_floodwait
+import com.xbot.kotogram.core.resources.login_invalidfirstnameerror
+import com.xbot.kotogram.core.resources.login_new_phonebannederror
+import com.xbot.kotogram.core.resources.password_hash_invalid
+import com.xbot.kotogram.core.resources.phone_code_expired
+import com.xbot.kotogram.core.resources.phone_code_invalid
+import com.xbot.kotogram.core.resources.phone_number_invalid
+import com.xbot.kotogram.core.resources.unknownerror
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
 
 internal fun AuthError.localizedMessage(): StringResource = when (this) {
-    AuthError.InvalidPhoneNumber -> StringResource.Text(Res.string.error_invalid_phone)
+    AuthError.InvalidPhoneNumber -> StringResource.Text(Res.string.phone_number_invalid)
 
-    AuthError.PhoneNumberBanned -> StringResource.Text(Res.string.error_phone_banned)
+    AuthError.PhoneNumberBanned -> StringResource.Text(Res.string.login_new_phonebannederror)
 
-    AuthError.InvalidCode -> StringResource.Text(Res.string.error_invalid_code)
+    AuthError.InvalidCode -> StringResource.Text(Res.string.phone_code_invalid)
 
-    AuthError.CodeExpired -> StringResource.Text(Res.string.error_code_expired)
+    AuthError.CodeExpired -> StringResource.Text(Res.string.phone_code_expired)
 
-    AuthError.InvalidPassword -> StringResource.Text(Res.string.error_invalid_password)
+    AuthError.InvalidPassword -> StringResource.Text(Res.string.password_hash_invalid)
 
-    AuthError.InvalidEmail -> StringResource.Text(Res.string.error_invalid_email)
+    AuthError.InvalidEmail -> StringResource.Text(Res.string.email_invalidemailerror)
 
-    AuthError.InvalidName -> StringResource.Text(Res.string.error_invalid_name)
+    AuthError.InvalidName -> StringResource.Text(Res.string.login_invalidfirstnameerror)
 
-    is AuthError.TooManyAttempts ->
-        retryAfter
-            ?.let {
-                StringResource.Text(Res.string.error_too_many_attempts_seconds, it.inWholeSeconds)
-            }
-            ?: StringResource.Text(Res.string.error_too_many_attempts)
+    is AuthError.TooManyAttempts -> StringResource.Text(Res.string.login_floodwait)
 
-    is AuthError.Unknown -> StringResource.Text(Res.string.error_unknown, message)
+    is AuthError.Unknown -> StringResource.Text(Res.string.unknownerror)
 }

@@ -45,11 +45,11 @@ Legend: **[V]** verified against sources (library sources and docs, reference pr
 :shared                      ASSEMBLY POINT: initKoin, root App composable with the account scopes, iOS framework
 ios-app/                     Xcode project, thin Swift host (not a Gradle module)
 
-:core:account                AccountManager, AccountSession, platform storage, web worker; no UI
+:core:account                AccountManager, AccountSession, extension points for features, platform storage, web worker; no UI
 :core:navigation:api         NavKey, Navigator, LocalNavigator, navigation helpers
 :core:navigation:impl        rememberNavigator, NavigationState, deep links
 :core:designsystem           KotogramTheme, tokens, components used by 2+ features
-:core:resources              every string, StringResource, localising extensions of TDLib's classes
+:core:resources              every string, StringResource, the Localization port, markup and plurals, localising extensions of TDLib's classes
 
 :feature:<name>:api
 :feature:<name>:domain
@@ -69,7 +69,7 @@ Its source sets split on where TDLib runs: `nonWebMain` (in the process) and `we
 | `feature:x:api` | `core:navigation:api`, serialization | screens, ViewModels, logic |
 | `feature:x:domain` | `tdlib-client` (the DTOs), other features' `domain`, coroutines, Arrow | `core:account`, Compose, `io.xbot.tdlib.client.*` |
 | `feature:x:data` | its `domain`, `core:account`, Koin | Compose, ViewModels |
-| `feature:x:impl` | its `api` and `domain`, other features' `api` and `domain`, `core:designsystem`, `core:resources`, `core:navigation:api`, `core:account` for `AccountScope` in `di` | any `data`, other `impl`, `io.xbot.tdlib.client.*` |
+| `feature:x:impl` | its `api` and `domain`, other features' `api` and `domain`, `core:designsystem`, `core:resources`, `core:navigation:api`, `core:account` for `AccountScope` and `AppCoroutineScope` in `di` | any `data`, other `impl`, `io.xbot.tdlib.client.*` |
 | other `core:*` | other `core:*`, no cycles | anything feature-specific |
 | `shared` | everything | business logic |
 | `android-app`, `jvm-app`, `web-app` | `shared` | DI declarations, UI |
@@ -104,6 +104,8 @@ val chatsImplModule = module {
 
 - **Everything bound to one account goes in `scope(AccountScope)`**: repositories, caches, ViewModels. It sees the account's `TdClient` and `AccountContext`, declared by the manager, and anything from the root. The root doesn't see it.
 - **A cache or counter that follows updates binds `AccountUpdates`**: the manager creates it before the client's first request, because updates have no replay.
+- **Options every instance needs bind `TdlibOptions`** in `scope(AccountScope)`: the manager sends their first values before `setTdlibParameters`, which TDLib needs for some of them, and each change after. One option has one owner.
+- **App-wide parts** are root singles: requests that need no particular account go through `AppClient`, app-wide files and preferences through `AppStorage`, and work that outlives screens runs in `get(AppCoroutineScope)`.
 - **Entries resolve ViewModels with plain `koinViewModel()`**, from the account scope `shared` provides with `UnboundKoinScope`. Only inside navigation entries: a store of its own per entry is what keeps accounts apart, because Koin's ViewModel key doesn't include the scope. Elsewhere it needs its own `rememberViewModelStoreOwner()`.
 - **Implementations stay `internal`.** A module's definitions see them, and only the `val` is public.
 - **Platform values** come from `platform*` expect/actual functions in `core:account`'s `di` package.
@@ -256,6 +258,7 @@ component/                            # optional: composables shared by 2+ scree
 `:shared` follows the same layout for its own screen: `navigation/SplashRoute.kt`, `screen/splash/SplashScreen.kt`;
 `root/` holds the account host.
 
+- **TDLib work stays where `TdClient` is visible**: `core:account` runs the accounts and owns no subsystem; a feature's `data` owns its entity, an app-wide one too (`feature:language`). What every instance needs reaches it through `TdlibOptions` or an `AccountUpdates` follower, as the language pack's options and updates do; files for images and video will too. A UI module reads such a part through the feature's `domain` or a port in `core:*` (`LocalizationSource`), never through an adapter in `shared`.
 - Strings live only in `core:resources`, as in AnilibriaRefresh. State carries text as its `StringResource`; a feature's own types (`AuthError`) get theirs in the feature's `impl` `extensions`, since `core` sees no feature.
 - No `ui/`, `util/` or `utils/` folders. Helpers live next to the screen that uses them.
 - Platform code (`expect`/`actual`) mirrors the same package path in `androidMain`/`iosMain`/`jvmMain`.

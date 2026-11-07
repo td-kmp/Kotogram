@@ -60,8 +60,8 @@ kotlin {
         api(libs.arrow.core)
         api(libs.kotlinx.coroutines.core)
         api(libs.koin.core)
+        api(libs.androidx.datastore.preferences.core)
         implementation(libs.kermit)
-        implementation(libs.androidx.datastore.preferences.core)
         implementation(libs.kotlinx.serialization.json)
     }
 

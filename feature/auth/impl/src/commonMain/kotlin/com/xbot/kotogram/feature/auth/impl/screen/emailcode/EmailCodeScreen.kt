@@ -30,11 +30,10 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.resources.Res
-import com.xbot.kotogram.core.resources.action_continue
-import com.xbot.kotogram.core.resources.code_hint
-import com.xbot.kotogram.core.resources.email_code_subtitle
-import com.xbot.kotogram.core.resources.email_code_title
+import com.xbot.kotogram.core.resources.login_header_code
+import com.xbot.kotogram.core.resources.login_next
 import com.xbot.kotogram.core.resources.stringResource
+import com.xbot.kotogram.core.resources.twostepauth_confirmemailcodedesc
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import com.xbot.kotogram.feature.auth.impl.extensions.localizedMessage
 import org.orbitmvi.orbit.compose.collectAsState
@@ -64,12 +63,12 @@ private fun EmailCodeScreenContent(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = stringResource(Res.string.email_code_title),
+                text = stringResource(Res.string.login_header_code),
                 style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center
             )
             Text(
-                text = stringResource(Res.string.email_code_subtitle, state.emailPattern),
+                text = stringResource(Res.string.twostepauth_confirmemailcodedesc, state.emailPattern),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -77,7 +76,7 @@ private fun EmailCodeScreenContent(
             OutlinedTextField(
                 value = state.code,
                 onValueChange = { onAction(EmailCodeScreenAction.OnCodeChange(it)) },
-                placeholder = { Text(stringResource(Res.string.code_hint)) },
+                placeholder = { Text(stringResource(Res.string.login_header_code)) },
                 singleLine = true,
                 isError = state.error != null,
                 enabled = !state.isSubmitting,
@@ -102,7 +101,7 @@ private fun EmailCodeScreenContent(
                 enabled = state.code.isNotEmpty() && !state.isSubmitting,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(stringResource(Res.string.action_continue))
+                Text(stringResource(Res.string.login_next))
             }
         }
     }

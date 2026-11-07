@@ -1,8 +1,14 @@
 package com.xbot.kotogram.feature.auth.impl.screen.auth
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
@@ -23,9 +29,36 @@ import org.orbitmvi.orbit.compose.collectAsState
 internal fun AuthScreen(viewModel: AuthViewModel, modifier: Modifier = Modifier) {
     val state by viewModel.collectAsState()
     val onBack = { viewModel.onAction(AuthScreenAction.OnBack) }
+    Box(modifier.fillMaxSize()) {
+        AuthSteps(
+            backStack = state.backStack,
+            canUseQr = state.canUseQr,
+            onAction = viewModel::onAction,
+            onBack = onBack
+        )
+        state.languageSuggestion?.let { suggestion ->
+            ContinueOnLanguageButton(
+                text = suggestion.text,
+                isLoading = state.isSwitchingLanguage,
+                onClick = { viewModel.onAction(AuthScreenAction.OnContinueOnLanguageClick) },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .safeDrawingPadding()
+                    .padding(bottom = 16.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun AuthSteps(
+    backStack: List<AuthStep>,
+    canUseQr: Boolean,
+    onAction: (AuthScreenAction) -> Unit,
+    onBack: () -> Unit
+) {
     NavDisplay(
-        backStack = state.backStack,
-        modifier = modifier,
+        backStack = backStack,
         onBack = onBack,
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
@@ -35,15 +68,15 @@ internal fun AuthScreen(viewModel: AuthViewModel, modifier: Modifier = Modifier)
             entry<AuthStep.QrCode> {
                 QrScreen(
                     viewModel = koinViewModel(),
-                    onPhoneLoginClick = { viewModel.onAction(AuthScreenAction.OnPhoneLoginClick) }
+                    onPhoneLoginClick = { onAction(AuthScreenAction.OnPhoneLoginClick) }
                 )
             }
             entry<AuthStep.PhoneNumber> {
                 PhoneScreen(
                     viewModel = koinViewModel(),
-                    canUseQr = state.canUseQr,
-                    onSubmitted = { viewModel.onAction(AuthScreenAction.OnEntrySubmitted) },
-                    onQrLoginClick = { viewModel.onAction(AuthScreenAction.OnQrLoginClick) }
+                    canUseQr = canUseQr,
+                    onSubmitted = { onAction(AuthScreenAction.OnEntrySubmitted) },
+                    onQrLoginClick = { onAction(AuthScreenAction.OnQrLoginClick) }
                 )
             }
             entry<AuthStep.Code> {

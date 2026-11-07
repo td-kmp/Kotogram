@@ -17,6 +17,12 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
+        // tdlib-kmp 1.8.69-1.0.0-alpha03 is a local build until it is published (docs/handoff.md).
+        mavenLocal {
+            mavenContent {
+                includeGroup("io.github.xephosbot")
+            }
+        }
         google {
             mavenContent {
                 includeGroupAndSubgroups("androidx")
@@ -49,3 +55,6 @@ include(":feature:chats:api")
 include(":feature:chats:domain")
 include(":feature:chats:data")
 include(":feature:chats:impl")
+include(":feature:language:domain")
+include(":feature:language:data")
+include(":feature:language:impl")

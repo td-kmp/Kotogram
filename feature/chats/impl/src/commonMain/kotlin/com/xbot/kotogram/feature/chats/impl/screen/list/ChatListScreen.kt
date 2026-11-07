@@ -17,13 +17,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.resources.Res
-import com.xbot.kotogram.core.resources.chats_empty
-import com.xbot.kotogram.core.resources.chats_load_failed
-import com.xbot.kotogram.core.resources.chats_title
+import com.xbot.kotogram.core.resources.annotatedStringResource
+import com.xbot.kotogram.core.resources.chatlist_emptytext
+import com.xbot.kotogram.core.resources.error_anerror
+import com.xbot.kotogram.core.resources.peerlist_title_chats
 import com.xbot.kotogram.core.resources.stringResource
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -67,7 +69,7 @@ private fun ChatListScreenContent(
     }
     Scaffold(
         modifier = modifier,
-        topBar = { TopAppBar(title = { Text(stringResource(Res.string.chats_title)) }) }
+        topBar = { TopAppBar(title = { Text(stringResource(Res.string.peerlist_title_chats)) }) }
     ) { innerPadding ->
         Box(Modifier.fillMaxSize().padding(innerPadding)) {
             LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
@@ -79,8 +81,11 @@ private fun ChatListScreenContent(
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     when {
                         state.isLoading -> CircularProgressIndicator()
-                        state.loadFailed -> Text(stringResource(Res.string.chats_load_failed))
-                        state.isComplete -> Text(stringResource(Res.string.chats_empty))
+                        state.loadFailed -> Text(stringResource(Res.string.error_anerror))
+                        state.isComplete -> Text(
+                            text = annotatedStringResource(Res.string.chatlist_emptytext),
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
             }

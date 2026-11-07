@@ -2,14 +2,12 @@ package com.xbot.kotogram.core.resources.extensions
 
 import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.StringResource
-import com.xbot.kotogram.core.resources.code_sent_call
-import com.xbot.kotogram.core.resources.code_sent_flash_call
-import com.xbot.kotogram.core.resources.code_sent_fragment
-import com.xbot.kotogram.core.resources.code_sent_missed_call
-import com.xbot.kotogram.core.resources.code_sent_sms
-import com.xbot.kotogram.core.resources.code_sent_sms_phrase
-import com.xbot.kotogram.core.resources.code_sent_sms_word
-import com.xbot.kotogram.core.resources.code_sent_telegram
+import com.xbot.kotogram.core.resources.login_enterphrasebeginningtext
+import com.xbot.kotogram.core.resources.login_enterwordbeginningtext
+import com.xbot.kotogram.core.resources.login_new_code_callinfo
+import com.xbot.kotogram.core.resources.login_new_code_codeinfo
+import com.xbot.kotogram.core.resources.login_new_code_fragmentinfo
+import com.xbot.kotogram.core.resources.login_new_code_smsinfo
 import io.xbot.tdlib.api.AuthenticationCodeInfo
 import io.xbot.tdlib.api.AuthenticationCodeTypeCall
 import io.xbot.tdlib.api.AuthenticationCodeTypeFirebaseAndroid
@@ -25,30 +23,24 @@ import io.xbot.tdlib.api.AuthenticationCodeTypeTelegramMessage
 val AuthenticationCodeInfo.description: StringResource
     get() = when (val type = type) {
         is AuthenticationCodeTypeTelegramMessage ->
-            StringResource.Text(Res.string.code_sent_telegram)
+            StringResource.Text(Res.string.login_new_code_codeinfo, phoneNumber)
 
         is AuthenticationCodeTypeSms,
         is AuthenticationCodeTypeFirebaseAndroid,
         is AuthenticationCodeTypeFirebaseIos ->
-            StringResource.Text(Res.string.code_sent_sms, phoneNumber)
+            StringResource.Text(Res.string.login_new_code_smsinfo, phoneNumber)
 
         is AuthenticationCodeTypeSmsWord ->
-            StringResource.Text(Res.string.code_sent_sms_word, phoneNumber, type.firstLetter)
+            StringResource.Text(Res.string.login_enterwordbeginningtext, type.firstLetter, phoneNumber)
 
         is AuthenticationCodeTypeSmsPhrase ->
-            StringResource.Text(Res.string.code_sent_sms_phrase, phoneNumber, type.firstWord)
+            StringResource.Text(Res.string.login_enterphrasebeginningtext, type.firstWord, phoneNumber)
 
-        is AuthenticationCodeTypeCall -> StringResource.Text(Res.string.code_sent_call, phoneNumber)
-
-        is AuthenticationCodeTypeFlashCall ->
-            StringResource.Text(Res.string.code_sent_flash_call, phoneNumber)
-
+        is AuthenticationCodeTypeCall,
+        is AuthenticationCodeTypeFlashCall,
         is AuthenticationCodeTypeMissedCall ->
-            StringResource.Text(
-                Res.string.code_sent_missed_call,
-                type.phoneNumberPrefix,
-                type.length
-            )
+            StringResource.Text(Res.string.login_new_code_callinfo, phoneNumber)
 
-        is AuthenticationCodeTypeFragment -> StringResource.Text(Res.string.code_sent_fragment)
+        is AuthenticationCodeTypeFragment ->
+            StringResource.Text(Res.string.login_new_code_fragmentinfo, phoneNumber)
     }

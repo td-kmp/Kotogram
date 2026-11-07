@@ -32,7 +32,7 @@ androidx-navigation3-runtime = "1.2.0"
 androidx-navigationevent = "1.1.0"
 
 # Libraries
-tdlib = "1.8.69-1.0.0-alpha02"
+tdlib = "1.8.69-1.0.0-alpha03"
 calf = "0.14.0"
 compottie = "2.3.3"
 qrose = "1.3.1"

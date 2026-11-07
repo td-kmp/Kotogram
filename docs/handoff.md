@@ -1,4 +1,4 @@
-# Handoff (2026-11-05)
+# Handoff (2026-11-07)
 
 For the next agent or machine. Durable rules are in [CLAUDE.md](../CLAUDE.md). This file is status: replace it when it goes stale.
 
@@ -6,11 +6,7 @@ For the next agent or machine. Durable rules are in [CLAUDE.md](../CLAUDE.md). T
 
 **KTG-7 is in the working tree on `refactoring/KTG-7-multiaccount-koin`, uncommitted.** The developer brought a new multi-account design and asked to delete everything except the UI and rebuild on it. KTG-6 and everything before it are at `ba53a20` on `feature/KTG-1-login`, pushed.
 
-Checked on the JVM only: every JVM module and `jvm-app` compile, all 42 tests pass (`KoinGraphTest` on real TDLib included), and spotless and detekt are clean. Android, iOS and web have not been compiled, and `AndroidDatabaseKeys` has never run. Before committing:
-
-```
-./gradlew compileAndroidMain compileKotlinIosSimulatorArm64 compileKotlinWasmJs
-```
+Checked on 2026-11-07: all 85 JVM tests pass (`KoinGraphTest` on real TDLib included), detekt is clean, and `shared` compiles for Android, the iOS simulator and the web (`compileAndroidMain compileKotlinIosSimulatorArm64 compileKotlinWasmJs`). `jvm-app` ran on the desktop: the login screen offered "Продолжить на русском" for a `ru-RU` system, and a stored `ru` started the next run in Russian. `AndroidDatabaseKeys` has never run.
 
 Next task number after it: **KTG-8**.
 
@@ -28,6 +24,7 @@ Next task number after it: **KTG-8**.
 - **`LoginFlow`** replaces `LoginCapabilities`: `PhoneNumberOnly` on Android and iOS, `QrCodeFirst` on desktop and web, from one `platformLoginFlow` in `feature:auth:data`.
 - **QR code** in `core:designsystem` (`component/QrCode`): qrose draws the code with an empty cutout for a future icon; Telegram for macOS's matrix animation plays until it (compottie, `files/qr_placeholder.lottie`). Licensing of that animation: [licensing.md](licensing.md).
 - **Start-up as in Telegram's apps:** a blank `SplashScreen`; Android holds its system splash (`core-splashscreen`) while `isStarting()`, i.e. until TDLib reports where the shown account stands, and the web page has the theme's background while the wasm loads.
+- **Language packs as a feature** ([design/localization.md](design/localization.md)): `core:account` lost its language classes and got extension points instead (`TdlibOptions`, `AppClient`, `AppStorage`, `AppCoroutineScope`); `feature:language:{domain,data,impl}` keeps the whole chosen pack in memory; `core:resources` reads it through the `Localization` port, without `core:account`, `runBlocking` or a Flow per string; plurals are `<plurals>`; "Continue in …" is part of `AuthScreen`.
 - **Polish:** comments only on hacks and workarounds. Each screen keeps its state, actions and side effects in files of their own, and the splash screen moved to `shared/screen/splash`.
 - **New:** a database key per account on Android (Keystore), `android:allowBackup="false"`, and data under `accounts/N/{db,files}`. Old `tdlib/account-N` directories aren't migrated, so an existing install logs in again.
 
@@ -42,7 +39,8 @@ Next task number after it: **KTG-8**.
 - **`feature:auth:{api,domain,data,impl}`**: the login flow.
 - **`feature:chats:{api,domain,data,impl}`**: the chat list is real: `ChatStore`, `DefaultChatRepository`, `ChatListViewModel`, a memoising `ChatListRowMapper`, `loadChats` paging. No avatars yet. The chat screen only shows its title: history is M2.
 - **Web:** `web-app` (`wasmJs`), worker in `core/account/worker`, one tab at a time through `navigator.locks`.
-- **Tests:** `AccountManagerTest` and `AccountRegistryTest` on a fake TDLib, `ReduceTest` and `UpdateCoverageTest` in `feature:chats:data`, `KoinGraphTest` on real TDLib.
+- **`feature:language:{domain,data,impl}`**: the app's language, "Continue in …" through `feature:auth:impl`.
+- **Tests:** `AccountManagerTest` and `AccountRegistryTest` on a fake TDLib, `ReduceTest` and `UpdateCoverageTest` in `feature:chats:data`, `DefaultLanguageRepositoryTest` on a fake `AppClient`, `PluralFormTest` and the `Localization` tests, `KoinGraphTest` on real TDLib.
 
 **Not checked: nothing past the login screen has run anywhere,** and KTG-7 hasn't run at all. By hand on a test-DC account (`-Ptelegram.test.dc=true` keeps away from real data): log in, see the list, restart the app, QR → phone → QR on desktop (the same QR code), and a number submitted from QR.
 
@@ -61,7 +59,7 @@ Waiting on the developer: **D3, push.** Log in at my.telegram.org and check whet
 4. Finish M1: avatars (`FileStore`, `FileDownloads`, Coil fetcher, §7 of [messaging-core.md](design/messaging-core.md)), folders, typing, scope mute settings. Its entities use the old names: `FileStore` and the like become `AccountUpdates` followers.
 5. M2: `ChatHistory` (design §6).
 6. Web: `index.html` has no favicon.
-7. Strings from Telegram's language packs, first step in (QR screen): [design/localization.md](design/localization.md). Checked by hand on 2026-11-06 (desktop, `de`): the pack downloads and replaces the bundled strings. Fix the review's findings first ([review-ktg-7.md](review-ktg-7.md), above all `language_pack_database_path` set too late); then switching, plurals, the other login screens.
+7. Languages: a list in settings, and a message when a switch fails ([design/localization.md](design/localization.md), "Not done yet"). Measure the pack's load on a slow Android phone (`LanguageRepository` logs it).
 
 ## What is not done, or weak
 
@@ -72,4 +70,4 @@ Waiting on the developer: **D3, push.** Log in at my.telegram.org and check whet
 ## Also true
 
 - `docs/research/`, `docs/design/sessions.md`, `accounts.md` and `messaging-core.md` use older module and class names and are kept for the reasoning.
-- The local `tdlib-kmp` clone is on `feature/web-target` and its `origin/main` is behind the published tag. Read `v1.8.69-1.0.0-alpha02` on GitHub.
+- **`tdlib-kmp` is `1.8.69-1.0.0-alpha03`, a local build that isn't published** (2026-11-07): branch `bugfix/td-receiver` of the local clone, cut from the tag `v1.8.69-1.0.0-alpha02` and not committed yet, `./gradlew publishToMavenLocal` there. `settings.gradle.kts` reads `io.github.xephosbot` from `mavenLocal()` first, so another machine has to build it the same way. Its API is alpha02's; inside, requests reach TDLib in the order `send` was called, an answer is decoded by its request and not in the receive loop, and `TdObject`'s serializer is built once (0.7 ms an event before). Once alpha03 is on Maven Central, drop `mavenLocal()`.

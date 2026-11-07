@@ -14,7 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.resources.Res
-import com.xbot.kotogram.core.resources.country_search
+import com.xbot.kotogram.core.resources.searchfield_search
 import com.xbot.kotogram.core.resources.stringResource
 import io.xbot.tdlib.api.CountryInfo
 
@@ -34,7 +34,7 @@ internal fun CountryPickerDialog(
                 OutlinedTextField(
                     value = query,
                     onValueChange = onQueryChange,
-                    placeholder = { Text(stringResource(Res.string.country_search)) },
+                    placeholder = { Text(stringResource(Res.string.searchfield_search)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
                 )

@@ -8,8 +8,6 @@ internal class DirectoryAccountStorage(private val root: String) : AccountStorag
 
     override fun filesDirectory(id: AccountId): String = "${directoryOf(id)}/files"
 
-    override val languagePackDatabase: String = "$root/langpack"
-
     override suspend fun delete(id: AccountId) = deleteRecursively(Path(directoryOf(id)))
 
     private fun directoryOf(id: AccountId) = "$root/${id.value}"

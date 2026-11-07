@@ -12,6 +12,8 @@ internal class FakeAuthRepository : AuthRepository {
     override val authorizationState =
         MutableStateFlow<AuthorizationState>(AuthorizationStateWaitPhoneNumber)
 
+    override val isFirstSignIn = MutableStateFlow(true)
+
     var restarts = 0
         private set
 

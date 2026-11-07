@@ -19,9 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.resources.Res
-import com.xbot.kotogram.core.resources.chats_draft
-import com.xbot.kotogram.core.resources.chats_sender
-import com.xbot.kotogram.core.resources.preview_other
+import com.xbot.kotogram.core.resources.chatlist_draft
+import com.xbot.kotogram.core.resources.peerinfo_action_message
 import com.xbot.kotogram.core.resources.stringResource
 import com.xbot.kotogram.feature.chats.impl.extensions.label
 
@@ -61,11 +60,11 @@ private fun previewText(row: ChatListRow): String {
     val text = when (val preview = row.preview) {
         ChatPreview.Empty -> ""
         is ChatPreview.Text -> preview.text
-        is ChatPreview.Draft -> stringResource(Res.string.chats_draft, preview.text)
+        is ChatPreview.Draft -> "${stringResource(Res.string.chatlist_draft)} ${preview.text}"
         is ChatPreview.Media -> preview.caption.ifEmpty { stringResource(preview.kind.label()) }
-        ChatPreview.Other -> stringResource(Res.string.preview_other)
+        ChatPreview.Other -> stringResource(Res.string.peerinfo_action_message)
     }
-    return row.senderName?.let { stringResource(Res.string.chats_sender, it, text) } ?: text
+    return row.senderName?.let { "$it: $text" } ?: text
 }
 
 @Composable

@@ -35,6 +35,7 @@ kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     dependencies {
         implementation(projects.feature.auth.domain)
+        implementation(projects.feature.language.domain)
         implementation(projects.core.account)
         implementation(projects.feature.auth.api)
         implementation(projects.core.navigation.api)

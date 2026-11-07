@@ -10,10 +10,13 @@ import io.xbot.tdlib.api.AuthorizationStateReady
 import io.xbot.tdlib.api.AuthorizationStateWaitTdlibParameters
 import io.xbot.tdlib.api.GetMe
 import io.xbot.tdlib.api.GetOption
+import io.xbot.tdlib.api.OptionValue
+import io.xbot.tdlib.api.SetOption
 import io.xbot.tdlib.api.UpdateAuthorizationState
 import io.xbot.tdlib.client.TdClient
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -24,6 +27,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.transformWhile
@@ -171,6 +175,7 @@ class AccountManager(
         return session
     }
 
+    // Stays with the account to send its options' changes.
     private suspend fun setUp(session: AccountSession) {
         session.authorizationState.first { it is AuthorizationStateWaitTdlibParameters }
         val key = keys.getOrCreate(session.id)
@@ -178,8 +183,39 @@ class AccountManager(
             onDatabaseKeyLost(session)
             return
         }
-        session.client.sendCatching(config.parameters(session.id, storage, key)).onLeft {
-            logger.e { "setTdlibParameters failed for ${session.id.value}: ${it.message}" }
+        coroutineScope {
+            val optionsSent = CompletableDeferred<Unit>()
+            launch { sendOptions(session.client, session.koinScope.getAll(), optionsSent) }
+            optionsSent.await()
+            session.client.sendCatching(config.parameters(session.id, storage, key)).onLeft {
+                logger.e { "setTdlibParameters failed for ${session.id.value}: ${it.message}" }
+            }
+        }
+    }
+
+    private suspend fun sendOptions(
+        client: TdClient,
+        owners: List<TdlibOptions>,
+        firstSent: CompletableDeferred<Unit>
+    ) {
+        if (owners.isEmpty()) {
+            firstSent.complete(Unit)
+            return
+        }
+        coroutineScope {
+            var sent = emptyMap<String, OptionValue>()
+            combine(owners.map { it.options }) { it.reduce(Map<String, OptionValue>::plus) }.collect { options ->
+                options.filter { (name, value) -> sent[name] != value }.forEach { (name, value) ->
+                    // Not awaited: TDLib answers it after setTdlibParameters, and TdClient.send keeps the call order.
+                    launch(start = CoroutineStart.UNDISPATCHED) {
+                        client.sendCatching(SetOption(name = name, value = value)).onLeft {
+                            logger.e { "Option $name wasn't set: ${it.message}" }
+                        }
+                    }
+                }
+                sent = options
+                firstSent.complete(Unit)
+            }
         }
     }
 

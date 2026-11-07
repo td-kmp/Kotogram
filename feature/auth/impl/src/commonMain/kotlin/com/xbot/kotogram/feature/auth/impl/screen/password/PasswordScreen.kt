@@ -32,15 +32,15 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.resources.Res
-import com.xbot.kotogram.core.resources.action_continue
-import com.xbot.kotogram.core.resources.password_forgot
-import com.xbot.kotogram.core.resources.password_hint
-import com.xbot.kotogram.core.resources.password_placeholder
-import com.xbot.kotogram.core.resources.password_recovery_code
-import com.xbot.kotogram.core.resources.password_recovery_sent
-import com.xbot.kotogram.core.resources.password_subtitle
-import com.xbot.kotogram.core.resources.password_title
+import com.xbot.kotogram.core.resources.login_header_password
+import com.xbot.kotogram.core.resources.login_new_password_info
+import com.xbot.kotogram.core.resources.login_next
+import com.xbot.kotogram.core.resources.login_passwordforgot
 import com.xbot.kotogram.core.resources.stringResource
+import com.xbot.kotogram.core.resources.twostepauth_enterpasswordhint
+import com.xbot.kotogram.core.resources.twostepauth_enterpasswordpassword
+import com.xbot.kotogram.core.resources.twostepauth_recoverycode
+import com.xbot.kotogram.core.resources.twostepauth_recoverysent
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import com.xbot.kotogram.feature.auth.impl.extensions.localizedMessage
 import org.orbitmvi.orbit.compose.collectAsState
@@ -70,15 +70,15 @@ private fun PasswordScreenContent(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = stringResource(Res.string.password_title),
+                text = stringResource(Res.string.login_header_password),
                 style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center
             )
             Text(
                 text = if (state.isRecovering) {
-                    stringResource(Res.string.password_recovery_sent, state.recoveryEmailPattern)
+                    stringResource(Res.string.twostepauth_recoverysent, state.recoveryEmailPattern)
                 } else {
-                    stringResource(Res.string.password_subtitle)
+                    stringResource(Res.string.login_new_password_info)
                 },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -88,7 +88,7 @@ private fun PasswordScreenContent(
                 OutlinedTextField(
                     value = state.recoveryCode,
                     onValueChange = { onAction(PasswordScreenAction.OnRecoveryCodeChange(it)) },
-                    placeholder = { Text(stringResource(Res.string.password_recovery_code)) },
+                    placeholder = { Text(stringResource(Res.string.twostepauth_recoverycode)) },
                     singleLine = true,
                     isError = state.error != null,
                     keyboardOptions = KeyboardOptions(
@@ -104,9 +104,9 @@ private fun PasswordScreenContent(
                 OutlinedTextField(
                     value = state.password,
                     onValueChange = { onAction(PasswordScreenAction.OnPasswordChange(it)) },
-                    placeholder = { Text(stringResource(Res.string.password_placeholder)) },
+                    placeholder = { Text(stringResource(Res.string.twostepauth_enterpasswordpassword)) },
                     supportingText = state.hint.takeIf { it.isNotEmpty() }
-                        ?.let { { Text(stringResource(Res.string.password_hint, it)) } },
+                        ?.let { { Text(stringResource(Res.string.twostepauth_enterpasswordhint, it)) } },
                     singleLine = true,
                     isError = state.error != null,
                     visualTransformation = PasswordVisualTransformation(),
@@ -132,11 +132,11 @@ private fun PasswordScreenContent(
                 enabled = !state.isSubmitting,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(stringResource(Res.string.action_continue))
+                Text(stringResource(Res.string.login_next))
             }
             if (!state.isRecovering && state.hasRecoveryEmail) {
                 TextButton(onClick = { onAction(PasswordScreenAction.OnForgotPassword) }) {
-                    Text(stringResource(Res.string.password_forgot))
+                    Text(stringResource(Res.string.login_passwordforgot))
                 }
             }
         }

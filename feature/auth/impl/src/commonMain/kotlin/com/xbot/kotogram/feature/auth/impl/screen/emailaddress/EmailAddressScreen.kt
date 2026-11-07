@@ -30,10 +30,10 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.resources.Res
-import com.xbot.kotogram.core.resources.action_continue
-import com.xbot.kotogram.core.resources.email_placeholder
-import com.xbot.kotogram.core.resources.email_subtitle
-import com.xbot.kotogram.core.resources.email_title
+import com.xbot.kotogram.core.resources.email_enter_placeholder
+import com.xbot.kotogram.core.resources.login_next
+import com.xbot.kotogram.core.resources.loginemail_description
+import com.xbot.kotogram.core.resources.loginemail_title
 import com.xbot.kotogram.core.resources.stringResource
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import com.xbot.kotogram.feature.auth.impl.extensions.localizedMessage
@@ -64,12 +64,12 @@ private fun EmailAddressScreenContent(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = stringResource(Res.string.email_title),
+                text = stringResource(Res.string.loginemail_title),
                 style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center
             )
             Text(
-                text = stringResource(Res.string.email_subtitle),
+                text = stringResource(Res.string.loginemail_description),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -77,7 +77,7 @@ private fun EmailAddressScreenContent(
             OutlinedTextField(
                 value = state.email,
                 onValueChange = { onAction(EmailAddressScreenAction.OnEmailChange(it)) },
-                placeholder = { Text(stringResource(Res.string.email_placeholder)) },
+                placeholder = { Text(stringResource(Res.string.email_enter_placeholder)) },
                 singleLine = true,
                 isError = state.error != null,
                 keyboardOptions = KeyboardOptions(
@@ -101,7 +101,7 @@ private fun EmailAddressScreenContent(
                 enabled = state.email.isNotEmpty() && !state.isSubmitting,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(stringResource(Res.string.action_continue))
+                Text(stringResource(Res.string.login_next))
             }
         }
     }

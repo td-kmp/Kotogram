@@ -36,12 +36,12 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.resources.Res
-import com.xbot.kotogram.core.resources.action_continue
-import com.xbot.kotogram.core.resources.country_placeholder
+import com.xbot.kotogram.core.resources.checkoutinfo_shippinginfocountryplaceholder
+import com.xbot.kotogram.core.resources.contacts_phonenumber_placeholder
+import com.xbot.kotogram.core.resources.login_new_phonenumber
+import com.xbot.kotogram.core.resources.login_next
 import com.xbot.kotogram.core.resources.login_qr_login
-import com.xbot.kotogram.core.resources.phone_hint
-import com.xbot.kotogram.core.resources.phone_subtitle
-import com.xbot.kotogram.core.resources.phone_title
+import com.xbot.kotogram.core.resources.loginwidget_phonenumber
 import com.xbot.kotogram.core.resources.stringResource
 import com.xbot.kotogram.core.resources.sync_contacts
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
@@ -94,12 +94,12 @@ private fun PhoneScreenContent(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = stringResource(Res.string.phone_title),
+                text = stringResource(Res.string.loginwidget_phonenumber),
                 style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center
             )
             Text(
-                text = stringResource(Res.string.phone_subtitle),
+                text = stringResource(Res.string.login_new_phonenumber),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -108,7 +108,7 @@ private fun PhoneScreenContent(
                 headlineContent = {
                     Text(
                         state.country?.let { "${it.flagEmoji} ${it.name}" }
-                            ?: stringResource(Res.string.country_placeholder)
+                            ?: stringResource(Res.string.checkoutinfo_shippinginfocountryplaceholder)
                     )
                 },
                 modifier = Modifier.fillMaxWidth().clickable {
@@ -129,7 +129,7 @@ private fun PhoneScreenContent(
                 OutlinedTextField(
                     value = state.number,
                     onValueChange = { onAction(PhoneScreenAction.OnNumberChange(it)) },
-                    placeholder = { Text(stringResource(Res.string.phone_hint)) },
+                    placeholder = { Text(stringResource(Res.string.contacts_phonenumber_placeholder)) },
                     singleLine = true,
                     isError = state.error != null,
                     keyboardOptions = KeyboardOptions(
@@ -161,7 +161,7 @@ private fun PhoneScreenContent(
                 enabled = state.canSubmit,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(stringResource(Res.string.action_continue))
+                Text(stringResource(Res.string.login_next))
             }
             if (canUseQr) {
                 TextButton(onClick = onQrLoginClick) {

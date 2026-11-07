@@ -8,6 +8,9 @@ import kotlinx.coroutines.flow.Flow
 interface AuthRepository {
     val authorizationState: Flow<AuthorizationState>
 
+    // No account is signed in on the device yet.
+    val isFirstSignIn: Flow<Boolean>
+
     suspend fun setAuthenticationPhoneNumber(phoneNumber: String): Either<AuthError, Unit>
 
     suspend fun requestQrCodeAuthentication(): Either<AuthError, Unit>

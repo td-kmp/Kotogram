@@ -8,6 +8,8 @@ import com.xbot.kotogram.feature.auth.data.di.authDataModule
 import com.xbot.kotogram.feature.auth.impl.di.authImplModule
 import com.xbot.kotogram.feature.chats.data.di.chatsDataModule
 import com.xbot.kotogram.feature.chats.impl.di.chatsImplModule
+import com.xbot.kotogram.feature.language.data.di.languageDataModule
+import com.xbot.kotogram.feature.language.impl.di.languageImplModule
 import org.koin.core.context.startKoin
 import org.koin.dsl.KoinConfiguration
 import org.koin.dsl.includes
@@ -21,7 +23,9 @@ fun initKoin(config: KoinConfiguration? = null) {
             authDataModule,
             authImplModule,
             chatsDataModule,
-            chatsImplModule
+            chatsImplModule,
+            languageDataModule,
+            languageImplModule
         )
         includes(config)
     }.koin

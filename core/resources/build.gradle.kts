@@ -1,46 +1,13 @@
-import com.android.build.api.withAndroid
+import javax.xml.parsers.DocumentBuilderFactory
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.w3c.dom.Element
 
 plugins {
     alias(libs.plugins.android.multiplatform.library)
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.compose.multiplatform)
-}
-
-// The macOS language pack keys our snake_case names stand for: Login.QR.Title for login_qr_title.
-val generateLanguagePackKeys = tasks.register("generateLanguagePackKeys") {
-    val keys = layout.projectDirectory.file("langpack/macos-keys.txt")
-    val strings = layout.projectDirectory.file("src/commonMain/composeResources/values/strings.xml")
-    val output = layout.buildDirectory.dir("generated/langpack")
-    inputs.file(keys)
-    inputs.file(strings)
-    outputs.dir(output)
-    doLast {
-        val index = keys.asFile.readLines()
-            .filter { it.isNotBlank() }
-            .associateBy { it.lowercase().replace('.', '_') }
-        val entries = Regex("""<(?:string|plurals) name="([^"]+)"""")
-            .findAll(strings.asFile.readText())
-            .mapNotNull { match ->
-                match.groupValues[1].let { name -> index[name]?.let { name to it } }
-            }
-            .sortedBy { it.first }
-            .toList()
-        val file = output.get().file("com/xbot/kotogram/core/resources/LanguagePackKeys.kt").asFile
-        file.parentFile.mkdirs()
-        file.writeText(
-            buildString {
-                appendLine("package com.xbot.kotogram.core.resources")
-                appendLine()
-                appendLine("// Generated from langpack/macos-keys.txt and values/strings.xml.")
-                appendLine("internal val LanguagePackKeys: Map<String, String> = mapOf(")
-                entries.forEach { (name, key) -> appendLine("    \"$name\" to \"$key\",") }
-                appendLine(")")
-            }
-        )
-    }
 }
 
 kotlin {
@@ -69,36 +36,16 @@ kotlin {
 
     jvmToolchain(21)
 
-    // Language pack strings are read in the first frame where TDLib runs in the process, as Compose reads its own.
-    @OptIn(ExperimentalKotlinGradlePluginApi::class)
-    applyHierarchyTemplate {
-        common {
-            group("nonWeb") {
-                withJvm()
-                withAndroid()
-                group("ios") {
-                    withIosArm64()
-                    withIosSimulatorArm64()
-                }
-            }
-            group("web") {
-                withWasmJs()
-            }
-        }
-    }
-
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     dependencies {
         api(libs.compose.resources)
+        api(libs.compose.ui)
+        api(libs.tdlib.client)
+        api(libs.kotlinx.coroutines.core)
         implementation(libs.compose.runtime)
-        implementation(libs.kotlinx.coroutines.core)
-        implementation(libs.tdlib.client)
     }
 
     sourceSets {
-        commonMain {
-            kotlin.srcDir(generateLanguagePackKeys)
-        }
         jvmTest.dependencies {
             implementation(libs.kotlin.test)
         }
@@ -108,4 +55,80 @@ kotlin {
 compose.resources {
     publicResClass = true
     packageOfResClass = "com.xbot.kotogram.core.resources"
+}
+
+val generateLanguagePackKeys = tasks.register<GenerateLanguagePackKeys>("generateLanguagePackKeys") {
+    languagePack = layout.projectDirectory.file("src/commonMain/composeResources/values/strings.xml")
+    packageName = "com.xbot.kotogram.core.resources"
+    outputDirectory = layout.buildDirectory.dir("generated/langpack")
+}
+
+kotlin.sourceSets.commonMain {
+    kotlin.srcDir(generateLanguagePackKeys.flatMap { it.outputDirectory })
+}
+
+// LanguagePackKeys: resource name -> pack key, from the `key` attribute Compose itself ignores.
+@CacheableTask
+abstract class GenerateLanguagePackKeys : DefaultTask() {
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val languagePack: RegularFileProperty
+
+    @get:Input
+    abstract val packageName: Property<String>
+
+    @get:OutputDirectory
+    abstract val outputDirectory: DirectoryProperty
+
+    @TaskAction
+    fun generate() {
+        val keys = readKeys()
+        val directory = outputDirectory.get().asFile
+        directory.deleteRecursively()
+        val sources = directory.resolve(packageName.get().replace('.', '/')).apply { mkdirs() }
+        // One method per chunk, as Compose splits Res: a single initializer exceeds the JVM's 64 KB.
+        val chunks = keys.chunked(KEYS_PER_FILE)
+        chunks.forEachIndexed { index, chunk ->
+            sources.resolve("LanguagePackKeys$index.kt").writeText(
+                kotlinFile {
+                    appendLine("internal fun MutableMap<String, String>.putLanguagePackKeys$index() {")
+                    chunk.forEach { (name, key) -> appendLine("    put(\"$name\", \"$key\")") }
+                    appendLine("}")
+                }
+            )
+        }
+        sources.resolve("LanguagePackKeys.kt").writeText(
+            kotlinFile {
+                appendLine("internal val LanguagePackKeys: Map<String, String> by lazy {")
+                appendLine("    HashMap<String, String>(${keys.size}).apply {")
+                chunks.indices.forEach { appendLine("        putLanguagePackKeys$it()") }
+                appendLine("    }")
+                appendLine("}")
+            }
+        )
+    }
+
+    private fun readKeys(): List<Pair<String, String>> {
+        val resources = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+            .parse(languagePack.get().asFile)
+            .documentElement
+            .childNodes
+        return (0 until resources.length)
+            .map(resources::item)
+            .filterIsInstance<Element>()
+            .map { it.getAttribute("name") to it.getAttribute("key") }
+            .filter { (_, key) -> key.isNotEmpty() }
+            .sortedBy { (name, _) -> name }
+    }
+
+    private fun kotlinFile(body: StringBuilder.() -> Unit): String = buildString {
+        appendLine("// Generated by $name from ${languagePack.get().asFile.name}.")
+        appendLine("package ${packageName.get()}")
+        appendLine()
+        body()
+    }
+
+    private companion object {
+        const val KEYS_PER_FILE = 500
+    }
 }

@@ -17,6 +17,12 @@ style:
         reason: 'Only core:account and feature data modules talk to TDLib.'
       - value: 'org.jetbrains.compose.resources.stringResource'
         reason: 'Strings come from Telegram''s language pack first: use com.xbot.kotogram.core.resources.stringResource.'
+      - value: 'org.jetbrains.compose.resources.pluralStringResource'
+        reason: 'Plurals come from Telegram''s language pack first: use com.xbot.kotogram.core.resources.pluralStringResource.'
+      - value: 'org.jetbrains.compose.resources.getString'
+        reason: 'Strings come from Telegram''s language pack first: use com.xbot.kotogram.core.resources.extensions.getString.'
+      - value: 'org.jetbrains.compose.resources.getPluralString'
+        reason: 'Plurals come from Telegram''s language pack first: use com.xbot.kotogram.core.resources.extensions.getString.'
     excludes: ['**/core/account/**', '**/feature/*/data/**']
   MagicNumber:
     ignoreAnnotated: ['Composable', 'Preview']

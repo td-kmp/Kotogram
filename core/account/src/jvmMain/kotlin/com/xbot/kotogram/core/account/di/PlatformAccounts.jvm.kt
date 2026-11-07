@@ -13,7 +13,7 @@ internal actual fun Scope.platformAccountsRoot(): String =
     File(File(appDataDirectory(), "Kotogram"), accountsDirectoryName).absolutePath
 
 internal actual fun Scope.platformTdlibConfig(): TdlibConfig = tdlibConfigOf(
-    systemLanguageCode = Locale.getDefault().language,
+    systemLanguageCode = Locale.getDefault().toLanguageTag(),
     deviceModel = "Desktop",
     systemVersion = "${System.getProperty("os.name")} ${System.getProperty("os.version")}",
     applicationVersion = System.getProperty("jpackage.app-version") ?: "dev"

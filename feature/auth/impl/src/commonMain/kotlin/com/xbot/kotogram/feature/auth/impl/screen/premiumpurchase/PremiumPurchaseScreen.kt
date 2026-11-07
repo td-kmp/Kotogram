@@ -21,7 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.resources.Res
-import com.xbot.kotogram.core.resources.action_back
+import com.xbot.kotogram.core.resources.navigation_back
 import com.xbot.kotogram.core.resources.stringResource
 import com.xbot.kotogram.core.resources.unsupported_subtitle
 import com.xbot.kotogram.core.resources.unsupported_title
@@ -52,7 +52,7 @@ internal fun PremiumPurchaseScreen(onBackClick: () -> Unit, modifier: Modifier =
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
-            TextButton(onClick = onBackClick) { Text(stringResource(Res.string.action_back)) }
+            TextButton(onClick = onBackClick) { Text(stringResource(Res.string.navigation_back)) }
         }
     }
 }

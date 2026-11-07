@@ -15,8 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.resources.Res
-import com.xbot.kotogram.core.resources.action_back
 import com.xbot.kotogram.core.resources.chat_history_placeholder
+import com.xbot.kotogram.core.resources.navigation_back
 import com.xbot.kotogram.core.resources.stringResource
 import org.orbitmvi.orbit.compose.collectAsState
 
@@ -44,7 +44,7 @@ private fun ChatScreenContent(
                 title = { Text(state.title) },
                 navigationIcon = {
                     TextButton(onClick = onBackClick) {
-                        Text(stringResource(Res.string.action_back))
+                        Text(stringResource(Res.string.navigation_back))
                     }
                 }
             )
