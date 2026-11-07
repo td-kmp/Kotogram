@@ -1,13 +1,15 @@
 package com.xbot.kotogram.core.designsystem.component
 
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.updateTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
@@ -34,22 +36,14 @@ import io.github.alexzhirkevich.compottie.DotLottie
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
-import io.github.alexzhirkevich.qrose.matrix.qr.QrEncoder
-import io.github.alexzhirkevich.qrose.matrix.qr.QrErrorCorrection
-import io.github.alexzhirkevich.qrose.options.QrBallShape
 import io.github.alexzhirkevich.qrose.options.QrBrush
-import io.github.alexzhirkevich.qrose.options.QrErrorCorrectionLevel
-import io.github.alexzhirkevich.qrose.options.QrFrameShape
 import io.github.alexzhirkevich.qrose.options.QrLogoPadding
-import io.github.alexzhirkevich.qrose.options.QrPixelShape
-import io.github.alexzhirkevich.qrose.options.roundCorners
 import io.github.alexzhirkevich.qrose.options.solid
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
 import kotlinx.coroutines.delay
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun QrCode(
     data: String?,
@@ -65,21 +59,35 @@ fun QrCode(
         color = colors.containerColor,
         contentColor = colors.contentColor
     ) {
-        // Keyed by presence: a refreshed code replaces the shown one without a crossfade.
-        updateTransition(revealed, label = "QrCode").Crossfade(
-            modifier = Modifier.padding(QrCodeTokens.ContentPadding),
-            animationSpec = tween(QrCodeTokens.REVEAL_MILLIS, easing = FastOutSlowInEasing),
-            contentKey = { it != null }
+        // Opaque layers, the last kept under the next as it fades in: what both draw stays still, as on macOS.
+        AnimatedContent(
+            targetState = revealed,
+            transitionSpec = {
+                fadeIn(tween(QrCodeTokens.REVEAL_MILLIS, easing = FastOutSlowInEasing)) togetherWith
+                    ExitTransition.KeepUntilTransitionsFinished
+            },
+            contentKey = { it != null },
+            label = "QrCode"
         ) { shown ->
             if (shown == null) {
-                QrPlaceholder(color = colors.contentColor, modifier = Modifier.fillMaxSize())
+                QrPlaceholder(colors = colors, modifier = Modifier.fillMaxSize())
             } else {
-                QrImage(
-                    data = shown,
-                    contentDescription = contentDescription,
-                    color = colors.contentColor,
-                    modifier = Modifier.fillMaxSize()
-                )
+                AnimatedContent(
+                    targetState = shown,
+                    transitionSpec = {
+                        fadeIn(tween(QrCodeTokens.REFRESH_MILLIS, easing = LinearEasing)) togetherWith
+                            ExitTransition.KeepUntilTransitionsFinished
+                    },
+                    label = "QrCodeRefresh"
+                ) { code ->
+                    QrImage(
+                        data = code,
+                        contentDescription = contentDescription,
+                        contentColor = colors.contentColor,
+                        containerColor = colors.containerColor,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
         }
     }
@@ -138,7 +146,7 @@ private fun rememberRevealedData(data: String?): String? {
 }
 
 @Composable
-private fun QrPlaceholder(color: Color, modifier: Modifier = Modifier) {
+private fun QrPlaceholder(colors: QrCodeColors, modifier: Modifier = Modifier) {
     val composition by rememberLottieComposition {
         LottieCompositionSpec.DotLottie(Res.readBytes(QrCodeTokens.PLACEHOLDER_PATH))
     }
@@ -148,8 +156,10 @@ private fun QrPlaceholder(color: Color, modifier: Modifier = Modifier) {
             iterations = Compottie.IterateForever
         ),
         contentDescription = null,
-        colorFilter = ColorFilter.tint(color),
+        colorFilter = ColorFilter.tint(colors.contentColor),
         modifier = modifier
+            .background(colors.containerColor)
+            .layoutOnQrGrid(QrCodeTokens.PLACEHOLDER_MODULES, QrCodeTokens.ContentPadding)
     )
 }
 
@@ -157,38 +167,37 @@ private fun QrPlaceholder(color: Color, modifier: Modifier = Modifier) {
 private fun QrImage(
     data: String,
     contentDescription: String?,
-    color: Color,
+    contentColor: Color,
+    containerColor: Color,
     modifier: Modifier = Modifier
 ) {
-    val level = remember(data) { levelMatchingPlaceholder(data) }
+    val spec = remember(data) { qrCodeSpec(data, QrCodeTokens.PLACEHOLDER_MODULES) }
     // An empty logo keeps the cutout for an icon to come.
     val cutout = remember { EmptyPainter() }
-    val qrPainter = rememberQrCodePainter(data, level, color) {
-        errorCorrectionLevel = level
+    val painter = rememberQrCodePainter(data, spec, contentColor) {
+        errorCorrectionLevel = spec.level
         shapes {
-            darkPixel = QrPixelShape.roundCorners()
-            ball = QrBallShape.roundCorners(radius = QrCodeTokens.CORNER)
-            frame = QrFrameShape.roundCorners(corner = QrCodeTokens.CORNER)
+            darkPixel = TelegramPixelShape
+            frame = TelegramFrameShape
+            ball = TelegramBallShape
         }
         colors {
-            dark = QrBrush.solid(color)
+            dark = QrBrush.solid(contentColor)
         }
         logo {
             painter = cutout
-            size = QrCodeTokens.CUTOUT_SIZE
-            padding = QrLogoPadding.Natural(QrCodeTokens.CUTOUT_PADDING)
+            size = spec.cutoutShare
+            padding = QrLogoPadding.Natural(0f)
         }
     }
-    Image(painter = qrPainter, contentDescription = contentDescription, modifier = modifier)
+    Image(
+        painter = painter,
+        contentDescription = contentDescription,
+        modifier = modifier
+            .background(containerColor)
+            .layoutOnQrGrid(spec.modules, QrCodeTokens.ContentPadding)
+    )
 }
-
-private fun levelMatchingPlaceholder(data: String): QrErrorCorrectionLevel = listOf(
-    QrErrorCorrectionLevel.Medium to QrErrorCorrection.M,
-    QrErrorCorrectionLevel.MediumHigh to QrErrorCorrection.Q,
-    QrErrorCorrectionLevel.High to QrErrorCorrection.H
-).firstOrNull { (_, correction) ->
-    QrEncoder(correction).encode(data).width == QrCodeTokens.PLACEHOLDER_MODULES
-}?.first ?: QrErrorCorrectionLevel.Medium
 
 private class EmptyPainter : Painter() {
     override val intrinsicSize: Size = Size(1f, 1f)
@@ -203,11 +212,9 @@ private object QrCodeTokens {
     const val PLACEHOLDER_PATH = "files/qr_placeholder.lottie"
     const val PLACEHOLDER_MODULES = 37
     const val REVEAL_MILLIS = 1_200
+    const val REFRESH_MILLIS = 200
     const val PLACEHOLDER_MILLIS = 3_000L
     const val MIN_WAIT_MILLIS = 1_000L
-    const val CORNER = 0.3f
-    const val CUTOUT_SIZE = 0.22f
-    const val CUTOUT_PADDING = 0.1f
 }
 
 @KotogramPreview
@@ -222,8 +229,9 @@ private fun QrCodePreview() {
         QrImage(
             data = "tg://login?token=AQFJjO1qHocdoolqLtckd6dPS98k1HhnVDFilU_N_v6psw",
             contentDescription = null,
-            color = colors.contentColor,
-            modifier = Modifier.fillMaxSize().padding(QrCodeTokens.ContentPadding)
+            contentColor = colors.contentColor,
+            containerColor = colors.containerColor,
+            modifier = Modifier.fillMaxSize()
         )
     }
 }
