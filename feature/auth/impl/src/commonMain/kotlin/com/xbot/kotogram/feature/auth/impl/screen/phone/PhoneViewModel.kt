@@ -1,6 +1,12 @@
 package com.xbot.kotogram.feature.auth.impl.screen.phone
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.runtime.snapshotFlow
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
+import androidx.lifecycle.viewmodel.compose.saveable
 import com.xbot.kotogram.feature.auth.domain.LoginEntry
 import com.xbot.kotogram.feature.auth.domain.extensions.acceptsPhoneNumber
 import com.xbot.kotogram.feature.auth.domain.model.EnteredPhoneNumber
@@ -10,6 +16,8 @@ import io.xbot.tdlib.api.AuthorizationStateWaitOtherDeviceConfirmation
 import io.xbot.tdlib.api.AuthorizationStateWaitPhoneNumber
 import io.xbot.tdlib.api.CountryInfo
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.launch
@@ -18,6 +26,7 @@ import org.orbitmvi.orbit.syntax.Syntax
 import org.orbitmvi.orbit.viewmodel.orbitContainer
 
 internal class PhoneViewModel(
+    savedStateHandle: SavedStateHandle,
     private val loginEntry: LoginEntry,
     private val countryRepository: CountryRepository,
     private val authRepository: AuthRepository
@@ -25,6 +34,11 @@ internal class PhoneViewModel(
     OrbitContainerHost<PhoneScreenState, PhoneScreenState, PhoneScreenSideEffect> {
 
     private val pending = loginEntry.pendingPhoneNumber.getAndUpdate { null }
+
+    @OptIn(SavedStateHandleSaveableApi::class)
+    val phoneNumber by savedStateHandle.saveable(saver = TextFieldState.Saver) {
+        TextFieldState(pending?.let { it.callingCode + it.number }.orEmpty())
+    }
 
     override val container = orbitContainer<PhoneScreenState, PhoneScreenSideEffect>(
         PhoneScreenState(
@@ -36,6 +50,7 @@ internal class PhoneViewModel(
     ) {
         coroutineScope {
             launch { loadCountries() }
+            launch { followInput() }
             if (pending != null) {
                 launch {
                     authRepository.authorizationState.first {
@@ -56,36 +71,38 @@ internal class PhoneViewModel(
         val countries = countryRepository.getCountries().getOrNull().orEmpty()
             .filterNot { it.isHidden }
             .sortedBy { it.name }
-        val detected = countryRepository.getCountryCode().getOrNull()
+        reduce { state.copy(countries = countries) }
+        if (phoneNumber.text.isEmpty()) {
+            val detected = countryRepository.getCountryCode().getOrNull()
+            countries.firstOrNull { it.countryCode == detected }?.let(::selectCountry)
+        }
+    }
+
+    private suspend fun Syntax<PhoneScreenState, PhoneScreenSideEffect>.followInput() = coroutineScope {
+        val digits = snapshotFlow { phoneNumber.text.toString() }
+        launch { digits.drop(1).collect { reduce { state.copy(error = null) } } }
+        digits.collectLatest { describe(it) }
+    }
+
+    private suspend fun Syntax<PhoneScreenState, PhoneScreenSideEffect>.describe(digits: String) {
+        val info = digits.takeIf { it.isNotEmpty() }
+            ?.let { countryRepository.getPhoneNumberInfo(it).getOrNull() }
+        val callingCode = info?.countryCallingCode ?: digits
+        val number = digits.removePrefix(callingCode)
         reduce {
-            val country = state.country ?: if (state.callingCode.isEmpty()) {
-                countries.firstOrNull { it.countryCode == detected }
-            } else {
-                countries.firstOrNull { state.callingCode in it.callingCodes }
-            }
+            val chosen = state.country?.takeIf { number.isEmpty() && callingCode in it.callingCodes }
             state.copy(
-                countries = countries,
-                country = country,
-                callingCode = state.callingCode.ifEmpty {
-                    country?.callingCodes?.firstOrNull().orEmpty()
-                }
+                country = chosen ?: info?.country,
+                callingCode = callingCode,
+                number = number,
+                numberPattern = info?.formattedPhoneNumber.orEmpty()
             )
         }
     }
 
     fun onAction(action: PhoneScreenAction) {
         when (action) {
-            is PhoneScreenAction.OnCallingCodeChange -> onCallingCodeChange(action.value)
-
-            is PhoneScreenAction.OnNumberChange -> onNumberChange(action.value)
-
-            is PhoneScreenAction.OnSyncContactsChange -> onSyncContactsChange(action.enabled)
-
-            is PhoneScreenAction.OnCountryPickerVisibilityChange -> onCountryPickerVisibilityChange(
-                action.visible
-            )
-
-            is PhoneScreenAction.OnCountryQueryChange -> onCountryQueryChange(action.query)
+            is PhoneScreenAction.OnCountryPickerVisibilityChange -> onCountryPickerVisibilityChange(action.visible)
 
             is PhoneScreenAction.OnCountrySelect -> onCountrySelect(action.country)
 
@@ -93,41 +110,17 @@ internal class PhoneViewModel(
         }
     }
 
-    private fun onCallingCodeChange(value: String) = intent {
-        val code = value.filter(Char::isDigit).take(MAX_CALLING_CODE_LENGTH)
-        reduce { state.copy(callingCode = code, error = null) }
-        val country = countryRepository.getPhoneNumberInfo(code).getOrNull()?.country
-            ?: state.countries.firstOrNull { code in it.callingCodes }
-        reduce { state.copy(country = country) }
-    }
-
-    private fun onNumberChange(value: String) = intent {
-        reduce {
-            state.copy(number = value.filter(Char::isDigit).take(MAX_NUMBER_LENGTH), error = null)
-        }
-    }
-
-    private fun onSyncContactsChange(enabled: Boolean) = intent {
-        reduce { state.copy(syncContacts = enabled) }
-    }
-
     private fun onCountryPickerVisibilityChange(visible: Boolean) = intent {
-        reduce { state.copy(isCountryPickerVisible = visible, countryQuery = "") }
-    }
-
-    private fun onCountryQueryChange(query: String) = intent {
-        reduce { state.copy(countryQuery = query) }
+        reduce { state.copy(isCountryPickerVisible = visible) }
     }
 
     private fun onCountrySelect(country: CountryInfo) = intent {
-        reduce {
-            state.copy(
-                country = country,
-                callingCode = country.callingCodes.firstOrNull().orEmpty(),
-                isCountryPickerVisible = false,
-                countryQuery = ""
-            )
-        }
+        reduce { state.copy(country = country, isCountryPickerVisible = false) }
+        selectCountry(country, state.number)
+    }
+
+    private fun selectCountry(country: CountryInfo, number: String = "") {
+        phoneNumber.setTextAndPlaceCursorAtEnd(country.callingCodes.firstOrNull().orEmpty() + number)
     }
 
     private fun onSubmit() = intent {
@@ -154,10 +147,5 @@ internal class PhoneViewModel(
                 postSideEffect(PhoneScreenSideEffect.Submitted)
             }
         )
-    }
-
-    private companion object {
-        const val MAX_CALLING_CODE_LENGTH = 4
-        const val MAX_NUMBER_LENGTH = 15
     }
 }

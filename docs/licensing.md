@@ -6,6 +6,7 @@ Kotogram is to be GPL (decided 2026-11-06); the version isn't fixed yet and ther
 
 | File | Source | Its license |
 |---|---|---|
+| `core/designsystem/.../media/UiMediaScope.kt`, `androidMain/.../media/AndroidUiMediaScope.kt` | Compose UI 1.12.1 `androidx.compose.ui.MediaQuery` and `adaptive/MediaQuery.android.kt`, with `platformFeatures` from the unmerged aosp/4304334; copied with their headers, to be replaced by the official API once CMP provides it | Apache-2.0 |
 | `core/resources/src/commonMain/composeResources/values/strings.xml` (entries with a `key`) | Keys and English texts of Telegram's `macos` language pack, from Telegram's servers through TDLib (the texts of telegram-macos's `en.lproj`) | Not stated by the servers; GPL-2.0, version 2 only in telegram-macos |
 | `core/resources/src/commonMain/composeResources/files/qr_placeholder.lottie` | Telegram for macOS, `Resources/tgs/qrcode_matrix.tgs` ([telegram-macos](https://github.com/TelegramMessenger/telegram-macos)), unchanged, repacked from gzip into a dotLottie zip | GPL-2.0, version 2 only by its README |
 | `core/resources/src/commonMain/composeResources/font/inter_*.ttf` | [Inter](https://github.com/rsms/inter) 4.1, `extras/ttf/Inter-{Regular,Medium,SemiBold}.ttf` of its release, unchanged | SIL Open Font License 1.1; the notice and licence are in the fonts' metadata |

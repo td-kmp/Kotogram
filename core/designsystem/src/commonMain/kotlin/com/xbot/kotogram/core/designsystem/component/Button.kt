@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.designsystem.KotogramTheme
-import com.xbot.kotogram.core.designsystem.theme.platformPressHighlight
+import com.xbot.kotogram.core.designsystem.theme.currentPlatform
 import androidx.compose.material3.Button as MaterialButton
 import androidx.compose.material3.ButtonDefaults as MaterialButtonDefaults
 import androidx.compose.material3.TextButton as MaterialTextButton
@@ -119,7 +119,7 @@ object ButtonDefaults {
 
 @Composable
 private fun pressFeedback(source: MutableInteractionSource): Modifier =
-    if (platformPressHighlight) Modifier.indication(source, KotogramTheme.indication) else Modifier
+    if (currentPlatform.isApple) Modifier.indication(source, KotogramTheme.indication) else Modifier
 
 // A loading button keeps its colours and its width: the spinner takes the place of the content.
 private fun ButtonColors.during(state: ButtonState): ButtonColors = if (state == ButtonState.Loading) {

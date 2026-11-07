@@ -5,6 +5,7 @@ import com.sun.jna.Function
 import com.sun.jna.Memory
 import com.sun.jna.NativeLibrary
 import com.sun.jna.Pointer
+import com.sun.jna.Structure
 
 internal object ObjC {
     private val runtime = NativeLibrary.getInstance("objc")
@@ -32,6 +33,12 @@ internal object ObjC {
         )
     )
 
+    fun sendLong(receiver: Pointer, selector: String, vararg args: Any?): Long =
+        msgSend.invokeLong(arrayOf(receiver, sel(selector), *args))
+
+    fun sendPoint(receiver: Pointer, selector: String, vararg args: Any?): NSPoint =
+        msgSend.invoke(NSPoint::class.java, arrayOf(receiver, sel(selector), *args)) as NSPoint
+
     fun string(text: String): Pointer =
         requireNotNull(send(requireNotNull(cls("NSString")), "stringWithUTF8String:", cString(text)))
 
@@ -57,4 +64,7 @@ internal object ObjC {
             setByte(bytes.size.toLong(), 0)
         }
     }
+
+    @Structure.FieldOrder("x", "y")
+    class NSPoint(@JvmField var x: Double = 0.0, @JvmField var y: Double = 0.0) : Structure(), Structure.ByValue
 }

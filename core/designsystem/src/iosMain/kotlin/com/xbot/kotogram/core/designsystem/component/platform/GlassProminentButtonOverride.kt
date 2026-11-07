@@ -1,7 +1,5 @@
 package com.xbot.kotogram.core.designsystem.component.platform
 
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.material3.ButtonColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
@@ -12,8 +10,9 @@ import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.component.ButtonState
-import com.xbot.kotogram.core.designsystem.component.FilledProminentButton
-import com.xbot.kotogram.core.designsystem.component.NativeProminentButtonBox
+import com.xbot.kotogram.core.designsystem.component.NativeBox
+import com.xbot.kotogram.core.designsystem.component.ProminentButtonOverride
+import com.xbot.kotogram.core.designsystem.component.ProminentButtonOverrideScope
 import com.xbot.kotogram.core.designsystem.extensions.appleWeight
 import com.xbot.kotogram.core.designsystem.extensions.containerColor
 import com.xbot.kotogram.core.designsystem.extensions.contentColor
@@ -38,64 +37,43 @@ import platform.UIKit.UIUserInterfaceStyle
 import platform.UIKit.UIView
 import platform.UIKit.accessibilityLabel
 
-@Composable
-internal actual fun PlatformProminentButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier,
-    state: ButtonState,
-    colors: ButtonColors,
-    contentPadding: PaddingValues
-) {
-    if (hasLiquidGlass) {
-        GlassProminentButton(text, onClick, modifier, state, colors, contentPadding)
-    } else {
-        FilledProminentButton(text, onClick, modifier, state, colors, contentPadding)
-    }
-}
-
-@Composable
-private fun GlassProminentButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier,
-    state: ButtonState,
-    colors: ButtonColors,
-    contentPadding: PaddingValues
-) {
-    val currentOnClick by rememberUpdatedState(onClick)
-    val style = KotogramTheme.typography.labelLarge
-    val fontSize = with(LocalDensity.current) { style.fontSize.toDp().value.toDouble() }
-    val dark = KotogramTheme.colors.background.isDark()
-    val inFront = isSettledInFront()
-    NativeProminentButtonBox(text, colors, contentPadding, modifier) {
-        UIKitView(
-            factory = {
-                UIButton.buttonWithConfiguration(
-                    configuration = UIButtonConfiguration.prominentGlassButtonConfiguration(),
-                    primaryAction = UIAction.actionWithHandler { currentOnClick() }
-                ).apply { alpha = 0.0 }
-            },
-            modifier = Modifier.matchParentSize(),
-            update = { button ->
-                button.configuration = glassConfiguration(
-                    title = text.takeUnless { state == ButtonState.Loading },
-                    font = UIFont.systemFontOfSize(fontSize, style.fontWeight.appleWeight()),
-                    color = colors.contentColor(state).toUIColor(),
-                    loading = state == ButtonState.Loading
-                )
-                button.tintColor = colors.containerColor(state).toUIColor()
-                button.overrideUserInterfaceStyle = if (dark) {
-                    UIUserInterfaceStyle.UIUserInterfaceStyleDark
-                } else {
-                    UIUserInterfaceStyle.UIUserInterfaceStyleLight
-                }
-                button.userInteractionEnabled = state == ButtonState.Enabled && inFront
-                button.accessibilityLabel = text
-                fade(button, visible = inFront)
-            },
-            properties = GlassProperties
-        )
+internal object GlassProminentButtonOverride : ProminentButtonOverride {
+    @Composable
+    override fun ProminentButtonOverrideScope.ProminentButton() {
+        val currentOnClick by rememberUpdatedState(onClick)
+        val style = KotogramTheme.typography.labelLarge
+        val fontSize = with(LocalDensity.current) { style.fontSize.toDp().value.toDouble() }
+        val dark = KotogramTheme.colors.background.isDark()
+        val inFront = isSettledInFront()
+        NativeBox {
+            UIKitView(
+                factory = {
+                    UIButton.buttonWithConfiguration(
+                        configuration = UIButtonConfiguration.prominentGlassButtonConfiguration(),
+                        primaryAction = UIAction.actionWithHandler { currentOnClick() }
+                    ).apply { alpha = 0.0 }
+                },
+                modifier = Modifier.matchParentSize(),
+                update = { button ->
+                    button.configuration = glassConfiguration(
+                        title = text.takeUnless { state == ButtonState.Loading },
+                        font = UIFont.systemFontOfSize(fontSize, style.fontWeight.appleWeight()),
+                        color = colors.contentColor(state).toUIColor(),
+                        loading = state == ButtonState.Loading
+                    )
+                    button.tintColor = colors.containerColor(state).toUIColor()
+                    button.overrideUserInterfaceStyle = if (dark) {
+                        UIUserInterfaceStyle.UIUserInterfaceStyleDark
+                    } else {
+                        UIUserInterfaceStyle.UIUserInterfaceStyleLight
+                    }
+                    button.userInteractionEnabled = state == ButtonState.Enabled && inFront
+                    button.accessibilityLabel = text
+                    fade(button, visible = inFront)
+                },
+                properties = GlassProperties
+            )
+        }
     }
 }
 
@@ -123,7 +101,7 @@ private val GlassProperties =
     UIKitInteropProperties(isNativeAccessibilityEnabled = true, placedAsOverlay = true)
 
 @OptIn(ExperimentalForeignApi::class)
-private val hasLiquidGlass: Boolean = NSProcessInfo.processInfo.isOperatingSystemAtLeastVersion(
+internal val hasLiquidGlass: Boolean = NSProcessInfo.processInfo.isOperatingSystemAtLeastVersion(
     cValue<NSOperatingSystemVersion> {
         majorVersion = LIQUID_GLASS_IOS_VERSION
         minorVersion = 0

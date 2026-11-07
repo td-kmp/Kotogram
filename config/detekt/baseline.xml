@@ -7,7 +7,6 @@
     <ID>ForbiddenImport/designSystem:EmailCodeScreen.kt:import androidx.compose.material3.OutlinedTextField</ID>
     <ID>ForbiddenImport/designSystem:PasswordScreen.kt:import androidx.compose.material3.OutlinedTextField</ID>
     <ID>ForbiddenImport/designSystem:PhoneComponents.kt:import androidx.compose.material3.OutlinedTextField</ID>
-    <ID>ForbiddenImport/designSystem:PhoneScreen.kt:import androidx.compose.material3.OutlinedTextField</ID>
     <ID>ForbiddenImport/designSystem:RegistrationScreen.kt:import androidx.compose.material3.OutlinedTextField</ID>
   </CurrentIssues>
 </SmellBaseline>

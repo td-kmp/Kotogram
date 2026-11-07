@@ -73,6 +73,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.offset
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.core.designsystem.theme.currentPlatform
 import androidx.compose.material3.TextFieldDefaults as MaterialTextFieldDefaults
 
 @Composable
@@ -240,11 +241,12 @@ object TextFieldDefaults {
     @Composable
     fun colors(): TextFieldColors {
         val colors = KotogramTheme.colors
+        val focusRing = !currentPlatform.isDesktop
         return MaterialTextFieldDefaults.colors(
-            focusedIndicatorColor = if (platformFocusRing) colors.primary else Color.Transparent,
+            focusedIndicatorColor = if (focusRing) colors.primary else Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent,
-            errorIndicatorColor = if (platformFocusRing) colors.error else Color.Transparent,
+            errorIndicatorColor = if (focusRing) colors.error else Color.Transparent,
             focusedLabelColor = colors.onSurfaceVariant,
             errorLabelColor = colors.onSurfaceVariant,
             errorTrailingIconColor = colors.onSurfaceVariant

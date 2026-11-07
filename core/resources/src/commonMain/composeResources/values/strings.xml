@@ -10004,7 +10004,7 @@
     <string name="your_cards_zip_code_is_invalid" key="Your_cards_zip_code_is_invalid">You've entered an invalid zip code.</string>
 
     <string name="voiceover_login_qrcode" key="VoiceOver.Login.QRCode">QR code for login</string>
-    <string name="sync_contacts">Sync contacts</string>
+    <string name="app_name">Kotogram</string>
     <string name="unsupported_title">Login unavailable</string>
     <string name="unsupported_subtitle">This account needs a step only the official Telegram apps support.</string>
     <string name="chat_history_placeholder">Messages will appear here</string>

@@ -15,7 +15,8 @@ import org.jetbrains.compose.resources.Font
 
 @Composable
 internal fun rememberKotogramTypography(): Typography {
-    val fontFamily = if (platformSystemFont) FontFamily.Default else interFontFamily()
+    // Apple's SF Pro can't be bundled; Compose's default family is the system's .AppleSystemUIFont on Apple platforms.
+    val fontFamily = if (currentPlatform.isApple) FontFamily.Default else interFontFamily()
     return remember(fontFamily) { kotogramTypography(fontFamily) }
 }
 

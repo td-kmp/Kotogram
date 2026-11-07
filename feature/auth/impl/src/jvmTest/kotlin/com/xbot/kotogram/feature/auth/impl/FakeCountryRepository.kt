@@ -16,5 +16,14 @@ internal class FakeCountryRepository(private val countries: List<CountryInfo>) :
 
     override suspend fun getPhoneNumberInfo(
         phoneNumberPrefix: String
-    ): Either<AuthError, PhoneNumberInfo> = AuthError.Unknown("No info").left()
+    ): Either<AuthError, PhoneNumberInfo> {
+        val country = countries.firstOrNull { country -> country.callingCodes.any(phoneNumberPrefix::startsWith) }
+            ?: return AuthError.Unknown("No info").left()
+        val callingCode = country.callingCodes.first(phoneNumberPrefix::startsWith)
+        return PhoneNumberInfo(
+            country = country,
+            countryCallingCode = callingCode,
+            formattedPhoneNumber = phoneNumberPrefix.removePrefix(callingCode)
+        ).right()
+    }
 }

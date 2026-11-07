@@ -91,7 +91,7 @@ internal class MacGlassButton(onClick: () -> Unit) {
 
     companion object {
         val isSupported: Boolean by lazy {
-            System.getProperty("os.name").orEmpty().startsWith("Mac") && runCatching {
+            runCatching {
                 val button = ObjC.cls("NSButton") ?: return@runCatching false
                 ObjC.sendBoolean(button, "instancesRespondToSelector:", ObjC.sel("setTintProminence:"))
             }.getOrDefault(false)

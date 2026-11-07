@@ -11,16 +11,20 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ProvidedValue
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
+import com.xbot.kotogram.core.designsystem.media.LocalUiMediaScope
 import com.xbot.kotogram.core.designsystem.theme.DayClassicColorScheme
 import com.xbot.kotogram.core.designsystem.theme.DimIndication
 import com.xbot.kotogram.core.designsystem.theme.KotogramShapes
 import com.xbot.kotogram.core.designsystem.theme.KotogramSpacing
 import com.xbot.kotogram.core.designsystem.theme.LocalKotogramSpacing
 import com.xbot.kotogram.core.designsystem.theme.NightAccentColorScheme
+import com.xbot.kotogram.core.designsystem.theme.currentPlatform
+import com.xbot.kotogram.core.designsystem.theme.platformComponentOverrides
 import com.xbot.kotogram.core.designsystem.theme.platformDynamicColorScheme
-import com.xbot.kotogram.core.designsystem.theme.platformPressHighlight
+import com.xbot.kotogram.core.designsystem.theme.platformUiMediaScope
 import com.xbot.kotogram.core.designsystem.theme.rememberKotogramTypography
 
 @Composable
@@ -31,23 +35,24 @@ fun KotogramTheme(
 ) {
     val colorScheme = kotogramColorScheme(darkTheme, dynamicColor)
     val spacing = remember { KotogramSpacing() }
-    CompositionLocalProvider(LocalKotogramSpacing provides spacing) {
+    CompositionLocalProvider(
+        LocalKotogramSpacing provides spacing,
+        LocalUiMediaScope provides platformUiMediaScope()
+    ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = rememberKotogramTypography(),
             shapes = KotogramShapes
         ) {
-            if (platformPressHighlight) {
-                CompositionLocalProvider(
-                    LocalIndication provides KotogramTheme.indication,
-                    LocalRippleConfiguration provides null,
-                    content = content
-                )
-            } else {
-                content()
-            }
+            CompositionLocalProvider(*platformComponentOverrides(), *indicationOverrides(), content = content)
         }
     }
+}
+
+private fun indicationOverrides(): Array<ProvidedValue<*>> = if (currentPlatform.isApple) {
+    arrayOf(LocalIndication provides DimIndication, LocalRippleConfiguration provides null)
+} else {
+    emptyArray()
 }
 
 @Composable
@@ -75,5 +80,5 @@ object KotogramTheme {
 
     val indication: Indication
         @Composable
-        get() = if (platformPressHighlight) DimIndication else ripple()
+        get() = if (currentPlatform.isApple) DimIndication else ripple()
 }

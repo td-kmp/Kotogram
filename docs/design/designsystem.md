@@ -51,7 +51,7 @@ Which M3 role takes which palette field is our own mapping.
 
 - **Apple** (iOS, and the desktop app on macOS): the system's SF Pro. Apple's licence doesn't allow bundling it. Compose maps `FontFamily.Default` to `.AppleSystemUIFont` on Apple platforms (`PlatformFont.skiko.kt`: ".AppleSystem* aliases is the only legal way to get default SF and NY fonts").
 - **Everywhere else** (Android, the web, the desktop app on Windows and Linux): Inter 4.1 in `core:resources` (`font/inter_regular`, `inter_medium`, `inter_semibold`). Inter is the closest free face to SF Pro. macOS's `.bold` is semibold.
-- `platformSystemFont` picks the font: true on iOS, and on a JVM whose `os.name` starts with "Mac".
+- `currentPlatform.isApple` picks the font (see Platforms).
 
 ### Spacing
 
@@ -93,11 +93,34 @@ The shapes come from `extensions/PathBuilderExt.kt` (`circle`, `ellipse`, `round
 - building vectors (`path`, `group`, `PathBuilder`, `addPathNodes`);
 - `painterResource`, `vectorResource` and `imageResource`.
 
-`config/detekt/baseline.xml` lists the auth screens' seven `OutlinedTextField`s, which wait for the decision on where a `TextFieldState` lives.
+`config/detekt/baseline.xml` lists the other auth screens' `OutlinedTextField`s. A screen's `TextFieldState` lives in its ViewModel (decided 2026-11-08 with the phone screen), which edits it and follows it with `snapshotFlow`.
+
+### Platforms
+
+What differs by platform goes through one `expect` file, `theme/PlatformInfo` (own design, after the patterns below):
+- `currentPlatform: PlatformInfo(isApple, isDesktop)` for the facts the theme branches on: iOS `(true, false)`, Android `(false, false)`, web `(false, true)`, JVM `(os.name starts with "Mac", true)`.
+- `platformComponentOverrides()`, the native components `KotogramTheme` provides. Android and the web provide none.
+- `platformDynamicColorScheme`, Android's dynamic colours.
+
+A component with a native variant is written as Material 3's component overrides (`@ExperimentalMaterial3ComponentOverrideApi`, e.g. `NavigationBar`): the public composable builds a `…OverrideScope` of its parameters and calls `Local…Override.current`; `Default…Override` is the Material version, and the native ones (`component/platform` in iosMain and jvmMain) implement `…Override`. Ours are internal and `staticCompositionLocalOf` (M3 uses `compositionLocalOf`). Overrides: `ProminentButton` (iOS 26 and macOS 26 glass), `ProgressIndicator` (iOS, macOS) and `Menu` (macOS). The JVM provides them only on macOS inside a Nucleus window, so tests and screenshots get the Material versions.
+
+androidx is working on the same split (unmerged CLs on android-review, November 2026): `UiMediaScope.platformFeatures` (aosp/4304334), an internal `FormFactor` resolved from `UiMediaScope` (aosp/4217847), and M3's adaptive styles with `optimizedUiForLaptop/Tv/Auto` over a temporary `mediaQueryInfo()` expect (aosp/4400908, used by the adaptive menu styles in aosp/4424517). `UiMediaScope` can't serve us yet: CMP 1.12.1 provides no `LocalUiMediaScope` outside Android (reading it throws), 1.13.0-alpha01 provides an empty one, and it describes the input and the viewing distance, not the OS.
+
+### Media queries
+
+`media/UiMediaScope` is Compose UI 1.12.1's `UiMediaScope` and `mediaQuery`/`derivedMediaQuery` under our package, plus `platformFeatures` (`Pc`, `Leanback`, `Automotive`, `Watch`, `Camera`, `Microphone`) from the unmerged aosp/4304334: CMP provides the official scope only on Android. `KotogramTheme` provides `LocalUiMediaScope` from `platformUiMediaScope()`:
+- Android: Compose's own implementation, copied (posture from `WindowInfoTracker`, pointer and keyboard from `InputManager`, IME, dock, `PackageManager` features).
+- iOS: a coarse pointer, the on-screen keyboard while UIKit shows it, no posture. A trackpad or a hardware keyboard would need GameController, which a static framework would have the app link.
+- JVM: a fine pointer, a physical keyboard and `Pc`. Web: CSS `any-pointer`/`any-hover` (own heuristic).
+Moving to the official API is a change of imports, except `platformFeatures` until its CL lands.
+
+Two questions go to it, apart:
+- **Sizes**: Telegram for macOS's with `Pc` among the features, Telegram for iOS's otherwise. Not the pointer: it reports the finest one attached, so a trackpad would turn an iPad into a desktop; M3's adaptive styles also take a laptop from `FEATURE_PC` (aosp/4400908).
+- **Layout**: the window and the posture, per screen (the phone screen: [auth](auth.md)).
 
 ### Press feedback
 
-Android, the web and desktop other than macOS keep Material 3's ripple. iOS and macOS (`platformPressHighlight`) have one indication for everything instead, Calf's `CupertinoIndication` (`theme/DimIndication`): what the component draws drops to an alpha of 0.33 at once, holds for at least 100 ms and comes back in 250 ms. Nothing happens on hover. The values are Calf's ("matching iOS"); Apple's own aren't checked.
+Android, the web and desktop other than macOS keep Material 3's ripple. iOS and macOS (`currentPlatform.isApple`) have one indication for everything instead, Calf's `CupertinoIndication` (`theme/DimIndication`): what the component draws drops to an alpha of 0.33 at once, holds for at least 100 ms and comes back in 250 ms. Nothing happens on hover. The values are Calf's ("matching iOS"); Apple's own aren't checked.
 
 - It dims only what is drawn, so it ignores Material's 48 dp touch area around a button.
 - On Apple, `KotogramTheme` provides it as `LocalIndication` and switches Material's ripple off (`LocalRippleConfiguration` `null`). `Button` and `TextButton` add it over Material's buttons. Material components that hardcode `ripple()` and that we don't wrap (`Switch`, `IconButton`, `Card`) show no press at all.
@@ -113,7 +136,7 @@ Android, the web and desktop other than macOS keep Material 3's ripple. iOS and 
   - Sizes: 40 high, `spacing.small` inside, `shapes.medium`.
   - Text styles: text `bodyLarge`; placeholder, suggestion and supporting text `bodyMedium`; title `bodySmall`.
   - Icons: a 28-point icon slot 6 from the edge and 4 from the text (`Auth_PasswordEntry`).
-  - Focus ring: on by default only on Android and iOS (`platformFocusRing`). It turns red with `isError`, even without focus, as M3's indicator does.
+  - Focus ring: on by default only on Android and iOS (not `currentPlatform.isDesktop`). It turns red with `isError`, even without focus, as M3's indicator does.
   - Font scale: text is in sp. The container is at least 40 high and grows with its text, and the title, suggestion and supporting text wrap within the field's width (`TextFieldTest`). The width stays M3's 280 dp minimum, so screens should give fields their full width.
 - **`Button`, `TextButton`** (`component/Button`): Telegram for macOS's sign-in button (`Auth_NextView`), a pill at least 36 high with 15 on each side and 14 medium. The text button is a link in the regular weight.
   - `ButtonState` is `Enabled`, `Disabled` or `Loading`; `ButtonState.of(enabled, loading)` builds it from a screen's flags.
@@ -121,7 +144,7 @@ Android, the web and desktop other than macOS keep Material 3's ripple. iOS and 
   - Colours are M3's `ButtonColors`.
 - **`ProminentButton`** (`component/ProminentButton`): a screen's main action, with a `text`, a `ButtonState`, `ButtonColors` and content padding. It is the filled `Button` everywhere except on iOS 26 and macOS 26, where it is the system's glass button.
   - Size, font and colours come from Compose: an invisible filled `Button` with the same text sizes the native one (without Material's 48 dp touch target, which the box adds as `Button` does), and each platform hands its native button the theme's `labelLarge` in points and the `ButtonColors` (the container colour tints the glass), as Calf's native pickers take their colours.
-  - iOS 26 (`component/platform/PlatformProminentButton.ios`): UIKit's `prominentGlassButtonConfiguration` in a `UIKitView` with CMP's experimental `placedAsOverlay`, since the glass refracts only what lies under it. UIKit runs the press (it swells and stretches), the click and the spinner. `overrideUserInterfaceStyle` follows the theme, as Calf does for its native pickers.
+  - iOS 26 (`component/platform/GlassProminentButtonOverride`): UIKit's `prominentGlassButtonConfiguration` in a `UIKitView` with CMP's experimental `placedAsOverlay`, since the glass refracts only what lies under it. UIKit runs the press (it swells and stretches), the click and the spinner. `overrideUserInterfaceStyle` follows the theme, as Calf does for its native pickers.
   - macOS 26 (`native/MacGlassButton`, `native/ObjC` in jvmMain): AppKit's `NSButton` with `NSBezelStyleGlass`, `NSControlSizeExtraLarge` and `NSTintProminencePrimary`, made through the Objective-C runtime with JNA, in Nucleus's `NativeView` with `placedAsOverlay`. AppKit then delivers its events itself: hover, the press (it glows and swells by a few points), the click through target-action, and an `NSProgressIndicator` while loading. It doesn't take focus, so it draws no focus ring.
   - `placedAsOverlay` on macOS is our change to Nucleus (local `dev` build, [handoff](../handoff.md)). Under the surface, as Nucleus mounts views by default, AppKit's controls can't work: Nucleus calls `mouseDown:` on them directly, `NSButton`'s tracking loop then takes the mouse-up Compose still needs, and the glass never lights; Nucleus 3.0 stopped forwarding the mouse to `NSControl` for that reason.
   - Both overlays cover whatever Compose draws over them, so the glass shows only while its `LocalLifecycleOwner` is `RESUMED`: NavDisplay holds a screen at `STARTED` during a transition and under a dialog, and the new screen's button appears once it settles.
@@ -131,6 +154,15 @@ Android, the web and desktop other than macOS keep Material 3's ripple. iOS and 
   - iOS: UIKit's `UIActivityIndicatorView`, medium up to 32 and large above, in the given colour.
   - macOS: AppKit's `NSProgressIndicator`, small up to 32 and regular above. It can't take a colour: it is light when the colour is lighter than the theme's background, dark otherwise.
   - Both are overlays (UIKit interop's and Nucleus's `placedAsOverlay`), so a spinner over a Compose surface shows that surface, and like the glass button they show only while their screen is `RESUMED`. Elsewhere it is Material 3's spinner with a stroke of 2.
+- **`Menu`** (`component/Menu`): a list of choices anchored to the layout it sits in, as `DropdownMenu`, with the selected one checked.
+  - macOS (in a Nucleus window): AppKit's `NSMenu` (`native/MacMenu`) with its top left corner at the click, as Telegram for macOS opens its menus (seen in the app; the code that places them isn't checked), or under the anchor when the pointer isn't over it (opened by keyboard). `popUpMenuPositioningItem:` with no item; the pointer is the window's `mouseLocationOutsideOfEventStream`. AppKit draws it (glass on macOS 26), keeps it on screen, scrolls it with arrows and selects by typing. Telegram for macOS draws its own menu window by default (TGUIKit's `AppMenuController`; `NSMenu` only behind the developer setting "Native Context Menu").
+  - Elsewhere Material 3's `DropdownMenu` (`DefaultMenuOverride`) with M3's laptop values from the unmerged adaptive menu styles (aosp/4424517): items 44 high with 10 at the sides, inside 10 at the sides; selection and hover rounded with `shapes.small`. It is at most the window's height less M3's 48 margins (`DropdownMenuPositionProvider` centres a taller menu over the whole window), opens scrolled to centre the selected item, and selects by typing as `NSMenu` does (letters within a second make one prefix, leading emoji skipped; the found item takes focus, Enter picks it). Our own design: M3 has no type-select. Typing matches the characters the layout produces, so a Russian layout won't find English names.
+- **`OptionPicker`** (`component/OptionPicker`): one choice out of many. On the desktop and the web a `Menu`; on Android and iOS a bottom sheet with a search field (Material 3's `ModalBottomSheet`). The phone screen picks its country with it.
+- **`PhoneNumberField`** (`component/PhoneNumberField`): Telegram for macOS's `Auth_PhoneInput` (`PhoneInputUI`, used by sign-in and by changing the number), 80 high, `shapes.medium`, `surfaceVariant`, where the device is a computer (`Pc`). On touch screens it is Telegram for iOS's: rows of 67 and 57 between hairlines, 20-point text, the country in `primary`. It owns its heights; its width is 280 by default and the caller's modifier overrides it (the phone screen gives touch screens the full width up to 430).
+  - Top half: the country in 15 regular and a `ChevronRight` in `outline` (`grayIcon`); a click opens `countryMenu`, the slot for the caller's `OptionPicker`. A hairline 10 in from each side splits the halves, `outline` at 0.12: over `grayBackground` that is Telegram's day `border` (`EAEAEA`). Telegram tints both with `border`, which its dark palettes set to `grayBackground` itself, so at night it shows neither; we fix that.
+  - Bottom half: one `TextFieldState` with the digits of calling code and number, 14 medium monospaced. Telegram has two fields; one keeps the code and the number in step without moving focus or digits between fields. The output shows `+`, the calling code (`callingCodeLength`), a space and the number on `numberPattern`.
+  - `numberPattern` is TDLib's `phoneNumberInfo.formattedPhoneNumber` (`getPhoneNumberInfo`, digits typed and `-` for those expected); what is not typed yet is drawn behind the text in `onSurfaceVariant`, as macOS's placeholder. Without a pattern it shows `numberPlaceholder`.
+  - Digits only, at most 15 (E.164).
 - **`ListItem`** (`component/ListItem`): M3's slots (overline, headline, supporting, leading, trailing) with the insets of macOS's rows (`GeneralRowItem`: 12 and 14), headline `bodyLarge`, supporting `bodyMedium`, and M3's `ListItemColors`.
   - `position` (`Single`, `First`, `Middle`, `Last`) groups rows as macOS's settings do: rounded ends and a divider that starts under the text.
   - Without a position the row is plain, as in the lists of chats and countries.

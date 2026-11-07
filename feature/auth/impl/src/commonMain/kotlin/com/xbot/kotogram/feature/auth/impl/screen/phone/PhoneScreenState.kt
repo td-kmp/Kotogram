@@ -8,28 +8,14 @@ internal data class PhoneScreenState(
     val country: CountryInfo? = null,
     val callingCode: String = "",
     val number: String = "",
-    val syncContacts: Boolean = true,
+    val numberPattern: String = "",
     val isAcceptingNumber: Boolean = false,
     val isCountryPickerVisible: Boolean = false,
-    val countryQuery: String = "",
     val isSubmitting: Boolean = false,
     val error: AuthError? = null
 ) {
     val canSubmit: Boolean
-        get() = isAcceptingNumber && !isSubmitting && callingCode.isNotEmpty() && hasFullNumber
-
-    private val hasFullNumber: Boolean get() = number.length >= MIN_NUMBER_LENGTH
-
-    val filteredCountries: List<CountryInfo>
-        get() = if (countryQuery.isBlank()) {
-            countries
-        } else {
-            countries.filter { country ->
-                country.name.contains(countryQuery, ignoreCase = true) ||
-                    country.englishName.contains(countryQuery, ignoreCase = true) ||
-                    country.callingCodes.any { it.startsWith(countryQuery.removePrefix("+")) }
-            }
-        }
+        get() = isAcceptingNumber && !isSubmitting && callingCode.isNotEmpty() && number.length >= MIN_NUMBER_LENGTH
 
     private companion object {
         const val MIN_NUMBER_LENGTH = 5

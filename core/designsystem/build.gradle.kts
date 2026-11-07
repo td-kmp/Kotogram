@@ -47,6 +47,13 @@ kotlin {
     }
 
     sourceSets {
+        androidMain.dependencies {
+            implementation(libs.androidx.core)
+            implementation(libs.androidx.window)
+        }
+        wasmJsMain.dependencies {
+            implementation(libs.kotlinx.browser)
+        }
         jvmMain.dependencies {
             implementation(libs.jna)
             api(libs.nucleus.application)

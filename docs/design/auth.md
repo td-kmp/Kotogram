@@ -157,6 +157,19 @@ States: `Loading` (tile shows `CircularProgressIndicator(24.dp)` centered on whi
 
 Components: plain Compose (`Image`, `Text`, `Box`) + M3 `CircularProgressIndicator`, `TextButton(colors = textButtonColors(contentColor = accent))`. No Calf.
 
+#### Layout as built (2026-11-08)
+
+Computers keep Telegram for macOS's screen. Touch screens have our own (approved 2026-11-08): Telegram for iOS shows a QR code only behind a debug tap and Telegram for Android not at all. Type and spacing follow Telegram for iOS's sign-in (title 28 bold, steps 17, insets 24); the code stays macOS's 210.
+
+| Window | Layout |
+|---|---|
+| A computer (`Pc`) | macOS: code, title, steps and the phone link in one centred column |
+| Phone on its side (lower than 480), book posture | Two halves: the code on one, title, steps and link on the other |
+| Tabletop posture | The code above the fold, title, steps and link below it |
+| Otherwise | The code, title and steps centred, the phone link at the bottom where the phone screen keeps Next |
+
+`QrScreenScreenshotTest` renders each to `build/screenshots/qr`.
+
 ### 2.2 Phone number
 
 Copy:
@@ -182,6 +195,20 @@ Suggested UI state (adapt to the ViewModel's own type):
 @Immutable data class CountryUi(val iso2: String, val flag: String, val name: String, val callingCode: String)
 ```
 Callbacks: `onCountryClick()`, `onCallingCodeChange(String)`, `onPhoneChange(String)`, `onSyncContactsChange(Boolean)`, `onSubmit()`, `onPasskeyClick()`, `onQrLoginClick()` (desktop), `onClose()`.
+
+#### Layout as built (2026-11-08)
+
+Sizes come from Telegram for macOS with `Pc`, from Telegram for iOS on touch screens ([design system: media queries](designsystem.md#media-queries)). The layout comes from the window and the posture, in one column of `PhoneScreenContent`:
+
+| Window | Layout | Source |
+|---|---|---|
+| A computer (`Pc`) | macOS: centred column, the action under the field | `Auth_PhoneNumber` |
+| Tabletop posture | The form above the fold without the logo, the action at the bottom | Android's foldable guidance; the hinge is taken at the middle, the scope has no bounds |
+| Book posture | Everything in the start half | Android's foldable guidance |
+| Lower than 480 (phone in landscape) | No logo, the action under the field | Telegram for Android hides its art in landscape, Telegram for iOS drops its animation when it doesn't fit |
+| Otherwise: phone, iPad, tablet, unfolded | The action full width up to 430, at the bottom over the keyboard | Telegram for iOS, iPad included (decided 2026-11-08) |
+
+`PhoneScreenScreenshotTest` renders each with a fake `UiMediaScope` to `build/screenshots/phone`. The logo is a white square for now.
 
 #### iOS layout (matches IMG_1776/1777)
 - `AuthNavButton(Close)` top-start: 44 pt, 16 pt from leading edge, aligned to safe-area top + 8 pt.

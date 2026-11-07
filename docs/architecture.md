@@ -325,7 +325,7 @@ internal class PhoneViewModel(
 
     fun onAction(action: PhoneScreenAction) {
         when (action) {
-            is PhoneScreenAction.OnNumberChange -> onNumberChange(action.value)
+            is PhoneScreenAction.OnCountrySelect -> onCountrySelect(action.country)
             PhoneScreenAction.OnSubmit -> onSubmit()
         }
     }
@@ -336,7 +336,7 @@ internal class PhoneViewModel(
 - A component with logic of its own gets its own ViewModel, `{Component}ViewModel` with `{Component}State` and `{Component}Action`, in a store of its own: `koinViewModel(viewModelStoreOwner = rememberViewModelStoreOwner())` (lifecycle 2.11), cleared when the component leaves the composition. `AuthScreen` hosts `LanguageSuggestion` so.
 - One-off events (snackbar, a navigation request) are side effects, not state. Use `Nothing` when a
   screen has none.
-- No Compose types and no `Navigator`. A ViewModel of an account is declared in `scope(AccountScope)`.
+- No Compose types and no `Navigator`, except a screen's `TextFieldState`: the ViewModel owns it in its `SavedStateHandle` (`saveable(TextFieldState.Saver)`, lifecycle-viewmodel-compose; `saved` needs a `KSerializer`, which `TextFieldState` lacks), edits it and follows it with `snapshotFlow` (decided 2026-11-08, `PhoneViewModel.phoneNumber`). A ViewModel of an account is declared in `scope(AccountScope)`.
 
 ---
 
@@ -351,7 +351,7 @@ internal class PhoneViewModel(
 | Stateless composable | `{Screen}ScreenContent` | `PhoneScreenContent` |
 | Screen-private pieces | `{Screen}Components.kt` | `PhoneComponents.kt` |
 | State | `{Screen}ScreenState` | `PhoneScreenState` |
-| Action | `{Screen}ScreenAction`, sealed, entries `On{Something}` | `PhoneScreenAction.OnNumberChange` |
+| Action | `{Screen}ScreenAction`, sealed, entries `On{Something}` | `PhoneScreenAction.OnCountrySelect` |
 | Side effect | `{Screen}ScreenSideEffect` | `PhoneScreenSideEffect.Submitted` |
 | ViewModel | `{Screen}ViewModel` (or `{Feature}ViewModel` when one serves several screens) | `PhoneViewModel` |
 | Navigation callback | `on[Target]Click`: name the target, not the layout role | `onChatClick`, `onQrLoginClick`, `onBackClick` |

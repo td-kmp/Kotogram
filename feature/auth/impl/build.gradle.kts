@@ -67,6 +67,8 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.orbit.test)
+            implementation(libs.compose.ui.test)
+            implementation(compose.desktop.currentOs)
         }
     }
 }

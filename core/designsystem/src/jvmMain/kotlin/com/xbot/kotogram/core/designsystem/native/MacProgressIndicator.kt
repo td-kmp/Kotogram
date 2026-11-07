@@ -45,10 +45,6 @@ internal class MacProgressIndicator {
     fun release() {
         ObjC.sendVoid(handle, "release")
     }
-
-    companion object {
-        val isSupported: Boolean = System.getProperty("os.name").orEmpty().startsWith("Mac")
-    }
 }
 
 private const val PROGRESS_STYLE_SPINNING = 1L

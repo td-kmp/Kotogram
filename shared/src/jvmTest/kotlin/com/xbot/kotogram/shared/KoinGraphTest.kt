@@ -1,6 +1,7 @@
 package com.xbot.kotogram.shared
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.lifecycle.SavedStateHandle
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.entryProvider
 import com.xbot.kotogram.core.account.AccountId
@@ -82,8 +83,8 @@ class KoinGraphTest {
                         .distinct()
                     assertTrue(definitions.size > 2, "only the declared client and context")
                     definitions.forEach { definition ->
-                        // The one parameter there is: ChatViewModel's chat id.
-                        session.koinScope.get<Any>(definition.primaryType) { parametersOf(1L) }
+                        // What koinViewModel() hands over: ChatViewModel's chat id and an entry's SavedStateHandle.
+                        session.koinScope.get<Any>(definition.primaryType) { parametersOf(1L, SavedStateHandle()) }
                     }
 
                     val installers = session.koinScope.getAll<EntryProviderInstaller>()
