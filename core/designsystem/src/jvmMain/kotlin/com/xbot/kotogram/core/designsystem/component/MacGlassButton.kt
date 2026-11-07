@@ -2,11 +2,11 @@ package com.xbot.kotogram.core.designsystem.component
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
-import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
+import com.sun.jna.Memory
+import com.sun.jna.Native
+import com.sun.jna.NativeLibrary
 import com.sun.jna.Pointer
 
-// AppKit's NSButton with macOS 26's glass bezel, driven through the Objective-C runtime.
 internal class MacGlassButton(onClick: () -> Unit) {
     val handle: Pointer = requireNotNull(
         ObjC.send(
@@ -18,34 +18,79 @@ internal class MacGlassButton(onClick: () -> Unit) {
         )
     )
 
+    private val spinner: Pointer = requireNotNull(
+        ObjC.send(requireNotNull(ObjC.send(requireNotNull(ObjC.cls("NSProgressIndicator")), "alloc")), "init")
+    )
+
     init {
         ObjC.sendVoid(handle, "retain")
-        // Compose owns focus; as AppKit's first responder the button would draw its own focus ring.
         ObjC.sendVoid(handle, "setRefusesFirstResponder:", 1.toByte())
+        ObjC.sendVoid(handle, "setFocusRingType:", FOCUS_RING_TYPE_NONE)
         ObjC.sendVoid(handle, "setBezelStyle:", BEZEL_STYLE_GLASS)
         ObjC.sendVoid(handle, "setControlSize:", CONTROL_SIZE_EXTRA_LARGE)
         ObjC.sendVoid(handle, "setTintProminence:", TINT_PROMINENCE_PRIMARY)
         GlassButtonTarget.actions[Pointer.nativeValue(handle)] = onClick
+        ObjC.sendVoid(spinner, "setStyle:", PROGRESS_STYLE_SPINNING)
+        ObjC.sendVoid(spinner, "setControlSize:", CONTROL_SIZE_SMALL)
+        ObjC.sendVoid(spinner, "setDisplayedWhenStopped:", 0.toByte())
+        ObjC.sendVoid(spinner, "setTranslatesAutoresizingMaskIntoConstraints:", 0.toByte())
+        ObjC.sendVoid(handle, "addSubview:", spinner)
+        for (anchor in listOf("centerXAnchor", "centerYAnchor")) {
+            val constraint = ObjC.send(
+                requireNotNull(ObjC.send(spinner, anchor)),
+                "constraintEqualToAnchor:",
+                ObjC.send(handle, anchor)
+            )
+            constraint?.let { ObjC.sendVoid(it, "setActive:", 1.toByte()) }
+        }
     }
 
-    fun sizeFor(title: String): DpSize {
-        ObjC.sendVoid(handle, "setTitle:", ObjC.string(title))
-        val size = ObjC.sendSize(handle, "fittingSize")
-        return DpSize(size.width.dp, size.height.dp)
+    fun setTitle(text: String, fontSize: Double, fontWeight: Double, color: Color) {
+        ObjC.sendVoid(handle, "setAttributedTitle:", attributedTitle(text, fontSize, fontWeight, color))
     }
 
-    fun update(title: String, enabled: Boolean, tint: Color, dark: Boolean) {
-        ObjC.sendVoid(handle, "setTitle:", ObjC.string(title))
-        ObjC.sendVoid(handle, "setEnabled:", (if (enabled) 1 else 0).toByte())
-        ObjC.sendVoid(handle, "setBezelColor:", nsColor(tint))
-        val appearance = if (dark) "NSAppearanceNameDarkAqua" else "NSAppearanceNameAqua"
-        ObjC.send(requireNotNull(ObjC.cls("NSAppearance")), "appearanceNamed:", ObjC.string(appearance))
+    fun setBezelColor(color: Color) {
+        ObjC.sendVoid(handle, "setBezelColor:", nsColor(color))
+    }
+
+    fun setDark(dark: Boolean) {
+        appearance(if (dark) "NSAppearanceNameDarkAqua" else "NSAppearanceNameAqua")
             ?.let { ObjC.sendVoid(handle, "setAppearance:", it) }
+        appearance("NSAppearanceNameDarkAqua")?.let { ObjC.sendVoid(spinner, "setAppearance:", it) }
     }
+
+    fun setLoading(loading: Boolean) {
+        ObjC.sendVoid(spinner, if (loading) "startAnimation:" else "stopAnimation:", null)
+    }
+
+    fun setEnabled(enabled: Boolean) {
+        ObjC.sendVoid(handle, "setEnabled:", (if (enabled) 1 else 0).toByte())
+    }
+
+    fun setVisible(visible: Boolean) {
+        ObjC.sendVoid(handle, "setHidden:", (if (visible) 0 else 1).toByte())
+    }
+
+    private fun appearance(name: String): Pointer? =
+        ObjC.send(requireNotNull(ObjC.cls("NSAppearance")), "appearanceNamed:", ObjC.string(name))
 
     fun release() {
         GlassButtonTarget.actions.remove(Pointer.nativeValue(handle))
+        ObjC.sendVoid(spinner, "release")
         ObjC.sendVoid(handle, "release")
+    }
+
+    private fun attributedTitle(text: String, fontSize: Double, fontWeight: Double, color: Color): Pointer {
+        val nsFont = requireNotNull(
+            ObjC.send(requireNotNull(ObjC.cls("NSFont")), "systemFontOfSize:weight:", fontSize, fontWeight)
+        )
+        val keys = pointers(appKitString("NSFontAttributeName"), appKitString("NSForegroundColorAttributeName"))
+        val values = pointers(nsFont, nsColor(color))
+        val dictionary = requireNotNull(ObjC.cls("NSDictionary"))
+        val attributes = requireNotNull(ObjC.send(dictionary, "dictionaryWithObjects:forKeys:count:", values, keys, 2L))
+        val title = requireNotNull(ObjC.send(requireNotNull(ObjC.cls("NSAttributedString")), "alloc"))
+        return requireNotNull(ObjC.send(title, "initWithString:attributes:", ObjC.string(text), attributes))
+            .also { ObjC.send(it, "autorelease") }
     }
 
     private fun nsColor(color: Color): Pointer {
@@ -77,7 +122,6 @@ private object GlassButtonTarget {
 
     val actions = HashMap<Long, () -> Unit>()
 
-    // Held for the process's lifetime: AppKit calls it through a pointer JNA made from it.
     private val imp = ObjC.ActionImp { _, _, sender -> actions[Pointer.nativeValue(sender)]?.invoke() }
 
     val instance: Pointer by lazy {
@@ -86,7 +130,17 @@ private object GlassButtonTarget {
     }
 }
 
-// AppKit's values (NSButtonCell.h, NSCell.h, NSTintProminence.h in the macOS 26 SDK).
+private val appKit by lazy { NativeLibrary.getInstance("AppKit") }
+
+private fun appKitString(symbol: String): Pointer = appKit.getGlobalVariableAddress(symbol).getPointer(0)
+
+private fun pointers(vararg values: Pointer): Memory = Memory(Native.POINTER_SIZE.toLong() * values.size).apply {
+    values.forEachIndexed { index, value -> setPointer(Native.POINTER_SIZE.toLong() * index, value) }
+}
+
 private const val BEZEL_STYLE_GLASS = 16L
 private const val CONTROL_SIZE_EXTRA_LARGE = 4L
 private const val TINT_PROMINENCE_PRIMARY = 2L
+private const val FOCUS_RING_TYPE_NONE = 1L
+private const val PROGRESS_STYLE_SPINNING = 1L
+private const val CONTROL_SIZE_SMALL = 1L

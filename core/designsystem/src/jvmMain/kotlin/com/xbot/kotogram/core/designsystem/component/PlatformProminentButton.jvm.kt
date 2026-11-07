@@ -1,18 +1,22 @@
 package com.xbot.kotogram.core.designsystem.component
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material3.ButtonColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalDensity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.currentStateAsState
 import com.sun.jna.Pointer
 import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.core.designsystem.extensions.appleWeight
+import com.xbot.kotogram.core.designsystem.extensions.containerColor
+import com.xbot.kotogram.core.designsystem.extensions.contentColor
+import com.xbot.kotogram.core.designsystem.extensions.isDark
 import dev.nucleusframework.window.tao.LocalTaoWindow
 import dev.nucleusframework.window.tao.NativeView
 import dev.nucleusframework.window.tao.nucleusNsPlatformView
@@ -22,12 +26,14 @@ internal actual fun PlatformProminentButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier,
-    state: ButtonState
+    state: ButtonState,
+    colors: ButtonColors,
+    contentPadding: PaddingValues
 ) {
     if (LocalTaoWindow.current != null && MacGlassButton.isSupported) {
-        GlassProminentButton(text, onClick, modifier, state)
+        GlassProminentButton(text, onClick, modifier, state, colors, contentPadding)
     } else {
-        FilledProminentButton(text, onClick, modifier, state)
+        FilledProminentButton(text, onClick, modifier, state, colors, contentPadding)
     }
 }
 
@@ -36,16 +42,19 @@ private fun GlassProminentButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier,
-    state: ButtonState
+    state: ButtonState,
+    colors: ButtonColors,
+    contentPadding: PaddingValues
 ) {
     val currentOnClick by rememberUpdatedState(onClick)
     val currentState by rememberUpdatedState(state)
     val button = remember { MacGlassButton { if (currentState == ButtonState.Enabled) currentOnClick() } }
-    val size = remember(text) { button.sizeFor(text) }
-    val tint = KotogramTheme.colors.primary
-    val dark = KotogramTheme.colors.background.luminance() < HALF_LUMINANCE
-    val loading = state == ButtonState.Loading
-    Box(modifier.defaultMinSize(size.width, size.height), contentAlignment = Alignment.Center) {
+    val style = KotogramTheme.typography.labelLarge
+    val fontSize = with(LocalDensity.current) { style.fontSize.toDp().value.toDouble() }
+    val dark = KotogramTheme.colors.background.isDark()
+    val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
+    val inFront = lifecycle.isAtLeast(Lifecycle.State.RESUMED)
+    NativeProminentButtonBox(text, colors, contentPadding, modifier) {
         NativeView(
             factory = {
                 nucleusNsPlatformView(
@@ -55,23 +64,20 @@ private fun GlassProminentButton(
             },
             modifier = Modifier.matchParentSize(),
             update = {
-                button.update(
-                    title = if (loading) "" else text,
-                    enabled = state != ButtonState.Disabled,
-                    tint = tint,
-                    dark = dark
+                val loading = state == ButtonState.Loading
+                button.setTitle(
+                    text = if (loading) "" else text,
+                    fontSize = fontSize,
+                    fontWeight = style.fontWeight.appleWeight(),
+                    color = colors.contentColor(state)
                 )
-            }
+                button.setBezelColor(colors.containerColor(state))
+                button.setDark(dark)
+                button.setLoading(loading)
+                button.setEnabled(state != ButtonState.Disabled)
+                button.setVisible(inFront)
+            },
+            placedAsOverlay = true
         )
-        // Compose draws over the native view, so the spinner can be ours.
-        if (loading) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(ButtonDefaults.ProgressSize),
-                color = KotogramTheme.colors.onPrimary,
-                strokeWidth = ButtonDefaults.ProgressStrokeWidth
-            )
-        }
     }
 }
-
-private const val HALF_LUMINANCE = 0.5f

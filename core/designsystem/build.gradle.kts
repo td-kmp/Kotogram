@@ -50,6 +50,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtime.compose)
         }
         jvmMain.dependencies {
+            implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.jna)
             implementation(libs.nucleus.decorated.window.tao)
         }

@@ -1,5 +1,7 @@
 package com.xbot.kotogram.core.designsystem.component
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material3.ButtonColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
@@ -8,7 +10,9 @@ internal actual fun PlatformProminentButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier,
-    state: ButtonState
+    state: ButtonState,
+    colors: ButtonColors,
+    contentPadding: PaddingValues
 ) {
-    FilledProminentButton(text, onClick, modifier, state)
+    FilledProminentButton(text, onClick, modifier, state, colors, contentPadding)
 }

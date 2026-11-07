@@ -1,36 +1,39 @@
 package com.xbot.kotogram.core.designsystem.component
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material3.ButtonColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.layout.Measurable
-import androidx.compose.ui.layout.MeasureResult
-import androidx.compose.ui.layout.MeasureScope
-import androidx.compose.ui.node.LayoutModifierNode
-import androidx.compose.ui.node.ModifierNodeElement
-import androidx.compose.ui.node.invalidateMeasurement
-import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
-import androidx.compose.ui.viewinterop.remeasureRequester
-import androidx.compose.ui.viewinterop.rememberUIKitInteropRemeasureRequester
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.currentStateAsState
 import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.core.designsystem.extensions.appleWeight
+import com.xbot.kotogram.core.designsystem.extensions.containerColor
+import com.xbot.kotogram.core.designsystem.extensions.contentColor
+import com.xbot.kotogram.core.designsystem.extensions.isDark
 import com.xbot.kotogram.core.designsystem.extensions.toUIColor
+import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.cValue
+import platform.Foundation.NSAttributedString
 import platform.Foundation.NSOperatingSystemVersion
 import platform.Foundation.NSProcessInfo
+import platform.Foundation.create
+import platform.UIKit.NSFontAttributeName
+import platform.UIKit.NSForegroundColorAttributeName
 import platform.UIKit.UIAction
 import platform.UIKit.UIButton
 import platform.UIKit.UIButtonConfiguration
 import platform.UIKit.UIButtonConfigurationCornerStyleCapsule
-import platform.UIKit.UIButtonConfigurationSize
+import platform.UIKit.UIColor
+import platform.UIKit.UIFont
 import platform.UIKit.UIUserInterfaceStyle
 import platform.UIKit.UIView
 import platform.UIKit.accessibilityLabel
@@ -40,64 +43,74 @@ internal actual fun PlatformProminentButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier,
-    state: ButtonState
+    state: ButtonState,
+    colors: ButtonColors,
+    contentPadding: PaddingValues
 ) {
     if (hasLiquidGlass) {
-        GlassProminentButton(text, onClick, modifier, state)
+        GlassProminentButton(text, onClick, modifier, state, colors, contentPadding)
     } else {
-        FilledProminentButton(text, onClick, modifier, state)
+        FilledProminentButton(text, onClick, modifier, state, colors, contentPadding)
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun GlassProminentButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier,
-    state: ButtonState
+    state: ButtonState,
+    colors: ButtonColors,
+    contentPadding: PaddingValues
 ) {
     val currentOnClick by rememberUpdatedState(onClick)
-    val tint = KotogramTheme.colors.primary.toUIColor()
-    val style = if (KotogramTheme.colors.background.luminance() < HALF_LUMINANCE) {
-        UIUserInterfaceStyle.UIUserInterfaceStyleDark
-    } else {
-        UIUserInterfaceStyle.UIUserInterfaceStyleLight
-    }
-    // An overlay covers whatever Compose draws over it, so the glass shows only while its screen is
-    // settled in front: NavDisplay holds a screen at STARTED during transitions and under dialogs.
+    val style = KotogramTheme.typography.labelLarge
+    val fontSize = with(LocalDensity.current) { style.fontSize.toDp().value.toDouble() }
+    val dark = KotogramTheme.colors.background.isDark()
     val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
     val inFront = lifecycle.isAtLeast(Lifecycle.State.RESUMED)
-    val remeasure = rememberUIKitInteropRemeasureRequester()
-    UIKitView(
-        factory = {
-            UIButton.buttonWithConfiguration(
-                configuration = UIButtonConfiguration.prominentGlassButtonConfiguration(),
-                primaryAction = UIAction.actionWithHandler { currentOnClick() }
-            ).apply { alpha = 0.0 }
-        },
-        modifier = modifier
-            .then(KeepTitleSizeElement(loading = state == ButtonState.Loading))
-            .remeasureRequester(remeasure),
-        update = { button ->
-            button.configuration = glassConfiguration(text, state)
-            button.tintColor = tint
-            button.overrideUserInterfaceStyle = style
-            button.enabled = state != ButtonState.Disabled
-            button.userInteractionEnabled = state == ButtonState.Enabled && inFront
-            button.accessibilityLabel = text
-            fade(button, visible = inFront)
-            remeasure.requestRemeasure()
-        },
-        properties = GlassProperties
-    )
+    NativeProminentButtonBox(text, colors, contentPadding, modifier) {
+        UIKitView(
+            factory = {
+                UIButton.buttonWithConfiguration(
+                    configuration = UIButtonConfiguration.prominentGlassButtonConfiguration(),
+                    primaryAction = UIAction.actionWithHandler { currentOnClick() }
+                ).apply { alpha = 0.0 }
+            },
+            modifier = Modifier.matchParentSize(),
+            update = { button ->
+                button.configuration = glassConfiguration(
+                    title = text.takeUnless { state == ButtonState.Loading },
+                    font = UIFont.systemFontOfSize(fontSize, style.fontWeight.appleWeight()),
+                    color = colors.contentColor(state).toUIColor(),
+                    loading = state == ButtonState.Loading
+                )
+                button.tintColor = colors.containerColor(state).toUIColor()
+                button.overrideUserInterfaceStyle = if (dark) {
+                    UIUserInterfaceStyle.UIUserInterfaceStyleDark
+                } else {
+                    UIUserInterfaceStyle.UIUserInterfaceStyleLight
+                }
+                button.userInteractionEnabled = state == ButtonState.Enabled && inFront
+                button.accessibilityLabel = text
+                fade(button, visible = inFront)
+            },
+            properties = GlassProperties
+        )
+    }
 }
 
-private fun glassConfiguration(text: String, state: ButtonState): UIButtonConfiguration =
+@OptIn(BetaInteropApi::class)
+private fun glassConfiguration(title: String?, font: UIFont, color: UIColor, loading: Boolean): UIButtonConfiguration =
     UIButtonConfiguration.prominentGlassButtonConfiguration().apply {
-        title = text.takeUnless { state == ButtonState.Loading }
-        showsActivityIndicator = state == ButtonState.Loading
-        buttonSize = UIButtonConfigurationSize.UIButtonConfigurationSizeLarge
+        attributedTitle = title?.let {
+            NSAttributedString.create(
+                string = it,
+                attributes = mapOf<Any?, Any?>(NSFontAttributeName to font, NSForegroundColorAttributeName to color)
+            )
+        }
+        baseForegroundColor = color
+        showsActivityIndicator = loading
         cornerStyle = UIButtonConfigurationCornerStyleCapsule
     }
 
@@ -106,46 +119,6 @@ private fun fade(view: UIView, visible: Boolean) {
     if (view.alpha != alpha) UIView.animateWithDuration(FADE_SECONDS) { view.alpha = alpha }
 }
 
-// UIKit's spinner alone is smaller than the title: like Button, a loading button keeps its title's size.
-private data class KeepTitleSizeElement(val loading: Boolean) :
-    ModifierNodeElement<KeepTitleSizeNode>() {
-    override fun create(): KeepTitleSizeNode = KeepTitleSizeNode(loading)
-
-    override fun update(node: KeepTitleSizeNode) {
-        node.loading = loading
-        node.invalidateMeasurement()
-    }
-}
-
-private class KeepTitleSizeNode(var loading: Boolean) :
-    Modifier.Node(),
-    LayoutModifierNode {
-    private var titleWidth = 0
-    private var titleHeight = 0
-
-    override fun MeasureScope.measure(
-        measurable: Measurable,
-        constraints: Constraints
-    ): MeasureResult {
-        val placeable = measurable.measure(
-            if (loading) {
-                constraints.copy(
-                    minWidth = titleWidth.coerceIn(constraints.minWidth, constraints.maxWidth),
-                    minHeight = titleHeight.coerceIn(constraints.minHeight, constraints.maxHeight)
-                )
-            } else {
-                constraints
-            }
-        )
-        if (!loading) {
-            titleWidth = placeable.width
-            titleHeight = placeable.height
-        }
-        return layout(placeable.width, placeable.height) { placeable.place(0, 0) }
-    }
-}
-
-// The glass refracts what lies under it, so it has to sit above Compose's canvas.
 @OptIn(ExperimentalComposeUiApi::class)
 private val GlassProperties =
     UIKitInteropProperties(isNativeAccessibilityEnabled = true, placedAsOverlay = true)
@@ -162,5 +135,3 @@ private val hasLiquidGlass: Boolean = NSProcessInfo.processInfo.isOperatingSyste
 private const val LIQUID_GLASS_IOS_VERSION = 26L
 
 private const val FADE_SECONDS = 0.2
-
-private const val HALF_LUMINANCE = 0.5f
