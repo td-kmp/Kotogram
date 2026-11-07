@@ -7,26 +7,23 @@ import com.xbot.kotogram.feature.auth.domain.model.LoginFlow
 import com.xbot.kotogram.feature.auth.domain.model.LoginMethod
 import com.xbot.kotogram.feature.auth.domain.repository.AuthRepository
 import com.xbot.kotogram.feature.auth.impl.extensions.toAuthStep
-import com.xbot.kotogram.feature.language.domain.repository.LanguageRepository
-import com.xbot.kotogram.feature.language.domain.repository.LanguageSuggestionRepository
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import org.orbitmvi.orbit.OrbitContainerHost
 import org.orbitmvi.orbit.viewmodel.orbitContainer
 
 internal class AuthViewModel(
     private val flow: LoginFlow,
     private val loginEntry: LoginEntry,
-    private val authRepository: AuthRepository,
-    private val languageSuggestionRepository: LanguageSuggestionRepository,
-    private val languageRepository: LanguageRepository
+    private val authRepository: AuthRepository
 ) : ViewModel(),
     OrbitContainerHost<AuthScreenState, AuthScreenState, Nothing> {
 
     private val dismissedStep = MutableStateFlow<AuthStep?>(null)
+
+    // TDLib's first: what shows before it is only the entry's guess.
+    private var firstStep: AuthStep? = null
 
     override val container = orbitContainer<AuthScreenState, Nothing>(
         AuthScreenState(
@@ -34,22 +31,19 @@ internal class AuthViewModel(
             backStack = backStack(loginEntry.method.value, step = null, dismissed = null)
         )
     ) {
-        coroutineScope {
-            launch {
-                combine(loginEntry.method, authRepository.authorizationState, dismissedStep, ::Triple)
-                    .collect { (method, authorizationState, dismissed) ->
-                        val step = authorizationState.toAuthStep()
-                        if (dismissed != null && step != dismissed) dismissedStep.value = null
-                        reduce { state.copy(backStack = backStack(method, step, dismissed)) }
-                    }
+        combine(loginEntry.method, authRepository.authorizationState, dismissedStep, ::Triple)
+            .collect { (method, authorizationState, dismissed) ->
+                val step = authorizationState.toAuthStep()
+                if (dismissed != null && step != dismissed) dismissedStep.value = null
+                val backStack = backStack(method, step, dismissed)
+                val first = firstStep ?: backStack.last().also { firstStep = it }
+                reduce {
+                    state.copy(
+                        backStack = backStack,
+                        hasLeftFirstStep = state.hasLeftFirstStep || backStack.last() != first
+                    )
+                }
             }
-            launch {
-                // As Telegram for macOS: only until the device's first account is signed in.
-                combine(languageSuggestionRepository.suggestion, authRepository.isFirstSignIn) { suggestion, isFirst ->
-                    suggestion.takeIf { isFirst }
-                }.collect { suggestion -> reduce { state.copy(languageSuggestion = suggestion) } }
-            }
-        }
     }
 
     fun onAction(action: AuthScreenAction) {
@@ -58,7 +52,6 @@ internal class AuthViewModel(
             AuthScreenAction.OnEntrySubmitted -> dismissedStep.value = null
             AuthScreenAction.OnPhoneLoginClick -> loginEntry.method.value = LoginMethod.PhoneNumber
             AuthScreenAction.OnQrLoginClick -> onQrLoginClick()
-            AuthScreenAction.OnContinueOnLanguageClick -> onContinueOnLanguageClick()
         }
     }
 
@@ -73,14 +66,6 @@ internal class AuthViewModel(
         if (authRepository.authorizationState.first().toAuthStep() != null) {
             authRepository.restartSignIn()
         }
-    }
-
-    private fun onContinueOnLanguageClick() = intent {
-        val suggestion = state.languageSuggestion ?: return@intent
-        if (state.isSwitchingLanguage) return@intent
-        reduce { state.copy(isSwitchingLanguage = true) }
-        languageRepository.apply(suggestion.languagePackId)
-        reduce { state.copy(isSwitchingLanguage = false) }
     }
 
     private fun backStack(

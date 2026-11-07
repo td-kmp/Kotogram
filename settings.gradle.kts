@@ -40,6 +40,7 @@ plugins {
 
 include(":android-app")
 include(":jvm-app")
+include(":catalog-app")
 include(":web-app")
 include(":shared")
 include(":core:account")

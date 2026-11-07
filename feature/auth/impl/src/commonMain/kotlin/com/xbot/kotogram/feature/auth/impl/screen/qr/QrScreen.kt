@@ -20,10 +20,8 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,7 +36,9 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.component.QrCode
+import com.xbot.kotogram.core.designsystem.component.TextButton
 import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.login_qr1_help1
 import com.xbot.kotogram.core.resources.login_qr1_help3
@@ -49,8 +49,8 @@ import com.xbot.kotogram.core.resources.stringResource
 import com.xbot.kotogram.core.resources.voiceover_login_qrcode
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import com.xbot.kotogram.feature.auth.impl.extensions.localizedMessage
-import kotlin.time.Duration.Companion.seconds
 import org.orbitmvi.orbit.compose.collectAsState
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 internal fun QrScreen(
@@ -94,7 +94,7 @@ private fun QrScreenContent(
                 Text(
                     text = stringResource(Res.string.login_qr_title),
                     style = QrScreenTokens.TitleStyle,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = KotogramTheme.colors.onSurface,
                     textAlign = TextAlign.Center,
                     maxLines = 2,
                     modifier = Modifier.widthIn(max = QrScreenTokens.ContentWidth)
@@ -105,8 +105,8 @@ private fun QrScreenContent(
                     Spacer(Modifier.height(QrScreenTokens.BetweenSteps))
                     Text(
                         text = stringResource(error.localizedMessage()),
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall,
+                        color = KotogramTheme.colors.error,
+                        style = KotogramTheme.typography.bodySmall,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -139,13 +139,13 @@ private fun QrStep(number: Int, text: String, modifier: Modifier = Modifier) {
         Box(
             modifier = Modifier
                 .size(QrScreenTokens.StepNumberSize)
-                .background(MaterialTheme.colorScheme.primary, CircleShape),
+                .background(KotogramTheme.colors.primary, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = number.toString(),
                 style = QrScreenTokens.StepNumberStyle,
-                color = MaterialTheme.colorScheme.onPrimary
+                color = KotogramTheme.colors.onPrimary
             )
         }
         Spacer(Modifier.width(QrScreenTokens.StepTextGap))
@@ -153,7 +153,7 @@ private fun QrStep(number: Int, text: String, modifier: Modifier = Modifier) {
         Text(
             text = text,
             style = QrScreenTokens.StepStyle,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = KotogramTheme.colors.onSurface,
             maxLines = 2,
             modifier = Modifier
                 .widthIn(max = QrScreenTokens.StepTextWidth)

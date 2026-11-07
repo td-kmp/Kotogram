@@ -1,0 +1,62 @@
+package com.xbot.kotogram.core.designsystem.icon
+
+import androidx.compose.ui.graphics.vector.ImageVector
+
+// Line icons at Telegram for macOS's sizes and weights, centred on Compose's 24-dp canvas.
+object KotogramIcons {
+    val Back: ImageVector by lazy(::backIcon)
+    val Close: ImageVector by lazy(::closeIcon)
+    val Clear: ImageVector by lazy(::clearIcon)
+    val Search: ImageVector by lazy(::searchIcon)
+    val ChevronDown: ImageVector by lazy(::chevronDownIcon)
+    val ChevronRight: ImageVector by lazy(::chevronRightIcon)
+    val More: ImageVector by lazy(::moreIcon)
+    val Check: ImageVector by lazy(::checkIcon)
+    val DoubleCheck: ImageVector by lazy(::doubleCheckIcon)
+
+    val Eye: ImageVector by lazy(::eyeIcon)
+    val EyeOff: ImageVector by lazy(::eyeOffIcon)
+    val QrCode: ImageVector by lazy(::qrCodeIcon)
+    val Smartphone: ImageVector by lazy(::smartphoneIcon)
+
+    val Compose: ImageVector by lazy(::composeIcon)
+    val Edit: ImageVector by lazy(::editIcon)
+    val Pin: ImageVector by lazy(::pinIcon)
+    val Bell: ImageVector by lazy(::bellIcon)
+    val BellOff: ImageVector by lazy(::bellOffIcon)
+    val Clock: ImageVector by lazy(::clockIcon)
+    val Lock: ImageVector by lazy(::lockIcon)
+    val Archive: ImageVector by lazy(::archiveIcon)
+    val Folder: ImageVector by lazy(::folderIcon)
+    val Bookmark: ImageVector by lazy(::bookmarkIcon)
+
+    val Attach: ImageVector by lazy(::attachIcon)
+    val Send: ImageVector by lazy(::sendIcon)
+    val Microphone: ImageVector by lazy(::microphoneIcon)
+    val Smile: ImageVector by lazy(::smileIcon)
+    val Reply: ImageVector by lazy(::replyIcon)
+    val Forward: ImageVector by lazy(::forwardIcon)
+    val Copy: ImageVector by lazy(::copyIcon)
+    val Delete: ImageVector by lazy(::deleteIcon)
+    val ArrowDown: ImageVector by lazy(::arrowDownIcon)
+    val Call: ImageVector by lazy(::callIcon)
+    val Video: ImageVector by lazy(::videoIcon)
+    val Info: ImageVector by lazy(::infoIcon)
+    val Camera: ImageVector by lazy(::cameraIcon)
+
+    val Settings: ImageVector by lazy(::settingsIcon)
+    val Person: ImageVector by lazy(::personIcon)
+    val PersonAdd: ImageVector by lazy(::personAddIcon)
+    val AtSign: ImageVector by lazy(::atSignIcon)
+    val Globe: ImageVector by lazy(::globeIcon)
+    val Appearance: ImageVector by lazy(::appearanceIcon)
+    val Storage: ImageVector by lazy(::storageIcon)
+    val Devices: ImageVector by lazy(::devicesIcon)
+    val Help: ImageVector by lazy(::helpIcon)
+    val Logout: ImageVector by lazy(::logoutIcon)
+    val Share: ImageVector by lazy(::shareIcon)
+    val Block: ImageVector by lazy(::blockIcon)
+    val Shield: ImageVector by lazy(::shieldIcon)
+    val Plus: ImageVector by lazy(::plusIcon)
+    val Message: ImageVector by lazy(::messageIcon)
+}

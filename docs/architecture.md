@@ -42,6 +42,7 @@ Legend: **[V]** verified against sources (library sources and docs, reference pr
 :android-app                 Android shell: Application, Activity
 :jvm-app                     Desktop shell: main(), Nucleus window
 :web-app                     Web shell: main(), ComposeViewport, index.html
+:catalog-app                 Desktop catalog of core:designsystem, Roborazzi screenshot tests
 :shared                      ASSEMBLY POINT: initKoin, root App composable with the account scopes, iOS framework
 ios-app/                     Xcode project, thin Swift host (not a Gradle module)
 
@@ -73,6 +74,7 @@ Its source sets split on where TDLib runs: `nonWebMain` (in the process) and `we
 | other `core:*` | other `core:*`, no cycles | anything feature-specific |
 | `shared` | everything | business logic |
 | `android-app`, `jvm-app`, `web-app` | `shared` | DI declarations, UI |
+| `catalog-app` | `core:designsystem` | features, `shared`, TDLib |
 
 - `impl` never sees `data`. They meet only in the Koin graph started by `shared`. A detekt `ForbiddenImport` keeps `io.xbot.tdlib.client.*` out of `domain` and `impl`.
 - A feature owns its entity: `feature:chats` owns chats for everyone. Nothing flows into core just because two features want it.
@@ -331,6 +333,7 @@ internal class PhoneViewModel(
 ```
 
 - Its public surface is `container` and a single `fun onAction(action)`.
+- A component with logic of its own gets its own ViewModel, `{Component}ViewModel` with `{Component}State` and `{Component}Action`, in a store of its own: `koinViewModel(viewModelStoreOwner = rememberViewModelStoreOwner())` (lifecycle 2.11), cleared when the component leaves the composition. `AuthScreen` hosts `LanguageSuggestion` so.
 - One-off events (snackbar, a navigation request) are side effects, not state. Use `Nothing` when a
   screen has none.
 - No Compose types and no `Navigator`. A ViewModel of an account is declared in `scope(AccountScope)`.

@@ -6,6 +6,7 @@ import com.xbot.kotogram.core.navigation.polymorphic
 import com.xbot.kotogram.feature.auth.api.AuthRoute
 import com.xbot.kotogram.feature.auth.impl.screen.auth.AuthScreen
 import com.xbot.kotogram.feature.auth.impl.screen.auth.AuthViewModel
+import com.xbot.kotogram.feature.auth.impl.screen.auth.LanguageSuggestionViewModel
 import com.xbot.kotogram.feature.auth.impl.screen.code.CodeViewModel
 import com.xbot.kotogram.feature.auth.impl.screen.emailaddress.EmailAddressViewModel
 import com.xbot.kotogram.feature.auth.impl.screen.emailcode.EmailCodeViewModel
@@ -31,6 +32,7 @@ val authImplModule = module {
 
     scope(AccountScope) {
         viewModelOf(::AuthViewModel)
+        viewModelOf(::LanguageSuggestionViewModel)
         viewModelOf(::PhoneViewModel)
         viewModelOf(::QrViewModel)
         viewModelOf(::CodeViewModel)

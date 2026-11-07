@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.nucleus) apply false
+    alias(libs.plugins.roborazzi) apply false
     alias(libs.plugins.buildkonfig) apply false
     alias(libs.plugins.spotless)
     alias(libs.plugins.detekt)
@@ -32,6 +33,7 @@ detekt {
     buildUponDefaultConfig = true
     config.setFrom(file("config/detekt/detekt.yml"))
     basePath.set(projectDir)
+    baseline = file("config/detekt/baseline.xml")
     parallel = true
     source.setFrom(
         fileTree(projectDir) {

@@ -1,6 +1,5 @@
 package com.xbot.kotogram.feature.auth.impl.screen.phone
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,14 +15,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -35,6 +30,11 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.core.designsystem.component.ButtonState
+import com.xbot.kotogram.core.designsystem.component.ListItem
+import com.xbot.kotogram.core.designsystem.component.ProminentButton
+import com.xbot.kotogram.core.designsystem.component.TextButton
 import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.checkoutinfo_shippinginfocountryplaceholder
 import com.xbot.kotogram.core.resources.contacts_phonenumber_placeholder
@@ -95,13 +95,13 @@ private fun PhoneScreenContent(
         ) {
             Text(
                 text = stringResource(Res.string.loginwidget_phonenumber),
-                style = MaterialTheme.typography.headlineSmall,
+                style = KotogramTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center
             )
             Text(
                 text = stringResource(Res.string.login_new_phonenumber),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = KotogramTheme.typography.bodyMedium,
+                color = KotogramTheme.colors.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
             ListItem(
@@ -111,9 +111,8 @@ private fun PhoneScreenContent(
                             ?: stringResource(Res.string.checkoutinfo_shippinginfocountryplaceholder)
                     )
                 },
-                modifier = Modifier.fillMaxWidth().clickable {
-                    onAction(PhoneScreenAction.OnCountryPickerVisibilityChange(true))
-                }
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { onAction(PhoneScreenAction.OnCountryPickerVisibilityChange(true)) }
             )
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -145,8 +144,8 @@ private fun PhoneScreenContent(
             state.error?.let { error ->
                 Text(
                     text = stringResource(error.localizedMessage()),
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
+                    color = KotogramTheme.colors.error,
+                    style = KotogramTheme.typography.bodySmall
                 )
             }
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -156,13 +155,12 @@ private fun PhoneScreenContent(
                     onCheckedChange = { onAction(PhoneScreenAction.OnSyncContactsChange(it)) }
                 )
             }
-            Button(
+            ProminentButton(
+                text = stringResource(Res.string.login_next),
                 onClick = { onAction(PhoneScreenAction.OnSubmit) },
-                enabled = state.canSubmit,
+                state = ButtonState.of(enabled = state.canSubmit, loading = state.isSubmitting),
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(Res.string.login_next))
-            }
+            )
             if (canUseQr) {
                 TextButton(onClick = onQrLoginClick) {
                     Text(stringResource(Res.string.login_qr_login))

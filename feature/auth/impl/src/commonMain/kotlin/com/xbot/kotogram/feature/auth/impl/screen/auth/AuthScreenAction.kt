@@ -9,6 +9,4 @@ internal sealed interface AuthScreenAction {
     data object OnPhoneLoginClick : AuthScreenAction
 
     data object OnQrLoginClick : AuthScreenAction
-
-    data object OnContinueOnLanguageClick : AuthScreenAction
 }

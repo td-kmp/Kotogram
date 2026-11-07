@@ -13,12 +13,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -32,6 +29,10 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.core.designsystem.component.ButtonState
+import com.xbot.kotogram.core.designsystem.component.ProminentButton
+import com.xbot.kotogram.core.designsystem.component.TextButton
 import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.annotatedStringResource
 import com.xbot.kotogram.core.resources.editaccount_changenumber
@@ -76,7 +77,7 @@ private fun CodeScreenContent(
     val description = info?.let {
         annotatedStringResource(
             it.description,
-            linkStyles = TextLinkStyles(SpanStyle(color = MaterialTheme.colorScheme.primary)),
+            linkStyles = TextLinkStyles(SpanStyle(color = KotogramTheme.colors.primary)),
             onLinkClick = { onChangeNumberClick() }
         )
     }
@@ -94,14 +95,14 @@ private fun CodeScreenContent(
         ) {
             Text(
                 text = info?.phoneNumber.orEmpty(),
-                style = MaterialTheme.typography.headlineSmall,
+                style = KotogramTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center
             )
             if (description != null) {
                 Text(
                     text = description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = KotogramTheme.typography.bodyMedium,
+                    color = KotogramTheme.colors.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
             }
@@ -122,21 +123,20 @@ private fun CodeScreenContent(
             state.error?.let { error ->
                 Text(
                     text = stringResource(error.localizedMessage()),
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
+                    color = KotogramTheme.colors.error,
+                    style = KotogramTheme.typography.bodySmall
                 )
             }
-            Button(
+            ProminentButton(
+                text = stringResource(Res.string.login_next),
                 onClick = { onAction(CodeScreenAction.OnSubmit) },
-                enabled = state.code.isNotEmpty() && !state.isSubmitting,
+                state = ButtonState.of(enabled = state.code.isNotEmpty(), loading = state.isSubmitting),
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(Res.string.login_next))
-            }
+            )
             if (info?.nextType != null) {
                 TextButton(
                     onClick = { onAction(CodeScreenAction.OnResend) },
-                    enabled = state.canResend
+                    state = ButtonState.of(enabled = state.canResend)
                 ) {
                     Text(
                         if (state.canResend) {

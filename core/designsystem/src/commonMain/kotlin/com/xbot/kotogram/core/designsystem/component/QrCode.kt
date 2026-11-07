@@ -11,11 +11,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.resources.Res
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.DotLottie
@@ -97,7 +98,9 @@ fun QrCode(
 object QrCodeDefaults {
     val Size: Dp = 210.dp
 
-    val shape: Shape = RoundedCornerShape(10.dp)
+    val shape: Shape
+        @Composable @ReadOnlyComposable
+        get() = KotogramTheme.shapes.medium
 
     // Dark on light in any theme: scanners read that best.
     @Composable

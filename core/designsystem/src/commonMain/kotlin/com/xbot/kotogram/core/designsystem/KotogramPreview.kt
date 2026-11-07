@@ -17,6 +17,6 @@ annotation class KotogramPreview
 internal class KotogramPreviewWrapper : PreviewWrapperProvider {
     @Composable
     override fun Wrap(content: @Composable () -> Unit) {
-        KotogramTheme { Surface(Modifier.fillMaxSize(), content = content) }
+        KotogramTheme(dynamicColor = false) { Surface(Modifier.fillMaxSize(), content = content) }
     }
 }

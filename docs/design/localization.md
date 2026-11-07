@@ -24,7 +24,7 @@ All three keep one bundled language and take every other from Telegram's servers
 ## What the user sees (our design, as macOS and iOS)
 
 1. **The app is English to the system:** only English is bundled and declared (`developmentRegion = en` on iOS, no `localeConfig` on Android), so no system setting offers another language. Layout is left to right unless the chosen pack is RTL.
-2. **The first sign-in offers the system language:** when the server's suggestion isn't the language in use and no account is signed in, one string of that pack, `getLanguagePackStrings(id, ["Login.ContinueOnLanguage"])` ("Продолжить на русском"), is a button at the bottom of the login screens.
+2. **The first sign-in offers the system language:** when the server's suggestion isn't the language in use and no account is signed in, one string of that pack, `getLanguagePackStrings(id, ["Login.ContinueOnLanguage"])` ("Продолжить на русском"), is a button at the bottom of the first login screen, 15 from the edge; it goes for good at the first change of step, as macOS's `AuthView.hideLanguage()`.
 3. **A tap switches everything at once:** `getLanguagePackInfo`, then the whole pack and its base; then the choice is stored, every instance gets `language_pack_id`, and every screen changes. The button shows progress meanwhile, and stays if the switch fails.
 4. **Later starts** show the splash until the stored pack is read from TDLib's database, so the first screen is already in its language. After 3 s without it the bundled English shows, and the pack follows (our choice).
 5. **English again** clears `language_pack_id`: TDLib then downloads nothing, and the connection still says `en`.
@@ -56,7 +56,7 @@ feature:language
           per account: LanguageOptions : TdlibOptions, LanguagePackUpdates and SuggestedLanguagePack : AccountUpdates,
           DefaultLanguageSuggestionRepository
   impl    PackLocalization (the pack, then its base), DefaultLocalizationSource
-feature:auth:impl     AuthScreenState.languageSuggestion, ContinueOnLanguageButton; "first sign-in only" is AuthViewModel's
+feature:auth:impl     LanguageSuggestion, a component with its own ViewModel and store, over the flow's first step only
 shared                App: the splash until the localization is ready, then ProvideLocalization; isStarting() waits too
 ```
 

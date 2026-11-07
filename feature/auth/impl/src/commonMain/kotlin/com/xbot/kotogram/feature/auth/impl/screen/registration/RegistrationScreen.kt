@@ -13,12 +13,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -32,6 +29,10 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.core.designsystem.component.ButtonState
+import com.xbot.kotogram.core.designsystem.component.ProminentButton
+import com.xbot.kotogram.core.designsystem.component.TextButton
 import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.annotatedStringResource
 import com.xbot.kotogram.core.resources.login_new_register_footer
@@ -73,13 +74,13 @@ private fun RegistrationScreenContent(
         ) {
             Text(
                 text = stringResource(Res.string.login_new_register_header),
-                style = MaterialTheme.typography.headlineSmall,
+                style = KotogramTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center
             )
             Text(
                 text = stringResource(Res.string.login_new_register_info),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = KotogramTheme.typography.bodyMedium,
+                color = KotogramTheme.colors.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
             val nameOptions =
@@ -106,24 +107,23 @@ private fun RegistrationScreenContent(
             state.error?.let { error ->
                 Text(
                     text = stringResource(error.localizedMessage()),
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
+                    color = KotogramTheme.colors.error,
+                    style = KotogramTheme.typography.bodySmall
                 )
             }
-            Button(
+            ProminentButton(
+                text = stringResource(Res.string.login_new_register_next),
                 onClick = { onAction(RegistrationScreenAction.OnSubmit) },
-                enabled = state.canSubmit,
+                state = ButtonState.of(enabled = state.canSubmit, loading = state.isSubmitting),
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(Res.string.login_new_register_next))
-            }
+            )
             Text(
                 text = annotatedStringResource(
                     Res.string.login_new_register_footer,
-                    linkStyles = TextLinkStyles(SpanStyle(color = MaterialTheme.colorScheme.primary)),
+                    linkStyles = TextLinkStyles(SpanStyle(color = KotogramTheme.colors.primary)),
                     onLinkClick = { onAction(RegistrationScreenAction.OnTermsVisibilityChange(true)) }
                 ),
-                style = MaterialTheme.typography.bodySmall,
+                style = KotogramTheme.typography.bodySmall,
                 textAlign = TextAlign.Center
             )
         }

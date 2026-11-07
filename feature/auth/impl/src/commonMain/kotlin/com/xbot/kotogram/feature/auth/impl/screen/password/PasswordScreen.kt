@@ -13,12 +13,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -31,6 +28,10 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.core.designsystem.component.ButtonState
+import com.xbot.kotogram.core.designsystem.component.ProminentButton
+import com.xbot.kotogram.core.designsystem.component.TextButton
 import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.login_header_password
 import com.xbot.kotogram.core.resources.login_new_password_info
@@ -71,7 +72,7 @@ private fun PasswordScreenContent(
         ) {
             Text(
                 text = stringResource(Res.string.login_header_password),
-                style = MaterialTheme.typography.headlineSmall,
+                style = KotogramTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center
             )
             Text(
@@ -80,8 +81,8 @@ private fun PasswordScreenContent(
                 } else {
                     stringResource(Res.string.login_new_password_info)
                 },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = KotogramTheme.typography.bodyMedium,
+                color = KotogramTheme.colors.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
             if (state.isRecovering) {
@@ -123,17 +124,16 @@ private fun PasswordScreenContent(
             state.error?.let { error ->
                 Text(
                     text = stringResource(error.localizedMessage()),
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
+                    color = KotogramTheme.colors.error,
+                    style = KotogramTheme.typography.bodySmall
                 )
             }
-            Button(
+            ProminentButton(
+                text = stringResource(Res.string.login_next),
                 onClick = { onAction(PasswordScreenAction.OnSubmit) },
-                enabled = !state.isSubmitting,
+                state = ButtonState.of(enabled = true, loading = state.isSubmitting),
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(Res.string.login_next))
-            }
+            )
             if (!state.isRecovering && state.hasRecoveryEmail) {
                 TextButton(onClick = { onAction(PasswordScreenAction.OnForgotPassword) }) {
                     Text(stringResource(Res.string.login_passwordforgot))

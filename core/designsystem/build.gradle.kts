@@ -37,12 +37,27 @@ kotlin {
         api(libs.compose.foundation)
         api(libs.compose.ui)
         api(libs.compose.material3)
-        implementation(projects.core.resources)
+        api(projects.core.resources)
         implementation(libs.compose.preview)
         implementation(libs.compottie)
         implementation(libs.compottie.dot)
         implementation(libs.qrose)
         implementation(libs.qrose.encoder.matrix)
+    }
+
+    sourceSets {
+        iosMain.dependencies {
+            implementation(libs.androidx.lifecycle.runtime.compose)
+        }
+        jvmMain.dependencies {
+            implementation(libs.jna)
+            implementation(libs.nucleus.decorated.window.tao)
+        }
+        jvmTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.compose.ui.test)
+            implementation(compose.desktop.currentOs)
+        }
     }
 }
 

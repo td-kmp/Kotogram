@@ -10,16 +10,16 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.core.designsystem.component.TextButton
 import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.navigation_back
 import com.xbot.kotogram.core.resources.stringResource
@@ -43,13 +43,13 @@ internal fun PremiumPurchaseScreen(onBackClick: () -> Unit, modifier: Modifier =
         ) {
             Text(
                 text = stringResource(Res.string.unsupported_title),
-                style = MaterialTheme.typography.headlineSmall,
+                style = KotogramTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center
             )
             Text(
                 text = stringResource(Res.string.unsupported_subtitle),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = KotogramTheme.typography.bodyMedium,
+                color = KotogramTheme.colors.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
             TextButton(onClick = onBackClick) { Text(stringResource(Res.string.navigation_back)) }

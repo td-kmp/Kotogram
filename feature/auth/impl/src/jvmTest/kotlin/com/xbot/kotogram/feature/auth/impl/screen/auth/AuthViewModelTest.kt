@@ -4,19 +4,16 @@ import com.xbot.kotogram.feature.auth.api.AuthStep
 import com.xbot.kotogram.feature.auth.domain.LoginEntry
 import com.xbot.kotogram.feature.auth.domain.model.LoginFlow
 import com.xbot.kotogram.feature.auth.impl.FakeAuthRepository
-import com.xbot.kotogram.feature.auth.impl.FakeLanguageRepository
-import com.xbot.kotogram.feature.auth.impl.FakeLanguageSuggestionRepository
-import com.xbot.kotogram.feature.language.domain.model.LanguageSuggestion
 import io.xbot.tdlib.api.AuthenticationCodeInfo
 import io.xbot.tdlib.api.AuthenticationCodeTypeSms
 import io.xbot.tdlib.api.AuthorizationStateWaitCode
 import io.xbot.tdlib.api.AuthorizationStateWaitOtherDeviceConfirmation
 import io.xbot.tdlib.api.AuthorizationStateWaitPassword
+import io.xbot.tdlib.api.AuthorizationStateWaitPhoneNumber
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -24,9 +21,6 @@ import org.orbitmvi.orbit.test.testWithInternalState
 
 class AuthViewModelTest {
     private val repository = FakeAuthRepository()
-    private val languages = FakeLanguageRepository()
-    private val suggestions = FakeLanguageSuggestionRepository()
-    private val russian = LanguageSuggestion(languagePackId = "ru", text = "Продолжить на русском")
 
     @Test
     fun theQrCodeIsTheEntryBeforeTheFirstStep() = runTest {
@@ -89,25 +83,23 @@ class AuthViewModelTest {
     }
 
     @Test
-    fun theServersLanguageIsOfferedAtTheFirstSignIn() = runTest {
-        suggestions.suggestion.value = russian
-        assertEquals(russian, state(LoginFlow.QrCodeFirst).languageSuggestion)
+    fun theFirstStepStaysUntilTheFlowMovesOn() = runTest {
+        assertFalse(state(LoginFlow.QrCodeFirst).hasLeftFirstStep)
     }
 
     @Test
-    fun noLanguageIsOfferedWhenAnotherAccountIsSignedIn() = runTest {
-        suggestions.suggestion.value = russian
-        repository.isFirstSignIn.value = false
-        assertNull(state(LoginFlow.QrCodeFirst).languageSuggestion)
+    fun leavingTheFirstStepIsForGood() = runTest {
+        assertTrue(
+            state(LoginFlow.QrCodeFirst, AuthScreenAction.OnPhoneLoginClick) {
+                repository.authorizationState.value = AuthorizationStateWaitPhoneNumber
+            }.hasLeftFirstStep
+        )
     }
 
     @Test
-    fun continuingSwitchesToTheOfferedLanguage() = runTest {
-        suggestions.suggestion.value = russian
-        languages.switched = CompletableDeferred()
-        val switching = state(LoginFlow.QrCodeFirst, AuthScreenAction.OnContinueOnLanguageClick)
-        assertTrue(switching.isSwitchingLanguage)
-        assertEquals(listOf("ru"), languages.applied)
+    fun theFirstStepIsTdlibsNotTheEntrysGuess() = runTest {
+        repository.authorizationState.value = waitCode
+        assertFalse(state(LoginFlow.QrCodeFirst).hasLeftFirstStep)
     }
 
     private suspend fun TestScope.backStack(
@@ -122,7 +114,7 @@ class AuthViewModelTest {
         afterAction: () -> Unit = {}
     ): AuthScreenState {
         lateinit var state: AuthScreenState
-        AuthViewModel(flow, LoginEntry(flow), repository, suggestions, languages).testWithInternalState(this) {
+        AuthViewModel(flow, LoginEntry(flow), repository).testWithInternalState(this) {
             val onCreate = runOnCreate()
             runCurrent()
             action?.let(containerHost::onAction)
