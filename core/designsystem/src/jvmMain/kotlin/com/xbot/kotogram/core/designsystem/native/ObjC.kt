@@ -1,4 +1,4 @@
-package com.xbot.kotogram.core.designsystem.component
+package com.xbot.kotogram.core.designsystem.native
 
 import com.sun.jna.Callback
 import com.sun.jna.Function
@@ -23,6 +23,14 @@ internal object ObjC {
 
     fun sendBoolean(receiver: Pointer, selector: String, vararg args: Any?): Boolean =
         msgSend.invokeInt(arrayOf(receiver, sel(selector), *args)).toByte() != 0.toByte()
+
+    fun appearance(dark: Boolean): Pointer = requireNotNull(
+        send(
+            requireNotNull(cls("NSAppearance")),
+            "appearanceNamed:",
+            string(if (dark) "NSAppearanceNameDarkAqua" else "NSAppearanceNameAqua")
+        )
+    )
 
     fun string(text: String): Pointer =
         requireNotNull(send(requireNotNull(cls("NSString")), "stringWithUTF8String:", cString(text)))

@@ -1,5 +1,6 @@
 package com.xbot.kotogram.core.designsystem.component
 
+import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,12 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.core.designsystem.theme.platformPressHighlight
 import androidx.compose.material3.Button as MaterialButton
 import androidx.compose.material3.ButtonDefaults as MaterialButtonDefaults
 import androidx.compose.material3.TextButton as MaterialTextButton
@@ -55,14 +57,15 @@ fun Button(
     interactionSource: MutableInteractionSource? = null,
     content: @Composable RowScope.() -> Unit
 ) {
+    val source = interactionSource ?: remember { MutableInteractionSource() }
     MaterialButton(
         onClick = onClick,
-        modifier = modifier.heightIn(min = ButtonDefaults.MinHeight),
+        modifier = modifier.then(pressFeedback(source)).heightIn(min = ButtonDefaults.MinHeight),
         enabled = state == ButtonState.Enabled,
         shape = shape,
         colors = colors.during(state),
         contentPadding = contentPadding,
-        interactionSource = interactionSource
+        interactionSource = source
     ) {
         ButtonContent(state, content)
     }
@@ -79,14 +82,15 @@ fun TextButton(
     interactionSource: MutableInteractionSource? = null,
     content: @Composable RowScope.() -> Unit
 ) {
+    val source = interactionSource ?: remember { MutableInteractionSource() }
     MaterialTextButton(
         onClick = onClick,
-        modifier = modifier.heightIn(min = ButtonDefaults.MinHeight),
+        modifier = modifier.then(pressFeedback(source)).heightIn(min = ButtonDefaults.MinHeight),
         enabled = state == ButtonState.Enabled,
         shape = shape,
         colors = colors.during(state),
         contentPadding = contentPadding,
-        interactionSource = interactionSource
+        interactionSource = source
     ) {
         // Telegram for macOS's text buttons are links in the regular weight, not Material's medium labels.
         CompositionLocalProvider(LocalTextStyle provides KotogramTheme.typography.bodyLarge) {
@@ -104,8 +108,6 @@ object ButtonDefaults {
 
     val ProgressSize: Dp = 18.dp
 
-    val ProgressStrokeWidth: Dp = 2.dp
-
     val shape: Shape = CircleShape
 
     @Composable
@@ -114,6 +116,10 @@ object ButtonDefaults {
     @Composable
     fun textButtonColors(): ButtonColors = MaterialButtonDefaults.textButtonColors()
 }
+
+@Composable
+private fun pressFeedback(source: MutableInteractionSource): Modifier =
+    if (platformPressHighlight) Modifier.indication(source, KotogramTheme.indication) else Modifier
 
 // A loading button keeps its colours and its width: the spinner takes the place of the content.
 private fun ButtonColors.during(state: ButtonState): ButtonColors = if (state == ButtonState.Loading) {
@@ -132,10 +138,9 @@ private fun ButtonContent(state: ButtonState, content: @Composable RowScope.() -
             content = content
         )
         if (state == ButtonState.Loading) {
-            CircularProgressIndicator(
+            ProgressIndicator(
                 modifier = Modifier.size(ButtonDefaults.ProgressSize),
-                color = LocalContentColor.current,
-                strokeWidth = ButtonDefaults.ProgressStrokeWidth
+                color = LocalContentColor.current
             )
         }
     }

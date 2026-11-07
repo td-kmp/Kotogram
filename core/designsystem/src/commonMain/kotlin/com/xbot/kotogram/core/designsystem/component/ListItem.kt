@@ -16,7 +16,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -70,7 +69,12 @@ fun ListItem(
             .background(if (enabled) colors.containerColor else colors.disabledContainerColor)
             .then(
                 if (onClick != null) {
-                    Modifier.clickable(interactionSource, ripple(), enabled = enabled, onClick = onClick)
+                    Modifier.clickable(
+                        interactionSource = interactionSource,
+                        indication = KotogramTheme.indication,
+                        enabled = enabled,
+                        onClick = onClick
+                    )
                 } else {
                     Modifier
                 }

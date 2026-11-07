@@ -38,6 +38,7 @@ kotlin {
         api(libs.compose.ui)
         api(libs.compose.material3)
         api(projects.core.resources)
+        implementation(libs.androidx.lifecycle.runtime.compose)
         implementation(libs.compose.preview)
         implementation(libs.compottie)
         implementation(libs.compottie.dot)
@@ -46,12 +47,10 @@ kotlin {
     }
 
     sourceSets {
-        iosMain.dependencies {
-            implementation(libs.androidx.lifecycle.runtime.compose)
-        }
         jvmMain.dependencies {
-            implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.jna)
+            api(libs.nucleus.application)
+            implementation(libs.nucleus.decorated.window.material3)
             implementation(libs.nucleus.decorated.window.tao)
         }
         jvmTest.dependencies {

@@ -20,16 +20,16 @@ Which M3 role takes which palette field is our own mapping.
 | `onPrimary`, `onPrimaryContainer`, `onSecondary`, `onTertiary`, `onError` | `underSelectedColor` | `FFFFFF` | `FFFFFF` |
 | `secondary` | `link` | `2481CC` | `62BCF9` |
 | `tertiary` | `greenUI` | `63DA6E` | `49AD51` |
-| `background`, `surface`, `surfaceContainer`, `surfaceContainerLow` | `background` | `FFFFFF` | `18222D` |
+| `surface`, `surfaceContainer`, `surfaceContainerLow` | `background` | `FFFFFF` | `18222D` |
 | `onBackground`, `onSurface`, `on…Container` of the grey containers | `text` | `000000` | `FFFFFF` |
 | `onSurfaceVariant` | `grayText` | `999999` | `B1C3D5` |
 | `surfaceVariant`, `surfaceContainerHigh`, `surfaceContainerHighest`, `secondaryContainer`, `tertiaryContainer` | `grayBackground` | `F4F4F4` | `213040` |
 | `outline` | `grayIcon` | `9E9E9E` | `B1C3D5` |
 | `outlineVariant` | `border` | `EAEAEA` | `213040` |
-| `surfaceDim` | `listBackground` | `EFEFF3` | `101820` |
+| `background`, `surfaceDim` | `listBackground` | `EFEFF3` | `101820` |
 | `error` | `redUI` | `FF3B30` | `EF5B5B` |
 
-`surfaceBright` and `surfaceContainerLowest` are `background` by day; at night they are `grayBackground` and `listBackground`, so they stay brighter and darker than `surface`. The `inverse…` roles take the other palette's `background`, `text` and `accent`. Roles not listed are M3's.
+`background` is Telegram's `listBackground`, the backdrop of its sign-in and settings windows; `surface` is its `background`, the lists and chats on it, so the chat list and the chat paint `surface`. `surfaceBright` and `surfaceContainerLowest` are Telegram's `background` by day; at night they are `grayBackground` and `listBackground`, so they stay brighter and darker than `surface`. The `inverse…` roles take the other palette's `background`, `text` and `accent`. Roles not listed are M3's.
 
 ### Typography
 
@@ -95,6 +95,18 @@ The shapes come from `extensions/PathBuilderExt.kt` (`circle`, `ellipse`, `round
 
 `config/detekt/baseline.xml` lists the auth screens' seven `OutlinedTextField`s, which wait for the decision on where a `TextFieldState` lives.
 
+### Press feedback
+
+Android, the web and desktop other than macOS keep Material 3's ripple. iOS and macOS (`platformPressHighlight`) have one indication for everything instead, Calf's `CupertinoIndication` (`theme/DimIndication`): what the component draws drops to an alpha of 0.33 at once, holds for at least 100 ms and comes back in 250 ms. Nothing happens on hover. The values are Calf's ("matching iOS"); Apple's own aren't checked.
+
+- It dims only what is drawn, so it ignores Material's 48 dp touch area around a button.
+- On Apple, `KotogramTheme` provides it as `LocalIndication` and switches Material's ripple off (`LocalRippleConfiguration` `null`). `Button` and `TextButton` add it over Material's buttons. Material components that hardcode `ripple()` and that we don't wrap (`Switch`, `IconButton`, `Card`) show no press at all.
+- Our components take `KotogramTheme.indication`, not `LocalIndication`: any nested `MaterialTheme` resets `LocalIndication` to its ripple.
+
+### Desktop window
+
+`KotogramWindow` (jvmMain, `window/KotogramWindow`) is Nucleus's `DecoratedWindow` with Kotogram's colours on its frame and title bar (Nucleus's public `rememberMaterialWindowStyle` and `rememberMaterialTitleBarStyle`; the title bar takes `background` instead of Material's `surface`, so it is one with the screens under it, as Telegram's), and `KotogramTheme` around its content. Every Nucleus window has a `ComposeScene` of its own, so composition locals don't cross into it: `MaterialDecoratedWindow` re-provided only Material's colours, typography and shapes, and its nested `MaterialTheme` dropped everything else the theme provides. detekt keeps `MaterialDecoratedWindow` out of the apps; `MaterialTitleBar` stays, since it only reads the title bar style.
+
 ## Components
 
 - **`TextField`, `SecureTextField`** (`component/TextField`): `TextFieldState` only, M3's state-based parameters plus `title` and `suggestion`.
@@ -109,12 +121,16 @@ The shapes come from `extensions/PathBuilderExt.kt` (`circle`, `ellipse`, `round
   - Colours are M3's `ButtonColors`.
 - **`ProminentButton`** (`component/ProminentButton`): a screen's main action, with a `text`, a `ButtonState`, `ButtonColors` and content padding. It is the filled `Button` everywhere except on iOS 26 and macOS 26, where it is the system's glass button.
   - Size, font and colours come from Compose: an invisible filled `Button` with the same text sizes the native one (without Material's 48 dp touch target, which the box adds as `Button` does), and each platform hands its native button the theme's `labelLarge` in points and the `ButtonColors` (the container colour tints the glass), as Calf's native pickers take their colours.
-  - iOS 26 (`PlatformProminentButton.ios`): UIKit's `prominentGlassButtonConfiguration` in a `UIKitView` with CMP's experimental `placedAsOverlay`, since the glass refracts only what lies under it. UIKit runs the press (it swells and stretches), the click and the spinner. `overrideUserInterfaceStyle` follows the theme, as Calf does for its native pickers.
-  - macOS 26 (`MacGlassButton`, `ObjC` in jvmMain): AppKit's `NSButton` with `NSBezelStyleGlass`, `NSControlSizeExtraLarge` and `NSTintProminencePrimary`, made through the Objective-C runtime with JNA, in Nucleus's `NativeView` with `placedAsOverlay`. AppKit then delivers its events itself: hover, the press (it glows and swells by a few points), the click through target-action, and an `NSProgressIndicator` while loading. It doesn't take focus, so it draws no focus ring.
+  - iOS 26 (`component/platform/PlatformProminentButton.ios`): UIKit's `prominentGlassButtonConfiguration` in a `UIKitView` with CMP's experimental `placedAsOverlay`, since the glass refracts only what lies under it. UIKit runs the press (it swells and stretches), the click and the spinner. `overrideUserInterfaceStyle` follows the theme, as Calf does for its native pickers.
+  - macOS 26 (`native/MacGlassButton`, `native/ObjC` in jvmMain): AppKit's `NSButton` with `NSBezelStyleGlass`, `NSControlSizeExtraLarge` and `NSTintProminencePrimary`, made through the Objective-C runtime with JNA, in Nucleus's `NativeView` with `placedAsOverlay`. AppKit then delivers its events itself: hover, the press (it glows and swells by a few points), the click through target-action, and an `NSProgressIndicator` while loading. It doesn't take focus, so it draws no focus ring.
   - `placedAsOverlay` on macOS is our change to Nucleus (local `dev` build, [handoff](../handoff.md)). Under the surface, as Nucleus mounts views by default, AppKit's controls can't work: Nucleus calls `mouseDown:` on them directly, `NSButton`'s tracking loop then takes the mouse-up Compose still needs, and the glass never lights; Nucleus 3.0 stopped forwarding the mouse to `NSControl` for that reason.
   - Both overlays cover whatever Compose draws over them, so the glass shows only while its `LocalLifecycleOwner` is `RESUMED`: NavDisplay holds a screen at `STARTED` during a transition and under a dialog, and the new screen's button appears once it settles.
   - AppKit draws the glass only when the process's executable claims macOS SDK 26 or later; no JDK does (checked up to 27: SDK 13.3–15.2). Nucleus's `macOsSdkVersion` (default `26.0`) patches it with `vtool`: `nucleusPatchMacJvm` for `run`, the `.app` launcher when packaging. `hotRun` and the toolchain's own `java` give no glass.
   - Calf's `AdaptiveButton` imitates the glass in Compose (Kyant's Backdrop) instead; its native glass is only in screen-level views (FAB, bars) on the view controller.
+- **`ProgressIndicator`** (`component/ProgressIndicator`): an indeterminate spinner, 20 by default, in `primary` or a given colour. `Button`'s loading state and the chat list use it; detekt keeps Material's `CircularProgressIndicator` out of screens.
+  - iOS: UIKit's `UIActivityIndicatorView`, medium up to 32 and large above, in the given colour.
+  - macOS: AppKit's `NSProgressIndicator`, small up to 32 and regular above. It can't take a colour: it is light when the colour is lighter than the theme's background, dark otherwise.
+  - Both are overlays (UIKit interop's and Nucleus's `placedAsOverlay`), so a spinner over a Compose surface shows that surface, and like the glass button they show only while their screen is `RESUMED`. Elsewhere it is Material 3's spinner with a stroke of 2.
 - **`ListItem`** (`component/ListItem`): M3's slots (overline, headline, supporting, leading, trailing) with the insets of macOS's rows (`GeneralRowItem`: 12 and 14), headline `bodyLarge`, supporting `bodyMedium`, and M3's `ListItemColors`.
   - `position` (`Single`, `First`, `Middle`, `Last`) groups rows as macOS's settings do: rounded ends and a divider that starts under the text.
   - Without a position the row is plain, as in the lists of chats and countries.

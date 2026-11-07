@@ -7,3 +7,5 @@ import androidx.compose.runtime.Composable
 internal actual fun platformDynamicColorScheme(darkTheme: Boolean): ColorScheme? = null
 
 internal actual val platformSystemFont: Boolean = false
+
+internal actual val platformPressHighlight: Boolean = false

@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.Dp
+import com.xbot.kotogram.core.designsystem.component.platform.PlatformProminentButton
 
 @Composable
 fun ProminentButton(

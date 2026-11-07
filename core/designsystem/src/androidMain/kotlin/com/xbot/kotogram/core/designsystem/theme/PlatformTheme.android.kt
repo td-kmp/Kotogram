@@ -18,3 +18,5 @@ internal actual fun platformDynamicColorScheme(darkTheme: Boolean): ColorScheme?
 }
 
 internal actual val platformSystemFont: Boolean = false
+
+internal actual val platformPressHighlight: Boolean = false

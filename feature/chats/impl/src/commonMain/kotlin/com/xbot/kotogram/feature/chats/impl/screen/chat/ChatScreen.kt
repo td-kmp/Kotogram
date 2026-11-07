@@ -39,6 +39,7 @@ private fun ChatScreenContent(
 ) {
     Scaffold(
         modifier = modifier,
+        containerColor = KotogramTheme.colors.surface,
         topBar = {
             TopAppBar(
                 title = { Text(state.title) },

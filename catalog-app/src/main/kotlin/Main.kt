@@ -12,9 +12,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
 import com.xbot.kotogram.catalog.Catalog
-import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.core.designsystem.window.KotogramWindow
 import dev.nucleusframework.application.nucleusApplication
-import dev.nucleusframework.window.material.MaterialDecoratedWindow
 import dev.nucleusframework.window.material.MaterialTitleBar
 
 private const val TITLE = "Kotogram Catalog"
@@ -27,30 +26,30 @@ fun main(args: Array<String>) {
         var darkTheme by remember {
             mutableStateOf(System.getProperty("catalog.dark")?.toBooleanStrictOrNull() ?: systemDarkTheme)
         }
-        KotogramTheme(darkTheme = darkTheme, dynamicColor = false) {
-            MaterialDecoratedWindow(
-                onCloseRequest = ::exitApplication,
-                state = rememberWindowState(
-                    position = WindowPosition(Alignment.Center),
-                    size = InitialWindowSize
-                ),
-                title = TITLE,
-                minimumSize = MinimumWindowSize
-            ) {
-                MaterialTitleBar {
-                    Text(
-                        text = TITLE,
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(horizontal = 12.dp)
-                    )
-                }
-                Catalog(
-                    darkTheme = darkTheme,
-                    onDarkThemeChange = { darkTheme = it },
-                    startPage = System.getProperty("catalog.page")
+        KotogramWindow(
+            onCloseRequest = ::exitApplication,
+            state = rememberWindowState(
+                position = WindowPosition(Alignment.Center),
+                size = InitialWindowSize
+            ),
+            title = TITLE,
+            minimumSize = MinimumWindowSize,
+            darkTheme = darkTheme,
+            dynamicColor = false
+        ) {
+            MaterialTitleBar {
+                Text(
+                    text = TITLE,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(horizontal = 12.dp)
                 )
             }
+            Catalog(
+                darkTheme = darkTheme,
+                onDarkThemeChange = { darkTheme = it },
+                startPage = System.getProperty("catalog.page")
+            )
         }
     }
 }

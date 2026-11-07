@@ -13,6 +13,7 @@ val CatalogPages: List<CatalogPage> = listOf(
     SecureTextFieldPage,
     CodeFieldPage,
     ListItemPage,
+    ProgressIndicatorPage,
     RichTextPage,
     QrCodePage
 )

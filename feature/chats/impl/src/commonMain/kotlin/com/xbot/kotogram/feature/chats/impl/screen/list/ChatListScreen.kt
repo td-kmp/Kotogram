@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -21,6 +20,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.core.designsystem.component.ProgressIndicator
 import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.annotatedStringResource
 import com.xbot.kotogram.core.resources.chatlist_emptytext
@@ -69,6 +70,7 @@ private fun ChatListScreenContent(
     }
     Scaffold(
         modifier = modifier,
+        containerColor = KotogramTheme.colors.surface,
         topBar = { TopAppBar(title = { Text(stringResource(Res.string.peerlist_title_chats)) }) }
     ) { innerPadding ->
         Box(Modifier.fillMaxSize().padding(innerPadding)) {
@@ -80,7 +82,7 @@ private fun ChatListScreenContent(
             if (state.rows.isEmpty()) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     when {
-                        state.isLoading -> CircularProgressIndicator()
+                        state.isLoading -> ProgressIndicator()
                         state.loadFailed -> Text(stringResource(Res.string.error_anerror))
                         state.isComplete -> Text(
                             text = annotatedStringResource(Res.string.chatlist_emptytext),

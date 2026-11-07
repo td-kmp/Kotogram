@@ -1,4 +1,4 @@
-package com.xbot.kotogram.core.designsystem.component
+package com.xbot.kotogram.core.designsystem.native
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
@@ -18,9 +18,7 @@ internal class MacGlassButton(onClick: () -> Unit) {
         )
     )
 
-    private val spinner: Pointer = requireNotNull(
-        ObjC.send(requireNotNull(ObjC.send(requireNotNull(ObjC.cls("NSProgressIndicator")), "alloc")), "init")
-    )
+    private val spinner = MacProgressIndicator()
 
     init {
         ObjC.sendVoid(handle, "retain")
@@ -30,19 +28,7 @@ internal class MacGlassButton(onClick: () -> Unit) {
         ObjC.sendVoid(handle, "setControlSize:", CONTROL_SIZE_EXTRA_LARGE)
         ObjC.sendVoid(handle, "setTintProminence:", TINT_PROMINENCE_PRIMARY)
         GlassButtonTarget.actions[Pointer.nativeValue(handle)] = onClick
-        ObjC.sendVoid(spinner, "setStyle:", PROGRESS_STYLE_SPINNING)
-        ObjC.sendVoid(spinner, "setControlSize:", CONTROL_SIZE_SMALL)
-        ObjC.sendVoid(spinner, "setDisplayedWhenStopped:", 0.toByte())
-        ObjC.sendVoid(spinner, "setTranslatesAutoresizingMaskIntoConstraints:", 0.toByte())
-        ObjC.sendVoid(handle, "addSubview:", spinner)
-        for (anchor in listOf("centerXAnchor", "centerYAnchor")) {
-            val constraint = ObjC.send(
-                requireNotNull(ObjC.send(spinner, anchor)),
-                "constraintEqualToAnchor:",
-                ObjC.send(handle, anchor)
-            )
-            constraint?.let { ObjC.sendVoid(it, "setActive:", 1.toByte()) }
-        }
+        spinner.centerIn(handle)
     }
 
     fun setTitle(text: String, fontSize: Double, fontWeight: Double, color: Color) {
@@ -54,13 +40,12 @@ internal class MacGlassButton(onClick: () -> Unit) {
     }
 
     fun setDark(dark: Boolean) {
-        appearance(if (dark) "NSAppearanceNameDarkAqua" else "NSAppearanceNameAqua")
-            ?.let { ObjC.sendVoid(handle, "setAppearance:", it) }
-        appearance("NSAppearanceNameDarkAqua")?.let { ObjC.sendVoid(spinner, "setAppearance:", it) }
+        ObjC.sendVoid(handle, "setAppearance:", ObjC.appearance(dark))
     }
 
-    fun setLoading(loading: Boolean) {
-        ObjC.sendVoid(spinner, if (loading) "startAnimation:" else "stopAnimation:", null)
+    fun setLoading(loading: Boolean, color: Color, background: Color) {
+        spinner.setColor(color, background)
+        spinner.setAnimating(loading)
     }
 
     fun setEnabled(enabled: Boolean) {
@@ -71,12 +56,9 @@ internal class MacGlassButton(onClick: () -> Unit) {
         ObjC.sendVoid(handle, "setHidden:", (if (visible) 0 else 1).toByte())
     }
 
-    private fun appearance(name: String): Pointer? =
-        ObjC.send(requireNotNull(ObjC.cls("NSAppearance")), "appearanceNamed:", ObjC.string(name))
-
     fun release() {
         GlassButtonTarget.actions.remove(Pointer.nativeValue(handle))
-        ObjC.sendVoid(spinner, "release")
+        spinner.release()
         ObjC.sendVoid(handle, "release")
     }
 
@@ -142,5 +124,3 @@ private const val BEZEL_STYLE_GLASS = 16L
 private const val CONTROL_SIZE_EXTRA_LARGE = 4L
 private const val TINT_PROMINENCE_PRIMARY = 2L
 private const val FOCUS_RING_TYPE_NONE = 1L
-private const val PROGRESS_STYLE_SPINNING = 1L
-private const val CONTROL_SIZE_SMALL = 1L

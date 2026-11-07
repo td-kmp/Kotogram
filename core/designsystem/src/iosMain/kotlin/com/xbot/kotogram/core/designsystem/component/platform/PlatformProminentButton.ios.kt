@@ -1,4 +1,4 @@
-package com.xbot.kotogram.core.designsystem.component
+package com.xbot.kotogram.core.designsystem.component.platform
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.ButtonColors
@@ -10,10 +10,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.compose.currentStateAsState
 import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.core.designsystem.component.ButtonState
+import com.xbot.kotogram.core.designsystem.component.FilledProminentButton
+import com.xbot.kotogram.core.designsystem.component.NativeProminentButtonBox
 import com.xbot.kotogram.core.designsystem.extensions.appleWeight
 import com.xbot.kotogram.core.designsystem.extensions.containerColor
 import com.xbot.kotogram.core.designsystem.extensions.contentColor
@@ -67,8 +67,7 @@ private fun GlassProminentButton(
     val style = KotogramTheme.typography.labelLarge
     val fontSize = with(LocalDensity.current) { style.fontSize.toDp().value.toDouble() }
     val dark = KotogramTheme.colors.background.isDark()
-    val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
-    val inFront = lifecycle.isAtLeast(Lifecycle.State.RESUMED)
+    val inFront = isSettledInFront()
     NativeProminentButtonBox(text, colors, contentPadding, modifier) {
         UIKitView(
             factory = {
