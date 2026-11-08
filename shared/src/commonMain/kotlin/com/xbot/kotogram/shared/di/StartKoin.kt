@@ -10,6 +10,7 @@ import com.xbot.kotogram.feature.chats.data.di.chatsDataModule
 import com.xbot.kotogram.feature.chats.impl.di.chatsImplModule
 import com.xbot.kotogram.feature.language.data.di.languageDataModule
 import com.xbot.kotogram.feature.language.impl.di.languageImplModule
+import com.xbot.kotogram.feature.media.data.di.mediaDataModule
 import org.koin.core.context.startKoin
 import org.koin.dsl.KoinConfiguration
 import org.koin.dsl.includes
@@ -25,7 +26,8 @@ fun initKoin(config: KoinConfiguration? = null) {
             chatsDataModule,
             chatsImplModule,
             languageDataModule,
-            languageImplModule
+            languageImplModule,
+            mediaDataModule
         )
         includes(config)
     }.koin

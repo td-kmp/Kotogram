@@ -22,6 +22,7 @@ val CatalogPages: List<CatalogPage> = listOf(
     BottomSheetPage,
     OptionPickerPage,
     PhotoPickerPage,
+    NetworkImagePage,
     ProgressIndicatorPage,
     RichTextPage,
     QrCodePage

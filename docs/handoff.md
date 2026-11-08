@@ -56,6 +56,7 @@ Next task number after it: **KTG-8**.
 - **`feature:chats:{api,domain,data,impl}`**: the chat list is real: `ChatStore`, `DefaultChatRepository`, `ChatListViewModel`, a memoising `ChatListRowMapper`, `loadChats` paging. No avatars yet. The chat screen only shows its title: history is M2.
 - **Web:** `web-app` (`wasmJs`), worker in `core/account/worker`, one tab at a time through `navigator.locks`.
 - **`feature:language:{domain,data,impl}`**: the app's language, "Continue in …" through `feature:auth:impl`.
+- **`feature:media:{domain,data}`**: TDLib files for images: `FileRepository` (`downloadFile`, waits on `updateFile`; `readFilePart`), and each account's Coil `ImageLoader` with `TdlibFileFetcher` and `TdlibFileKeyer`; `NetworkImage` in `core:designsystem`. Nothing shows a TDLib image yet: chat avatars are next.
 - **Tests:** `AccountManagerTest` and `AccountRegistryTest` on a fake TDLib, `ReduceTest` and `UpdateCoverageTest` in `feature:chats:data`, `DefaultLanguageRepositoryTest` on a fake `AppClient`, `PluralFormTest` and the `Localization` tests, `KoinGraphTest` on real TDLib.
 
 **Not checked: nothing past the login screen has run anywhere,** and KTG-7 hasn't run at all. By hand on a test-DC account (`-Ptelegram.test.dc=true` keeps away from real data): log in, see the list, restart the app, QR → phone → QR on desktop (the same QR code), and a number submitted from QR.

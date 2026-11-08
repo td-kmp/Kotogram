@@ -34,6 +34,7 @@ kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     dependencies {
         implementation(projects.feature.chats.domain)
+        implementation(projects.feature.media.domain)
         implementation(projects.core.account)
         implementation(projects.feature.chats.api)
         implementation(projects.core.navigation.api)
@@ -56,6 +57,14 @@ kotlin {
         implementation(libs.koin.compose.navigation3)
         implementation(libs.kotlinx.coroutines.core)
         implementation(libs.kotlinx.datetime)
+    }
+
+    sourceSets {
+        jvmTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.compose.ui.test)
+            implementation(compose.desktop.currentOs)
+        }
     }
 }
 

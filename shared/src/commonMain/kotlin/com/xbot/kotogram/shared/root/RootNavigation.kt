@@ -16,9 +16,11 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
+import coil3.ImageLoader
 import com.xbot.kotogram.core.account.AccountManager
 import com.xbot.kotogram.core.account.AccountSession
 import com.xbot.kotogram.core.designsystem.animation.rememberNavTransitions
+import com.xbot.kotogram.core.designsystem.component.LocalImageLoader
 import com.xbot.kotogram.core.navigation.LocalNavigator
 import com.xbot.kotogram.core.navigation.NavKey
 import com.xbot.kotogram.core.navigation.koinNavSerializersModule
@@ -58,15 +60,17 @@ private fun Account(session: AccountSession, onRootBack: (() -> Unit)? = null) {
         )
 
         UnboundKoinScope(session.koinScope) {
-            Surface(Modifier.fillMaxSize()) {
-                val current = root
-                if (current != null) {
-                    AccountNavigation(
-                        root = current,
-                        onRootBack = onRootBack
-                    )
-                } else {
-                    SplashScreen()
+            CompositionLocalProvider(LocalImageLoader provides koinInject<ImageLoader>()) {
+                Surface(Modifier.fillMaxSize()) {
+                    val current = root
+                    if (current != null) {
+                        AccountNavigation(
+                            root = current,
+                            onRootBack = onRootBack
+                        )
+                    } else {
+                        SplashScreen()
+                    }
                 }
             }
         }

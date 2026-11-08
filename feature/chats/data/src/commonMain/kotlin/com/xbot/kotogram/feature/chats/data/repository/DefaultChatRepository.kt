@@ -5,10 +5,12 @@ import arrow.core.recover
 import com.xbot.kotogram.core.account.extensions.isNotFound
 import com.xbot.kotogram.core.account.extensions.sendCatching
 import com.xbot.kotogram.feature.chats.data.extensions.chatListEntries
+import com.xbot.kotogram.feature.chats.data.extensions.folderTabs
 import com.xbot.kotogram.feature.chats.data.extensions.hasSameEntriesAs
 import com.xbot.kotogram.feature.chats.data.extensions.toChatError
 import com.xbot.kotogram.feature.chats.data.store.ChatStore
 import com.xbot.kotogram.feature.chats.domain.model.ChatError
+import com.xbot.kotogram.feature.chats.domain.model.ChatFolderTab
 import com.xbot.kotogram.feature.chats.domain.model.ChatListEntry
 import com.xbot.kotogram.feature.chats.domain.repository.ChatRepository
 import io.xbot.tdlib.api.Chat
@@ -34,6 +36,12 @@ internal class DefaultChatRepository(private val store: ChatStore, private val c
             .map { true }
             // TDLib's way of saying the whole list is loaded.
             .recover { error -> if (error.isNotFound) false else raise(error.toChatError()) }
+
+    override fun folderTabs(): Flow<List<ChatFolderTab>> = store.state
+        .distinctUntilChanged { old, new ->
+            old.folders === new.folders && old.unreadChatCounts === new.unreadChatCounts
+        }
+        .map { it.folderTabs() }
 
     override fun chat(chatId: Long): Flow<Chat?> = flow {
         // A restored back stack can name a chat TDLib hasn't told this instance about yet.

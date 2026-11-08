@@ -46,6 +46,7 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.core.account)
             implementation(projects.core.designsystem)
+            implementation(projects.feature.media.data)
             implementation(projects.core.navigation.impl)
             implementation(projects.core.resources)
             implementation(projects.feature.auth.api)

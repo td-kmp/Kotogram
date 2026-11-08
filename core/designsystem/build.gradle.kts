@@ -38,6 +38,8 @@ kotlin {
         api(libs.compose.ui)
         api(libs.compose.material3)
         api(projects.core.resources)
+        api(libs.coil.compose.core)
+        implementation(libs.okio)
         implementation(libs.androidx.lifecycle.runtime.compose)
         implementation(libs.compose.preview)
         implementation(libs.compottie)

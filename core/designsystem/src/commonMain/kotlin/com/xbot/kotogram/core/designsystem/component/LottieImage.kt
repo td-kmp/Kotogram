@@ -7,6 +7,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import coil3.ImageLoader
+import coil3.compose.LocalPlatformContext
+import coil3.fetch.SourceFetchResult
+import coil3.request.Options
 import com.xbot.kotogram.core.designsystem.component.platform.gunzip
 import com.xbot.kotogram.core.resources.Res
 import io.github.alexzhirkevich.compottie.DotLottie
@@ -33,14 +37,32 @@ fun LottieImage(
     colors
 )
 
+// Anything the account's image loader fetches, such as a sticker's TDLib file, read through its fetcher.
 @Composable
 fun LottieImage(
-    tgs: ByteArray,
-    key: String,
+    model: Any,
     modifier: Modifier = Modifier,
     iterations: Int = 1,
     colors: Map<String, Color> = emptyMap()
-) = LottieImage(remember(key) { BytesSpec("tgs_$key") { tgs } }, modifier, iterations, colors)
+) {
+    val context = LocalPlatformContext.current
+    val imageLoader = LocalImageLoader.current ?: remember(context) { ImageLoader(context) }
+    val spec = remember(model, imageLoader) {
+        val options = Options(context)
+        val key = imageLoader.components.key(model, options) ?: model.toString()
+        BytesSpec("model_$key") { imageLoader.fetchBytes(model, options) }
+    }
+    LottieImage(spec, modifier, iterations, colors)
+}
+
+private suspend fun ImageLoader.fetchBytes(model: Any, options: Options): ByteArray {
+    val data = components.map(model, options)
+    val (fetcher, _) = checkNotNull(components.newFetcher(data, options, this)) {
+        "No fetcher for $data"
+    }
+    val result = fetcher.fetch() as? SourceFetchResult ?: error("$data isn't a source")
+    return result.source.use { it.source().readByteArray() }
+}
 
 @OptIn(ExperimentalCompottieApi::class)
 @Composable

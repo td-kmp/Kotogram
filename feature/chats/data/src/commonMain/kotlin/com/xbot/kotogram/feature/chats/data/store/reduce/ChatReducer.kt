@@ -3,7 +3,9 @@ package com.xbot.kotogram.feature.chats.data.store.reduce
 import com.xbot.kotogram.feature.chats.data.store.ChatsState
 import io.xbot.tdlib.api.Chat
 import io.xbot.tdlib.api.Update
+import io.xbot.tdlib.api.UpdateChatAccentColors
 import io.xbot.tdlib.api.UpdateChatDraftMessage
+import io.xbot.tdlib.api.UpdateChatEmojiStatus
 import io.xbot.tdlib.api.UpdateChatIsMarkedAsUnread
 import io.xbot.tdlib.api.UpdateChatLastMessage
 import io.xbot.tdlib.api.UpdateChatNotificationSettings
@@ -39,6 +41,14 @@ internal object ChatReducer : Reducer {
         is UpdateChatTitle -> state.changeChat(update.chatId) { it.copy(title = update.title) }
 
         is UpdateChatPhoto -> state.changeChat(update.chatId) { it.copy(photo = update.photo) }
+
+        is UpdateChatEmojiStatus -> state.changeChat(update.chatId) {
+            it.copy(emojiStatus = update.emojiStatus)
+        }
+
+        is UpdateChatAccentColors -> state.changeChat(update.chatId) {
+            it.copy(accentColorId = update.accentColorId)
+        }
 
         is UpdateChatNotificationSettings -> state.changeChat(update.chatId) {
             it.copy(notificationSettings = update.notificationSettings)

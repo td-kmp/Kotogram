@@ -5,4 +5,4 @@ import io.xbot.tdlib.api.DraftMessage
 import io.xbot.tdlib.api.DraftMessageContentText
 
 internal fun DraftMessage.toPreview(): ChatPreview? =
-    (content as? DraftMessageContentText)?.let { ChatPreview.Draft(it.text.text) }
+    (content as? DraftMessageContentText)?.let { ChatPreview.Draft(it.text) }

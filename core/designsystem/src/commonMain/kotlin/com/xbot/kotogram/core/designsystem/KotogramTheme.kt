@@ -15,6 +15,8 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.ProvidedValue
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.xbot.kotogram.core.designsystem.component.platform.LocalWindowLifecycle
 import com.xbot.kotogram.core.designsystem.media.LocalUiMediaScope
 import com.xbot.kotogram.core.designsystem.style.LocalMediaQueryInfo
 import com.xbot.kotogram.core.designsystem.theme.DayClassicColorScheme
@@ -41,14 +43,20 @@ fun KotogramTheme(
     CompositionLocalProvider(
         LocalKotogramSpacing provides spacing,
         LocalUiMediaScope provides platformUiMediaScope(),
-        LocalMediaQueryInfo provides platformMediaQueryInfo()
+        LocalMediaQueryInfo provides platformMediaQueryInfo(),
+        LocalWindowLifecycle provides
+            (LocalWindowLifecycle.current ?: LocalLifecycleOwner.current.lifecycle)
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = rememberKotogramTypography(),
             shapes = KotogramShapes
         ) {
-            CompositionLocalProvider(*platformComponentOverrides(), *indicationOverrides(), content = content)
+            CompositionLocalProvider(
+                *platformComponentOverrides(),
+                *indicationOverrides(),
+                content = content
+            )
         }
     }
 }
@@ -93,7 +101,9 @@ object KotogramTheme {
             val typography = typography
             val shapes = shapes
             val spacing = spacing
-            return remember(colors, typography, shapes, spacing) { Values(colors, typography, shapes, spacing) }
+            return remember(colors, typography, shapes, spacing) {
+                Values(colors, typography, shapes, spacing)
+            }
         }
 
     // Material 3's MaterialTheme.Values: the theme as its styles read it, outside composition.
