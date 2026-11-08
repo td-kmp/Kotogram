@@ -23,8 +23,9 @@ internal val ButtonsPage = CatalogPage(
     id = "buttons",
     section = CatalogSection.Components,
     name = "Buttons",
-    description = "Telegram for macOS's sign-in button (Auth_NextView): a pill at least 36 high, 15 on each side, " +
-        "14 medium. ButtonState is Enabled, Disabled or Loading; a loading button keeps its colours and width. " +
+    description = "Telegram for macOS's sign-in button on a laptop (Auth_NextView: a pill at least 36 high, 15 on " +
+        "each side, 14 medium) and Telegram for iOS's on touch screens (50 high, 17 semibold). ButtonState is " +
+        "Enabled, Disabled or Loading; a loading button keeps its colours and width. " +
         "ProminentButton is a screen's main action: this filled button, and UIKit's prominent glass button on " +
         "iOS 26 and later.",
     examples = listOf(

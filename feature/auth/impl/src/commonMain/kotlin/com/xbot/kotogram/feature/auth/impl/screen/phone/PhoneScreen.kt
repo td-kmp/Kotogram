@@ -1,7 +1,6 @@
 package com.xbot.kotogram.feature.auth.impl.screen.phone
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
@@ -31,28 +29,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.isSpecified
+import com.xbot.kotogram.core.designsystem.KotogramLaptopPreview
 import com.xbot.kotogram.core.designsystem.KotogramPreview
-import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.component.ButtonState
+import com.xbot.kotogram.core.designsystem.component.OptionLabel
 import com.xbot.kotogram.core.designsystem.component.OptionPicker
 import com.xbot.kotogram.core.designsystem.component.PhoneNumberField
 import com.xbot.kotogram.core.designsystem.component.ProminentButton
 import com.xbot.kotogram.core.designsystem.component.TextButton
-import com.xbot.kotogram.core.designsystem.media.Pc
-import com.xbot.kotogram.core.designsystem.media.UiMediaScope.PlatformFeature
-import com.xbot.kotogram.core.designsystem.media.UiMediaScope.Posture
 import com.xbot.kotogram.core.designsystem.media.derivedMediaQuery
 import com.xbot.kotogram.core.designsystem.media.mediaQuery
+import com.xbot.kotogram.core.designsystem.style.rememberStyle
 import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.app_name
+import com.xbot.kotogram.core.resources.login_countrylabel
 import com.xbot.kotogram.core.resources.login_invalidcountrycode
 import com.xbot.kotogram.core.resources.login_new_phonenumber
 import com.xbot.kotogram.core.resources.login_next
@@ -61,6 +54,7 @@ import com.xbot.kotogram.core.resources.login_qr_login
 import com.xbot.kotogram.core.resources.searchfield_search
 import com.xbot.kotogram.core.resources.stringResource
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
+import com.xbot.kotogram.feature.auth.impl.extensions.isBook
 import com.xbot.kotogram.feature.auth.impl.extensions.localizedMessage
 import io.xbot.tdlib.api.CountryInfo
 import org.orbitmvi.orbit.compose.collectAsState
@@ -103,137 +97,118 @@ internal fun PhoneScreenContent(
     modifier: Modifier = Modifier,
     focusRequester: FocusRequester = remember { FocusRequester() }
 ) {
-    val computer = mediaQuery { PlatformFeature.Pc in platformFeatures }
+    val style = rememberStyle(::PhoneScreenStyleScope, PhoneScreenStyle.Adaptive)
     val posture = mediaQuery { windowPosture }
-    val landscape by derivedMediaQuery { windowHeight < PhoneScreenTokens.LandscapeHeight }
-    val tokens = if (computer) PhoneScreenTokens.Desktop else PhoneScreenTokens.Touch
-    // At the bottom as Telegram for iOS has it, iPad included; under the field on computers and phones on their side.
-    val actionAtBottom = !computer && !landscape
+    val landscape by derivedMediaQuery { windowHeight < style.landscapeHeight }
+    // At the bottom as Telegram for iOS has it, iPad included; under the field on laptops and phones on their side.
+    val actionAtBottom = !style.mediaQueryInfo.isLaptop && !landscape
     val invalidCountry = stringResource(Res.string.login_invalidcountrycode)
 
-    Scaffold(modifier = modifier, contentWindowInsets = WindowInsets.safeDrawing) { innerPadding ->
-        Column(
-            Modifier
-                .fillMaxHeight()
-                .fillMaxWidth(if (posture == Posture.Book) 0.5f else 1f)
-                .padding(innerPadding)
-                .imePadding()
-        ) {
-            BoxWithConstraints(Modifier.weight(1f)) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                        .heightIn(min = maxHeight)
-                        .padding(horizontal = PhoneScreenTokens.HorizontalPadding),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    if (!landscape && posture != Posture.Tabletop) {
-                        // Temporary: Kotogram's logo goes here.
-                        Box(Modifier.size(tokens.logoSize).background(Color.White))
-                        Spacer(Modifier.height(tokens.beforeTitle))
-                    }
-                    Text(
-                        text = stringResource(Res.string.app_name),
-                        style = KotogramTheme.typography.bodyLarge.merge(tokens.titleStyle),
-                        color = KotogramTheme.colors.onSurface
-                    )
-                    Spacer(Modifier.height(tokens.beforeInfo))
-                    Text(
-                        text = stringResource(Res.string.login_new_phonenumber),
-                        style = KotogramTheme.typography.bodyLarge.merge(tokens.infoStyle),
-                        color = if (computer) KotogramTheme.colors.onSurfaceVariant else KotogramTheme.colors.onSurface,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.widthIn(max = tokens.infoWidth)
-                    )
-                    Spacer(Modifier.height(tokens.beforeField))
-                    PhoneNumberField(
-                        country = state.country?.let { "${it.flagEmoji} ${it.name}" }
-                            ?: invalidCountry.takeIf { state.callingCode.isNotEmpty() }.orEmpty(),
-                        onCountryClick = { onAction(PhoneScreenAction.OnCountryPickerVisibilityChange(true)) },
-                        state = phoneNumber,
-                        callingCodeLength = state.callingCode.length,
-                        numberPattern = state.numberPattern,
-                        numberPlaceholder = stringResource(Res.string.login_phonefieldplaceholder),
-                        onSubmit = { onAction(PhoneScreenAction.OnSubmit) },
-                        readOnly = state.isSubmitting,
-                        focusRequester = focusRequester,
-                        modifier = if (computer) {
-                            Modifier
-                        } else {
-                            Modifier.widthIn(max = PhoneScreenTokens.MaxWidth).fillMaxWidth()
-                        },
-                        countryMenu = { CountryPicker(state, onAction) }
-                    )
-                    Crossfade(
-                        targetState = state.error,
-                        animationSpec = tween(PhoneScreenTokens.ErrorFadeMillis),
+    context(style) {
+        Scaffold(modifier = modifier, contentWindowInsets = WindowInsets.safeDrawing) { innerPadding ->
+            Column(
+                Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(if (posture.isBook) 0.5f else 1f)
+                    .padding(innerPadding)
+            ) {
+                BoxWithConstraints(Modifier.weight(1f)) {
+                    Column(
                         modifier = Modifier
-                            .height(PhoneScreenTokens.BeforeAction)
-                            .padding(top = PhoneScreenTokens.BeforeError)
-                    ) { error ->
-                        if (error != null) {
-                            Text(
-                                text = stringResource(error.localizedMessage()),
-                                style = KotogramTheme.typography.bodyMedium,
-                                color = KotogramTheme.colors.error,
-                                textAlign = TextAlign.Center
-                            )
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                            .heightIn(min = maxHeight)
+                            .padding(horizontal = style.horizontalPadding),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        if (!landscape && !posture.isTabletop) {
+                            // Temporary: Kotogram's logo goes here.
+                            Box(Modifier.size(style.logoSize).background(Color.White))
+                            Spacer(Modifier.height(style.beforeTitle))
+                        }
+                        Text(text = stringResource(Res.string.app_name), style = style.titleTextStyle)
+                        Spacer(Modifier.height(style.beforeInfo))
+                        Text(
+                            text = stringResource(Res.string.login_new_phonenumber),
+                            style = style.infoTextStyle,
+                            modifier = Modifier.widthIn(max = style.infoWidth)
+                        )
+                        Spacer(Modifier.height(style.beforeField))
+                        PhoneNumberField(
+                            country = state.country?.let { "${it.flagEmoji} ${it.name}" }
+                                ?: invalidCountry.takeIf { state.callingCode.isNotEmpty() }.orEmpty(),
+                            onCountryClick = { onAction(PhoneScreenAction.OnCountryPickerVisibilityChange(true)) },
+                            state = phoneNumber,
+                            callingCodeLength = state.callingCode.length,
+                            numberPattern = state.numberPattern,
+                            numberPlaceholder = stringResource(Res.string.login_phonefieldplaceholder),
+                            onSubmit = { onAction(PhoneScreenAction.OnSubmit) },
+                            readOnly = state.isSubmitting,
+                            focusRequester = focusRequester,
+                            modifier = Modifier.contentWidth(),
+                            countryMenu = { CountryPicker(state, onAction) }
+                        )
+                        Crossfade(
+                            targetState = state.error,
+                            animationSpec = style.errorFadeSpec,
+                            modifier = Modifier
+                                .height(style.beforeAction)
+                                .padding(top = style.beforeError)
+                        ) { error ->
+                            if (error != null) {
+                                Text(text = stringResource(error.localizedMessage()), style = style.errorTextStyle)
+                            }
+                        }
+                        if (!actionAtBottom) {
+                            PhoneAction(state, canUseQr, onAction, onQrLoginClick)
                         }
                     }
-                    if (!actionAtBottom) {
-                        PhoneAction(state, tokens, computer, canUseQr, onAction, onQrLoginClick)
-                    }
                 }
-            }
-            // Half open on a table: the form above the fold, the keyboard below it.
-            if (posture == Posture.Tabletop) Spacer(Modifier.weight(1f))
-            if (actionAtBottom) {
-                PhoneAction(
-                    state = state,
-                    tokens = tokens,
-                    computer = computer,
-                    canUseQr = canUseQr,
-                    onAction = onAction,
-                    onQrLoginClick = onQrLoginClick,
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .padding(PhoneScreenTokens.BottomActionInset)
-                )
+                // Half open on a table: the form above the fold, the keyboard below it.
+                if (posture.isTabletop) Spacer(Modifier.weight(1f))
+                if (actionAtBottom) {
+                    PhoneAction(
+                        state = state,
+                        canUseQr = canUseQr,
+                        onAction = onAction,
+                        onQrLoginClick = onQrLoginClick,
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(style.bottomActionInset)
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
+context(style: PhoneScreenStyleScope)
 private fun PhoneAction(
     state: PhoneScreenState,
-    tokens: PhoneScreenTokens,
-    computer: Boolean,
     canUseQr: Boolean,
     onAction: (PhoneScreenAction) -> Unit,
     onQrLoginClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (canUseQr && state.number.isEmpty()) {
-        TextButton(onClick = onQrLoginClick, modifier = modifier.height(tokens.actionHeight)) {
-            Text(
-                text = stringResource(Res.string.login_qr_login),
-                style = KotogramTheme.typography.bodyLarge.merge(PhoneScreenTokens.QrLoginStyle)
-            )
+        TextButton(onClick = onQrLoginClick, modifier = modifier) {
+            Text(text = stringResource(Res.string.login_qr_login), style = style.qrLoginTextStyle)
         }
     } else {
         ProminentButton(
             text = stringResource(Res.string.login_next),
             onClick = { onAction(PhoneScreenAction.OnSubmit) },
             state = ButtonState.of(enabled = state.canSubmit, loading = state.isSubmitting),
-            modifier = modifier
-                .height(tokens.actionHeight)
-                .then(if (computer) Modifier else Modifier.widthIn(max = PhoneScreenTokens.MaxWidth).fillMaxWidth())
+            modifier = modifier.contentWidth()
         )
     }
 }
+
+context(style: PhoneScreenStyleScope)
+private fun Modifier.contentWidth(): Modifier =
+    if (style.contentMaxWidth.isSpecified) widthIn(max = style.contentMaxWidth).fillMaxWidth() else this
 
 @Composable
 private fun CountryPicker(state: PhoneScreenState, onAction: (PhoneScreenAction) -> Unit) {
@@ -241,9 +216,19 @@ private fun CountryPicker(state: PhoneScreenState, onAction: (PhoneScreenAction)
         expanded = state.isCountryPickerVisible,
         onDismissRequest = { onAction(PhoneScreenAction.OnCountryPickerVisibilityChange(false)) },
         options = state.countries,
-        optionText = { "${it.flagEmoji} ${it.name}  +${it.callingCodes.firstOrNull().orEmpty()}" },
+        optionLabel = { country ->
+            OptionLabel(
+                text = country.name,
+                leading = country.flagEmoji,
+                supporting = country.englishName.takeIf { it != country.name },
+                trailing = country.callingCodes.firstOrNull()?.let { "+$it" }
+            )
+        },
         onSelect = { onAction(PhoneScreenAction.OnCountrySelect(it)) },
+        // macOS's pack has no title for it: its login picks the country from a menu.
+        title = stringResource(Res.string.login_countrylabel).replaceFirstChar { it.titlecase() },
         selected = state.country,
+        optionSection = { it.name.take(1).uppercase() },
         searchPlaceholder = stringResource(Res.string.searchfield_search),
         matches = { country, query ->
             country.name.contains(query, ignoreCase = true) ||
@@ -251,54 +236,6 @@ private fun CountryPicker(state: PhoneScreenState, onAction: (PhoneScreenAction)
                 country.callingCodes.any { it.startsWith(query.removePrefix("+")) }
         }
     )
-}
-
-// Telegram for macOS's phone screen (Auth_PhoneNumber, Auth_Insets) on computers and Telegram for iOS's
-// (AuthorizationSequencePhoneEntryControllerNode) on touch screens, in their points.
-@Suppress("MagicNumber")
-private enum class PhoneScreenTokens(
-    val logoSize: Dp,
-    val beforeTitle: Dp,
-    val beforeInfo: Dp,
-    val beforeField: Dp,
-    val infoWidth: Dp,
-    val actionHeight: Dp,
-    val titleStyle: TextStyle,
-    val infoStyle: TextStyle
-) {
-    Desktop(
-        logoSize = 140.dp,
-        beforeTitle = 20.dp,
-        beforeInfo = 10.dp,
-        beforeField = 20.dp,
-        infoWidth = Dp.Infinity,
-        actionHeight = 36.dp,
-        titleStyle = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Medium),
-        infoStyle = TextStyle(fontSize = 13.5.sp)
-    ),
-    Touch(
-        logoSize = 100.dp,
-        beforeTitle = 18.dp,
-        beforeInfo = 18.dp,
-        beforeField = 30.dp,
-        infoWidth = 306.dp,
-        actionHeight = 50.dp,
-        titleStyle = TextStyle(fontSize = 28.sp, fontWeight = FontWeight.Bold),
-        infoStyle = TextStyle(fontSize = 17.sp)
-    );
-
-    companion object {
-        val HorizontalPadding = 16.dp
-        val MaxWidth = 430.dp
-        val BeforeError = 10.dp
-        val BeforeAction = 40.dp
-        val BottomActionInset = 24.dp
-        const val ErrorFadeMillis = 200
-        val QrLoginStyle = TextStyle(fontSize = 15.sp, fontWeight = FontWeight.Medium)
-
-        // WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND.
-        val LandscapeHeight = 480.dp
-    }
 }
 
 @KotogramPreview
@@ -314,6 +251,12 @@ private fun PhoneScreenPreview(
         onQrLoginClick = {}
     )
 }
+
+@KotogramLaptopPreview
+@Composable
+private fun PhoneScreenLaptopPreview(
+    @PreviewParameter(PhoneScreenStateProvider::class) state: PhoneScreenState
+) = PhoneScreenPreview(state)
 
 private class PhoneScreenStateProvider : PreviewParameterProvider<PhoneScreenState> {
     private val country = CountryInfo(

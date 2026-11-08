@@ -26,8 +26,8 @@ internal object MacGlassProminentButtonOverride : ProminentButtonOverride {
         val currentOnClick by rememberUpdatedState(onClick)
         val currentState by rememberUpdatedState(state)
         val button = remember { MacGlassButton { if (currentState == ButtonState.Enabled) currentOnClick() } }
-        val style = KotogramTheme.typography.labelLarge
-        val fontSize = with(LocalDensity.current) { style.fontSize.toDp().value.toDouble() }
+        val textStyle = buttonStyle.textStyle
+        val fontSize = with(LocalDensity.current) { textStyle.fontSize.toDp().value.toDouble() }
         val dark = KotogramTheme.colors.background.isDark()
         val inFront = isSettledInFront()
         NativeBox {
@@ -44,7 +44,7 @@ internal object MacGlassProminentButtonOverride : ProminentButtonOverride {
                     button.setTitle(
                         text = if (loading) "" else text,
                         fontSize = fontSize,
-                        fontWeight = style.fontWeight.appleWeight(),
+                        fontWeight = textStyle.fontWeight.appleWeight(),
                         color = colors.contentColor(state)
                     )
                     button.setBezelColor(colors.containerColor(state))

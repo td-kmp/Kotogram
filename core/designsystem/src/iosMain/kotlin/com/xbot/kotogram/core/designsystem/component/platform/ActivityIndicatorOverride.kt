@@ -24,7 +24,7 @@ internal object ActivityIndicatorOverride : ProgressIndicatorOverride {
         val density = LocalDensity.current
         var large by remember { mutableStateOf(false) }
         val inFront = isSettledInFront()
-        val uiColor = color.toUIColor()
+        val uiColor = style.color.toUIColor()
         UIKitView(
             factory = {
                 UIActivityIndicatorView(activityIndicatorStyle = UIActivityIndicatorViewStyleMedium).apply {

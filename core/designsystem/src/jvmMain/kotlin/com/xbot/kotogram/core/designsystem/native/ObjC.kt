@@ -7,6 +7,7 @@ import com.sun.jna.NativeLibrary
 import com.sun.jna.Pointer
 import com.sun.jna.Structure
 
+@Suppress("TooManyFunctions")
 internal object ObjC {
     private val runtime = NativeLibrary.getInstance("objc")
     private val msgSend: Function = runtime.getFunction("objc_msgSend")
@@ -39,6 +40,9 @@ internal object ObjC {
     fun sendPoint(receiver: Pointer, selector: String, vararg args: Any?): NSPoint =
         msgSend.invoke(NSPoint::class.java, arrayOf(receiver, sel(selector), *args)) as NSPoint
 
+    fun sendSize(receiver: Pointer, selector: String, vararg args: Any?): NSSize =
+        msgSend.invoke(NSSize::class.java, arrayOf(receiver, sel(selector), *args)) as NSSize
+
     fun string(text: String): Pointer =
         requireNotNull(send(requireNotNull(cls("NSString")), "stringWithUTF8String:", cString(text)))
 
@@ -67,4 +71,9 @@ internal object ObjC {
 
     @Structure.FieldOrder("x", "y")
     class NSPoint(@JvmField var x: Double = 0.0, @JvmField var y: Double = 0.0) : Structure(), Structure.ByValue
+
+    @Structure.FieldOrder("width", "height")
+    class NSSize(@JvmField var width: Double = 0.0, @JvmField var height: Double = 0.0) :
+        Structure(),
+        Structure.ByValue
 }

@@ -41,7 +41,11 @@ fun CatalogHome(
 @Composable
 private fun CatalogItem(page: CatalogPage, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val spacing = KotogramTheme.spacing
-    OutlinedCard(onClick = onClick, modifier = modifier.height(CellHeight), shape = KotogramTheme.shapes.medium) {
+    OutlinedCard(
+        onClick = onClick,
+        modifier = modifier.height(CellHeight),
+        shape = KotogramTheme.shapes.medium
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()

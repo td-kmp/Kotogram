@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-// androidx.compose.ui.adaptive.MediaQuery.android of Compose UI 1.12.1, with platformFeatures from aosp/4304334.
+// androidx.compose.ui.adaptive.MediaQuery.android of androidx-main; rememberUiMediaScope attaches the listeners that
+// AndroidComposeView attaches to it there.
 package com.xbot.kotogram.core.designsystem.media
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.hardware.input.InputManager
 import android.os.Handler
 import android.os.Looper
@@ -31,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.annotation.FrequentlyChangingValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,41 +49,48 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.window.layout.FoldingFeature
 import androidx.window.layout.WindowInfoTracker
 import androidx.window.layout.WindowLayoutInfo
+import com.xbot.kotogram.core.designsystem.media.UiMediaScope.FoldOrientation
+import com.xbot.kotogram.core.designsystem.media.UiMediaScope.FoldState
 import com.xbot.kotogram.core.designsystem.media.UiMediaScope.KeyboardKind
-import com.xbot.kotogram.core.designsystem.media.UiMediaScope.PlatformFeature
 import com.xbot.kotogram.core.designsystem.media.UiMediaScope.PointerPrecision
-import com.xbot.kotogram.core.designsystem.media.UiMediaScope.Posture
 import com.xbot.kotogram.core.designsystem.media.UiMediaScope.ViewingDistance
+import com.xbot.kotogram.core.designsystem.media.UiMediaScope.WindowFold
+import com.xbot.kotogram.core.designsystem.media.UiMediaScope.WindowPosture
 import kotlinx.coroutines.flow.collectLatest
 
 @Stable
-private class AndroidUiMediaScope(
+internal class UiMediaScopeImpl(
     context: Context,
-    inputManager: InputManager,
+    val inputManager: InputManager,
     private val windowInfo: WindowInfo,
     imeVisibility: Boolean
 ) : UiMediaScope {
-    var posture by mutableStateOf(Posture.Flat)
+    private val packageManager = context.packageManager
+    var posture by mutableStateOf(WindowPosture(emptyList()))
     var anyPointer by mutableStateOf(resolvePointerPrecision(inputManager))
     var isDocked by mutableStateOf(false)
     var isImeVisible by mutableStateOf(imeVisibility)
     var hasPhysicalKeyboard by mutableStateOf(hasPhysicalKeyboard(inputManager))
 
-    override val platformFeatures: Set<PlatformFeature> = AndroidPlatformFeatures
-        .filter { context.packageManager.hasSystemFeature(it.name) }
-        .toSet()
+    override val hasMicrophone: Boolean
+        get() = packageManager.isMicAvailable()
 
-    override val hasMicrophone: Boolean get() = PlatformFeature.Microphone in platformFeatures
+    override val hasCamera: Boolean
+        get() = packageManager.isCameraAvailable()
 
-    override val hasCamera: Boolean get() = PlatformFeature.Camera in platformFeatures
+    @get:FrequentlyChangingValue
+    override val windowWidth: Dp
+        get() = windowInfo.containerDpSize.width
 
-    override val windowWidth: Dp get() = windowInfo.containerDpSize.width
+    @get:FrequentlyChangingValue
+    override val windowHeight: Dp
+        get() = windowInfo.containerDpSize.height
 
-    override val windowHeight: Dp get() = windowInfo.containerDpSize.height
+    override val windowPosture: WindowPosture
+        get() = posture
 
-    override val windowPosture: Posture get() = posture
-
-    override val pointerPrecision: PointerPrecision get() = anyPointer
+    override val pointerPrecision: PointerPrecision
+        get() = anyPointer
 
     override val keyboardKind: KeyboardKind
         get() = when {
@@ -91,20 +101,20 @@ private class AndroidUiMediaScope(
 
     override val viewingDistance: ViewingDistance
         get() = when {
-            PlatformFeature.Leanback in platformFeatures -> ViewingDistance.Far
-            PlatformFeature.Automotive in platformFeatures || isDocked -> ViewingDistance.Medium
+            packageManager.isTvDevice() -> ViewingDistance.Far
+            packageManager.isAutomotiveDevice() || isDocked -> ViewingDistance.Medium
             else -> ViewingDistance.Near
         }
 }
 
 @Composable
-internal fun rememberAndroidUiMediaScope(): UiMediaScope {
+internal fun rememberUiMediaScope(): UiMediaScope {
     val context = LocalContext.current
     val view = LocalView.current
     val windowInfo = LocalWindowInfo.current
-    val inputManager = remember(context) { context.getSystemService(Context.INPUT_SERVICE) as InputManager }
     val scope = remember(context, windowInfo) {
-        AndroidUiMediaScope(context, inputManager, windowInfo, ViewCompat.getRootWindowInsets(view).isImeVisible)
+        val inputManager = context.getSystemService(Context.INPUT_SERVICE) as InputManager
+        UiMediaScopeImpl(context, inputManager, windowInfo, ViewCompat.getRootWindowInsets(view).isImeVisible)
     }
     LaunchedEffect(scope) {
         WindowInfoTracker.getOrCreate(context).windowLayoutInfo(context).collectLatest { layout ->
@@ -112,6 +122,7 @@ internal fun rememberAndroidUiMediaScope(): UiMediaScope {
         }
     }
     DisposableEffect(scope) {
+        val inputManager = scope.inputManager
         val listener = object : InputManager.InputDeviceListener {
             override fun onInputDeviceAdded(id: Int) = update()
 
@@ -141,45 +152,59 @@ internal fun rememberAndroidUiMediaScope(): UiMediaScope {
                 scope.isDocked = isDocked(intent)
             }
         }
-        val sticky = ContextCompat.registerReceiver(
+        val stickyIntent = ContextCompat.registerReceiver(
             context,
             receiver,
             IntentFilter(Intent.ACTION_DOCK_EVENT),
             ContextCompat.RECEIVER_EXPORTED
         )
-        scope.isDocked = isDocked(sticky)
+        scope.isDocked = isDocked(stickyIntent)
         onDispose { context.unregisterReceiver(receiver) }
     }
     return scope
 }
 
-private val AndroidPlatformFeatures = listOf(
-    PlatformFeature.Leanback,
-    PlatformFeature.Automotive,
-    PlatformFeature.Pc,
-    PlatformFeature.Watch,
-    PlatformFeature.Camera,
-    PlatformFeature.Microphone
-)
+internal fun resolvePosture(layoutInfo: WindowLayoutInfo?): WindowPosture {
+    if (layoutInfo == null || layoutInfo.displayFeatures.isEmpty()) return WindowPosture(emptyList())
 
-private fun resolvePosture(layoutInfo: WindowLayoutInfo): Posture {
-    val fold = layoutInfo.displayFeatures.filterIsInstance<FoldingFeature>()
-        .firstOrNull { it.state == FoldingFeature.State.HALF_OPENED }
-        ?: return Posture.Flat
-    return if (fold.orientation == FoldingFeature.Orientation.HORIZONTAL) Posture.Tabletop else Posture.Book
+    val features = layoutInfo.displayFeatures
+    val folds = ArrayList<WindowFold>(features.size)
+    for (i in features.indices) {
+        val feature = features[i]
+        if (feature is FoldingFeature) {
+            val foldState = when (feature.state) {
+                FoldingFeature.State.HALF_OPENED -> FoldState.HalfOpened
+                else -> FoldState.Flat
+            }
+            val orientation = when (feature.orientation) {
+                FoldingFeature.Orientation.HORIZONTAL -> FoldOrientation.Horizontal
+                else -> FoldOrientation.Vertical
+            }
+            folds.add(WindowFold(foldState, orientation))
+        }
+    }
+    return WindowPosture(folds)
 }
 
-private fun hasPhysicalKeyboard(inputManager: InputManager): Boolean = inputManager.inputDeviceIds.any { id ->
-    val device = inputManager.getInputDevice(id) ?: return@any false
-    device.keyboardType == InputDevice.KEYBOARD_TYPE_ALPHABETIC && !device.isVirtual
+internal fun hasPhysicalKeyboard(inputManager: InputManager?): Boolean {
+    if (inputManager == null) return false
+
+    return inputManager.inputDeviceIds?.any { id ->
+        val device = inputManager.getInputDevice(id) ?: return@any false
+        device.keyboardType == InputDevice.KEYBOARD_TYPE_ALPHABETIC && !device.isVirtual
+    } ?: false
 }
 
 @Suppress("CyclomaticComplexMethod")
-private fun resolvePointerPrecision(inputManager: InputManager): PointerPrecision {
-    var precision = PointerPrecision.None
-    var fallback = PointerPrecision.None
+internal fun resolvePointerPrecision(inputManager: InputManager?): PointerPrecision {
+    if (inputManager == null) return PointerPrecision.None
+
+    var pointerPrecision = PointerPrecision.None
+    var fallbackPrecision = PointerPrecision.None
+
     for (id in inputManager.inputDeviceIds) {
         val device = inputManager.getInputDevice(id) ?: continue
+
         if (
             device.hasValidPointerSource(InputDevice.SOURCE_MOUSE) ||
             device.hasValidPointerSource(InputDevice.SOURCE_STYLUS) ||
@@ -187,29 +212,34 @@ private fun resolvePointerPrecision(inputManager: InputManager): PointerPrecisio
         ) {
             return PointerPrecision.Fine
         }
+
         if (device.hasValidPointerSource(InputDevice.SOURCE_TOUCHSCREEN)) {
-            precision = PointerPrecision.Coarse
+            pointerPrecision = PointerPrecision.Coarse
         } else if (
-            precision == PointerPrecision.None &&
+            pointerPrecision == PointerPrecision.None &&
             (
                 device.hasValidPointerSource(InputDevice.SOURCE_JOYSTICK) ||
                     device.hasValidPointerSource(InputDevice.SOURCE_GAMEPAD)
                 )
         ) {
-            precision = PointerPrecision.Blunt
+            pointerPrecision = PointerPrecision.Blunt
         }
+
         // Emulators report their pointers this way; kept apart so a real device's source wins.
         if (device.hasFallbackFinePointer()) {
-            fallback = PointerPrecision.Fine
-        } else if (fallback != PointerPrecision.Fine && device.hasFallbackCoarsePointer()) {
-            fallback = PointerPrecision.Coarse
+            fallbackPrecision = PointerPrecision.Fine
+        } else if (fallbackPrecision != PointerPrecision.Fine && device.hasFallbackCoarsePointer()) {
+            fallbackPrecision = PointerPrecision.Coarse
         }
     }
-    return if (precision != PointerPrecision.None) precision else fallback
+
+    if (pointerPrecision != PointerPrecision.None) return pointerPrecision
+
+    return fallbackPrecision
 }
 
-private fun InputDevice.hasValidPointerSource(source: Int): Boolean =
-    sources and source == source && getMotionRange(MotionEvent.AXIS_X, source) != null
+private fun InputDevice.hasValidPointerSource(source: Int, axis: Int = MotionEvent.AXIS_X): Boolean =
+    (sources and source == source) && getMotionRange(axis, source) != null
 
 private fun InputDevice.hasFallbackFinePointer(): Boolean =
     getMotionRange(MotionEvent.AXIS_X)?.isFromSource(InputDevice.SOURCE_MOUSE) == true &&
@@ -222,10 +252,19 @@ private fun InputDevice.hasFallbackCoarsePointer(): Boolean =
                 getMotionRange(MotionEvent.AXIS_TOUCH_MINOR) != null
             )
 
-private val WindowInsetsCompat?.isImeVisible: Boolean
+internal val WindowInsetsCompat?.isImeVisible: Boolean
     get() = this?.isVisible(WindowInsetsCompat.Type.ime()) == true
 
-private fun isDocked(intent: Intent?): Boolean {
-    val state = intent?.getIntExtra(Intent.EXTRA_DOCK_STATE, Intent.EXTRA_DOCK_STATE_UNDOCKED)
-    return state != null && state != Intent.EXTRA_DOCK_STATE_UNDOCKED
+internal fun isDocked(intent: Intent?): Boolean {
+    if (intent == null) return false
+    val dockState = intent.getIntExtra(Intent.EXTRA_DOCK_STATE, Intent.EXTRA_DOCK_STATE_UNDOCKED)
+    return dockState != Intent.EXTRA_DOCK_STATE_UNDOCKED
 }
+
+private fun PackageManager.isCameraAvailable(): Boolean = hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)
+
+private fun PackageManager.isMicAvailable(): Boolean = hasSystemFeature(PackageManager.FEATURE_MICROPHONE)
+
+private fun PackageManager.isAutomotiveDevice(): Boolean = hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)
+
+private fun PackageManager.isTvDevice(): Boolean = hasSystemFeature(PackageManager.FEATURE_LEANBACK)

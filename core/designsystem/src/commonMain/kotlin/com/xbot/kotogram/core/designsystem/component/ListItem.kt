@@ -10,8 +10,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CornerBasedShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.ZeroCornerSize
-import androidx.compose.material3.ListItemColors
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Switch
@@ -35,11 +36,17 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.xbot.kotogram.core.designsystem.KotogramLaptopPreview
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.icon.KotogramIcons
+import com.xbot.kotogram.core.designsystem.style.AdaptiveStyleScope
+import com.xbot.kotogram.core.designsystem.style.ComponentStyle
+import com.xbot.kotogram.core.designsystem.style.DefaultStyleResolver
+import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
+import com.xbot.kotogram.core.designsystem.style.StyleResolver
+import com.xbot.kotogram.core.designsystem.style.rememberStyle
 import androidx.compose.material3.Icon as MaterialIcon
-import androidx.compose.material3.ListItemDefaults as MaterialListItemDefaults
 
 enum class ListItemPosition { Single, First, Middle, Last }
 
@@ -54,103 +61,85 @@ fun ListItem(
     onClick: (() -> Unit)? = null,
     enabled: Boolean = true,
     position: ListItemPosition? = null,
-    colors: ListItemColors = ListItemDefaults.colors(),
-    contentPadding: PaddingValues = ListItemDefaults.ContentPadding,
+    style: ListItemStyle = ListItemStyle,
     interactionSource: MutableInteractionSource? = null
 ) {
-    val typography = KotogramTheme.typography
-    val dividerColor = KotogramTheme.colors.outlineVariant
+    @Suppress("NAME_SHADOWING")
+    val style = rememberStyle(::ListItemStyleScope, ListItemStyle.Default then style)
     val hasDivider = position == ListItemPosition.First || position == ListItemPosition.Middle
     var rowStart by remember { mutableFloatStateOf(0f) }
     var textStart by remember { mutableFloatStateOf(0f) }
-    Row(
-        modifier = modifier
-            .clip(ListItemDefaults.shape(position))
-            .background(if (enabled) colors.containerColor else colors.disabledContainerColor)
-            .then(
-                if (onClick != null) {
-                    Modifier.clickable(
-                        interactionSource = interactionSource,
-                        indication = KotogramTheme.indication,
-                        enabled = enabled,
-                        onClick = onClick
-                    )
-                } else {
-                    Modifier
+    context(style) {
+        Row(
+            modifier = modifier
+                .clip(style.groupShape.at(position))
+                .background(if (enabled) style.containerColor else style.disabledContainerColor)
+                .then(
+                    if (onClick != null) {
+                        Modifier.clickable(
+                            interactionSource = interactionSource,
+                            indication = KotogramTheme.indication,
+                            enabled = enabled,
+                            onClick = onClick
+                        )
+                    } else {
+                        Modifier
+                    }
+                )
+                .onPlaced { rowStart = it.positionInRoot().x }
+                // Rows of a group are split under their text, as in Telegram for macOS's settings.
+                .drawBehind {
+                    if (hasDivider) {
+                        val y = size.height - style.dividerThickness.toPx() / 2
+                        drawLine(
+                            color = style.dividerColor,
+                            start = Offset(textStart - rowStart, y),
+                            end = Offset(size.width, y),
+                            strokeWidth = style.dividerThickness.toPx()
+                        )
+                    }
                 }
-            )
-            .onPlaced { rowStart = it.positionInRoot().x }
-            // Rows of a group are split under their text, as in Telegram for macOS's settings.
-            .drawBehind {
-                if (hasDivider) {
-                    val y = size.height - ListItemDefaults.DividerThickness.toPx() / 2
-                    drawLine(
-                        color = dividerColor,
-                        start = Offset(textStart - rowStart, y),
-                        end = Offset(size.width, y),
-                        strokeWidth = ListItemDefaults.DividerThickness.toPx()
-                    )
-                }
-            }
-            .heightIn(min = ListItemDefaults.MinHeight)
-            .padding(contentPadding),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        if (leadingContent != null) {
-            Box(Modifier.padding(end = ListItemDefaults.LeadingGap), contentAlignment = Alignment.Center) {
-                ProvideContent(colors.leading(enabled), typography.bodyLarge, leadingContent)
-            }
-        }
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .onPlaced { textStart = it.positionInRoot().x },
-            verticalArrangement = Arrangement.spacedBy(ListItemDefaults.LineGap)
+                .heightIn(min = style.minHeight)
+                .padding(style.contentPadding),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            if (overlineContent != null) {
-                ProvideContent(colors.overline(enabled), typography.labelSmall, overlineContent)
+            if (leadingContent != null) {
+                Box(Modifier.padding(end = style.leadingGap), contentAlignment = Alignment.Center) {
+                    ProvideContent(style.leadingColor.of(enabled), style.headlineTextStyle, leadingContent)
+                }
             }
-            ProvideContent(colors.headline(enabled), typography.bodyLarge, headlineContent)
-            if (supportingContent != null) {
-                ProvideContent(colors.supporting(enabled), typography.bodyMedium, supportingContent)
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .onPlaced { textStart = it.positionInRoot().x },
+                verticalArrangement = Arrangement.spacedBy(style.lineGap)
+            ) {
+                if (overlineContent != null) {
+                    ProvideContent(style.overlineColor.of(enabled), style.overlineTextStyle, overlineContent)
+                }
+                ProvideContent(style.headlineColor.of(enabled), style.headlineTextStyle, headlineContent)
+                if (supportingContent != null) {
+                    ProvideContent(style.supportingColor.of(enabled), style.supportingTextStyle, supportingContent)
+                }
             }
-        }
-        if (trailingContent != null) {
-            Box(Modifier.padding(start = ListItemDefaults.TrailingGap), contentAlignment = Alignment.Center) {
-                ProvideContent(colors.trailing(enabled), typography.bodyLarge, trailingContent)
+            if (trailingContent != null) {
+                Box(Modifier.padding(start = style.trailingGap), contentAlignment = Alignment.Center) {
+                    ProvideContent(style.trailingColor.of(enabled), style.headlineTextStyle, trailingContent)
+                }
             }
-        }
-    }
-}
-
-object ListItemDefaults {
-    val MinHeight: Dp = 44.dp
-
-    val ContentPadding: PaddingValues = PaddingValues(horizontal = 14.dp, vertical = 12.dp)
-
-    val LeadingGap: Dp = 12.dp
-
-    val TrailingGap: Dp = 10.dp
-
-    val LineGap: Dp = 2.dp
-
-    val DividerThickness: Dp = 1.dp
-
-    @Composable
-    fun colors(): ListItemColors = MaterialListItemDefaults.colors()
-
-    @Composable
-    fun shape(position: ListItemPosition?): Shape {
-        val shape = KotogramTheme.shapes.medium
-        return when (position) {
-            null -> RectangleShape
-            ListItemPosition.Single -> shape
-            ListItemPosition.First -> shape.copy(bottomStart = ZeroCornerSize, bottomEnd = ZeroCornerSize)
-            ListItemPosition.Middle -> RectangleShape
-            ListItemPosition.Last -> shape.copy(topStart = ZeroCornerSize, topEnd = ZeroCornerSize)
         }
     }
 }
+
+private fun CornerBasedShape.at(position: ListItemPosition?): Shape = when (position) {
+    null, ListItemPosition.Middle -> RectangleShape
+    ListItemPosition.Single -> this
+    ListItemPosition.First -> copy(bottomStart = ZeroCornerSize, bottomEnd = ZeroCornerSize)
+    ListItemPosition.Last -> copy(topStart = ZeroCornerSize, topEnd = ZeroCornerSize)
+}
+
+context(style: ListItemStyleScope)
+private fun Color.of(enabled: Boolean): Color = if (enabled) this else style.disabledContentColor
 
 @Composable
 private fun ProvideContent(color: Color, style: TextStyle, content: @Composable () -> Unit) {
@@ -160,19 +149,6 @@ private fun ProvideContent(color: Color, style: TextStyle, content: @Composable 
         content = content
     )
 }
-
-private fun ListItemColors.headline(enabled: Boolean) = if (enabled) contentColor else disabledContentColor
-
-private fun ListItemColors.leading(enabled: Boolean) = if (enabled) leadingContentColor else disabledLeadingContentColor
-
-private fun ListItemColors.trailing(enabled: Boolean) =
-    if (enabled) trailingContentColor else disabledTrailingContentColor
-
-private fun ListItemColors.overline(enabled: Boolean) =
-    if (enabled) overlineContentColor else disabledOverlineContentColor
-
-private fun ListItemColors.supporting(enabled: Boolean) =
-    if (enabled) supportingContentColor else disabledSupportingContentColor
 
 @KotogramPreview
 @Composable
@@ -197,5 +173,187 @@ private fun ListItemPreview() {
             trailingContent = { Switch(checked = true, onCheckedChange = null) },
             position = ListItemPosition.Last
         )
+    }
+}
+
+@KotogramLaptopPreview
+@Composable
+private fun ListItemLaptopPreview() = ListItemPreview()
+
+// Telegram for macOS's rows (GeneralRowItem: 12 and 14 inside) on every form factor, in Material 3's list colours.
+@Suppress("MagicNumber")
+fun interface ListItemStyle : ComponentStyle<ListItemStyleScope> {
+    companion object : ListItemStyle {
+        override fun ListItemStyleScope.applyStyle() {}
+
+        val Default = ListItemStyle {
+            minHeight(44.dp)
+            contentPadding(PaddingValues(horizontal = 14.dp, vertical = 12.dp))
+            leadingGap(12.dp)
+            trailingGap(10.dp)
+            lineGap(2.dp)
+            groupShape(theme.shapes.medium)
+            dividerThickness(1.dp)
+            dividerColor(theme.colors.outlineVariant)
+            containerColor(theme.colors.surface)
+            disabledContainerColor(theme.colors.surface)
+            headlineColor(theme.colors.onSurface)
+            overlineColor(theme.colors.onSurfaceVariant)
+            supportingColor(theme.colors.onSurfaceVariant)
+            leadingColor(theme.colors.onSurfaceVariant)
+            trailingColor(theme.colors.onSurfaceVariant)
+            disabledContentColor(theme.colors.onSurface.copy(alpha = 0.38f))
+            headlineTextStyle(theme.typography.bodyLarge)
+            overlineTextStyle(theme.typography.labelSmall)
+            supportingTextStyle(theme.typography.bodyMedium)
+        }
+    }
+}
+
+infix fun ListItemStyle.then(other: ListItemStyle): ListItemStyle = when {
+    other === ListItemStyle -> this
+    this === ListItemStyle -> other
+    else -> ListItemStyle {
+        with(this@then) { applyStyle() }
+        with(other) { applyStyle() }
+    }
+}
+
+class ListItemStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
+    AdaptiveStyleScope<ListItemStyleScope>,
+    StyleResolver by DefaultStyleResolver() {
+
+    var minHeight: Dp = Dp.Unspecified
+        private set
+
+    var contentPadding: PaddingValues = PaddingValues()
+        private set
+
+    var leadingGap: Dp = Dp.Unspecified
+        private set
+
+    var trailingGap: Dp = Dp.Unspecified
+        private set
+
+    var lineGap: Dp = Dp.Unspecified
+        private set
+
+    // The rounded ends of a group, from the first row to the last.
+    var groupShape: CornerBasedShape = RoundedCornerShape(0.dp)
+        private set
+
+    var dividerThickness: Dp = Dp.Unspecified
+        private set
+
+    var dividerColor: Color = Color.Unspecified
+        private set
+
+    var containerColor: Color = Color.Unspecified
+        private set
+
+    var disabledContainerColor: Color = Color.Unspecified
+        private set
+
+    var headlineColor: Color = Color.Unspecified
+        private set
+
+    var overlineColor: Color = Color.Unspecified
+        private set
+
+    var supportingColor: Color = Color.Unspecified
+        private set
+
+    var leadingColor: Color = Color.Unspecified
+        private set
+
+    var trailingColor: Color = Color.Unspecified
+        private set
+
+    var disabledContentColor: Color = Color.Unspecified
+        private set
+
+    var headlineTextStyle: TextStyle = TextStyle.Default
+        private set
+
+    var overlineTextStyle: TextStyle = TextStyle.Default
+        private set
+
+    var supportingTextStyle: TextStyle = TextStyle.Default
+        private set
+
+    fun minHeight(height: Dp) {
+        minHeight = height
+    }
+
+    fun contentPadding(padding: PaddingValues) {
+        contentPadding = padding
+    }
+
+    fun leadingGap(gap: Dp) {
+        leadingGap = gap
+    }
+
+    fun trailingGap(gap: Dp) {
+        trailingGap = gap
+    }
+
+    fun lineGap(gap: Dp) {
+        lineGap = gap
+    }
+
+    fun groupShape(shape: CornerBasedShape) {
+        groupShape = shape
+    }
+
+    fun dividerThickness(thickness: Dp) {
+        dividerThickness = thickness
+    }
+
+    fun dividerColor(color: Color) {
+        dividerColor = color
+    }
+
+    fun containerColor(color: Color) {
+        containerColor = color
+    }
+
+    fun disabledContainerColor(color: Color) {
+        disabledContainerColor = color
+    }
+
+    fun headlineColor(color: Color) {
+        headlineColor = color
+    }
+
+    fun overlineColor(color: Color) {
+        overlineColor = color
+    }
+
+    fun supportingColor(color: Color) {
+        supportingColor = color
+    }
+
+    fun leadingColor(color: Color) {
+        leadingColor = color
+    }
+
+    fun trailingColor(color: Color) {
+        trailingColor = color
+    }
+
+    fun disabledContentColor(color: Color) {
+        disabledContentColor = color
+    }
+
+    fun headlineTextStyle(style: TextStyle) {
+        headlineTextStyle = style
+    }
+
+    fun overlineTextStyle(style: TextStyle) {
+        overlineTextStyle = style
+    }
+
+    fun supportingTextStyle(style: TextStyle) {
+        supportingTextStyle = style
     }
 }

@@ -22,15 +22,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.xbot.kotogram.core.designsystem.KotogramLaptopPreview
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.core.designsystem.style.AdaptiveStyleScope
+import com.xbot.kotogram.core.designsystem.style.ComponentStyle
+import com.xbot.kotogram.core.designsystem.style.DefaultStyleResolver
+import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
+import com.xbot.kotogram.core.designsystem.style.StyleResolver
+import com.xbot.kotogram.core.designsystem.style.rememberStyle
 import com.xbot.kotogram.core.designsystem.theme.currentPlatform
 import androidx.compose.material3.Button as MaterialButton
-import androidx.compose.material3.ButtonDefaults as MaterialButtonDefaults
-import androidx.compose.material3.TextButton as MaterialTextButton
 
 enum class ButtonState {
     Enabled,
@@ -51,23 +61,12 @@ fun Button(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     state: ButtonState = ButtonState.Enabled,
-    shape: Shape = ButtonDefaults.shape,
-    colors: ButtonColors = ButtonDefaults.buttonColors(),
-    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
+    style: ButtonStyle = ButtonStyle,
     interactionSource: MutableInteractionSource? = null,
     content: @Composable RowScope.() -> Unit
 ) {
-    val source = interactionSource ?: remember { MutableInteractionSource() }
-    MaterialButton(
-        onClick = onClick,
-        modifier = modifier.then(pressFeedback(source)).heightIn(min = ButtonDefaults.MinHeight),
-        enabled = state == ButtonState.Enabled,
-        shape = shape,
-        colors = colors.during(state),
-        contentPadding = contentPadding,
-        interactionSource = source
-    ) {
-        ButtonContent(state, content)
+    context(rememberStyle(::ButtonStyleScope, ButtonStyle.Adaptive then style)) {
+        StyledButton(onClick, modifier, state, interactionSource, content)
     }
 }
 
@@ -76,45 +75,39 @@ fun TextButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     state: ButtonState = ButtonState.Enabled,
-    shape: Shape = ButtonDefaults.shape,
-    colors: ButtonColors = ButtonDefaults.textButtonColors(),
-    contentPadding: PaddingValues = ButtonDefaults.TextButtonContentPadding,
+    style: TextButtonStyle = TextButtonStyle,
     interactionSource: MutableInteractionSource? = null,
     content: @Composable RowScope.() -> Unit
 ) {
-    val source = interactionSource ?: remember { MutableInteractionSource() }
-    MaterialTextButton(
-        onClick = onClick,
-        modifier = modifier.then(pressFeedback(source)).heightIn(min = ButtonDefaults.MinHeight),
-        enabled = state == ButtonState.Enabled,
-        shape = shape,
-        colors = colors.during(state),
-        contentPadding = contentPadding,
-        interactionSource = source
-    ) {
-        // Telegram for macOS's text buttons are links in the regular weight, not Material's medium labels.
-        CompositionLocalProvider(LocalTextStyle provides KotogramTheme.typography.bodyLarge) {
-            ButtonContent(state, content)
-        }
+    context(rememberStyle(::ButtonStyleScope, TextButtonStyle.Adaptive then style)) {
+        StyledButton(onClick, modifier, state, interactionSource, content)
     }
 }
 
-object ButtonDefaults {
-    val MinHeight: Dp = 36.dp
-
-    val ContentPadding: PaddingValues = PaddingValues(horizontal = 15.dp, vertical = 6.dp)
-
-    val TextButtonContentPadding: PaddingValues = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
-
-    val ProgressSize: Dp = 18.dp
-
-    val shape: Shape = CircleShape
-
-    @Composable
-    fun buttonColors(): ButtonColors = MaterialButtonDefaults.buttonColors()
-
-    @Composable
-    fun textButtonColors(): ButtonColors = MaterialButtonDefaults.textButtonColors()
+@Composable
+context(style: ButtonStyleScope)
+internal fun StyledButton(
+    onClick: () -> Unit,
+    modifier: Modifier,
+    state: ButtonState,
+    interactionSource: MutableInteractionSource?,
+    content: @Composable RowScope.() -> Unit
+) {
+    val source = interactionSource ?: remember { MutableInteractionSource() }
+    MaterialButton(
+        onClick = onClick,
+        modifier = modifier.then(pressFeedback(source)).heightIn(min = style.minHeight),
+        enabled = state == ButtonState.Enabled,
+        shape = style.shape,
+        colors = style.buttonColors().during(state),
+        elevation = null,
+        contentPadding = style.contentPadding,
+        interactionSource = source
+    ) {
+        CompositionLocalProvider(LocalTextStyle provides style.textStyle) {
+            ButtonContent(state, content)
+        }
+    }
 }
 
 @Composable
@@ -129,6 +122,7 @@ private fun ButtonColors.during(state: ButtonState): ButtonColors = if (state ==
 }
 
 @Composable
+context(style: ButtonStyleScope)
 private fun ButtonContent(state: ButtonState, content: @Composable RowScope.() -> Unit) {
     Box(contentAlignment = Alignment.Center) {
         Row(
@@ -138,9 +132,10 @@ private fun ButtonContent(state: ButtonState, content: @Composable RowScope.() -
             content = content
         )
         if (state == ButtonState.Loading) {
+            val contentColor = LocalContentColor.current
             ProgressIndicator(
-                modifier = Modifier.size(ButtonDefaults.ProgressSize),
-                color = LocalContentColor.current
+                modifier = Modifier.size(style.progressSize),
+                style = remember(contentColor) { ProgressIndicatorStyle { color(contentColor) } }
             )
         }
     }
@@ -157,4 +152,159 @@ private fun ButtonPreview() {
             }
         }
     }
+}
+
+@KotogramLaptopPreview
+@Composable
+private fun ButtonLaptopPreview() = ButtonPreview()
+
+// Telegram for iOS's sign-in button on touch screens (SolidRoundedButtonNode: 50 high, 17 semibold, a 22 spinner);
+// Telegram for macOS's on a laptop (Auth_NextView: a pill at least 36 high, 15 on each side, 14 medium). The colours
+// are Material 3's filled button's.
+@Suppress("MagicNumber")
+fun interface ButtonStyle : ComponentStyle<ButtonStyleScope> {
+    companion object : ButtonStyle {
+        override fun ButtonStyleScope.applyStyle() {}
+
+        val Default = ButtonStyle {
+            minHeight(50.dp)
+            shape(CircleShape)
+            contentPadding(PaddingValues(horizontal = 24.dp, vertical = 6.dp))
+            containerColor(theme.colors.primary)
+            contentColor(theme.colors.onPrimary)
+            disabledContainerColor(theme.colors.onSurface.copy(alpha = 0.1f))
+            disabledContentColor(theme.colors.onSurfaceVariant.copy(alpha = 0.38f))
+            textStyle(theme.typography.labelLarge.merge(fontSize = 17.sp, fontWeight = FontWeight.SemiBold))
+            progressSize(22.dp)
+        }
+
+        val Adaptive = Default then ButtonStyle {
+            laptop {
+                minHeight(36.dp)
+                contentPadding(PaddingValues(horizontal = 15.dp, vertical = 6.dp))
+                textStyle(theme.typography.labelLarge)
+                progressSize(18.dp)
+            }
+        }
+    }
+}
+
+infix fun ButtonStyle.then(other: ButtonStyle): ButtonStyle = when {
+    other === ButtonStyle -> this
+    this === ButtonStyle -> other
+    else -> ButtonStyle {
+        with(this@then) { applyStyle() }
+        with(other) { applyStyle() }
+    }
+}
+
+// Telegram's text buttons are links in the regular weight, not Material's medium labels: Telegram for iOS's 16 on
+// touch screens (AuthorizationSequencePasswordEntryControllerNode), Telegram for macOS's 14 on a laptop. As high as
+// the filled button, so a screen can swap one for the other in place.
+@Suppress("MagicNumber")
+fun interface TextButtonStyle : ComponentStyle<ButtonStyleScope> {
+    companion object : TextButtonStyle {
+        override fun ButtonStyleScope.applyStyle() {}
+
+        val Default = TextButtonStyle {
+            minHeight(50.dp)
+            shape(CircleShape)
+            contentPadding(PaddingValues(horizontal = 12.dp, vertical = 6.dp))
+            containerColor(Color.Transparent)
+            contentColor(theme.colors.primary)
+            disabledContainerColor(Color.Transparent)
+            disabledContentColor(theme.colors.onSurfaceVariant.copy(alpha = 0.38f))
+            textStyle(theme.typography.bodyLarge.merge(fontSize = 16.sp))
+            progressSize(22.dp)
+        }
+
+        val Adaptive = Default then TextButtonStyle {
+            laptop {
+                minHeight(36.dp)
+                contentPadding(PaddingValues(horizontal = 10.dp, vertical = 6.dp))
+                textStyle(theme.typography.bodyLarge)
+                progressSize(18.dp)
+            }
+        }
+    }
+}
+
+infix fun TextButtonStyle.then(other: TextButtonStyle): TextButtonStyle = when {
+    other === TextButtonStyle -> this
+    this === TextButtonStyle -> other
+    else -> TextButtonStyle {
+        with(this@then) { applyStyle() }
+        with(other) { applyStyle() }
+    }
+}
+
+class ButtonStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
+    AdaptiveStyleScope<ButtonStyleScope>,
+    StyleResolver by DefaultStyleResolver() {
+
+    var minHeight: Dp = Dp.Unspecified
+        private set
+
+    var shape: Shape = RectangleShape
+        private set
+
+    var contentPadding: PaddingValues = PaddingValues()
+        private set
+
+    var containerColor: Color = Color.Unspecified
+        private set
+
+    var contentColor: Color = Color.Unspecified
+        private set
+
+    var disabledContainerColor: Color = Color.Unspecified
+        private set
+
+    var disabledContentColor: Color = Color.Unspecified
+        private set
+
+    var textStyle: TextStyle = TextStyle.Default
+        private set
+
+    var progressSize: Dp = Dp.Unspecified
+        private set
+
+    fun minHeight(height: Dp) {
+        minHeight = height
+    }
+
+    fun shape(shape: Shape) {
+        this.shape = shape
+    }
+
+    fun contentPadding(padding: PaddingValues) {
+        contentPadding = padding
+    }
+
+    fun containerColor(color: Color) {
+        containerColor = color
+    }
+
+    fun contentColor(color: Color) {
+        contentColor = color
+    }
+
+    fun disabledContainerColor(color: Color) {
+        disabledContainerColor = color
+    }
+
+    fun disabledContentColor(color: Color) {
+        disabledContentColor = color
+    }
+
+    fun textStyle(style: TextStyle) {
+        textStyle = style
+    }
+
+    fun progressSize(size: Dp) {
+        progressSize = size
+    }
+
+    internal fun buttonColors(): ButtonColors =
+        ButtonColors(containerColor, contentColor, disabledContainerColor, disabledContentColor)
 }

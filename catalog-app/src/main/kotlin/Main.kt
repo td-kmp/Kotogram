@@ -24,7 +24,14 @@ fun main(args: Array<String>) {
     nucleusApplication(args) {
         val systemDarkTheme = isSystemInDarkTheme()
         var darkTheme by remember {
-            mutableStateOf(System.getProperty("catalog.dark")?.toBooleanStrictOrNull() ?: systemDarkTheme)
+            mutableStateOf(
+                System.getProperty("catalog.dark")?.toBooleanStrictOrNull() ?: systemDarkTheme
+            )
+        }
+        var laptop by remember {
+            mutableStateOf(
+                System.getProperty("catalog.mobile")?.toBooleanStrictOrNull()?.not() ?: true
+            )
         }
         KotogramWindow(
             onCloseRequest = ::exitApplication,
@@ -48,6 +55,8 @@ fun main(args: Array<String>) {
             Catalog(
                 darkTheme = darkTheme,
                 onDarkThemeChange = { darkTheme = it },
+                laptop = laptop,
+                onLaptopChange = { laptop = it },
                 startPage = System.getProperty("catalog.page")
             )
         }

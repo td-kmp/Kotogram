@@ -13,8 +13,8 @@ internal class MacGlassButton(onClick: () -> Unit) {
             requireNotNull(ObjC.cls("NSButton")),
             "buttonWithTitle:target:action:",
             ObjC.string(""),
-            GlassButtonTarget.instance,
-            ObjC.sel(GlassButtonTarget.ACTION)
+            ControlTarget.instance,
+            ObjC.sel(ControlTarget.ACTION)
         )
     )
 
@@ -27,7 +27,7 @@ internal class MacGlassButton(onClick: () -> Unit) {
         ObjC.sendVoid(handle, "setBezelStyle:", BEZEL_STYLE_GLASS)
         ObjC.sendVoid(handle, "setControlSize:", CONTROL_SIZE_EXTRA_LARGE)
         ObjC.sendVoid(handle, "setTintProminence:", TINT_PROMINENCE_PRIMARY)
-        GlassButtonTarget.actions[Pointer.nativeValue(handle)] = onClick
+        ControlTarget.actions[Pointer.nativeValue(handle)] = onClick
         spinner.centerIn(handle)
     }
 
@@ -57,7 +57,7 @@ internal class MacGlassButton(onClick: () -> Unit) {
     }
 
     fun release() {
-        GlassButtonTarget.actions.remove(Pointer.nativeValue(handle))
+        ControlTarget.actions.remove(Pointer.nativeValue(handle))
         spinner.release()
         ObjC.sendVoid(handle, "release")
     }
@@ -96,19 +96,6 @@ internal class MacGlassButton(onClick: () -> Unit) {
                 ObjC.sendBoolean(button, "instancesRespondToSelector:", ObjC.sel("setTintProminence:"))
             }.getOrDefault(false)
         }
-    }
-}
-
-private object GlassButtonTarget {
-    const val ACTION = "click:"
-
-    val actions = HashMap<Long, () -> Unit>()
-
-    private val imp = ObjC.ActionImp { _, _, sender -> actions[Pointer.nativeValue(sender)]?.invoke() }
-
-    val instance: Pointer by lazy {
-        val cls = ObjC.actionClass("KotogramGlassButtonTarget", ACTION, imp)
-        requireNotNull(ObjC.send(requireNotNull(ObjC.send(cls, "alloc")), "init"))
     }
 }
 

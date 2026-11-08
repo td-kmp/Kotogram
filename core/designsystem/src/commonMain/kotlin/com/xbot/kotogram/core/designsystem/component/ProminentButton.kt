@@ -2,7 +2,6 @@ package com.xbot.kotogram.core.designsystem.component
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.Text
@@ -16,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.Dp
+import com.xbot.kotogram.core.designsystem.style.rememberStyle
 
 @Composable
 fun ProminentButton(
@@ -23,11 +23,11 @@ fun ProminentButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     state: ButtonState = ButtonState.Enabled,
-    colors: ButtonColors = ButtonDefaults.buttonColors(),
-    contentPadding: PaddingValues = ButtonDefaults.ContentPadding
+    style: ButtonStyle = ButtonStyle
 ) {
+    val buttonStyle = rememberStyle(::ButtonStyleScope, ButtonStyle.Adaptive then style)
     with(LocalProminentButtonOverride.current) {
-        ProminentButtonOverrideScope(text, onClick, modifier, state, colors, contentPadding).ProminentButton()
+        ProminentButtonOverrideScope(text, onClick, modifier, state, buttonStyle).ProminentButton()
     }
 }
 
@@ -41,21 +41,18 @@ internal class ProminentButtonOverrideScope(
     val onClick: () -> Unit,
     val modifier: Modifier,
     val state: ButtonState,
-    val colors: ButtonColors,
-    val contentPadding: PaddingValues
-)
+    val buttonStyle: ButtonStyleScope
+) {
+    val colors: ButtonColors get() = buttonStyle.buttonColors()
+}
 
 internal object DefaultProminentButtonOverride : ProminentButtonOverride {
     @Composable
     override fun ProminentButtonOverrideScope.ProminentButton() {
-        Button(
-            onClick = onClick,
-            modifier = modifier,
-            state = state,
-            colors = colors,
-            contentPadding = contentPadding
-        ) {
-            Text(text)
+        context(buttonStyle) {
+            StyledButton(onClick = onClick, modifier = modifier, state = state, interactionSource = null) {
+                Text(text)
+            }
         }
     }
 }
@@ -63,6 +60,7 @@ internal object DefaultProminentButtonOverride : ProminentButtonOverride {
 internal val LocalProminentButtonOverride: ProvidableCompositionLocal<ProminentButtonOverride> =
     staticCompositionLocalOf { DefaultProminentButtonOverride }
 
+// The invisible Compose button gives the native one its size, from the same style.
 @Composable
 internal fun ProminentButtonOverrideScope.NativeBox(content: @Composable BoxScope.() -> Unit) {
     Box(
@@ -77,8 +75,7 @@ internal fun ProminentButtonOverrideScope.NativeBox(content: @Composable BoxScop
                     onClick = {},
                     modifier = Modifier.alpha(0f).clearAndSetSemantics {},
                     state = ButtonState.Disabled,
-                    colors = colors,
-                    contentPadding = contentPadding
+                    buttonStyle = buttonStyle
                 ).ProminentButton()
             }
         }

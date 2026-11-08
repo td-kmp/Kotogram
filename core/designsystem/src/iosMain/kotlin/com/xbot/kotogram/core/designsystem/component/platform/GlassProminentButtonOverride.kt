@@ -3,10 +3,8 @@ package com.xbot.kotogram.core.designsystem.component.platform
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.component.ButtonState
@@ -19,11 +17,7 @@ import com.xbot.kotogram.core.designsystem.extensions.contentColor
 import com.xbot.kotogram.core.designsystem.extensions.isDark
 import com.xbot.kotogram.core.designsystem.extensions.toUIColor
 import kotlinx.cinterop.BetaInteropApi
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.cValue
 import platform.Foundation.NSAttributedString
-import platform.Foundation.NSOperatingSystemVersion
-import platform.Foundation.NSProcessInfo
 import platform.Foundation.create
 import platform.UIKit.NSFontAttributeName
 import platform.UIKit.NSForegroundColorAttributeName
@@ -33,16 +27,14 @@ import platform.UIKit.UIButtonConfiguration
 import platform.UIKit.UIButtonConfigurationCornerStyleCapsule
 import platform.UIKit.UIColor
 import platform.UIKit.UIFont
-import platform.UIKit.UIUserInterfaceStyle
-import platform.UIKit.UIView
 import platform.UIKit.accessibilityLabel
 
 internal object GlassProminentButtonOverride : ProminentButtonOverride {
     @Composable
     override fun ProminentButtonOverrideScope.ProminentButton() {
         val currentOnClick by rememberUpdatedState(onClick)
-        val style = KotogramTheme.typography.labelLarge
-        val fontSize = with(LocalDensity.current) { style.fontSize.toDp().value.toDouble() }
+        val textStyle = buttonStyle.textStyle
+        val fontSize = with(LocalDensity.current) { textStyle.fontSize.toDp().value.toDouble() }
         val dark = KotogramTheme.colors.background.isDark()
         val inFront = isSettledInFront()
         NativeBox {
@@ -57,16 +49,12 @@ internal object GlassProminentButtonOverride : ProminentButtonOverride {
                 update = { button ->
                     button.configuration = glassConfiguration(
                         title = text.takeUnless { state == ButtonState.Loading },
-                        font = UIFont.systemFontOfSize(fontSize, style.fontWeight.appleWeight()),
+                        font = UIFont.systemFontOfSize(fontSize, textStyle.fontWeight.appleWeight()),
                         color = colors.contentColor(state).toUIColor(),
                         loading = state == ButtonState.Loading
                     )
                     button.tintColor = colors.containerColor(state).toUIColor()
-                    button.overrideUserInterfaceStyle = if (dark) {
-                        UIUserInterfaceStyle.UIUserInterfaceStyleDark
-                    } else {
-                        UIUserInterfaceStyle.UIUserInterfaceStyleLight
-                    }
+                    button.overrideUserInterfaceStyle = interfaceStyle(dark)
                     button.userInteractionEnabled = state == ButtonState.Enabled && inFront
                     button.accessibilityLabel = text
                     fade(button, visible = inFront)
@@ -90,25 +78,3 @@ private fun glassConfiguration(title: String?, font: UIFont, color: UIColor, loa
         showsActivityIndicator = loading
         cornerStyle = UIButtonConfigurationCornerStyleCapsule
     }
-
-private fun fade(view: UIView, visible: Boolean) {
-    val alpha = if (visible) 1.0 else 0.0
-    if (view.alpha != alpha) UIView.animateWithDuration(FADE_SECONDS) { view.alpha = alpha }
-}
-
-@OptIn(ExperimentalComposeUiApi::class)
-private val GlassProperties =
-    UIKitInteropProperties(isNativeAccessibilityEnabled = true, placedAsOverlay = true)
-
-@OptIn(ExperimentalForeignApi::class)
-internal val hasLiquidGlass: Boolean = NSProcessInfo.processInfo.isOperatingSystemAtLeastVersion(
-    cValue<NSOperatingSystemVersion> {
-        majorVersion = LIQUID_GLASS_IOS_VERSION
-        minorVersion = 0
-        patchVersion = 0
-    }
-)
-
-private const val LIQUID_GLASS_IOS_VERSION = 26L
-
-private const val FADE_SECONDS = 0.2

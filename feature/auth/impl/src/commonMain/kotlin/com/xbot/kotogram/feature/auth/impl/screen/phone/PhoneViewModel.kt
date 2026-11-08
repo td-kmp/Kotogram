@@ -70,7 +70,7 @@ internal class PhoneViewModel(
     private suspend fun Syntax<PhoneScreenState, PhoneScreenSideEffect>.loadCountries() {
         val countries = countryRepository.getCountries().getOrNull().orEmpty()
             .filterNot { it.isHidden }
-            .sortedBy { it.name }
+            .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name })
         reduce { state.copy(countries = countries) }
         if (phoneNumber.text.isEmpty()) {
             val detected = countryRepository.getCountryCode().getOrNull()

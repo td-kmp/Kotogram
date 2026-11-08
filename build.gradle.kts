@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.multiplatform.library) apply false
@@ -21,6 +23,19 @@ spotless {
     kotlinGradle {
         target(sourceTree("**/*.gradle.kts"))
         ktlint(libs.versions.ktlint.get())
+    }
+}
+
+// Kotlin 2.4's experimental KEEP features; local type aliases and companion blocks would mark every binary pre-release.
+subprojects {
+    tasks.withType(KotlinCompilationTask::class.java).configureEach {
+        compilerOptions.freeCompilerArgs.addAll(
+            "-Xcollection-literals",
+            "-Xcontext-sensitive-resolution",
+            "-Xexplicit-context-arguments",
+            "-Xname-based-destructuring=only-syntax",
+            "-Xreturn-value-checker=check"
+        )
     }
 }
 

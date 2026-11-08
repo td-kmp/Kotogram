@@ -16,11 +16,15 @@ import com.xbot.kotogram.catalog.pages.CatalogPages
 import com.xbot.kotogram.catalog.ui.CatalogHome
 import com.xbot.kotogram.catalog.ui.CatalogPageScreen
 import com.xbot.kotogram.catalog.ui.CatalogTopBar
+import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.core.designsystem.style.ProvideFormFactor
 
 @Composable
 fun Catalog(
     darkTheme: Boolean,
     onDarkThemeChange: (Boolean) -> Unit,
+    laptop: Boolean,
+    onLaptopChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     startPage: String? = null
 ) {
@@ -31,7 +35,8 @@ fun Catalog(
     }
     val current = backStack.last()
     val onBack: () -> Unit = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) }
-    Surface(modifier.fillMaxSize()) {
+    // The window's title bar is the background colour; so is everything under it.
+    Surface(modifier.fillMaxSize(), color = KotogramTheme.colors.background) {
         Column {
             CatalogTopBar(
                 title = when (current) {
@@ -40,28 +45,32 @@ fun Catalog(
                 },
                 onBack = onBack.takeIf { backStack.size > 1 },
                 darkTheme = darkTheme,
-                onDarkThemeChange = onDarkThemeChange
+                onDarkThemeChange = onDarkThemeChange,
+                laptop = laptop,
+                onLaptopChange = onLaptopChange
             )
-            NavDisplay(
-                backStack = backStack,
-                onBack = onBack,
-                entryProvider = entryProvider {
-                    entry<CatalogKey.Home> {
-                        CatalogHome(
-                            pages = CatalogPages,
-                            onPageClick = { backStack.add(CatalogKey.Page(it.id)) }
-                        )
+            ProvideFormFactor(laptop) {
+                NavDisplay(
+                    backStack = backStack,
+                    onBack = onBack,
+                    entryProvider = entryProvider {
+                        entry<CatalogKey.Home> {
+                            CatalogHome(
+                                pages = CatalogPages,
+                                onPageClick = { backStack.add(CatalogKey.Page(it.id)) }
+                            )
+                        }
+                        entry<CatalogKey.Page> { key ->
+                            CatalogPageScreen(
+                                page = key.page,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .verticalScroll(rememberScrollState())
+                            )
+                        }
                     }
-                    entry<CatalogKey.Page> { key ->
-                        CatalogPageScreen(
-                            page = key.page,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .verticalScroll(rememberScrollState())
-                        )
-                    }
-                }
-            )
+                )
+            }
         }
     }
 }

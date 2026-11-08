@@ -33,7 +33,7 @@ internal object MacSpinnerOverride : ProgressIndicatorOverride {
             },
             modifier = modifier.onSizeChanged { large = with(density) { it.height.toDp() } >= LargeSize },
             update = {
-                indicator.setColor(color, background)
+                indicator.setColor(style.color, background)
                 indicator.setLarge(large)
                 indicator.setVisible(inFront)
                 indicator.setAnimating(true)

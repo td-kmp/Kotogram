@@ -22,6 +22,7 @@ import com.xbot.kotogram.core.designsystem.icon.KotogramIcons
 private val Common = listOf(
     "Back" to KotogramIcons.Back,
     "Close" to KotogramIcons.Close,
+    "Cross" to KotogramIcons.Cross,
     "Clear" to KotogramIcons.Clear,
     "Search" to KotogramIcons.Search,
     "ChevronDown" to KotogramIcons.ChevronDown,

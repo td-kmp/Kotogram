@@ -1,12 +1,14 @@
-# Handoff (2026-11-07)
+# Handoff (2026-11-08)
 
 For the next agent or machine. Durable rules are in [CLAUDE.md](../CLAUDE.md). This file is status: replace it when it goes stale.
 
 ## Where things stand
 
-**KTG-7 is in the working tree on `refactoring/KTG-7-multiaccount-koin`, uncommitted.** The developer brought a new multi-account design and asked to delete everything except the UI and rebuild on it. KTG-6 and everything before it are at `ba53a20` on `feature/KTG-1-login`, pushed.
+**KTG-7 is on `refactoring/KTG-7-multiaccount-koin`, committed and pushed; no PR yet.** The developer brought a new multi-account design and asked to delete everything except the UI and rebuild on it. KTG-6 and everything before it are at `ba53a20` on `feature/KTG-1-login`, pushed.
 
 Checked on 2026-11-07: all 85 JVM tests pass (`KoinGraphTest` on real TDLib included), detekt is clean, and `shared` compiles for Android, the iOS simulator and the web (`compileAndroidMain compileKotlinIosSimulatorArm64 compileKotlinWasmJs`). `jvm-app` ran on the desktop: the login screen offered "Продолжить на русском" for a `ru-RU` system, and a stored `ru` started the next run in Russian. `AndroidDatabaseKeys` has never run.
+
+Checked on 2026-11-08: `core:designsystem` builds for Android, the JVM, the iOS simulator and the iPhone; the catalog's 56 screenshot tests match; the catalog ran on the desktop with AppKit's glass icon button, checkbox and switch. The country picker ran on an Android phone (debug) before its drag handle went; the APK after that is built, not installed. A release build is installed on an iPhone Air and hasn't been looked at.
 
 Next task number after it: **KTG-8**.
 
@@ -32,9 +34,12 @@ Next task number after it: **KTG-8**.
 - **`ProminentButton`**: the main action of each auth screen. It is UIKit's prominent glass button on iOS 26 and later and the filled `Button` elsewhere ([design/designsystem.md](design/designsystem.md#components)). It compiles for iOS but hasn't run on a device or simulator: this Mac has no iOS simulator runtime. On macOS 26 it is AppKit's glass `NSButton` above the Compose surface (Nucleus's `NativeView` with our `placedAsOverlay`); in the catalog, real clicks press it, light it, click it and show its spinner.
 - **`CodeField`** in `core:designsystem`: the sign-in code as Telegram for macOS's `CodeEntryControl`, on a `TextFieldState` ([design/designsystem.md](design/designsystem.md#components)). `CodeScreen` still uses `OutlinedTextField`.
 - **`catalog-app`**: the design system's catalog on the desktop, with Roborazzi screenshot tests of every page (`recordRoborazziJvm`, `verifyRoborazziJvm`; [design/designsystem.md](design/designsystem.md#catalog)).
-- **Text fields** in `core:designsystem` (`component/TextField`): `TextField` and `SecureTextField` take only a `TextFieldState`. They have M3's state-based parameters and `TextFieldColors`, plus `title` and `suggestion` above the field. They look like Telegram for macOS's inputs: 40 high, radius 10, supporting text 10 below and red with `isError`. The focus ring is on by default only on Android and iOS (not `currentPlatform.isDesktop`). The auth screens still use M3's `OutlinedTextField`.
+- **Text fields** in `core:designsystem` (`component/TextField`): `TextField` and `SecureTextField` take only a `TextFieldState`. They have M3's state-based parameters, plus `title` and `suggestion` above the field. On a laptop they look like Telegram for macOS's inputs: 40 high, radius 10, supporting text 10 below and red with `isError`; on touch screens they are 50 high with 17-point text and a focus ring. The auth screens still use M3's `OutlinedTextField`.
 - **Start-up as in Telegram's apps:** a blank `SplashScreen`; Android holds its system splash (`core-splashscreen`) while `isStarting()`, i.e. until TDLib reports where the shown account stands, and the web page has the theme's background while the wasm loads.
 - **Language packs as a feature** ([design/localization.md](design/localization.md)): `core:account` lost its language classes and got extension points instead (`TdlibOptions`, `AppClient`, `AppStorage`, `AppCoroutineScope`); `feature:language:{domain,data,impl}` keeps the whole chosen pack in memory; `core:resources` reads it through the `Localization` port, without `core:account`, `runBlocking` or a Flow per string; plurals are `<plurals>`; "Continue in …" is part of `AuthScreen`.
+- **Media queries and adaptive styles** ([design/designsystem.md](design/designsystem.md#media-queries)): `media/` is androidx-main's `UiMediaScope` (`WindowPosture`, no `platformFeatures`) with the official scopes copied per platform, Google's on Android and CMP 1.13's elsewhere; `MediaQueryInfo` and `style/ComponentStyles` are Material 3's form factor and style stand-in. Every component and the phone, QR and language-suggestion screens have `Default`/`Adaptive` styles with `laptop {}`, every value of their look in the style, passed to their parts as a context parameter; components take one `style` parameter over their default and otherwise only state, as M3's styled `Button` (aosp/4375293). Buttons own their height (50 on touch screens, 36 on a laptop). On touch screens the fields are larger, the phone field a card as on the desktop. `@KotogramLaptopPreview` and the catalog's Mobile switch show either look. iOS reports no fold: iOS 27.1's hinge API isn't in Kotlin 2.4.20's UIKit.
+- **Native controls and the country picker** ([design/designsystem.md](design/designsystem.md#components)): `IconButton` and `GlassIconButton` (UIKit's and AppKit's glass on iOS 26 and macOS 26), `TopBar`, `SearchField` (glass on iOS 26), `FastScroller` (`SectionIndex` on iOS, `ScrollThumb` elsewhere), `BottomSheet` (UIKit's page sheet on iOS; `dismiss()` hides it with its animation), `Checkbox` and `Switch` (AppKit's on macOS, `UISwitch` on iOS), and `OptionPicker` made of them, which the phone screen picks its country with; `KotogramIcons.Cross`. The catalog has a page for each, its own bar is `TopBar`, and it is in the window frame's colour.
+- **Kotlin's experimental KEEP features are on everywhere** (root `build.gradle.kts`): collection literals, context-sensitive resolution, explicit context arguments, name-based destructuring (`only-syntax`) and the return value checker (`check`). Context parameters, explicit backing fields, nested type aliases, `@all`, guards and the rest are stable in 2.4. Local type aliases and companion blocks stay off: they mark binaries pre-release, which a release compiler won't read from another module.
 - **Desktop window as Telegram for macOS's** (`AppDelegate.swift`, `ApplicationContext.swift`): 700×550 at the centre on start, never smaller than 380×550, no maximum (Nucleus's `minimumSize`). macOS also restores the last frame and, without one, takes 800×650 after the first sign-in; neither is done.
 - **Polish:** comments only on hacks and workarounds. Each screen keeps its state, actions and side effects in files of their own, and the splash screen moved to `shared/screen/splash`.
 - **New:** a database key per account on Android (Keystore), `android:allowBackup="false"`, and data under `accounts/N/{db,files}`. Old `tdlib/account-N` directories aren't migrated, so an existing install logs in again.
@@ -64,7 +69,7 @@ Waiting on the developer: **D3, push.** Log in at my.telegram.org and check whet
 
 ## Next steps, in order
 
-1. Build and test (above), then commit.
+1. Look at the release build on the iPhone: the country picker (page sheet, glass search at the bottom, the A–Я index), `GlassIconButton`, `UISwitch` and `ProminentButton`'s glass. Then a PR for KTG-7.
 2. A small account menu in the chat list (add, switch, log out), so multi-account can be tried by hand.
 3. Try it with a real account, and get D3.
 4. Finish M1: avatars (`FileStore`, `FileDownloads`, Coil fetcher, §7 of [messaging-core.md](design/messaging-core.md)), folders, typing, scope mute settings. Its entities use the old names: `FileStore` and the like become `AccountUpdates` followers.
@@ -72,7 +77,7 @@ Waiting on the developer: **D3, push.** Log in at my.telegram.org and check whet
 6. Web: `index.html` has no favicon.
 7. Languages: a list in settings, and a message when a switch fails ([design/localization.md](design/localization.md), "Not done yet"). Measure the pack's load on a slow Android phone (`LanguageRepository` logs it).
 8. The other auth screens onto `TextField` and `CodeField`, with each `TextFieldState` in the ViewModel as on the phone screen.
-9. `ProminentButton`: check the glass on an iOS 26 device. Nucleus's `placedAsOverlay`: open a GitHub discussion (their rule for features), then a PR to `nucleus-3.0` (Windows and Linux ignore the flag for now; keep the old `NativeView` signature as a hidden overload).
+9. Nucleus's `placedAsOverlay`: open a GitHub discussion (their rule for features), then a PR to `nucleus-3.0` (Windows and Linux ignore the flag for now; keep the old `NativeView` signature as a hidden overload).
 
 ## What is not done, or weak
 
@@ -82,6 +87,9 @@ Waiting on the developer: **D3, push.** Log in at my.telegram.org and check whet
 
 ## Also true
 
+- **APK size** (2026-11-08): debug 120 MB, R8 release 94.6 MB, of which TDLib for four ABIs is 89.6 MB (already stripped) and the dex 3.9 MB. arm64-v8a alone would be about 28 MB: ABI splits or an App Bundle.
+- `ios-app.xcscheme` has an uncommitted change from 2026-11-07 22:17 that drops Archive, Test and Profile from the shared scheme; it was left out of the commit.
+- Builds run with `--no-daemon -Pkotlin.compiler.execution.strategy=in-process`: the developer's 16 GB Mac swaps with Android Studio and leftover daemons.
 - `docs/research/`, `docs/design/sessions.md`, `accounts.md` and `messaging-core.md` use older module and class names and are kept for the reasoning.
 - **Nucleus is `dev`, a local build that isn't published** (2026-11-07): branch `feature/native-view-overlay` of `~/AndroidStudioProjects/Nucleus`, cut from `nucleus-3.0` at `50f64808`, not committed yet. It adds `NativeView(placedAsOverlay = true)` on macOS. The macOS natives come from that commit's CI artifact `natives-macos` (`gh run download 42389053280 -n natives-macos` into the clone; there is no Rust here), with `libnucleus_tao_macos_native_view.dylib` rebuilt by `clang` as its `build.sh` does. Publish with `GITHUB_REF=refs/tags/vdev CI=true ./gradlew publishAllToMavenLocal --no-configuration-cache` (the version comes only from `GITHUB_REF`; `CI` keeps the prebuilt natives), with `sdk.dir` in its `local.properties`. `settings.gradle.kts` reads `dev.nucleusframework` from `mavenLocal()` for plugins and libraries.
 - **`tdlib-kmp` is `1.8.69-1.0.0-alpha03`, a local build that isn't published** (2026-11-07): branch `bugfix/td-receiver` of the local clone, cut from the tag `v1.8.69-1.0.0-alpha02` and not committed yet, `./gradlew publishToMavenLocal` there. `settings.gradle.kts` reads `io.github.xephosbot` from `mavenLocal()` first, so another machine has to build it the same way. Its API is alpha02's; inside, requests reach TDLib in the order `send` was called, an answer is decoded by its request and not in the receive loop, and `TdObject`'s serializer is built once (0.7 ms an event before). Once alpha03 is on Maven Central, drop `mavenLocal()`.

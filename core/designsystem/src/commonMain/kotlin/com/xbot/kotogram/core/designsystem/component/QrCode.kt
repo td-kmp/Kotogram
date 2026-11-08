@@ -3,7 +3,9 @@ package com.xbot.kotogram.core.designsystem.component
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.togetherWith
@@ -13,9 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.painter.Painter
@@ -31,6 +32,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.core.designsystem.style.AdaptiveStyleScope
+import com.xbot.kotogram.core.designsystem.style.ComponentStyle
+import com.xbot.kotogram.core.designsystem.style.DefaultStyleResolver
+import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
+import com.xbot.kotogram.core.designsystem.style.StyleResolver
+import com.xbot.kotogram.core.designsystem.style.rememberStyle
 import com.xbot.kotogram.core.resources.Res
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.DotLottie
@@ -50,78 +57,50 @@ fun QrCode(
     data: String?,
     contentDescription: String?,
     modifier: Modifier = Modifier,
-    shape: Shape = QrCodeDefaults.shape,
-    colors: QrCodeColors = QrCodeDefaults.colors()
+    style: QrCodeStyle = QrCodeStyle
 ) {
+    @Suppress("NAME_SHADOWING")
+    val style = rememberStyle(::QrCodeStyleScope, QrCodeStyle.Default then style)
     val revealed = rememberRevealedData(data)
-    Surface(
-        modifier = modifier.size(QrCodeDefaults.Size),
-        shape = shape,
-        color = colors.containerColor,
-        contentColor = colors.contentColor
-    ) {
-        // Opaque layers, the last kept under the next as it fades in: what both draw stays still, as on macOS.
-        AnimatedContent(
-            targetState = revealed,
-            transitionSpec = {
-                fadeIn(tween(QrCodeTokens.REVEAL_MILLIS, easing = FastOutSlowInEasing)) togetherWith
-                    ExitTransition.KeepUntilTransitionsFinished
-            },
-            contentKey = { it != null },
-            label = "QrCode"
-        ) { shown ->
-            if (shown == null) {
-                QrPlaceholder(colors = colors, modifier = Modifier.fillMaxSize())
-            } else {
-                AnimatedContent(
-                    targetState = shown,
-                    transitionSpec = {
-                        fadeIn(tween(QrCodeTokens.REFRESH_MILLIS, easing = LinearEasing)) togetherWith
-                            ExitTransition.KeepUntilTransitionsFinished
-                    },
-                    label = "QrCodeRefresh"
-                ) { code ->
-                    QrImage(
-                        data = code,
-                        contentDescription = contentDescription,
-                        contentColor = colors.contentColor,
-                        containerColor = colors.containerColor,
-                        modifier = Modifier.fillMaxSize()
-                    )
+    context(style) {
+        QrCodeSurface(modifier) {
+            // Opaque layers, the last kept under the next as it fades in: what both draw stays still, as on macOS.
+            AnimatedContent(
+                targetState = revealed,
+                transitionSpec = {
+                    fadeIn(style.revealSpec) togetherWith ExitTransition.KeepUntilTransitionsFinished
+                },
+                contentKey = { it != null },
+                label = "QrCode"
+            ) { shown ->
+                if (shown == null) {
+                    QrPlaceholder(Modifier.fillMaxSize())
+                } else {
+                    AnimatedContent(
+                        targetState = shown,
+                        transitionSpec = {
+                            fadeIn(style.refreshSpec) togetherWith ExitTransition.KeepUntilTransitionsFinished
+                        },
+                        label = "QrCodeRefresh"
+                    ) { code ->
+                        QrImage(data = code, contentDescription = contentDescription, modifier = Modifier.fillMaxSize())
+                    }
                 }
             }
         }
     }
 }
 
-@Suppress("MagicNumber")
-object QrCodeDefaults {
-    val Size: Dp = 210.dp
-
-    val shape: Shape
-        @Composable @ReadOnlyComposable
-        get() = KotogramTheme.shapes.medium
-
-    // Dark on light in any theme: scanners read that best.
-    @Composable
-    fun colors(
-        containerColor: Color = Color.White,
-        contentColor: Color = Color.Black
-    ): QrCodeColors = QrCodeColors(containerColor = containerColor, contentColor = contentColor)
-}
-
-@Immutable
-class QrCodeColors(val containerColor: Color, val contentColor: Color) {
-    fun copy(
-        containerColor: Color = this.containerColor,
-        contentColor: Color = this.contentColor
-    ): QrCodeColors = QrCodeColors(containerColor = containerColor, contentColor = contentColor)
-
-    override fun equals(other: Any?): Boolean = other is QrCodeColors &&
-        containerColor == other.containerColor &&
-        contentColor == other.contentColor
-
-    override fun hashCode(): Int = 31 * containerColor.hashCode() + contentColor.hashCode()
+@Composable
+context(style: QrCodeStyleScope)
+private fun QrCodeSurface(modifier: Modifier, content: @Composable () -> Unit) {
+    Surface(
+        modifier = modifier.size(style.size),
+        shape = style.shape,
+        color = style.containerColor,
+        contentColor = style.contentColor,
+        content = content
+    )
 }
 
 @Composable
@@ -136,9 +115,8 @@ private fun rememberRevealedData(data: String?): String? {
             }
 
             shown == null -> {
-                val wait = QrCodeTokens.PLACEHOLDER_MILLIS.milliseconds -
-                    placeholderSince.elapsedNow()
-                delay(maxOf(QrCodeTokens.MIN_WAIT_MILLIS.milliseconds, wait))
+                val wait = PLACEHOLDER_MILLIS.milliseconds - placeholderSince.elapsedNow()
+                delay(maxOf(MIN_WAIT_MILLIS.milliseconds, wait))
                 shown = data
             }
 
@@ -149,9 +127,10 @@ private fun rememberRevealedData(data: String?): String? {
 }
 
 @Composable
-private fun QrPlaceholder(colors: QrCodeColors, modifier: Modifier = Modifier) {
+context(style: QrCodeStyleScope)
+private fun QrPlaceholder(modifier: Modifier = Modifier) {
     val composition by rememberLottieComposition {
-        LottieCompositionSpec.DotLottie(Res.readBytes(QrCodeTokens.PLACEHOLDER_PATH))
+        LottieCompositionSpec.DotLottie(Res.readBytes(PLACEHOLDER_PATH))
     }
     Image(
         painter = rememberLottiePainter(
@@ -159,22 +138,18 @@ private fun QrPlaceholder(colors: QrCodeColors, modifier: Modifier = Modifier) {
             iterations = Compottie.IterateForever
         ),
         contentDescription = null,
-        colorFilter = ColorFilter.tint(colors.contentColor),
+        colorFilter = ColorFilter.tint(style.contentColor),
         modifier = modifier
-            .background(colors.containerColor)
-            .layoutOnQrGrid(QrCodeTokens.PLACEHOLDER_MODULES, QrCodeTokens.ContentPadding)
+            .background(style.containerColor)
+            .layoutOnQrGrid(PLACEHOLDER_MODULES, style.contentPadding)
     )
 }
 
 @Composable
-private fun QrImage(
-    data: String,
-    contentDescription: String?,
-    contentColor: Color,
-    containerColor: Color,
-    modifier: Modifier = Modifier
-) {
-    val spec = remember(data) { qrCodeSpec(data, QrCodeTokens.PLACEHOLDER_MODULES) }
+context(style: QrCodeStyleScope)
+private fun QrImage(data: String, contentDescription: String?, modifier: Modifier = Modifier) {
+    val contentColor = style.contentColor
+    val spec = remember(data) { qrCodeSpec(data, PLACEHOLDER_MODULES) }
     // An empty logo keeps the cutout for an icon to come.
     val cutout = remember { EmptyPainter() }
     val painter = rememberQrCodePainter(data, spec, contentColor) {
@@ -197,8 +172,8 @@ private fun QrImage(
         painter = painter,
         contentDescription = contentDescription,
         modifier = modifier
-            .background(containerColor)
-            .layoutOnQrGrid(spec.modules, QrCodeTokens.ContentPadding)
+            .background(style.containerColor)
+            .layoutOnQrGrid(spec.modules, style.contentPadding)
     )
 }
 
@@ -208,33 +183,103 @@ private class EmptyPainter : Painter() {
     override fun DrawScope.onDraw() = Unit
 }
 
-@Suppress("MagicNumber")
-private object QrCodeTokens {
-    val ContentPadding = 12.dp
-
-    const val PLACEHOLDER_PATH = "files/qr_placeholder.lottie"
-    const val PLACEHOLDER_MODULES = 37
-    const val REVEAL_MILLIS = 1_200
-    const val REFRESH_MILLIS = 200
-    const val PLACEHOLDER_MILLIS = 3_000L
-    const val MIN_WAIT_MILLIS = 1_000L
-}
+private const val PLACEHOLDER_PATH = "files/qr_placeholder.lottie"
+private const val PLACEHOLDER_MODULES = 37
+private const val PLACEHOLDER_MILLIS = 3_000L
+private const val MIN_WAIT_MILLIS = 1_000L
 
 @KotogramPreview
 @Composable
 private fun QrCodePreview() {
-    val colors = QrCodeDefaults.colors()
-    Surface(
-        modifier = Modifier.size(QrCodeDefaults.Size),
-        shape = QrCodeDefaults.shape,
-        color = colors.containerColor
-    ) {
-        QrImage(
-            data = "tg://login?token=AQFJjO1qHocdoolqLtckd6dPS98k1HhnVDFilU_N_v6psw",
-            contentDescription = null,
-            contentColor = colors.contentColor,
-            containerColor = colors.containerColor,
-            modifier = Modifier.fillMaxSize()
-        )
+    context(rememberStyle(::QrCodeStyleScope, QrCodeStyle.Default)) {
+        QrCodeSurface(Modifier) {
+            QrImage(
+                data = "tg://login?token=AQFJjO1qHocdoolqLtckd6dPS98k1HhnVDFilU_N_v6psw",
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+    }
+}
+
+// Dark on light in any theme: scanners read that best. Telegram for macOS's code, 12 from the edges of its card;
+// it fades in over 1.2 s and a new one over the last in 0.2 s, as macOS's image view.
+@Suppress("MagicNumber")
+fun interface QrCodeStyle : ComponentStyle<QrCodeStyleScope> {
+    companion object : QrCodeStyle {
+        override fun QrCodeStyleScope.applyStyle() {}
+
+        val Default = QrCodeStyle {
+            size(210.dp)
+            shape(theme.shapes.medium)
+            containerColor(Color.White)
+            contentColor(Color.Black)
+            contentPadding(12.dp)
+            revealSpec(tween(1_200, easing = FastOutSlowInEasing))
+            refreshSpec(tween(200, easing = LinearEasing))
+        }
+    }
+}
+
+infix fun QrCodeStyle.then(other: QrCodeStyle): QrCodeStyle = when {
+    other === QrCodeStyle -> this
+    this === QrCodeStyle -> other
+    else -> QrCodeStyle {
+        with(this@then) { applyStyle() }
+        with(other) { applyStyle() }
+    }
+}
+
+class QrCodeStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
+    AdaptiveStyleScope<QrCodeStyleScope>,
+    StyleResolver by DefaultStyleResolver() {
+
+    var size: Dp = Dp.Unspecified
+        private set
+
+    var shape: Shape = RectangleShape
+        private set
+
+    var containerColor: Color = Color.Unspecified
+        private set
+
+    var contentColor: Color = Color.Unspecified
+        private set
+
+    var contentPadding: Dp = Dp.Unspecified
+        private set
+
+    var revealSpec: FiniteAnimationSpec<Float> = snap()
+        private set
+
+    var refreshSpec: FiniteAnimationSpec<Float> = snap()
+        private set
+
+    fun size(size: Dp) {
+        this.size = size
+    }
+
+    fun shape(shape: Shape) {
+        this.shape = shape
+    }
+
+    fun containerColor(color: Color) {
+        containerColor = color
+    }
+
+    fun contentColor(color: Color) {
+        contentColor = color
+    }
+
+    fun contentPadding(padding: Dp) {
+        contentPadding = padding
+    }
+
+    fun revealSpec(spec: FiniteAnimationSpec<Float>) {
+        revealSpec = spec
+    }
+
+    fun refreshSpec(spec: FiniteAnimationSpec<Float>) {
+        refreshSpec = spec
     }
 }

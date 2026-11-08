@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,6 +18,7 @@ import com.xbot.kotogram.catalog.model.CatalogSection
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.component.ListItem
 import com.xbot.kotogram.core.designsystem.component.ListItemPosition
+import com.xbot.kotogram.core.designsystem.component.Switch
 import com.xbot.kotogram.core.designsystem.icon.KotogramIcons
 
 internal val ListItemPage = CatalogPage(

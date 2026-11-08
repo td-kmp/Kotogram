@@ -11,10 +11,12 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.ProvidedValue
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import com.xbot.kotogram.core.designsystem.media.LocalUiMediaScope
+import com.xbot.kotogram.core.designsystem.style.LocalMediaQueryInfo
 import com.xbot.kotogram.core.designsystem.theme.DayClassicColorScheme
 import com.xbot.kotogram.core.designsystem.theme.DimIndication
 import com.xbot.kotogram.core.designsystem.theme.KotogramShapes
@@ -24,6 +26,7 @@ import com.xbot.kotogram.core.designsystem.theme.NightAccentColorScheme
 import com.xbot.kotogram.core.designsystem.theme.currentPlatform
 import com.xbot.kotogram.core.designsystem.theme.platformComponentOverrides
 import com.xbot.kotogram.core.designsystem.theme.platformDynamicColorScheme
+import com.xbot.kotogram.core.designsystem.theme.platformMediaQueryInfo
 import com.xbot.kotogram.core.designsystem.theme.platformUiMediaScope
 import com.xbot.kotogram.core.designsystem.theme.rememberKotogramTypography
 
@@ -37,7 +40,8 @@ fun KotogramTheme(
     val spacing = remember { KotogramSpacing() }
     CompositionLocalProvider(
         LocalKotogramSpacing provides spacing,
-        LocalUiMediaScope provides platformUiMediaScope()
+        LocalUiMediaScope provides platformUiMediaScope(),
+        LocalMediaQueryInfo provides platformMediaQueryInfo()
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
@@ -81,4 +85,23 @@ object KotogramTheme {
     val indication: Indication
         @Composable
         get() = if (currentPlatform.isApple) DimIndication else ripple()
+
+    val values: Values
+        @Composable
+        get() {
+            val colors = colors
+            val typography = typography
+            val shapes = shapes
+            val spacing = spacing
+            return remember(colors, typography, shapes, spacing) { Values(colors, typography, shapes, spacing) }
+        }
+
+    // Material 3's MaterialTheme.Values: the theme as its styles read it, outside composition.
+    @Immutable
+    class Values(
+        val colors: ColorScheme,
+        val typography: Typography,
+        val shapes: Shapes,
+        val spacing: KotogramSpacing
+    )
 }

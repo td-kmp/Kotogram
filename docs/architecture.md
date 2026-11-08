@@ -308,7 +308,9 @@ private fun PhoneScreenContent(
   (`:core:designsystem`: `@PreviewLightDark` plus a `@PreviewWrapper` with `KotogramTheme` and a `Surface`, so
   the preview calls only the content). States come from a `private class XScreenStateProvider :
   PreviewParameterProvider<XScreenState>` in the same file, one value per state worth seeing (empty, filled,
-  in progress, error). Presentation modules add `androidRuntimeClasspath(libs.compose.ui.tooling)`.
+  in progress, error). A screen with a laptop look has `XScreenLaptopPreview` too, annotated
+  `@KotogramLaptopPreview`, which calls `XScreenPreview` ([design system: previews](design/designsystem.md#previews)).
+  Presentation modules add `androidRuntimeClasspath(libs.compose.ui.tooling)`.
 - Adaptive layout decisions are made by the caller (the nav entry), not by the screen.
 - Parameter order follows the Compose API guidelines: required parameters, then
   `modifier: Modifier = Modifier`, then optional parameters, then the trailing content lambda.

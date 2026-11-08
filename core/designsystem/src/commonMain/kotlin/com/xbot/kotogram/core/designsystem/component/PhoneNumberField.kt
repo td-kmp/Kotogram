@@ -29,6 +29,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
@@ -46,9 +48,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.icon.KotogramIcons
-import com.xbot.kotogram.core.designsystem.media.Pc
-import com.xbot.kotogram.core.designsystem.media.UiMediaScope.PlatformFeature
-import com.xbot.kotogram.core.designsystem.media.mediaQuery
+import com.xbot.kotogram.core.designsystem.style.AdaptiveStyleScope
+import com.xbot.kotogram.core.designsystem.style.ComponentStyle
+import com.xbot.kotogram.core.designsystem.style.DefaultStyleResolver
+import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
+import com.xbot.kotogram.core.designsystem.style.StyleResolver
+import com.xbot.kotogram.core.designsystem.style.rememberStyle
 
 @Composable
 fun PhoneNumberField(
@@ -62,90 +67,64 @@ fun PhoneNumberField(
     modifier: Modifier = Modifier,
     readOnly: Boolean = false,
     focusRequester: FocusRequester = remember { FocusRequester() },
+    style: PhoneNumberFieldStyle = PhoneNumberFieldStyle,
     countryMenu: @Composable () -> Unit = {}
 ) {
-    val colors = KotogramTheme.colors
-    val computer = mediaQuery { PlatformFeature.Pc in platformFeatures }
-    val look = if (computer) PhoneNumberFieldLook.Card else PhoneNumberFieldLook.Rows
-    val separatorColor = colors.outline.copy(alpha = PhoneNumberFieldTokens.SeparatorAlpha)
-    val textStyle = KotogramTheme.typography.bodyLarge
-        .merge(look.numberStyle)
-        .copy(color = colors.onSurface)
+    @Suppress("NAME_SHADOWING")
+    val style = rememberStyle(::PhoneNumberFieldStyleScope, PhoneNumberFieldStyle.Adaptive then style)
     val format = remember(callingCodeLength, numberPattern) {
         PhoneNumberFormat(callingCodeLength, numberPattern)
     }
-    Box(
-        modifier = modifier
-            .width(PhoneNumberFieldTokens.Width)
-            .then(
-                if (look.isCard) Modifier.background(colors.surfaceVariant, KotogramTheme.shapes.medium) else Modifier
-            )
-    ) {
-        Column {
-            Box(Modifier.fillMaxWidth().height(look.countryHeight)) {
-                CountryRow(
-                    country = country,
-                    onClick = onCountryClick,
-                    enabled = !readOnly,
-                    look = look,
-                    color = if (look.isCard) colors.onSurface else colors.primary
-                )
-                countryMenu()
-            }
-            BasicTextField(
-                state = state,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(look.numberHeight)
-                    .padding(horizontal = look.inset)
-                    .focusRequester(focusRequester),
-                readOnly = readOnly,
-                inputTransformation = DigitsOnly,
-                textStyle = textStyle,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Done),
-                onKeyboardAction = { onSubmit() },
-                lineLimits = TextFieldLineLimits.SingleLine,
-                cursorBrush = SolidColor(colors.primary),
-                outputTransformation = format,
-                decorator = { innerTextField ->
-                    Box(contentAlignment = Alignment.CenterStart) {
-                        Text(
-                            text = format.hint(state.text, numberPlaceholder),
-                            style = textStyle.copy(color = colors.onSurfaceVariant),
-                            maxLines = 1
-                        )
-                        innerTextField()
-                    }
+    context(style) {
+        Box(modifier = modifier.width(style.width).background(style.containerColor, style.shape)) {
+            Column {
+                Box(Modifier.fillMaxWidth().height(style.countryHeight)) {
+                    CountryRow(country = country, onClick = onCountryClick, enabled = !readOnly)
+                    countryMenu()
                 }
-            )
-        }
-        val separators = if (look.isCard) {
-            listOf(look.countryHeight)
-        } else {
-            listOf(0.dp, look.countryHeight, look.countryHeight + look.numberHeight)
-        }
-        separators.forEach { y ->
+                BasicTextField(
+                    state = state,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(style.numberHeight)
+                        .padding(horizontal = style.inset)
+                        .focusRequester(focusRequester),
+                    readOnly = readOnly,
+                    inputTransformation = DigitsOnly,
+                    textStyle = style.numberTextStyle,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Done),
+                    onKeyboardAction = { onSubmit() },
+                    lineLimits = TextFieldLineLimits.SingleLine,
+                    cursorBrush = SolidColor(style.cursorColor),
+                    outputTransformation = format,
+                    decorator = { innerTextField ->
+                        Box(contentAlignment = Alignment.CenterStart) {
+                            Text(
+                                text = format.hint(state.text, numberPlaceholder),
+                                style = style.numberTextStyle.copy(color = style.hintColor),
+                                maxLines = 1
+                            )
+                            innerTextField()
+                        }
+                    }
+                )
+            }
             HorizontalDivider(
-                modifier = Modifier.padding(start = look.inset, top = y, end = look.inset),
+                modifier = Modifier.padding(start = style.inset, top = style.countryHeight, end = style.inset),
                 thickness = Dp.Hairline,
-                color = separatorColor
+                color = style.separatorColor
             )
         }
     }
 }
 
 @Composable
-private fun CountryRow(
-    country: String,
-    onClick: () -> Unit,
-    enabled: Boolean,
-    look: PhoneNumberFieldLook,
-    color: Color
-) {
+context(style: PhoneNumberFieldStyleScope)
+private fun CountryRow(country: String, onClick: () -> Unit, enabled: Boolean) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(look.countryHeight)
+            .height(style.countryHeight)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = KotogramTheme.indication,
@@ -153,13 +132,12 @@ private fun CountryRow(
                 role = Role.DropdownList,
                 onClick = onClick
             )
-            .padding(horizontal = look.inset),
+            .padding(horizontal = style.inset),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = country,
-            style = KotogramTheme.typography.bodyLarge.merge(look.countryStyle),
-            color = color,
+            style = style.countryTextStyle,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f)
@@ -167,42 +145,10 @@ private fun CountryRow(
         Icon(
             imageVector = KotogramIcons.ChevronRight,
             contentDescription = null,
-            tint = KotogramTheme.colors.outline,
-            modifier = Modifier.size(look.chevronSize)
+            tint = style.chevronColor,
+            modifier = Modifier.size(style.chevronSize)
         )
     }
-}
-
-// macOS's grey card (Auth_PhoneInput) on the desktop, iOS's rows between hairlines
-// (AuthorizationSequencePhoneEntryControllerNode) on phones, in their points.
-@Suppress("MagicNumber")
-private enum class PhoneNumberFieldLook(
-    val isCard: Boolean,
-    val countryHeight: Dp,
-    val numberHeight: Dp,
-    val inset: Dp,
-    val chevronSize: Dp,
-    val countryStyle: TextStyle,
-    val numberStyle: TextStyle
-) {
-    Card(
-        isCard = true,
-        countryHeight = 40.dp,
-        numberHeight = 40.dp,
-        inset = 10.dp,
-        chevronSize = 30.dp,
-        countryStyle = TextStyle(fontSize = 15.sp),
-        numberStyle = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFamily = FontFamily.Monospace)
-    ),
-    Rows(
-        isCard = false,
-        countryHeight = 67.dp,
-        numberHeight = 57.dp,
-        inset = 24.dp,
-        chevronSize = 36.dp,
-        countryStyle = TextStyle(fontSize = 20.sp),
-        numberStyle = TextStyle(fontSize = 20.sp, fontFamily = FontFamily.Monospace)
-    )
 }
 
 // "+", the calling code, a space and the number on TDLib's pattern, where a digit or '-' stands for a digit.
@@ -253,11 +199,159 @@ private object DigitsOnly : InputTransformation {
 // E.164 allows 15 digits, calling code included.
 private const val MAX_DIGITS = 15
 
-private object PhoneNumberFieldTokens {
-    // Telegram for macOS's field and M3's TextField minimum; a caller's width constraint overrides it.
-    val Width = 280.dp
+// macOS's grey card (Auth_PhoneInput, PhoneInputUI) in its points on a laptop; on touch screens the same card at
+// Telegram for iOS's row height and type (AuthorizationSequencePhoneEntryControllerNode).
+@Suppress("MagicNumber")
+fun interface PhoneNumberFieldStyle : ComponentStyle<PhoneNumberFieldStyleScope> {
+    companion object : PhoneNumberFieldStyle {
+        override fun PhoneNumberFieldStyleScope.applyStyle() {}
 
-    // grayIcon over grayBackground at this alpha is Telegram's day border (EAEAEA); its dark palettes set border
-    // to grayBackground itself, so the separator and the chevron vanish at night.
-    const val SeparatorAlpha = 0.12f
+        val Default = PhoneNumberFieldStyle {
+            // Telegram for macOS's field and M3's TextField minimum; a caller's width constraint overrides it.
+            width(280.dp)
+            shape(theme.shapes.medium)
+            containerColor(theme.colors.surfaceVariant)
+            // grayIcon over grayBackground at this alpha is Telegram's day border (EAEAEA); its dark palettes set
+            // border to grayBackground itself, so the separator and the chevron vanish at night.
+            separatorColor(theme.colors.outline.copy(alpha = 0.12f))
+            chevronColor(theme.colors.outline)
+            cursorColor(theme.colors.primary)
+            hintColor(theme.colors.onSurfaceVariant)
+            countryHeight(57.dp)
+            numberHeight(57.dp)
+            inset(16.dp)
+            chevronSize(36.dp)
+            countryTextStyle(theme.typography.bodyLarge.merge(fontSize = 20.sp, color = theme.colors.onSurface))
+            numberTextStyle(
+                theme.typography.bodyLarge.merge(
+                    fontSize = 20.sp,
+                    fontFamily = FontFamily.Monospace,
+                    color = theme.colors.onSurface
+                )
+            )
+        }
+
+        val Adaptive = Default then PhoneNumberFieldStyle {
+            laptop {
+                countryHeight(40.dp)
+                numberHeight(40.dp)
+                inset(10.dp)
+                chevronSize(30.dp)
+                countryTextStyle(theme.typography.bodyLarge.merge(fontSize = 15.sp, color = theme.colors.onSurface))
+                numberTextStyle(
+                    theme.typography.bodyLarge.merge(
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        fontFamily = FontFamily.Monospace,
+                        color = theme.colors.onSurface
+                    )
+                )
+            }
+        }
+    }
+}
+
+infix fun PhoneNumberFieldStyle.then(other: PhoneNumberFieldStyle): PhoneNumberFieldStyle = when {
+    other === PhoneNumberFieldStyle -> this
+    this === PhoneNumberFieldStyle -> other
+    else -> PhoneNumberFieldStyle {
+        with(this@then) { applyStyle() }
+        with(other) { applyStyle() }
+    }
+}
+
+class PhoneNumberFieldStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
+    AdaptiveStyleScope<PhoneNumberFieldStyleScope>,
+    StyleResolver by DefaultStyleResolver() {
+
+    var width: Dp = Dp.Unspecified
+        private set
+
+    var shape: Shape = RectangleShape
+        private set
+
+    var containerColor: Color = Color.Unspecified
+        private set
+
+    var separatorColor: Color = Color.Unspecified
+        private set
+
+    var chevronColor: Color = Color.Unspecified
+        private set
+
+    var cursorColor: Color = Color.Unspecified
+        private set
+
+    var hintColor: Color = Color.Unspecified
+        private set
+
+    var countryHeight: Dp = Dp.Unspecified
+        private set
+
+    var numberHeight: Dp = Dp.Unspecified
+        private set
+
+    var inset: Dp = Dp.Unspecified
+        private set
+
+    var chevronSize: Dp = Dp.Unspecified
+        private set
+
+    var countryTextStyle: TextStyle = TextStyle.Default
+        private set
+
+    var numberTextStyle: TextStyle = TextStyle.Default
+        private set
+
+    fun width(width: Dp) {
+        this.width = width
+    }
+
+    fun shape(shape: Shape) {
+        this.shape = shape
+    }
+
+    fun containerColor(color: Color) {
+        containerColor = color
+    }
+
+    fun separatorColor(color: Color) {
+        separatorColor = color
+    }
+
+    fun chevronColor(color: Color) {
+        chevronColor = color
+    }
+
+    fun cursorColor(color: Color) {
+        cursorColor = color
+    }
+
+    fun hintColor(color: Color) {
+        hintColor = color
+    }
+
+    fun countryHeight(height: Dp) {
+        countryHeight = height
+    }
+
+    fun numberHeight(height: Dp) {
+        numberHeight = height
+    }
+
+    fun inset(inset: Dp) {
+        this.inset = inset
+    }
+
+    fun chevronSize(size: Dp) {
+        chevronSize = size
+    }
+
+    fun countryTextStyle(style: TextStyle) {
+        countryTextStyle = style
+    }
+
+    fun numberTextStyle(style: TextStyle) {
+        numberTextStyle = style
+    }
 }

@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 object KotogramIcons {
     val Back: ImageVector by lazy(::backIcon)
     val Close: ImageVector by lazy(::closeIcon)
+    val Cross: ImageVector by lazy(::crossIcon)
     val Clear: ImageVector by lazy(::clearIcon)
     val Search: ImageVector by lazy(::searchIcon)
     val ChevronDown: ImageVector by lazy(::chevronDownIcon)

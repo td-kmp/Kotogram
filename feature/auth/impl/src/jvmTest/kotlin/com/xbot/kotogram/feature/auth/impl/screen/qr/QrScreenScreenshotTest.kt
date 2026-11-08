@@ -10,6 +10,7 @@ import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.Density
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.media.LocalUiMediaScope
+import com.xbot.kotogram.core.designsystem.style.LocalMediaQueryInfo
 import com.xbot.kotogram.feature.auth.impl.screen.phone.Device
 import java.io.File
 import javax.imageio.ImageIO
@@ -30,7 +31,10 @@ class QrScreenScreenshotTest(private val device: Device) {
         setContent {
             CompositionLocalProvider(LocalDensity provides Density(device.scale)) {
                 KotogramTheme(darkTheme = true, dynamicColor = false) {
-                    CompositionLocalProvider(LocalUiMediaScope provides device.mediaScope) {
+                    CompositionLocalProvider(
+                        LocalUiMediaScope provides device.mediaScope,
+                        LocalMediaQueryInfo provides device.mediaQueryInfo
+                    ) {
                         QrScreenContent(state = QrScreenState(link = LINK), onPhoneLoginClick = {})
                     }
                 }

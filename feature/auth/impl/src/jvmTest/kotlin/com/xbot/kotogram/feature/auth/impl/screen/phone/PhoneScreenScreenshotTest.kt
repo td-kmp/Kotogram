@@ -13,13 +13,18 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.media.LocalUiMediaScope
-import com.xbot.kotogram.core.designsystem.media.Pc
 import com.xbot.kotogram.core.designsystem.media.UiMediaScope
+import com.xbot.kotogram.core.designsystem.media.UiMediaScope.FoldOrientation
+import com.xbot.kotogram.core.designsystem.media.UiMediaScope.FoldOrientation.Companion.Horizontal
+import com.xbot.kotogram.core.designsystem.media.UiMediaScope.FoldOrientation.Companion.Vertical
+import com.xbot.kotogram.core.designsystem.media.UiMediaScope.FoldState
 import com.xbot.kotogram.core.designsystem.media.UiMediaScope.KeyboardKind
-import com.xbot.kotogram.core.designsystem.media.UiMediaScope.PlatformFeature
 import com.xbot.kotogram.core.designsystem.media.UiMediaScope.PointerPrecision
-import com.xbot.kotogram.core.designsystem.media.UiMediaScope.Posture
 import com.xbot.kotogram.core.designsystem.media.UiMediaScope.ViewingDistance
+import com.xbot.kotogram.core.designsystem.media.UiMediaScope.WindowFold
+import com.xbot.kotogram.core.designsystem.media.UiMediaScope.WindowPosture
+import com.xbot.kotogram.core.designsystem.style.LocalMediaQueryInfo
+import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 import io.xbot.tdlib.api.CountryInfo
 import java.io.File
 import javax.imageio.ImageIO
@@ -38,11 +43,14 @@ class PhoneScreenScreenshotTest(private val device: Device, private val darkThem
         setContent {
             CompositionLocalProvider(LocalDensity provides Density(device.scale)) {
                 KotogramTheme(darkTheme = darkTheme, dynamicColor = false) {
-                    CompositionLocalProvider(LocalUiMediaScope provides device.mediaScope) {
+                    CompositionLocalProvider(
+                        LocalUiMediaScope provides device.mediaScope,
+                        LocalMediaQueryInfo provides device.mediaQueryInfo
+                    ) {
                         PhoneScreenContent(
                             state = entered,
                             phoneNumber = TextFieldState(entered.callingCode + entered.number),
-                            canUseQr = device.computer,
+                            canUseQr = device.laptop,
                             onAction = {},
                             onQrLoginClick = {}
                         )
@@ -69,29 +77,33 @@ enum class Device(
     val width: Dp,
     val height: Dp,
     val scale: Float,
-    val computer: Boolean,
-    val posture: Posture = Posture.Flat
+    val laptop: Boolean,
+    val posture: WindowPosture = WindowPosture(emptyList())
 ) {
-    IPhoneAir("iphone-air", 420.dp, 912.dp, 3f, computer = false),
-    IPhoneAirLandscape("iphone-air-landscape", 912.dp, 420.dp, 2f, computer = false),
-    IPadPro11("ipad-pro-11", 834.dp, 1210.dp, 2f, computer = false),
-    FoldableUnfolded("foldable-unfolded", 673.dp, 841.dp, 2f, computer = false),
-    FoldableTabletop("foldable-tabletop", 841.dp, 673.dp, 2f, computer = false, posture = Posture.Tabletop),
-    FoldableBook("foldable-book", 841.dp, 673.dp, 2f, computer = false, posture = Posture.Book),
-    Desktop("desktop", 700.dp, 550.dp, 2f, computer = true);
+    IPhoneAir("iphone-air", 420.dp, 912.dp, 3f, laptop = false),
+    IPhoneAirLandscape("iphone-air-landscape", 912.dp, 420.dp, 2f, laptop = false),
+    IPadPro11("ipad-pro-11", 834.dp, 1210.dp, 2f, laptop = false),
+    FoldableUnfolded("foldable-unfolded", 673.dp, 841.dp, 2f, laptop = false),
+    FoldableTabletop("foldable-tabletop", 841.dp, 673.dp, 2f, laptop = false, posture = halfOpened(Horizontal)),
+    FoldableBook("foldable-book", 841.dp, 673.dp, 2f, laptop = false, posture = halfOpened(Vertical)),
+    Desktop("desktop", 700.dp, 550.dp, 2f, laptop = true);
 
     val mediaScope: UiMediaScope = object : UiMediaScope {
         override val windowPosture = posture
         override val windowWidth = width
         override val windowHeight = height
-        override val pointerPrecision = if (computer) PointerPrecision.Fine else PointerPrecision.Coarse
-        override val keyboardKind = if (computer) KeyboardKind.Physical else KeyboardKind.Virtual
-        override val platformFeatures = if (computer) setOf(PlatformFeature.Pc) else emptySet()
+        override val pointerPrecision = if (laptop) PointerPrecision.Fine else PointerPrecision.Coarse
+        override val keyboardKind = if (laptop) KeyboardKind.Physical else KeyboardKind.Virtual
         override val hasMicrophone = false
         override val hasCamera = false
         override val viewingDistance = ViewingDistance.Near
     }
+
+    val mediaQueryInfo = MediaQueryInfo(isLaptop = laptop, isTv = false, isAuto = false)
 }
+
+private fun halfOpened(orientation: FoldOrientation) =
+    WindowPosture(listOf(WindowFold(FoldState.HalfOpened, orientation)))
 
 private val uzbekistan = CountryInfo(
     countryCode = "UZ",

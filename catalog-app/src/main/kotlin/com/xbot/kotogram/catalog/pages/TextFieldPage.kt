@@ -22,20 +22,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.catalog.model.CatalogExample
 import com.xbot.kotogram.catalog.model.CatalogPage
 import com.xbot.kotogram.catalog.model.CatalogSection
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.component.TextField
-import com.xbot.kotogram.core.designsystem.component.TextFieldDefaults
 import com.xbot.kotogram.core.designsystem.icon.KotogramIcons
 
 internal val TextFieldPage = CatalogPage(
     id = "text-field",
     section = CatalogSection.Components,
     name = "TextField",
-    description = "Telegram for macOS's input over BasicTextField. It takes a TextFieldState and Material 3's " +
-        "parameters, plus a title and a suggestion above the field.",
+    description = "Telegram for macOS's input over BasicTextField on a laptop, larger and with a focus ring on " +
+        "touch screens. It takes a TextFieldState, plus a title and a suggestion above the field.",
     examples = listOf(
         CatalogExample("Placeholder") {
             TextField(state = rememberTextFieldState(), placeholder = { Text("Enter a username") })
@@ -81,7 +81,7 @@ internal val TextFieldPage = CatalogPage(
                 state = rememberTextFieldState(
                     "A few words about yourself that run over a line, then another, and one more to show the growth."
                 ),
-                modifier = Modifier.width(TextFieldDefaults.MinWidth),
+                modifier = Modifier.width(280.dp),
                 title = { Text("Bio") },
                 lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 1, maxHeightInLines = 4),
                 supportingText = { Text("70 characters left.") }
@@ -90,7 +90,7 @@ internal val TextFieldPage = CatalogPage(
         CatalogExample("Disabled") {
             TextField(state = rememberTextFieldState("Disabled"), enabled = false)
         },
-        CatalogExample("Focus ring, as on Android and iOS") {
+        CatalogExample("Focused: a ring on touch screens, none on a laptop") {
             FocusedTextField()
         }
     )
@@ -127,15 +127,10 @@ private fun ClearButton(state: TextFieldState) {
 @Composable
 private fun FocusedTextField() {
     val requester = remember { FocusRequester() }
-    val colors = KotogramTheme.colors
     TextField(
         state = rememberTextFieldState("kotogram"),
         modifier = Modifier.focusRequester(requester),
-        title = { Text("Username") },
-        colors = TextFieldDefaults.colors().copy(
-            focusedIndicatorColor = colors.primary,
-            errorIndicatorColor = colors.error
-        )
+        title = { Text("Username") }
     )
     LaunchedEffect(requester) { requester.requestFocus() }
 }

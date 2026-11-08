@@ -14,14 +14,16 @@ import com.xbot.kotogram.catalog.model.CatalogPage
 import com.xbot.kotogram.catalog.model.CatalogSection
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.component.ProgressIndicator
+import com.xbot.kotogram.core.designsystem.component.ProgressIndicatorStyle
 
 internal val ProgressIndicatorPage = CatalogPage(
     id = "progress-indicator",
     section = CatalogSection.Components,
     name = "ProgressIndicator",
-    description = "An indeterminate spinner, 20 by default: UIKit's UIActivityIndicatorView on iOS, AppKit's " +
-        "NSProgressIndicator on macOS, Material 3's CircularProgressIndicator elsewhere. Native spinners are " +
-        "medium or small up to 32 and large above.",
+    description = "An indeterminate spinner, as large as its modifier makes it (20 without a size): UIKit's " +
+        "UIActivityIndicatorView on iOS, AppKit's NSProgressIndicator on macOS, Material 3's " +
+        "CircularProgressIndicator elsewhere. Native spinners are medium or small up to 32 and large above, and " +
+        "draw their own stroke; the style's stroke width is Material's.",
     examples = listOf(
         CatalogExample("Sizes") {
             Row(
@@ -30,6 +32,7 @@ internal val ProgressIndicatorPage = CatalogPage(
             ) {
                 ProgressIndicator()
                 ProgressIndicator(Modifier.size(40.dp))
+                ProgressIndicator(Modifier.size(40.dp), style = ProgressIndicatorStyle { strokeWidth(4.dp) })
             }
         },
         CatalogExample("On the primary colour") {
@@ -38,7 +41,7 @@ internal val ProgressIndicatorPage = CatalogPage(
                     .background(KotogramTheme.colors.primary, KotogramTheme.shapes.medium)
                     .padding(KotogramTheme.spacing.medium)
             ) {
-                ProgressIndicator(color = KotogramTheme.colors.onPrimary)
+                ProgressIndicator(style = ProgressIndicatorStyle { color(theme.colors.onPrimary) })
             }
         }
     )

@@ -1,7 +1,6 @@
 package com.xbot.kotogram.feature.auth.impl.screen.auth
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -14,6 +13,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.designsystem.component.ButtonState
 import com.xbot.kotogram.core.designsystem.component.TextButton
+import com.xbot.kotogram.core.designsystem.style.rememberStyle
 import com.xbot.kotogram.feature.language.domain.model.LanguageSuggestion
 import org.orbitmvi.orbit.compose.collectAsState
 
@@ -30,13 +30,11 @@ private fun LanguageSuggestionContent(
     onAction: (LanguageSuggestionAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val style = rememberStyle(::LanguageSuggestionStyleScope, LanguageSuggestionStyle.Default)
     AnimatedContent(
         targetState = state.takeIf { it.suggestion != null },
         modifier = modifier,
-        transitionSpec = {
-            fadeIn(tween(LanguageSuggestionTokens.FADE_MILLIS)) togetherWith
-                fadeOut(tween(LanguageSuggestionTokens.FADE_MILLIS)) using null
-        },
+        transitionSpec = { fadeIn(style.fadeSpec) togetherWith fadeOut(style.fadeSpec) using null },
         contentKey = { it?.suggestion?.languagePackId },
         label = "LanguageSuggestion"
     ) { shown ->
@@ -61,11 +59,6 @@ private fun ContinueOnLanguageButton(
     TextButton(onClick = onClick, modifier = modifier, state = ButtonState.of(enabled = true, loading = isLoading)) {
         Text(text)
     }
-}
-
-@Suppress("MagicNumber")
-private object LanguageSuggestionTokens {
-    const val FADE_MILLIS = 200
 }
 
 @KotogramPreview

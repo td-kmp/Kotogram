@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isAltPressed
@@ -32,13 +34,20 @@ import androidx.compose.ui.input.key.utf16CodePoint
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.icon.KotogramIcons
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
+import com.xbot.kotogram.core.designsystem.style.AdaptiveStyleScope
+import com.xbot.kotogram.core.designsystem.style.ComponentStyle
+import com.xbot.kotogram.core.designsystem.style.DefaultStyleResolver
+import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
+import com.xbot.kotogram.core.designsystem.style.StyleResolver
+import com.xbot.kotogram.core.designsystem.style.rememberStyle
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 @Composable
 fun <T> Menu(
@@ -48,8 +57,10 @@ fun <T> Menu(
     itemText: (T) -> String,
     onItemClick: (T) -> Unit,
     modifier: Modifier = Modifier,
-    selectedItem: T? = null
+    selectedItem: T? = null,
+    style: MenuStyle = MenuStyle
 ) {
+    val menuStyle = rememberStyle(::MenuStyleScope, MenuStyle.Adaptive then style)
     with(LocalMenuOverride.current) {
         MenuOverrideScope(
             expanded = expanded,
@@ -57,7 +68,8 @@ fun <T> Menu(
             titles = items.map(itemText),
             selectedIndex = items.indexOf(selectedItem),
             onSelect = { onItemClick(items[it]) },
-            modifier = modifier
+            modifier = modifier,
+            style = menuStyle
         ).Menu()
     }
 }
@@ -73,7 +85,8 @@ internal class MenuOverrideScope(
     val titles: List<String>,
     val selectedIndex: Int,
     val onSelect: (Int) -> Unit,
-    val modifier: Modifier
+    val modifier: Modifier,
+    val style: MenuStyleScope
 )
 
 internal object DefaultMenuOverride : MenuOverride {
@@ -81,7 +94,7 @@ internal object DefaultMenuOverride : MenuOverride {
     override fun MenuOverrideScope.Menu() {
         val density = LocalDensity.current
         val windowHeight = with(density) { LocalWindowInfo.current.containerSize.height.toDp() }
-        val itemHeight = with(density) { MenuItemHeight.roundToPx() }
+        val itemHeight = with(density) { style.itemHeight.roundToPx() }
         val scrollState = rememberScrollState()
         val scope = rememberCoroutineScope()
         val menuFocus = remember { FocusRequester() }
@@ -92,8 +105,8 @@ internal object DefaultMenuOverride : MenuOverride {
             expanded = expanded,
             onDismissRequest = onDismissRequest,
             modifier = modifier
-                .heightIn(max = windowHeight - MenuWindowMargin * 2)
-                .padding(horizontal = MenuHorizontalPadding, vertical = MenuExtraVerticalPadding)
+                .heightIn(max = windowHeight - style.windowMargin * 2)
+                .padding(horizontal = style.horizontalPadding, vertical = style.extraVerticalPadding)
                 .focusRequester(menuFocus)
                 .onPreviewKeyEvent { event ->
                     val index = typeSelect.find(event, titles) ?: return@onPreviewKeyEvent false
@@ -119,15 +132,15 @@ internal object DefaultMenuOverride : MenuOverride {
                         onDismissRequest()
                     },
                     modifier = Modifier
-                        .height(MenuItemHeight)
-                        .clip(KotogramTheme.shapes.small)
+                        .height(style.itemHeight)
+                        .clip(style.itemShape)
                         .focusRequester(itemFocus[index]),
                     trailingIcon = if (index == selectedIndex) {
                         { Icon(KotogramIcons.Check, contentDescription = null) }
                     } else {
                         null
                     },
-                    contentPadding = PaddingValues(horizontal = MenuItemHorizontalPadding)
+                    contentPadding = PaddingValues(horizontal = style.itemHorizontalPadding)
                 )
             }
         }
@@ -155,16 +168,93 @@ private class TypeSelect {
     }
 }
 
-// M3's laptop values (adaptive menu styles, aosp/4424517): 44 high, 10 at the sides, 12 above and below.
-private val MenuItemHeight = 44.dp
-private val MenuItemHorizontalPadding = 10.dp
-private val MenuHorizontalPadding = 10.dp
-private val MenuExtraVerticalPadding = 4.dp
-
-// M3's DropdownMenuPositionProvider keeps a menu 48 from the window's edges; a taller one covers the window.
-private val MenuWindowMargin = 48.dp
-
 private val TypeSelectTimeout = 1.seconds
 
 internal val LocalMenuOverride: ProvidableCompositionLocal<MenuOverride> =
     staticCompositionLocalOf { DefaultMenuOverride }
+
+// Material 3's menu: its baseline on touch screens and its laptop values on a laptop (the adaptive menu styles of
+// aosp/4424517: items 44 high with 10 at the sides, inside 10 at the sides and 12 above and below, rounded). M3's
+// DropdownMenuPositionProvider keeps a menu 48 from the window's edges; a taller one covers the window.
+@Suppress("MagicNumber")
+fun interface MenuStyle : ComponentStyle<MenuStyleScope> {
+    companion object : MenuStyle {
+        override fun MenuStyleScope.applyStyle() {}
+
+        val Default = MenuStyle {
+            itemHeight(48.dp)
+            itemHorizontalPadding(12.dp)
+            horizontalPadding(0.dp)
+            extraVerticalPadding(0.dp)
+            itemShape(RectangleShape)
+            windowMargin(48.dp)
+        }
+
+        val Adaptive = Default then MenuStyle {
+            laptop {
+                itemHeight(44.dp)
+                itemHorizontalPadding(10.dp)
+                horizontalPadding(10.dp)
+                extraVerticalPadding(4.dp)
+                itemShape(theme.shapes.small)
+            }
+        }
+    }
+}
+
+infix fun MenuStyle.then(other: MenuStyle): MenuStyle = when {
+    other === MenuStyle -> this
+    this === MenuStyle -> other
+    else -> MenuStyle {
+        with(this@then) { applyStyle() }
+        with(other) { applyStyle() }
+    }
+}
+
+class MenuStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
+    AdaptiveStyleScope<MenuStyleScope>,
+    StyleResolver by DefaultStyleResolver() {
+
+    var itemHeight: Dp = Dp.Unspecified
+        private set
+
+    var itemHorizontalPadding: Dp = Dp.Unspecified
+        private set
+
+    var horizontalPadding: Dp = Dp.Unspecified
+        private set
+
+    // Over Material 3's own 8 above and below.
+    var extraVerticalPadding: Dp = Dp.Unspecified
+        private set
+
+    var itemShape: Shape = RectangleShape
+        private set
+
+    var windowMargin: Dp = Dp.Unspecified
+        private set
+
+    fun itemHeight(height: Dp) {
+        itemHeight = height
+    }
+
+    fun itemHorizontalPadding(padding: Dp) {
+        itemHorizontalPadding = padding
+    }
+
+    fun horizontalPadding(padding: Dp) {
+        horizontalPadding = padding
+    }
+
+    fun extraVerticalPadding(padding: Dp) {
+        extraVerticalPadding = padding
+    }
+
+    fun itemShape(shape: Shape) {
+        itemShape = shape
+    }
+
+    fun windowMargin(margin: Dp) {
+        windowMargin = margin
+    }
+}

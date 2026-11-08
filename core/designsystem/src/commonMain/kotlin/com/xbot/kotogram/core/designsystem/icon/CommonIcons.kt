@@ -23,6 +23,13 @@ internal fun closeIcon() = icon("Close") {
     }
 }
 
+internal fun crossIcon() = icon("Cross") {
+    stroke(width = 2f) {
+        line(Offset(7f, 7f), Offset(17f, 17f))
+        line(Offset(7f, 17f), Offset(17f, 7f))
+    }
+}
+
 internal fun clearIcon() = icon("Clear") {
     fill(PathFillType.EvenOdd) {
         circle(Center, 6.5f)

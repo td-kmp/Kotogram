@@ -10,18 +10,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.catalog.model.CatalogExample
 import com.xbot.kotogram.catalog.model.CatalogPage
 import com.xbot.kotogram.catalog.model.CatalogSection
 import com.xbot.kotogram.core.designsystem.component.CodeField
-import com.xbot.kotogram.core.designsystem.component.TextFieldDefaults
 
 internal val CodeFieldPage = CatalogPage(
     id = "code-field",
     section = CatalogSection.Components,
     name = "CodeField",
-    description = "The sign-in code of Telegram for macOS (CodeEntryControl): a cell per digit, the next one " +
-        "marked, digits that spring in, a shake at a wrong code. It takes a TextFieldState and the code's length.",
+    description = "The sign-in code of Telegram for macOS (CodeEntryControl), in Telegram for iOS's cells on touch " +
+        "screens: a cell per digit, the next one marked, digits that spring in, a shake at a wrong code. It takes " +
+        "a TextFieldState and the code's length.",
     examples = listOf(
         CatalogExample("Typing") { FocusedCodeField() },
         CatalogExample("Complete") {
@@ -40,7 +41,7 @@ internal val CodeFieldPage = CatalogPage(
             )
         },
         CatalogExample("In a column 280 wide: cells narrow when large text needs more room") {
-            Box(Modifier.width(TextFieldDefaults.MinWidth)) {
+            Box(Modifier.width(280.dp)) {
                 CodeField(state = rememberTextFieldState("123456"), length = 6)
             }
         },

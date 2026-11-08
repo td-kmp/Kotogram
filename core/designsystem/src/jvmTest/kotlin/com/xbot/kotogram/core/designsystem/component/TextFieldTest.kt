@@ -12,6 +12,8 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.height
 import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.core.designsystem.style.ProvideFormFactor
+import com.xbot.kotogram.core.designsystem.style.rememberStyle
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -20,28 +22,39 @@ import kotlin.test.assertTrue
 class TextFieldTest {
     @Test
     fun keepsItsMinimumHeightAtTheUsualScale() {
-        assertEquals(TextFieldDefaults.MinHeight, fieldHeight(fontScale = 1f))
+        for (laptop in listOf(true, false)) {
+            val field = measure(fontScale = 1f, laptop = laptop)
+            assertEquals(field.minHeight, field.height, "laptop $laptop")
+        }
     }
 
     @Test
     fun growsWithTheFontScale() {
-        val height = fieldHeight(fontScale = 2f)
-        assertTrue(height > TextFieldDefaults.MinHeight, "$height at twice the font scale")
+        for (laptop in listOf(true, false)) {
+            val field = measure(fontScale = 2f, laptop = laptop)
+            assertTrue(field.height > field.minHeight, "${field.height} at twice the font scale, laptop $laptop")
+        }
     }
 
-    private fun fieldHeight(fontScale: Float): Dp {
+    private fun measure(fontScale: Float, laptop: Boolean): MeasuredField {
+        var minHeight = Dp.Unspecified
         var height = Dp.Unspecified
         runComposeUiTest {
             setContent {
                 val density = Density(LocalDensity.current.density, fontScale)
                 CompositionLocalProvider(LocalDensity provides density) {
                     KotogramTheme(darkTheme = false, dynamicColor = false) {
-                        TextField(state = TextFieldState("Kotogram"), placeholder = { Text("Username") })
+                        ProvideFormFactor(laptop) {
+                            minHeight = rememberStyle(::TextFieldStyleScope, TextFieldStyle.Adaptive).minHeight
+                            TextField(state = TextFieldState("Kotogram"), placeholder = { Text("Username") })
+                        }
                     }
                 }
             }
             height = onNode(hasSetTextAction()).getUnclippedBoundsInRoot().height
         }
-        return height
+        return MeasuredField(height, minHeight)
     }
+
+    private class MeasuredField(val height: Dp, val minHeight: Dp)
 }
