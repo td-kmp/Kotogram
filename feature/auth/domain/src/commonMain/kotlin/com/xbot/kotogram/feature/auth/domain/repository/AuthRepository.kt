@@ -32,5 +32,6 @@ interface AuthRepository {
 
     suspend fun recoverAuthenticationPassword(recoveryCode: String): Either<AuthError, Unit>
 
-    suspend fun registerUser(firstName: String, lastName: String): Either<AuthError, Unit>
+    // The photo, a JPEG, is set once the account is signed in.
+    suspend fun registerUser(firstName: String, lastName: String, photo: ByteArray?): Either<AuthError, Unit>
 }

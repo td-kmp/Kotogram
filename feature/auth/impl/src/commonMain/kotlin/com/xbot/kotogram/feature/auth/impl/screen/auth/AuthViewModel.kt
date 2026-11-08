@@ -22,15 +22,9 @@ internal class AuthViewModel(
 
     private val dismissedStep = MutableStateFlow<AuthStep?>(null)
 
-    // TDLib's first: what shows before it is only the entry's guess.
     private var firstStep: AuthStep? = null
 
-    override val container = orbitContainer<AuthScreenState, Nothing>(
-        AuthScreenState(
-            flow = flow,
-            backStack = backStack(loginEntry.method.value, step = null, dismissed = null)
-        )
-    ) {
+    override val container = orbitContainer<AuthScreenState, Nothing>(AuthScreenState(flow = flow)) {
         combine(loginEntry.method, authRepository.authorizationState, dismissedStep, ::Triple)
             .collect { (method, authorizationState, dismissed) ->
                 val step = authorizationState.toAuthStep()

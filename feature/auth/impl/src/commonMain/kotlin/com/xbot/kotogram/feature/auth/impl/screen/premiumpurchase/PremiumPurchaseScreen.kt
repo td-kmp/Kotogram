@@ -1,60 +1,120 @@
 package com.xbot.kotogram.feature.auth.impl.screen.premiumpurchase
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.isSpecified
+import com.xbot.kotogram.core.designsystem.KotogramLaptopPreview
 import com.xbot.kotogram.core.designsystem.KotogramPreview
-import com.xbot.kotogram.core.designsystem.KotogramTheme
-import com.xbot.kotogram.core.designsystem.component.TextButton
+import com.xbot.kotogram.core.designsystem.component.ProminentButton
+import com.xbot.kotogram.core.designsystem.media.derivedMediaQuery
+import com.xbot.kotogram.core.designsystem.media.mediaQuery
+import com.xbot.kotogram.core.designsystem.style.rememberStyle
 import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.navigation_back
 import com.xbot.kotogram.core.resources.stringResource
 import com.xbot.kotogram.core.resources.unsupported_subtitle
 import com.xbot.kotogram.core.resources.unsupported_title
+import com.xbot.kotogram.feature.auth.impl.extensions.isBook
 
 // TDLib asks for a Premium purchase to log in, which only the official apps' store billing can make.
 @Composable
 internal fun PremiumPurchaseScreen(onBackClick: () -> Unit, modifier: Modifier = Modifier) {
-    Scaffold(modifier = modifier, contentWindowInsets = WindowInsets.safeDrawing) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .wrapContentWidth()
-                .widthIn(max = 420.dp)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(
-                text = stringResource(Res.string.unsupported_title),
-                style = KotogramTheme.typography.headlineSmall,
-                textAlign = TextAlign.Center
-            )
-            Text(
-                text = stringResource(Res.string.unsupported_subtitle),
-                style = KotogramTheme.typography.bodyMedium,
-                color = KotogramTheme.colors.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
-            TextButton(onClick = onBackClick) { Text(stringResource(Res.string.navigation_back)) }
+    val style =
+        rememberStyle(::PremiumPurchaseScreenStyleScope, PremiumPurchaseScreenStyle.Adaptive)
+    val posture = mediaQuery { windowPosture }
+    val landscape by derivedMediaQuery { windowHeight < style.landscapeHeight }
+    // At the bottom as Telegram for iOS has it; under the text on laptops and phones on their side.
+    val actionAtBottom = !style.mediaQueryInfo.isLaptop && !landscape
+    context(style) {
+        Scaffold(
+            modifier = modifier,
+            contentWindowInsets = WindowInsets.safeDrawing
+        ) { innerPadding ->
+            Column(
+                Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(if (posture.isBook) 0.5f else 1f)
+                    .padding(innerPadding)
+            ) {
+                BoxWithConstraints(Modifier.weight(1f)) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                            .heightIn(min = maxHeight)
+                            .padding(horizontal = style.horizontalPadding),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        if (!landscape && !posture.isTabletop) {
+                            // Temporary: the step's animation goes here.
+                            Box(Modifier.size(style.animationSize).background(Color.White))
+                            Spacer(Modifier.height(style.beforeTitle))
+                        }
+                        Text(
+                            text = stringResource(Res.string.unsupported_title),
+                            style = style.titleTextStyle
+                        )
+                        Spacer(Modifier.height(style.beforeInfo))
+                        Text(
+                            text = stringResource(Res.string.unsupported_subtitle),
+                            style = style.infoTextStyle,
+                            modifier = Modifier.widthIn(max = style.infoWidth)
+                        )
+                        if (!actionAtBottom) {
+                            Spacer(Modifier.height(style.beforeAction))
+                            BackAction(onBackClick)
+                        }
+                    }
+                }
+                if (posture.isTabletop) Spacer(Modifier.weight(1f))
+                if (actionAtBottom) {
+                    BackAction(
+                        onBackClick = onBackClick,
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(style.bottomActionInset)
+                    )
+                }
+            }
         }
     }
+}
+
+@Composable
+context(style: PremiumPurchaseScreenStyleScope)
+private fun BackAction(onBackClick: () -> Unit, modifier: Modifier = Modifier) {
+    ProminentButton(
+        text = stringResource(Res.string.navigation_back),
+        onClick = onBackClick,
+        modifier = if (style.contentMaxWidth.isSpecified) {
+            modifier.widthIn(max = style.contentMaxWidth).fillMaxWidth()
+        } else {
+            modifier
+        }
+    )
 }
 
 @KotogramPreview
@@ -62,3 +122,7 @@ internal fun PremiumPurchaseScreen(onBackClick: () -> Unit, modifier: Modifier =
 private fun PremiumPurchaseScreenPreview() {
     PremiumPurchaseScreen(onBackClick = {})
 }
+
+@KotogramLaptopPreview
+@Composable
+private fun PremiumPurchaseScreenLaptopPreview() = PremiumPurchaseScreenPreview()

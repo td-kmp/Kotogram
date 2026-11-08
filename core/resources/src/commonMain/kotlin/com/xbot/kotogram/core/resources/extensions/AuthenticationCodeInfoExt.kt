@@ -6,6 +6,8 @@ import com.xbot.kotogram.core.resources.login_enterphrasebeginningtext
 import com.xbot.kotogram.core.resources.login_enterwordbeginningtext
 import com.xbot.kotogram.core.resources.login_new_code_callinfo
 import com.xbot.kotogram.core.resources.login_new_code_codeinfo
+import com.xbot.kotogram.core.resources.login_new_code_entercode
+import com.xbot.kotogram.core.resources.login_new_code_entersms
 import com.xbot.kotogram.core.resources.login_new_code_fragmentinfo
 import com.xbot.kotogram.core.resources.login_new_code_smsinfo
 import io.xbot.tdlib.api.AuthenticationCodeInfo
@@ -20,6 +22,16 @@ import io.xbot.tdlib.api.AuthenticationCodeTypeSmsPhrase
 import io.xbot.tdlib.api.AuthenticationCodeTypeSmsWord
 import io.xbot.tdlib.api.AuthenticationCodeTypeTelegramMessage
 
+// Telegram for macOS's headers: its messages for a code in the app, "Enter Code" for one by SMS or call.
+val AuthenticationCodeInfo.title: StringResource
+    get() = when (type) {
+        is AuthenticationCodeTypeTelegramMessage -> StringResource.Text(
+            Res.string.login_new_code_entercode
+        )
+
+        else -> StringResource.Text(Res.string.login_new_code_entersms)
+    }
+
 val AuthenticationCodeInfo.description: StringResource
     get() = when (val type = type) {
         is AuthenticationCodeTypeTelegramMessage ->
@@ -31,10 +43,18 @@ val AuthenticationCodeInfo.description: StringResource
             StringResource.Text(Res.string.login_new_code_smsinfo, phoneNumber)
 
         is AuthenticationCodeTypeSmsWord ->
-            StringResource.Text(Res.string.login_enterwordbeginningtext, type.firstLetter, phoneNumber)
+            StringResource.Text(
+                Res.string.login_enterwordbeginningtext,
+                type.firstLetter,
+                phoneNumber
+            )
 
         is AuthenticationCodeTypeSmsPhrase ->
-            StringResource.Text(Res.string.login_enterphrasebeginningtext, type.firstWord, phoneNumber)
+            StringResource.Text(
+                Res.string.login_enterphrasebeginningtext,
+                type.firstWord,
+                phoneNumber
+            )
 
         is AuthenticationCodeTypeCall,
         is AuthenticationCodeTypeFlashCall,

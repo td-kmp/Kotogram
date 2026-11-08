@@ -16,8 +16,10 @@ import androidx.lifecycle.viewmodel.compose.rememberViewModelStoreOwner
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.scene.Scene
 import androidx.navigation3.ui.NavDisplay
 import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.core.designsystem.animation.rememberNavTransitions
 import com.xbot.kotogram.feature.auth.api.AuthStep
 import com.xbot.kotogram.feature.auth.impl.screen.code.CodeScreen
 import com.xbot.kotogram.feature.auth.impl.screen.emailaddress.EmailAddressScreen
@@ -36,6 +38,7 @@ internal fun AuthScreen(viewModel: AuthViewModel, modifier: Modifier = Modifier)
     val onBack = { viewModel.onAction(AuthScreenAction.OnBack) }
 
     Box(modifier.fillMaxSize()) {
+        if (state.backStack.isEmpty()) return@Box
         AuthSteps(
             backStack = state.backStack,
             canUseQr = state.canUseQr,
@@ -66,9 +69,13 @@ private fun AuthSteps(
     onAction: (AuthScreenAction) -> Unit,
     onBack: () -> Unit
 ) {
+    val transitions = rememberNavTransitions<Scene<AuthStep>>()
     NavDisplay(
         backStack = backStack,
         onBack = onBack,
+        transitionSpec = transitions.push,
+        popTransitionSpec = transitions.pop,
+        predictivePopTransitionSpec = transitions.predictivePop,
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator()

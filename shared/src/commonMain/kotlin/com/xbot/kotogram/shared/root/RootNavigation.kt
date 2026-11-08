@@ -11,12 +11,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.scene.Scene
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import com.xbot.kotogram.core.account.AccountManager
 import com.xbot.kotogram.core.account.AccountSession
+import com.xbot.kotogram.core.designsystem.animation.rememberNavTransitions
 import com.xbot.kotogram.core.navigation.LocalNavigator
 import com.xbot.kotogram.core.navigation.NavKey
 import com.xbot.kotogram.core.navigation.koinNavSerializersModule
@@ -93,10 +95,14 @@ private fun AccountNavigation(root: NavKey, onRootBack: (() -> Unit)?) {
         )
     }
 
+    val transitions = rememberNavTransitions<Scene<NavKey>>()
     CompositionLocalProvider(LocalNavigator provides navigator) {
         NavDisplay(
             backStack = navigator.backStack,
             onBack = navigator::navigateBack,
+            transitionSpec = transitions.push,
+            popTransitionSpec = transitions.pop,
+            predictivePopTransitionSpec = transitions.predictivePop,
             entryDecorators = listOf(
                 rememberSaveableStateHolderNavEntryDecorator(),
                 rememberSharedViewModelStoreNavEntryDecorator()

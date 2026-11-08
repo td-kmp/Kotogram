@@ -49,7 +49,7 @@ internal class FakeAuthRepository : AuthRepository {
 
     override suspend fun recoverAuthenticationPassword(recoveryCode: String) = ok()
 
-    override suspend fun registerUser(firstName: String, lastName: String) = ok()
+    override suspend fun registerUser(firstName: String, lastName: String, photo: ByteArray?) = ok()
 
     private fun ok(): Either<AuthError, Unit> = Unit.right()
 }

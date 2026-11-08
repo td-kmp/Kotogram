@@ -1,6 +1,8 @@
 package com.xbot.kotogram.feature.auth.data.di
 
 import com.xbot.kotogram.core.account.AccountScope
+import com.xbot.kotogram.core.account.AccountUpdates
+import com.xbot.kotogram.feature.auth.data.account.GeneratedPhotos
 import com.xbot.kotogram.feature.auth.data.repository.DefaultAuthRepository
 import com.xbot.kotogram.feature.auth.data.repository.DefaultCountryRepository
 import com.xbot.kotogram.feature.auth.domain.LoginEntry
@@ -18,5 +20,6 @@ val authDataModule = module {
     scope(AccountScope) {
         scopedOf(::DefaultAuthRepository) { bind<AuthRepository>() }
         scopedOf(::DefaultCountryRepository) { bind<CountryRepository>() }
+        scopedOf(::GeneratedPhotos) { bind<AccountUpdates>() }
     }
 }

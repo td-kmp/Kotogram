@@ -49,6 +49,7 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(libs.androidx.core)
+            implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.window)
         }
         wasmJsMain.dependencies {

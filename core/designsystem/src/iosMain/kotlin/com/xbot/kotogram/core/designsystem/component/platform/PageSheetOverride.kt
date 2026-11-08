@@ -26,6 +26,7 @@ import platform.UIKit.UIPresentationController
 import platform.UIKit.UISheetPresentationControllerDetent
 import platform.UIKit.presentationController
 import platform.UIKit.sheetPresentationController
+import platform.UIKit.transitionCoordinator
 import platform.darwin.NSObject
 
 // A page sheet hosting the content in a composition of its own, as Calf's AdaptiveBottomSheet does.
@@ -72,8 +73,20 @@ internal object PageSheetOverride : BottomSheetOverride {
             sheet.modalPresentationStyle = UIModalPresentationPageSheet
             sheet.sheetPresentationController?.detents = listOf(UISheetPresentationControllerDetent.largeDetent())
             sheet.presentationController?.delegate = delegate
-            parent.presentViewController(sheet, animated = true, completion = null)
+            var disposed = false
+            val present = {
+                if (!disposed && sheet.presentingViewController == null) {
+                    parent.presentViewController(sheet, animated = true, completion = null)
+                    // UIKit drops a presentation it refuses without a word; the caller must hear the sheet is gone.
+                    if (sheet.presentingViewController == null) currentOnDismissRequest()
+                }
+            }
+            // UIKit refuses to present while the last sheet still slides away: shown again quickly, the sheet
+            // never came and the caller kept it open. Present once that transition ends.
+            val transition = parent.presentedViewController?.transitionCoordinator ?: parent.transitionCoordinator
+            if (transition == null || !transition.animateAlongsideTransition(null) { present() }) present()
             onDispose {
+                disposed = true
                 if (sheet.presentingViewController != null) sheet.dismissViewControllerAnimated(true, completion = null)
             }
         }
