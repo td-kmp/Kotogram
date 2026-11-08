@@ -19,9 +19,11 @@ import org.w3c.files.File
 import org.w3c.files.FileReader
 import org.w3c.files.get
 
-// Adapted from Calf's FilePickerLauncher.wasmJs.kt and readFileAsBytes (Mohamed Rejeb, Apache-2.0).
+// Adapted from Calf's FilePickerLauncher.wasmJs.kt (Mohamed Rejeb, Apache-2.0).
 @Composable
-internal actual fun platformPhotoPickerLauncher(onPicked: (ByteArray) -> Unit): PhotoPickerLauncher? {
+internal actual fun platformPhotoPickerLauncher(
+    onPicked: (ByteArray) -> Unit
+): PhotoPickerLauncher? {
     val scope = rememberCoroutineScope()
     val currentOnPicked by rememberUpdatedState(onPicked)
     return remember {
@@ -36,7 +38,7 @@ internal actual fun platformPhotoPickerLauncher(onPicked: (ByteArray) -> Unit): 
                 if (file != null) scope.launch { file.readBytes().toJpeg()?.let(currentOnPicked) }
             }
             input.oncancel = { input.remove() }
-            // In the document, or some browsers never fire its events.
+            // Some browsers fire no events for an input outside the document.
             document.body?.appendChild(input)
             input.click()
         }

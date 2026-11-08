@@ -1,9 +1,7 @@
 package com.xbot.kotogram.feature.auth.impl.screen.code
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -31,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.input.ImeAction
@@ -41,6 +38,7 @@ import com.xbot.kotogram.core.designsystem.KotogramLaptopPreview
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.designsystem.component.ButtonState
 import com.xbot.kotogram.core.designsystem.component.CodeField
+import com.xbot.kotogram.core.designsystem.component.LottieImage
 import com.xbot.kotogram.core.designsystem.component.ProminentButton
 import com.xbot.kotogram.core.designsystem.component.TextButton
 import com.xbot.kotogram.core.designsystem.component.TextField
@@ -64,6 +62,7 @@ import com.xbot.kotogram.feature.auth.impl.extensions.isBook
 import com.xbot.kotogram.feature.auth.impl.extensions.localizedMessage
 import io.xbot.tdlib.api.AuthenticationCodeInfo
 import io.xbot.tdlib.api.AuthenticationCodeTypeCall
+import io.xbot.tdlib.api.AuthenticationCodeTypeFragment
 import io.xbot.tdlib.api.AuthenticationCodeTypeSms
 import io.xbot.tdlib.api.AuthenticationCodeTypeSmsPhrase
 import io.xbot.tdlib.api.AuthenticationCodeTypeSmsWord
@@ -101,7 +100,6 @@ internal fun CodeScreenContent(
     val style = rememberStyle(::CodeScreenStyleScope, CodeScreenStyle.Adaptive)
     val posture = mediaQuery { windowPosture }
     val landscape by derivedMediaQuery { windowHeight < style.landscapeHeight }
-    // Telegram for macOS has Next under the field; Telegram for iOS sends a full code by itself and has none.
     val nextVisible = style.mediaQueryInfo.isLaptop
     val info = state.info
     context(style) {
@@ -126,8 +124,19 @@ internal fun CodeScreenContent(
                         verticalArrangement = Arrangement.Center
                     ) {
                         if (!landscape && !posture.isTabletop) {
-                            // Temporary: the step's animation goes here.
-                            Box(Modifier.size(style.animationSize).background(Color.White))
+                            if (info?.type is AuthenticationCodeTypeFragment) {
+                                LottieImage(
+                                    PIRATE_FLAG,
+                                    Modifier.size(style.animationSize),
+                                    iterations = 3
+                                )
+                            } else {
+                                LottieImage(
+                                    path = style.sticker,
+                                    modifier = Modifier.size(style.animationSize),
+                                    colors = style.stickerColors
+                                )
+                            }
                             Spacer(Modifier.height(style.beforeTitle))
                         }
                         if (info != null) CodeHeader(info, onChangeNumberClick)
@@ -161,7 +170,6 @@ internal fun CodeScreenContent(
                         if (info != null) CodeLinks(info, state, onAction, onChangeNumberClick)
                     }
                 }
-                // Half open on a table: the form above the fold, the keyboard below it.
                 if (posture.isTabletop) Spacer(Modifier.weight(1f))
             }
         }
@@ -202,7 +210,6 @@ private fun CodeInput(
             onKeyboardAction = { onAction(CodeScreenAction.OnSubmit) }
         )
     } else {
-        // A word or a phrase from the SMS.
         TextField(
             state = code,
             modifier = Modifier.focusRequester(focusRequester),
@@ -245,7 +252,6 @@ private fun CodeLinks(
             )
         }
     }
-    // Only word and phrase codes have no "· Edit" in their text.
     if (info.type is AuthenticationCodeTypeSmsWord ||
         info.type is AuthenticationCodeTypeSmsPhrase
     ) {
@@ -256,6 +262,7 @@ private fun CodeLinks(
 }
 
 private const val SECONDS_PER_MINUTE = 60
+private const val PIRATE_FLAG = "files/pirate_flag.lottie"
 
 @KotogramPreview
 @Composable

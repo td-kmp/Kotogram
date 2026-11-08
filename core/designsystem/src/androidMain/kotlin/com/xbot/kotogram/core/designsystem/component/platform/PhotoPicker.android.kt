@@ -25,7 +25,9 @@ import kotlinx.coroutines.withContext
 
 // Adapted from Calf's FilePickerLauncher.android.kt (Mohamed Rejeb, Apache-2.0).
 @Composable
-internal actual fun platformPhotoPickerLauncher(onPicked: (ByteArray) -> Unit): PhotoPickerLauncher? {
+internal actual fun platformPhotoPickerLauncher(
+    onPicked: (ByteArray) -> Unit
+): PhotoPickerLauncher? {
     val resolver = LocalContext.current.contentResolver
     val scope = rememberCoroutineScope()
     val currentOnPicked by rememberUpdatedState(onPicked)
@@ -42,11 +44,16 @@ internal actual fun platformPhotoPickerLauncher(onPicked: (ByteArray) -> Unit): 
 
 private fun ContentResolver.readJpeg(uri: Uri): ByteArray? {
     val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-        // ImageDecoder turns the photo upright by its EXIF orientation; BitmapFactory doesn't.
         ImageDecoder.decodeBitmap(ImageDecoder.createSource(this, uri)) { decoder, info, _ ->
             val scale = scale(info.size.width, info.size.height)
             if (scale < 1f) {
-                decoder.setTargetSize((info.size.width * scale).roundToInt(), (info.size.height * scale).roundToInt())
+                decoder.setTargetSize(
+                    (info.size.width * scale).roundToInt(),
+                    (
+                        info.size.height *
+                            scale
+                        ).roundToInt()
+                )
             }
         }
     } else {
@@ -70,4 +77,7 @@ private fun ContentResolver.readJpeg(uri: Uri): ByteArray? {
     }
 }
 
-private fun scale(width: Int, height: Int): Float = minOf(1f, PHOTO_MAX_SIDE.toFloat() / max(width, height))
+private fun scale(width: Int, height: Int): Float = minOf(
+    1f,
+    PHOTO_MAX_SIDE.toFloat() / max(width, height)
+)

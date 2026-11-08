@@ -4,4 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 
 @Composable
-internal actual fun <S> platformNavTransitions(): NavTransitions<S> = remember { iosNavTransitions() }
+internal actual fun <S> platformNavTransitions(): NavTransitions<S> = remember {
+    iosNavTransitions()
+}

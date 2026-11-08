@@ -43,7 +43,9 @@ internal fun interface QrScreenStyle : ComponentStyle<QrScreenStyleScope> {
                     color = theme.colors.onSurface
                 )
             )
-            stepTextStyle(theme.typography.bodyLarge.merge(fontSize = 17.sp, color = theme.colors.onSurface))
+            stepTextStyle(
+                theme.typography.bodyLarge.merge(fontSize = 17.sp, color = theme.colors.onSurface)
+            )
             stepNumberTextStyle(
                 theme.typography.bodyLarge.merge(
                     fontSize = 15.sp,
@@ -52,7 +54,13 @@ internal fun interface QrScreenStyle : ComponentStyle<QrScreenStyleScope> {
                     color = theme.colors.onPrimary
                 )
             )
-            errorTextStyle(theme.typography.bodySmall.merge(color = theme.colors.error, textAlign = TextAlign.Center))
+            buttonTextStyle(theme.typography.bodyLarge.merge(fontSize = 16.sp))
+            errorTextStyle(
+                theme.typography.bodySmall.merge(
+                    color = theme.colors.error,
+                    textAlign = TextAlign.Center
+                )
+            )
             // WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND.
             landscapeHeight(480.dp)
         }
@@ -73,13 +81,24 @@ internal fun interface QrScreenStyle : ComponentStyle<QrScreenStyleScope> {
                         color = theme.colors.onSurface
                     )
                 )
-                stepTextStyle(theme.typography.bodyLarge.merge(fontSize = 13.sp, color = theme.colors.onSurface))
+                stepTextStyle(
+                    theme.typography.bodyLarge.merge(
+                        fontSize = 13.sp,
+                        color = theme.colors.onSurface
+                    )
+                )
                 stepNumberTextStyle(
                     theme.typography.bodyLarge.merge(
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
                         fontFamily = FontFamily.Monospace,
                         color = theme.colors.onPrimary
+                    )
+                )
+                buttonTextStyle(
+                    theme.typography.bodyLarge.merge(
+                        fontSize = 13.5.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 )
             }
@@ -89,15 +108,20 @@ internal fun interface QrScreenStyle : ComponentStyle<QrScreenStyleScope> {
 
 internal infix fun QrScreenStyle.then(other: QrScreenStyle): QrScreenStyle = when {
     other === QrScreenStyle -> this
+
     this === QrScreenStyle -> other
+
     else -> QrScreenStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
     }
 }
 
-internal class QrScreenStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
-    AdaptiveStyleScope<QrScreenStyleScope>,
+@Suppress("TooManyFunctions")
+internal class QrScreenStyleScope(
+    val theme: KotogramTheme.Values,
+    override val mediaQueryInfo: MediaQueryInfo
+) : AdaptiveStyleScope<QrScreenStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
     var horizontalPadding: Dp = Dp.Unspecified
@@ -146,6 +170,9 @@ internal class QrScreenStyleScope(val theme: KotogramTheme.Values, override val 
         private set
 
     var stepNumberTextStyle: TextStyle = TextStyle.Default
+        private set
+
+    var buttonTextStyle: TextStyle = TextStyle.Default
         private set
 
     var errorTextStyle: TextStyle = TextStyle.Default
@@ -216,6 +243,10 @@ internal class QrScreenStyleScope(val theme: KotogramTheme.Values, override val 
 
     fun stepNumberTextStyle(style: TextStyle) {
         stepNumberTextStyle = style
+    }
+
+    fun buttonTextStyle(style: TextStyle) {
+        buttonTextStyle = style
     }
 
     fun errorTextStyle(style: TextStyle) {

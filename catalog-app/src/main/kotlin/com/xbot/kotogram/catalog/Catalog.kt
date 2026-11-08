@@ -61,7 +61,6 @@ fun Catalog(
                     predictivePopTransitionSpec = transitions.predictivePop,
                     entryProvider = entryProvider {
                         entry<CatalogKey.Home> {
-                            // Each screen paints its own background, or they show through each other mid-transition.
                             CatalogHome(
                                 pages = CatalogPages,
                                 onPageClick = { backStack.add(CatalogKey.Page(it.id)) },

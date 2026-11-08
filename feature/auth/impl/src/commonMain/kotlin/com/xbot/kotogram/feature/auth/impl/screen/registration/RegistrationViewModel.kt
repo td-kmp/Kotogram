@@ -74,7 +74,11 @@ internal class RegistrationViewModel(
         val first = firstName.text.toString().trim()
         if (first.isEmpty() || state.isSubmitting) return@intent
         reduce { state.copy(isSubmitting = true, error = null) }
-        val error = authRepository.registerUser(first, lastName.text.toString().trim(), photo).leftOrNull()
+        val error = authRepository.registerUser(
+            first,
+            lastName.text.toString().trim(),
+            photo
+        ).leftOrNull()
         reduce { state.copy(isSubmitting = false, error = error) }
     }
 }

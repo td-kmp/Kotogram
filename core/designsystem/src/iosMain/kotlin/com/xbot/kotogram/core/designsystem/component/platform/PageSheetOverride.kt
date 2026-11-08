@@ -46,7 +46,9 @@ internal object PageSheetOverride : BottomSheetOverride {
                 val own = currentCompositionLocalContext
                 CompositionLocalProvider(locals.value) {
                     CompositionLocalProvider(own) {
-                        CompositionLocalProvider(LocalContentColor provides sheetStyle.value.contentColor) {
+                        CompositionLocalProvider(
+                            LocalContentColor provides sheetStyle.value.contentColor
+                        ) {
                             Column(
                                 modifier = sheetModifier.value
                                     .fillMaxSize()
@@ -55,7 +57,9 @@ internal object PageSheetOverride : BottomSheetOverride {
                                 // The sheet's own controller: UIKit slides it down, then the caller drops it.
                                 val controller = LocalUIViewController.current
                                 val scope = DefaultBottomSheetScope(this) {
-                                    controller.dismissViewControllerAnimated(true) { currentOnDismissRequest() }
+                                    controller.dismissViewControllerAnimated(true) {
+                                        currentOnDismissRequest()
+                                    }
                                 }
                                 sheetContent.value(scope)
                             }
@@ -71,23 +75,33 @@ internal object PageSheetOverride : BottomSheetOverride {
         }
         DisposableEffect(sheet) {
             sheet.modalPresentationStyle = UIModalPresentationPageSheet
-            sheet.sheetPresentationController?.detents = listOf(UISheetPresentationControllerDetent.largeDetent())
+            sheet.sheetPresentationController?.detents =
+                listOf(UISheetPresentationControllerDetent.largeDetent())
             sheet.presentationController?.delegate = delegate
             var disposed = false
             val present = {
                 if (!disposed && sheet.presentingViewController == null) {
                     parent.presentViewController(sheet, animated = true, completion = null)
-                    // UIKit drops a presentation it refuses without a word; the caller must hear the sheet is gone.
+                    // UIKit refuses silently, so the caller is told the sheet is gone.
                     if (sheet.presentingViewController == null) currentOnDismissRequest()
                 }
             }
-            // UIKit refuses to present while the last sheet still slides away: shown again quickly, the sheet
-            // never came and the caller kept it open. Present once that transition ends.
-            val transition = parent.presentedViewController?.transitionCoordinator ?: parent.transitionCoordinator
-            if (transition == null || !transition.animateAlongsideTransition(null) { present() }) present()
+            // UIKit refuses to present while the last sheet still slides away.
+            val transition =
+                parent.presentedViewController?.transitionCoordinator
+                    ?: parent.transitionCoordinator
+            if (transition == null ||
+                !transition.animateAlongsideTransition(null) { present() }
+            ) {
+                present()
+            }
             onDispose {
                 disposed = true
-                if (sheet.presentingViewController != null) sheet.dismissViewControllerAnimated(true, completion = null)
+                if (sheet.presentingViewController !=
+                    null
+                ) {
+                    sheet.dismissViewControllerAnimated(true, completion = null)
+                }
             }
         }
     }
@@ -96,7 +110,9 @@ internal object PageSheetOverride : BottomSheetOverride {
 private class SheetDismissDelegate(private val onDismiss: () -> Unit) :
     NSObject(),
     UIAdaptivePresentationControllerDelegateProtocol {
-    override fun presentationControllerDidDismiss(presentationController: UIPresentationController) {
+    override fun presentationControllerDidDismiss(
+        presentationController: UIPresentationController
+    ) {
         onDismiss()
     }
 }

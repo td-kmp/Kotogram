@@ -1,9 +1,7 @@
 package com.xbot.kotogram.feature.auth.impl.screen.password
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -32,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.isSpecified
@@ -41,6 +38,7 @@ import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.designsystem.component.ButtonState
 import com.xbot.kotogram.core.designsystem.component.CodeField
 import com.xbot.kotogram.core.designsystem.component.IconButton
+import com.xbot.kotogram.core.designsystem.component.LottieImage
 import com.xbot.kotogram.core.designsystem.component.ProminentButton
 import com.xbot.kotogram.core.designsystem.component.SecureTextField
 import com.xbot.kotogram.core.designsystem.component.TextButton
@@ -89,10 +87,12 @@ internal fun PasswordScreenContent(
     val style = rememberStyle(::PasswordScreenStyleScope, PasswordScreenStyle.Adaptive)
     val posture = mediaQuery { windowPosture }
     val landscape by derivedMediaQuery { windowHeight < style.landscapeHeight }
-    // At the bottom as Telegram for iOS has it; under the field on laptops and phones on their side.
     val actionAtBottom = !style.mediaQueryInfo.isLaptop && !landscape
     context(style) {
-        Scaffold(modifier = modifier, contentWindowInsets = WindowInsets.safeDrawing) { innerPadding ->
+        Scaffold(
+            modifier = modifier,
+            contentWindowInsets = WindowInsets.safeDrawing
+        ) { innerPadding ->
             Column(
                 Modifier
                     .fillMaxHeight()
@@ -110,8 +110,7 @@ internal fun PasswordScreenContent(
                         verticalArrangement = Arrangement.Center
                     ) {
                         if (!landscape && !posture.isTabletop) {
-                            // Temporary: the step's animation goes here.
-                            Box(Modifier.size(style.animationSize).background(Color.White))
+                            LottieImage(STICKER, Modifier.size(style.animationSize))
                             Spacer(Modifier.height(style.beforeTitle))
                         }
                         val title = if (state.isRecovering) {
@@ -123,7 +122,10 @@ internal fun PasswordScreenContent(
                         Spacer(Modifier.height(style.beforeInfo))
                         Text(
                             text = if (state.isRecovering) {
-                                stringResource(Res.string.twostepauth_recoverysent, state.recoveryEmailPattern)
+                                stringResource(
+                                    Res.string.twostepauth_recoverysent,
+                                    state.recoveryEmailPattern
+                                )
                             } else {
                                 stringResource(Res.string.login_new_password_info)
                             },
@@ -140,7 +142,12 @@ internal fun PasswordScreenContent(
                                 onKeyboardAction = { onAction(PasswordScreenAction.OnSubmit) }
                             )
                         } else {
-                            PasswordField(state, password, onAction, Modifier.focusRequester(focusRequester))
+                            PasswordField(
+                                state,
+                                password,
+                                onAction,
+                                Modifier.focusRequester(focusRequester)
+                            )
                         }
                         Crossfade(
                             targetState = state.error,
@@ -150,7 +157,10 @@ internal fun PasswordScreenContent(
                                 .padding(top = style.beforeError)
                         ) { error ->
                             if (error != null) {
-                                Text(text = stringResource(error.localizedMessage()), style = style.errorTextStyle)
+                                Text(
+                                    text = stringResource(error.localizedMessage()),
+                                    style = style.errorTextStyle
+                                )
                             }
                         }
                         if (!actionAtBottom) {
@@ -158,13 +168,14 @@ internal fun PasswordScreenContent(
                             Spacer(Modifier.height(style.beforeLinks))
                         }
                         if (!state.isRecovering && state.hasRecoveryEmail) {
-                            TextButton(onClick = { onAction(PasswordScreenAction.OnForgotPassword) }) {
+                            TextButton(onClick = {
+                                onAction(PasswordScreenAction.OnForgotPassword)
+                            }) {
                                 Text(stringResource(Res.string.login_passwordforgot))
                             }
                         }
                     }
                 }
-                // Half open on a table: the form above the fold, the keyboard below it.
                 if (posture.isTabletop) Spacer(Modifier.weight(1f))
                 if (actionAtBottom) {
                     PasswordAction(
@@ -192,8 +203,9 @@ private fun PasswordField(
     SecureTextField(
         state = password,
         modifier = modifier.contentWidth(),
-        // Telegram for macOS shows the hint in place of "Enter Password".
-        placeholder = { Text(state.hint.ifEmpty { stringResource(Res.string.login_new_password_placeholder) }) },
+        placeholder = {
+            Text(state.hint.ifEmpty { stringResource(Res.string.login_new_password_placeholder) })
+        },
         trailingIcon = {
             IconButton(
                 icon = if (revealed) KotogramIcons.EyeOff else KotogramIcons.Eye,
@@ -202,7 +214,11 @@ private fun PasswordField(
             )
         },
         isError = state.error != null,
-        textObfuscationMode = if (revealed) TextObfuscationMode.Visible else TextObfuscationMode.RevealLastTyped,
+        textObfuscationMode = if (revealed) {
+            TextObfuscationMode.Visible
+        } else {
+            TextObfuscationMode.RevealLastTyped
+        },
         onKeyboardAction = { onAction(PasswordScreenAction.OnSubmit) }
     )
 }
@@ -223,12 +239,16 @@ private fun PasswordAction(
 }
 
 context(style: PasswordScreenStyleScope)
-private fun Modifier.contentWidth(): Modifier =
-    if (style.contentMaxWidth.isSpecified) widthIn(max = style.contentMaxWidth).fillMaxWidth() else this
+private fun Modifier.contentWidth(): Modifier {
+    val maxWidth = style.contentMaxWidth
+    return if (maxWidth.isSpecified) widthIn(max = maxWidth).fillMaxWidth() else this
+}
 
 @KotogramPreview
 @Composable
-private fun PasswordScreenPreview(@PreviewParameter(PasswordScreenStateProvider::class) state: PasswordScreenState) {
+private fun PasswordScreenPreview(
+    @PreviewParameter(PasswordScreenStateProvider::class) state: PasswordScreenState
+) {
     PasswordScreenContent(
         state = state,
         password = TextFieldState("password"),
@@ -255,3 +275,5 @@ private class PasswordScreenStateProvider : PreviewParameterProvider<PasswordScr
         protected.copy(isRecovering = true)
     )
 }
+
+private const val STICKER = "files/keychain.lottie"

@@ -9,20 +9,39 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.unveilIn
 import androidx.compose.animation.veilOut
 
-// UINavigationController's push and pop, copied from Compose Multiplatform's NavDisplay.ios.kt (navigation3-ui
-// 1.2.0-rc01, Apache-2.0).
+// Copied from Compose Multiplatform's NavDisplay.ios.kt (Apache-2.0).
 @OptIn(ExperimentalAnimationApi::class)
 internal fun <S> iosNavTransitions(): NavTransitions<S> = NavTransitions(
     push = {
         ContentTransform(
             slideIntoContainer(SlideDirection.Start, tween(DURATION, easing = IosEasing)),
-            slideOutOfContainer(SlideDirection.Start, tween(DURATION, easing = IosEasing), targetOffset = { it / 4 }) +
+            slideOutOfContainer(
+                SlideDirection.Start,
+                tween(
+                    DURATION,
+                    easing = IosEasing
+                ),
+                targetOffset = {
+                    it /
+                        4
+                }
+            ) +
                 veilOut(tween(DURATION, easing = IosEasing))
         )
     },
     pop = {
         ContentTransform(
-            slideIntoContainer(SlideDirection.End, tween(DURATION, easing = IosEasing), initialOffset = { it / 4 }) +
+            slideIntoContainer(
+                SlideDirection.End,
+                tween(
+                    DURATION,
+                    easing = IosEasing
+                ),
+                initialOffset = {
+                    it /
+                        4
+                }
+            ) +
                 unveilIn(tween(DURATION, easing = IosEasing)),
             slideOutOfContainer(SlideDirection.End, tween(DURATION, easing = IosEasing))
         )
@@ -30,7 +49,10 @@ internal fun <S> iosNavTransitions(): NavTransitions<S> = NavTransitions(
     predictivePop = { edge ->
         val towards = if (edge == EDGE_RIGHT) SlideDirection.Left else SlideDirection.Right
         ContentTransform(
-            slideIntoContainer(towards, tween(DURATION, easing = LinearEasing), initialOffset = { it / 4 }) +
+            slideIntoContainer(towards, tween(DURATION, easing = LinearEasing), initialOffset = {
+                it /
+                    4
+            }) +
                 unveilIn(tween(DURATION, easing = LinearEasing)),
             slideOutOfContainer(towards, tween(DURATION, easing = LinearEasing))
         )

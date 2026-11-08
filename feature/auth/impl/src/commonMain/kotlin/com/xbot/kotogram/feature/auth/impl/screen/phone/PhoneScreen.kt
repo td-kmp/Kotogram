@@ -1,9 +1,7 @@
 package com.xbot.kotogram.feature.auth.impl.screen.phone
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -28,13 +26,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.isSpecified
 import com.xbot.kotogram.core.designsystem.KotogramLaptopPreview
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.designsystem.component.ButtonState
+import com.xbot.kotogram.core.designsystem.component.LottieImage
 import com.xbot.kotogram.core.designsystem.component.OptionLabel
 import com.xbot.kotogram.core.designsystem.component.OptionPicker
 import com.xbot.kotogram.core.designsystem.component.PhoneNumberField
@@ -105,7 +103,10 @@ internal fun PhoneScreenContent(
     val invalidCountry = stringResource(Res.string.login_invalidcountrycode)
 
     context(style) {
-        Scaffold(modifier = modifier, contentWindowInsets = WindowInsets.safeDrawing) { innerPadding ->
+        Scaffold(
+            modifier = modifier,
+            contentWindowInsets = WindowInsets.safeDrawing
+        ) { innerPadding ->
             Column(
                 Modifier
                     .fillMaxHeight()
@@ -123,11 +124,13 @@ internal fun PhoneScreenContent(
                         verticalArrangement = Arrangement.Center
                     ) {
                         if (!landscape && !posture.isTabletop) {
-                            // Temporary: Kotogram's logo goes here.
-                            Box(Modifier.size(style.logoSize).background(Color.White))
+                            LottieImage(STICKER, Modifier.size(style.logoSize))
                             Spacer(Modifier.height(style.beforeTitle))
                         }
-                        Text(text = stringResource(Res.string.app_name), style = style.titleTextStyle)
+                        Text(
+                            text = stringResource(Res.string.app_name),
+                            style = style.titleTextStyle
+                        )
                         Spacer(Modifier.height(style.beforeInfo))
                         Text(
                             text = stringResource(Res.string.login_new_phonenumber),
@@ -137,12 +140,18 @@ internal fun PhoneScreenContent(
                         Spacer(Modifier.height(style.beforeField))
                         PhoneNumberField(
                             country = state.country?.let { "${it.flagEmoji} ${it.name}" }
-                                ?: invalidCountry.takeIf { state.callingCode.isNotEmpty() }.orEmpty(),
-                            onCountryClick = { onAction(PhoneScreenAction.OnCountryPickerVisibilityChange(true)) },
+                                ?: invalidCountry.takeIf {
+                                    state.callingCode.isNotEmpty()
+                                }.orEmpty(),
+                            onCountryClick = {
+                                onAction(PhoneScreenAction.OnCountryPickerVisibilityChange(true))
+                            },
                             state = phoneNumber,
                             callingCodeLength = state.callingCode.length,
                             numberPattern = state.numberPattern,
-                            numberPlaceholder = stringResource(Res.string.login_phonefieldplaceholder),
+                            numberPlaceholder = stringResource(
+                                Res.string.login_phonefieldplaceholder
+                            ),
                             onSubmit = { onAction(PhoneScreenAction.OnSubmit) },
                             readOnly = state.isSubmitting,
                             focusRequester = focusRequester,
@@ -157,7 +166,10 @@ internal fun PhoneScreenContent(
                                 .padding(top = style.beforeError)
                         ) { error ->
                             if (error != null) {
-                                Text(text = stringResource(error.localizedMessage()), style = style.errorTextStyle)
+                                Text(
+                                    text = stringResource(error.localizedMessage()),
+                                    style = style.errorTextStyle
+                                )
                             }
                         }
                         if (!actionAtBottom) {
@@ -207,8 +219,10 @@ private fun PhoneAction(
 }
 
 context(style: PhoneScreenStyleScope)
-private fun Modifier.contentWidth(): Modifier =
-    if (style.contentMaxWidth.isSpecified) widthIn(max = style.contentMaxWidth).fillMaxWidth() else this
+private fun Modifier.contentWidth(): Modifier {
+    val maxWidth = style.contentMaxWidth
+    return if (maxWidth.isSpecified) widthIn(max = maxWidth).fillMaxWidth() else this
+}
 
 @Composable
 private fun CountryPicker(state: PhoneScreenState, onAction: (PhoneScreenAction) -> Unit) {
@@ -283,3 +297,5 @@ private class PhoneScreenStateProvider : PreviewParameterProvider<PhoneScreenSta
         entered.copy(error = AuthError.InvalidPhoneNumber)
     )
 }
+
+private const val STICKER = "files/phone.lottie"

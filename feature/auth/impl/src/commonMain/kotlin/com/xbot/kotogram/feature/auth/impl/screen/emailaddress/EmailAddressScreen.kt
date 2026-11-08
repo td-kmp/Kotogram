@@ -1,9 +1,7 @@
 package com.xbot.kotogram.feature.auth.impl.screen.emailaddress
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -31,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -40,6 +37,7 @@ import androidx.compose.ui.unit.isSpecified
 import com.xbot.kotogram.core.designsystem.KotogramLaptopPreview
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.designsystem.component.ButtonState
+import com.xbot.kotogram.core.designsystem.component.LottieImage
 import com.xbot.kotogram.core.designsystem.component.ProminentButton
 import com.xbot.kotogram.core.designsystem.component.TextField
 import com.xbot.kotogram.core.designsystem.media.derivedMediaQuery
@@ -81,7 +79,6 @@ internal fun EmailAddressScreenContent(
     val style = rememberStyle(::EmailAddressScreenStyleScope, EmailAddressScreenStyle.Adaptive)
     val posture = mediaQuery { windowPosture }
     val landscape by derivedMediaQuery { windowHeight < style.landscapeHeight }
-    // At the bottom as Telegram for iOS has it; under the field on laptops and phones on their side.
     val actionAtBottom = !style.mediaQueryInfo.isLaptop && !landscape
     context(style) {
         Scaffold(
@@ -105,8 +102,7 @@ internal fun EmailAddressScreenContent(
                         verticalArrangement = Arrangement.Center
                     ) {
                         if (!landscape && !posture.isTabletop) {
-                            // Temporary: the step's animation goes here.
-                            Box(Modifier.size(style.animationSize).background(Color.White))
+                            LottieImage(STICKER, Modifier.size(style.animationSize))
                             Spacer(Modifier.height(style.beforeTitle))
                         }
                         Text(
@@ -151,7 +147,6 @@ internal fun EmailAddressScreenContent(
                         if (!actionAtBottom) EmailAddressAction(state, email, onAction)
                     }
                 }
-                // Half open on a table: the form above the fold, the keyboard below it.
                 if (posture.isTabletop) Spacer(Modifier.weight(1f))
                 if (actionAtBottom) {
                     EmailAddressAction(
@@ -185,12 +180,9 @@ private fun EmailAddressAction(
 }
 
 context(style: EmailAddressScreenStyleScope)
-private fun Modifier.contentWidth(): Modifier = if (style.contentMaxWidth.isSpecified) {
-    widthIn(
-        max = style.contentMaxWidth
-    ).fillMaxWidth()
-} else {
-    this
+private fun Modifier.contentWidth(): Modifier {
+    val maxWidth = style.contentMaxWidth
+    return if (maxWidth.isSpecified) widthIn(max = maxWidth).fillMaxWidth() else this
 }
 
 @KotogramPreview
@@ -213,3 +205,5 @@ private class EmailAddressScreenStateProvider : PreviewParameterProvider<EmailAd
         EmailAddressScreenState(error = AuthError.InvalidEmail)
     )
 }
+
+private const val STICKER = "files/mailbox.lottie"

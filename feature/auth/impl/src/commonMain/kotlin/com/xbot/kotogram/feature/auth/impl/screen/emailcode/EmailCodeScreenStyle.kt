@@ -16,8 +16,6 @@ import com.xbot.kotogram.core.designsystem.style.DefaultStyleResolver
 import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 import com.xbot.kotogram.core.designsystem.style.StyleResolver
 
-// Telegram for iOS's code entry for an email code (AuthorizationSequenceCodeEntryControllerNode) on touch screens, and
-// Telegram for macOS's (Auth_CodeEntry, Auth_Insets) on a laptop, in their points.
 @Suppress("MagicNumber")
 internal fun interface EmailCodeScreenStyle : ComponentStyle<EmailCodeScreenStyleScope> {
     companion object : EmailCodeScreenStyle {
@@ -54,12 +52,12 @@ internal fun interface EmailCodeScreenStyle : ComponentStyle<EmailCodeScreenStyl
                 )
             )
             errorFadeSpec(tween(200))
-            // WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND.
             landscapeHeight(480.dp)
         }
 
         val Adaptive = Default then EmailCodeScreenStyle {
             laptop {
+                infoWidth(380.dp)
                 animationSize(140.dp)
                 beforeTitle(20.dp)
                 beforeField(20.dp)
@@ -121,7 +119,6 @@ internal class EmailCodeScreenStyleScope(
     var beforeError: Dp = Dp.Unspecified
         private set
 
-    // Under the field, with the error in it: down to the links on touch screens, to Next on a laptop.
     var afterField: Dp = Dp.Unspecified
         private set
 

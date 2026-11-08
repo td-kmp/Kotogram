@@ -42,7 +42,6 @@ internal class EmailCodeViewModel(
         }
     }
 
-    // A full code goes by itself. Typing clears an error; the field cleared after one doesn't.
     private suspend fun Syntax<EmailCodeScreenState, Nothing>.followInput() {
         snapshotFlow { code.text.toString() }.drop(1).collect { value ->
             if (value.isNotEmpty()) reduce { state.copy(error = null) }

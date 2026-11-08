@@ -17,8 +17,6 @@ import com.xbot.kotogram.core.designsystem.style.DefaultStyleResolver
 import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 import com.xbot.kotogram.core.designsystem.style.StyleResolver
 
-// Telegram for iOS's code entry (AuthorizationSequenceCodeEntryControllerNode) on touch screens, and Telegram for
-// macOS's (Auth_CodeEntry, Auth_Insets) on a laptop, in their points.
 @Suppress("MagicNumber")
 internal fun interface CodeScreenStyle : ComponentStyle<CodeScreenStyleScope> {
     companion object : CodeScreenStyle {
@@ -34,6 +32,7 @@ internal fun interface CodeScreenStyle : ComponentStyle<CodeScreenStyleScope> {
             afterField(50.dp)
             beforeLinks(0.dp)
             infoWidth(Dp.Infinity)
+            sticker("files/message.lottie")
             linkColor(theme.colors.primary)
             titleTextStyle(
                 theme.typography.bodyLarge.merge(
@@ -57,12 +56,21 @@ internal fun interface CodeScreenStyle : ComponentStyle<CodeScreenStyleScope> {
                 )
             )
             errorFadeSpec(tween(200))
-            // WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND.
             landscapeHeight(480.dp)
         }
 
         val Adaptive = Default then CodeScreenStyle {
             laptop {
+                infoWidth(380.dp)
+                sticker("files/code_note.lottie")
+                stickerColors(
+                    mapOf(
+                        "Bubble.Group 1.Fill 1" to theme.colors.primary,
+                        "Note.Path.Fill 1" to theme.colors.onSurfaceVariant,
+                        "Note.Path-2.Stroke 1" to theme.colors.onSurfaceVariant,
+                        "Phone.Combined-Shape.Fill 1" to theme.colors.onSurfaceVariant
+                    )
+                )
                 animationSize(140.dp)
                 beforeTitle(20.dp)
                 beforeField(20.dp)
@@ -124,7 +132,6 @@ internal class CodeScreenStyleScope(
     var beforeError: Dp = Dp.Unspecified
         private set
 
-    // Under the field, with the error in it: down to the links on touch screens, to Next on a laptop.
     var afterField: Dp = Dp.Unspecified
         private set
 
@@ -132,6 +139,12 @@ internal class CodeScreenStyleScope(
         private set
 
     var infoWidth: Dp = Dp.Unspecified
+        private set
+
+    var sticker: String = ""
+        private set
+
+    var stickerColors: Map<String, Color> = emptyMap()
         private set
 
     var linkColor: Color = Color.Unspecified
@@ -186,6 +199,14 @@ internal class CodeScreenStyleScope(
 
     fun infoWidth(width: Dp) {
         infoWidth = width
+    }
+
+    fun sticker(path: String) {
+        sticker = path
+    }
+
+    fun stickerColors(colors: Map<String, Color>) {
+        stickerColors = colors
     }
 
     fun linkColor(color: Color) {

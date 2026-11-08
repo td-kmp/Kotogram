@@ -13,8 +13,6 @@ import com.xbot.kotogram.core.designsystem.style.DefaultStyleResolver
 import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 import com.xbot.kotogram.core.designsystem.style.StyleResolver
 
-// Laid out as the other steps: Telegram for iOS's AuthorizationUI on touch screens, Telegram for macOS's Auth_Insets on
-// a laptop, in their points.
 @Suppress("MagicNumber")
 internal fun interface PremiumPurchaseScreenStyle :
     ComponentStyle<PremiumPurchaseScreenStyleScope> {
@@ -44,13 +42,13 @@ internal fun interface PremiumPurchaseScreenStyle :
                     textAlign = TextAlign.Center
                 )
             )
-            // WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND.
             landscapeHeight(480.dp)
             beforeAction(40.dp)
         }
 
         val Adaptive = Default then PremiumPurchaseScreenStyle {
             laptop {
+                infoWidth(380.dp)
                 contentMaxWidth(Dp.Unspecified)
                 animationSize(140.dp)
                 beforeTitle(20.dp)
@@ -98,7 +96,6 @@ internal class PremiumPurchaseScreenStyleScope(
     var horizontalPadding: Dp = Dp.Unspecified
         private set
 
-    // Unspecified for the content's own width.
     var contentMaxWidth: Dp = Dp.Unspecified
         private set
 
@@ -126,7 +123,6 @@ internal class PremiumPurchaseScreenStyleScope(
     var landscapeHeight: Dp = Dp.Unspecified
         private set
 
-    // Down to Back under the text on laptops and phones on their side.
     var beforeAction: Dp = Dp.Unspecified
         private set
 

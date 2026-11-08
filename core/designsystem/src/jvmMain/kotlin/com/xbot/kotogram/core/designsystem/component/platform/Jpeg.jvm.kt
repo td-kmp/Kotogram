@@ -10,7 +10,6 @@ import org.jetbrains.skia.MipmapMode
 import org.jetbrains.skia.Rect
 import org.jetbrains.skia.Surface
 
-// Skia doesn't apply EXIF orientation: a rotated photo from a camera comes out on its side.
 internal fun ByteArray.toJpeg(): ByteArray? {
     val image = runCatching { Image.makeFromEncoded(this) }.getOrNull() ?: return null
     val scale = minOf(1f, PHOTO_MAX_SIDE.toFloat() / max(image.width, image.height))
@@ -25,5 +24,8 @@ internal fun ByteArray.toJpeg(): ByteArray? {
         null,
         true
     )
-    return surface.makeImageSnapshot().encodeToData(EncodedImageFormat.JPEG, PHOTO_JPEG_QUALITY)?.bytes
+    return surface.makeImageSnapshot().encodeToData(
+        EncodedImageFormat.JPEG,
+        PHOTO_JPEG_QUALITY
+    )?.bytes
 }

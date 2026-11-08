@@ -24,21 +24,22 @@ internal class AuthViewModel(
 
     private var firstStep: AuthStep? = null
 
-    override val container = orbitContainer<AuthScreenState, Nothing>(AuthScreenState(flow = flow)) {
-        combine(loginEntry.method, authRepository.authorizationState, dismissedStep, ::Triple)
-            .collect { (method, authorizationState, dismissed) ->
-                val step = authorizationState.toAuthStep()
-                if (dismissed != null && step != dismissed) dismissedStep.value = null
-                val backStack = backStack(method, step, dismissed)
-                val first = firstStep ?: backStack.last().also { firstStep = it }
-                reduce {
-                    state.copy(
-                        backStack = backStack,
-                        hasLeftFirstStep = state.hasLeftFirstStep || backStack.last() != first
-                    )
+    override val container =
+        orbitContainer<AuthScreenState, Nothing>(AuthScreenState(flow = flow)) {
+            combine(loginEntry.method, authRepository.authorizationState, dismissedStep, ::Triple)
+                .collect { (method, authorizationState, dismissed) ->
+                    val step = authorizationState.toAuthStep()
+                    if (dismissed != null && step != dismissed) dismissedStep.value = null
+                    val backStack = backStack(method, step, dismissed)
+                    val first = firstStep ?: backStack.last().also { firstStep = it }
+                    reduce {
+                        state.copy(
+                            backStack = backStack,
+                            hasLeftFirstStep = state.hasLeftFirstStep || backStack.last() != first
+                        )
+                    }
                 }
-            }
-    }
+        }
 
     fun onAction(action: AuthScreenAction) {
         when (action) {

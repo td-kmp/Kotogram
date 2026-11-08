@@ -106,7 +106,6 @@ internal fun RegistrationScreenContent(
     val style = rememberStyle(::RegistrationScreenStyleScope, RegistrationScreenStyle.Adaptive)
     val posture = mediaQuery { windowPosture }
     val landscape by derivedMediaQuery { windowHeight < style.landscapeHeight }
-    // At the bottom as Telegram for iOS has it; under the fields on laptops and phones on their side.
     val actionAtBottom = !style.mediaQueryInfo.isLaptop && !landscape
     val canSubmit = firstName.text.isNotBlank()
     context(style) {
@@ -176,7 +175,6 @@ internal fun RegistrationScreenContent(
                         )
                     }
                 }
-                // Half open on a table: the form above the fold, the keyboard below it.
                 if (posture.isTabletop) Spacer(Modifier.weight(1f))
                 if (actionAtBottom) {
                     RegistrationAction(
@@ -197,7 +195,8 @@ internal fun RegistrationScreenContent(
 @Composable
 context(style: RegistrationScreenStyleScope)
 private fun Avatar(photo: ByteArray?, onAction: (RegistrationScreenAction) -> Unit) {
-    val picker = rememberPhotoPickerLauncher { onAction(RegistrationScreenAction.OnPhotoPicked(it)) }
+    val picker =
+        rememberPhotoPickerLauncher { onAction(RegistrationScreenAction.OnPhotoPicked(it)) }
     val image by produceState<ImageBitmap?>(null, photo) {
         value = photo?.let { withContext(Dispatchers.Default) { it.decodeToImageBitmap() } }
     }
@@ -284,12 +283,9 @@ private fun TermsDialog(terms: String, onAction: (RegistrationScreenAction) -> U
 }
 
 context(style: RegistrationScreenStyleScope)
-private fun Modifier.contentWidth(): Modifier = if (style.contentMaxWidth.isSpecified) {
-    widthIn(
-        max = style.contentMaxWidth
-    ).fillMaxWidth()
-} else {
-    this
+private fun Modifier.contentWidth(): Modifier {
+    val maxWidth = style.contentMaxWidth
+    return if (maxWidth.isSpecified) widthIn(max = maxWidth).fillMaxWidth() else this
 }
 
 @KotogramPreview

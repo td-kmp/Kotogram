@@ -88,12 +88,13 @@ internal class DefaultAuthRepository(
             if (photo != null) setPhotoWhenReady(photo)
         }
 
-    // Telegram for iOS sets the photo the same way, once signed up. On the account's scope: the sign-in's screens
-    // go away with Ready.
+    // The account's scope: the sign-in screens are gone by Ready.
     private fun setPhotoWhenReady(photo: ByteArray) {
         context.scope.launch {
             client.authorizationState.first { it is AuthorizationStateReady }
-            client.sendCatching(SetProfilePhoto(photo = InputChatPhotoStatic(photos.add(photo)), isPublic = false))
+            client.sendCatching(
+                SetProfilePhoto(photo = InputChatPhotoStatic(photos.add(photo)), isPublic = false)
+            )
         }
     }
 

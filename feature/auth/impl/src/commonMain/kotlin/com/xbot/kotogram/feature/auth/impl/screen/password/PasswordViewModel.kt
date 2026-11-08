@@ -46,7 +46,6 @@ internal class PasswordViewModel(
         }
     }
 
-    // Typing clears an error, and a full recovery code goes by itself.
     private suspend fun Syntax<PasswordScreenState, Nothing>.followInput() {
         val passwordInput = snapshotFlow { password.text.toString() }.drop(1)
         val codeInput = snapshotFlow { recoveryCode.text.toString() }.drop(1)
@@ -83,7 +82,6 @@ internal class PasswordViewModel(
     }
 
     companion object {
-        // TwoStepAuth.RecoveryCodeHelp: "the 6-digit code we've sent there".
         const val RECOVERY_CODE_LENGTH = 6
     }
 }

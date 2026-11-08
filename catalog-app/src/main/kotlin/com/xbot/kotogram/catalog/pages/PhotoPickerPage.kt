@@ -32,9 +32,9 @@ internal val PhotoPickerPage = CatalogPage(
     id = "photo-picker",
     section = CatalogSection.Components,
     name = "Photo picker",
-    description = "The system's picker of one image, which comes as a JPEG of at most 2048 a side: the Photo " +
-        "Picker on Android, PHPicker on iOS, NSOpenPanel on macOS and the browser's file dialog on the web. " +
-        "Other desktops have none.",
+    description = "The system's picker of one image, which comes as a JPEG of at most 2048 " +
+        "a side: the Photo Picker on Android, PHPicker on iOS, NSOpenPanel on macOS and " +
+        "the browser's file dialog on the web. Other desktops have none.",
     examples = listOf(
         CatalogExample("Pick a photo") { PickedPhoto() }
     )

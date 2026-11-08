@@ -84,6 +84,7 @@ import androidx.compose.ui.unit.sp
 import com.xbot.kotogram.core.designsystem.KotogramLaptopPreview
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.core.designsystem.component.platform.OneTimeCodeImeOptions
 import com.xbot.kotogram.core.designsystem.style.AdaptiveStyleScope
 import com.xbot.kotogram.core.designsystem.style.ComponentStyle
 import com.xbot.kotogram.core.designsystem.style.DefaultStyleResolver
@@ -108,6 +109,7 @@ fun CodeField(
     @Suppress("NAME_SHADOWING")
     val interactionSource = interactionSource ?: remember { MutableInteractionSource() }
     val inputTransformation = remember(length) { CodeInputTransformation(length) }
+
     @Suppress("NAME_SHADOWING")
     val style = rememberStyle(::CodeFieldStyleScope, CodeFieldStyle.Adaptive then style)
     val shake = remember { Animatable(0f) }
@@ -189,7 +191,10 @@ private fun CodeFieldDecoration(
         }
         AnimatedContent(
             targetState = supportingText,
-            transitionSpec = { fadeIn(tween(style.digitMillis)) togetherWith fadeOut(tween(style.digitMillis)) },
+            transitionSpec = {
+                fadeIn(tween(style.digitMillis)) togetherWith
+                    fadeOut(tween(style.digitMillis))
+            },
             contentKey = { it != null },
             label = "CodeFieldSupportingText"
         ) { content ->
@@ -243,7 +248,15 @@ private fun CodeCell(
     colors: TextFieldColors
 ) {
     val borderColor by animateColorAsState(
-        targetValue = if (active) colors.indicatorColor(enabled, isError, focused = true) else Color.Transparent,
+        targetValue = if (active) {
+            colors.indicatorColor(
+                enabled,
+                isError,
+                focused = true
+            )
+        } else {
+            Color.Transparent
+        },
         animationSpec = style.borderSpec,
         label = "CodeCellBorder"
     )
@@ -285,15 +298,31 @@ private fun CodeCell(
 
 // Cells grow with the digits, which follow the system's font scale, and narrow when the row runs out of width.
 private class CodeCellsMeasurePolicy(private val style: CodeFieldStyleScope) : MeasurePolicy {
-    override fun MeasureScope.measure(measurables: List<Measurable>, constraints: Constraints): MeasureResult {
+    override fun MeasureScope.measure(
+        measurables: List<Measurable>,
+        constraints: Constraints
+    ): MeasureResult {
         val count = measurables.size
         val gap = style.cellSpacing.roundToPx()
         val fontSize = style.textStyle.fontSize
-        val fontScale = if (fontSize.isSp) maxOf(1f, fontSize.toPx() / fontSize.value.dp.toPx()) else 1f
+        val fontScale = if (fontSize.isSp) {
+            maxOf(
+                1f,
+                fontSize.toPx() / fontSize.value.dp.toPx()
+            )
+        } else {
+            1f
+        }
         val cellWidth = (style.cellSize.width.toPx() * fontScale).roundToInt()
         val height = (style.cellSize.height.toPx() * fontScale).roundToInt()
         val gaps = gap * (count - 1).coerceAtLeast(0)
-        val fitting = if (constraints.hasBoundedWidth && count > 0) (constraints.maxWidth - gaps) / count else cellWidth
+        val fitting = if (constraints.hasBoundedWidth &&
+            count > 0
+        ) {
+            (constraints.maxWidth - gaps) / count
+        } else {
+            cellWidth
+        }
         val width = minOf(cellWidth, fitting).coerceAtLeast(0)
         val cells = measurables.map { it.measure(Constraints.fixed(width, height)) }
         return layout(width * count + gaps, height) {
@@ -306,11 +335,23 @@ private class CodeInputTransformation(private val codeLength: Int) : InputTransf
     override fun TextFieldBuffer.transformInput() {
         val digits = asCharSequence().filter(Char::isDigit)
         when {
-            digits.length <= codeLength -> if (!digits.contentEquals(asCharSequence())) replace(0, length, digits)
+            digits.length <= codeLength -> if (!digits.contentEquals(
+                    asCharSequence()
+                )
+            ) {
+                replace(0, length, digits)
+            }
+
             else -> {
                 // A whole code pasted over a full field replaces it, as Telegram for macOS's insertAll does.
                 val inserted = insertedDigits()
-                if (inserted.length >= codeLength) replace(0, length, inserted.take(codeLength)) else revertAllChanges()
+                if (inserted.length >=
+                    codeLength
+                ) {
+                    replace(0, length, inserted.take(codeLength))
+                } else {
+                    revertAllChanges()
+                }
             }
         }
         placeCursorAtEnd()
@@ -349,7 +390,8 @@ private val HiddenSelectionColors = TextSelectionColors(
 private val CodeFieldKeyboardOptions = KeyboardOptions(
     keyboardType = KeyboardType.NumberPassword,
     imeAction = ImeAction.Done,
-    autoCorrectEnabled = false
+    autoCorrectEnabled = false,
+    platformImeOptions = OneTimeCodeImeOptions
 )
 
 @KotogramPreview
@@ -411,7 +453,12 @@ fun interface CodeFieldStyle : ComponentStyle<CodeFieldStyleScope> {
                 cellSize(DpSize(40.dp, 40.dp))
                 cellSpacing(8.dp)
                 shape(theme.shapes.medium)
-                textStyle(theme.typography.headlineSmall.merge(fontSize = 24.sp, fontFeatureSettings = "tnum"))
+                textStyle(
+                    theme.typography.headlineSmall.merge(
+                        fontSize = 24.sp,
+                        fontFeatureSettings = "tnum"
+                    )
+                )
             }
         }
     }
@@ -419,15 +466,20 @@ fun interface CodeFieldStyle : ComponentStyle<CodeFieldStyleScope> {
 
 infix fun CodeFieldStyle.then(other: CodeFieldStyle): CodeFieldStyle = when {
     other === CodeFieldStyle -> this
+
     this === CodeFieldStyle -> other
+
     else -> CodeFieldStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
     }
 }
 
-class CodeFieldStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
-    AdaptiveStyleScope<CodeFieldStyleScope>,
+@Suppress("TooManyFunctions")
+class CodeFieldStyleScope(
+    val theme: KotogramTheme.Values,
+    override val mediaQueryInfo: MediaQueryInfo
+) : AdaptiveStyleScope<CodeFieldStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
     var cellSize: DpSize = DpSize.Unspecified

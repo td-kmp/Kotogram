@@ -16,8 +16,6 @@ import com.xbot.kotogram.core.designsystem.style.DefaultStyleResolver
 import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 import com.xbot.kotogram.core.designsystem.style.StyleResolver
 
-// Telegram for iOS's email entry (AuthorizationSequenceEmailEntryControllerNode) on touch screens, and Telegram for
-// macOS's (Auth_EmailSetup, Auth_Insets) on a laptop, in their points.
 @Suppress("MagicNumber")
 internal fun interface EmailAddressScreenStyle : ComponentStyle<EmailAddressScreenStyleScope> {
     companion object : EmailAddressScreenStyle {
@@ -56,12 +54,12 @@ internal fun interface EmailAddressScreenStyle : ComponentStyle<EmailAddressScre
                 )
             )
             errorFadeSpec(tween(200))
-            // WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND.
             landscapeHeight(480.dp)
         }
 
         val Adaptive = Default then EmailAddressScreenStyle {
             laptop {
+                infoWidth(380.dp)
                 contentMaxWidth(Dp.Unspecified)
                 animationSize(140.dp)
                 beforeTitle(20.dp)
@@ -111,7 +109,6 @@ internal class EmailAddressScreenStyleScope(
     var horizontalPadding: Dp = Dp.Unspecified
         private set
 
-    // Unspecified for the content's own width.
     var contentMaxWidth: Dp = Dp.Unspecified
         private set
 
@@ -130,7 +127,6 @@ internal class EmailAddressScreenStyleScope(
     var beforeError: Dp = Dp.Unspecified
         private set
 
-    // Under the field, with the error in it: down to the bottom on touch screens, to Next on a laptop.
     var afterField: Dp = Dp.Unspecified
         private set
 

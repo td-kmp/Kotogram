@@ -45,7 +45,6 @@ internal fun PremiumPurchaseScreen(onBackClick: () -> Unit, modifier: Modifier =
         rememberStyle(::PremiumPurchaseScreenStyleScope, PremiumPurchaseScreenStyle.Adaptive)
     val posture = mediaQuery { windowPosture }
     val landscape by derivedMediaQuery { windowHeight < style.landscapeHeight }
-    // At the bottom as Telegram for iOS has it; under the text on laptops and phones on their side.
     val actionAtBottom = !style.mediaQueryInfo.isLaptop && !landscape
     context(style) {
         Scaffold(
@@ -69,7 +68,6 @@ internal fun PremiumPurchaseScreen(onBackClick: () -> Unit, modifier: Modifier =
                         verticalArrangement = Arrangement.Center
                     ) {
                         if (!landscape && !posture.isTabletop) {
-                            // Temporary: the step's animation goes here.
                             Box(Modifier.size(style.animationSize).background(Color.White))
                             Spacer(Modifier.height(style.beforeTitle))
                         }

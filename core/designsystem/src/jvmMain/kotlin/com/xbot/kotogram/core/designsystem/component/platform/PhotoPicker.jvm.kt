@@ -14,7 +14,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-internal actual fun platformPhotoPickerLauncher(onPicked: (ByteArray) -> Unit): PhotoPickerLauncher? {
+internal actual fun platformPhotoPickerLauncher(
+    onPicked: (ByteArray) -> Unit
+): PhotoPickerLauncher? {
     if (!currentPlatform.isApple) return null
     val scope = rememberCoroutineScope()
     val currentOnPicked by rememberUpdatedState(onPicked)
@@ -22,7 +24,9 @@ internal actual fun platformPhotoPickerLauncher(onPicked: (ByteArray) -> Unit): 
         PhotoPickerLauncher {
             val path = MacOpenPanel.chooseImage() ?: return@PhotoPickerLauncher
             scope.launch {
-                withContext(Dispatchers.IO) { File(path).readBytes().toJpeg() }?.let(currentOnPicked)
+                withContext(Dispatchers.IO) {
+                    File(path).readBytes().toJpeg()
+                }?.let(currentOnPicked)
             }
         }
     }

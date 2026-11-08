@@ -50,7 +50,6 @@ internal class CodeViewModel(
         }
     }
 
-    // A full code goes by itself, as in Telegram's apps. Typing clears an error; the field cleared after one doesn't.
     private suspend fun Syntax<CodeScreenState, Nothing>.followInput() {
         snapshotFlow { code.text.toString() }.drop(1).collect { value ->
             if (value.isNotEmpty()) reduce { state.copy(error = null) }

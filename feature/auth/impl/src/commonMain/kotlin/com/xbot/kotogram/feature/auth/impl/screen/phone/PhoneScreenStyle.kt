@@ -49,9 +49,14 @@ internal fun interface PhoneScreenStyle : ComponentStyle<PhoneScreenStyleScope> 
                 )
             )
             errorTextStyle(
-                theme.typography.bodyMedium.merge(color = theme.colors.error, textAlign = TextAlign.Center)
+                theme.typography.bodyMedium.merge(
+                    color = theme.colors.error,
+                    textAlign = TextAlign.Center
+                )
             )
-            qrLoginTextStyle(theme.typography.bodyLarge.merge(fontSize = 15.sp, fontWeight = FontWeight.Medium))
+            qrLoginTextStyle(
+                theme.typography.bodyLarge.merge(fontSize = 15.sp, fontWeight = FontWeight.Medium)
+            )
             errorFadeSpec(tween(200))
             // WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND.
             landscapeHeight(480.dp)
@@ -65,6 +70,12 @@ internal fun interface PhoneScreenStyle : ComponentStyle<PhoneScreenStyleScope> 
                 beforeInfo(10.dp)
                 beforeField(20.dp)
                 infoWidth(Dp.Infinity)
+                qrLoginTextStyle(
+                    theme.typography.bodyLarge.merge(
+                        fontSize = 13.5.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                )
                 titleTextStyle(
                     theme.typography.bodyLarge.merge(
                         fontSize = 22.sp,
@@ -86,15 +97,20 @@ internal fun interface PhoneScreenStyle : ComponentStyle<PhoneScreenStyleScope> 
 
 internal infix fun PhoneScreenStyle.then(other: PhoneScreenStyle): PhoneScreenStyle = when {
     other === PhoneScreenStyle -> this
+
     this === PhoneScreenStyle -> other
+
     else -> PhoneScreenStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
     }
 }
 
-internal class PhoneScreenStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
-    AdaptiveStyleScope<PhoneScreenStyleScope>,
+@Suppress("TooManyFunctions")
+internal class PhoneScreenStyleScope(
+    val theme: KotogramTheme.Values,
+    override val mediaQueryInfo: MediaQueryInfo
+) : AdaptiveStyleScope<PhoneScreenStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
     var horizontalPadding: Dp = Dp.Unspecified

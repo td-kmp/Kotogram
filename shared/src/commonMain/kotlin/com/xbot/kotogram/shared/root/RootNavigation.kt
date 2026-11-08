@@ -49,10 +49,7 @@ internal fun RootNavigation(modifier: Modifier = Modifier) {
 
 @OptIn(KoinExperimentalAPI::class, KoinDelicateAPI::class)
 @Composable
-private fun Account(
-    session: AccountSession,
-    onRootBack: (() -> Unit)? = null
-) {
+private fun Account(session: AccountSession, onRootBack: (() -> Unit)? = null) {
     key(session.id) {
         // The last screen TDLib decided: a closing account keeps it until its replacement shows.
         val roots = remember(session) { session.authorizationState.mapNotNull { it.toRoute() } }

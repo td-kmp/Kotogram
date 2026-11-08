@@ -15,9 +15,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
-// The framework's activity_open_* and activity_close_* animations, and for the back gesture its
-// DefaultCrossActivityBackAnimation, which a ContentTransform only approaches: there the entering screen shrinks
-// with the closing one and grows back, a transition runs one way.
 @Suppress("MagicNumber")
 internal fun <S> androidNavTransitions(density: Density): NavTransitions<S> {
     val shift = with(density) { 96.dp.roundToPx() }
@@ -43,9 +40,14 @@ internal fun <S> androidNavTransitions(density: Density): NavTransitions<S> {
             ContentTransform(
                 slideInHorizontally(linear) { -shift },
                 scaleOut(tween(DURATION, easing = LinearEasing), targetScale = MAX_SCALE) +
-                    // Shrunk against the edge it's pulled from, then off by 96dp as the back commits.
                     slideOutHorizontally(linear) { width ->
-                        val toEdge = if (edge == EDGE_RIGHT) 0 else (width * (1 - MAX_SCALE) / 2).roundToInt() - margin
+                        val toEdge = if (edge ==
+                            EDGE_RIGHT
+                        ) {
+                            0
+                        } else {
+                            (width * (1 - MAX_SCALE) / 2).roundToInt() - margin
+                        }
                         toEdge + shift
                     } +
                     fadeOut(
@@ -62,6 +64,4 @@ internal fun <S> androidNavTransitions(density: Density): NavTransitions<S> {
 private const val DURATION = 450
 private const val MAX_SCALE = 0.9f
 
-// fast_out_extra_slow_in is a path; Material 3 approaches it with this curve
-// (MotionTokens.EasingEmphasizedCubicBezier).
 private val FastOutExtraSlowIn = CubicBezierEasing(0.2f, 0f, 0f, 1f)

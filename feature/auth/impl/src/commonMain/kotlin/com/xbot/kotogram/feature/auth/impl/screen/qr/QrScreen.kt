@@ -81,16 +81,24 @@ internal fun QrScreenContent(
     val posture = mediaQuery { windowPosture }
     val landscape by derivedMediaQuery { windowHeight < style.landscapeHeight }
     val qrCode: @Composable () -> Unit = {
-        QrCode(data = state.link, contentDescription = stringResource(Res.string.voiceover_login_qrcode))
+        QrCode(
+            data = state.link,
+            contentDescription = stringResource(Res.string.voiceover_login_qrcode)
+        )
     }
 
     context(style) {
-        Scaffold(modifier = modifier, contentWindowInsets = WindowInsets.safeDrawing) { innerPadding ->
+        Scaffold(
+            modifier = modifier,
+            contentWindowInsets = WindowInsets.safeDrawing
+        ) { innerPadding ->
             val screen = Modifier.fillMaxSize().padding(innerPadding)
             when {
                 // The code on one side of a phone on its side or of a book-folded screen, the steps on the other.
                 !laptop && (landscape || posture.isBook) -> Row(screen) {
-                    Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) { qrCode() }
+                    Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
+                        qrCode()
+                    }
                     Column(
                         modifier = Modifier
                             .weight(1f)
@@ -102,9 +110,12 @@ internal fun QrScreenContent(
                         PhoneLoginButton(onPhoneLoginClick)
                     }
                 }
+
                 // Half open on a table: the code above the fold, the steps below it.
                 !laptop && posture.isTabletop -> Column(screen) {
-                    Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { qrCode() }
+                    Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        qrCode()
+                    }
                     Column(
                         modifier = Modifier
                             .weight(1f)
@@ -117,6 +128,7 @@ internal fun QrScreenContent(
                         PhoneLoginButton(onPhoneLoginClick)
                     }
                 }
+
                 else -> Column(screen) {
                     BoxWithConstraints(Modifier.weight(1f)) {
                         Column(
@@ -203,7 +215,7 @@ private fun ColumnScope.PhoneLoginButton(onClick: () -> Unit, modifier: Modifier
     // 20 to the label on macOS: the button's own padding gives the other 10.
     Spacer(Modifier.height(style.beforeButton))
     TextButton(onClick = onClick, modifier = modifier) {
-        Text(stringResource(Res.string.login_qr_cancel))
+        Text(stringResource(Res.string.login_qr_cancel), style = style.buttonTextStyle)
     }
 }
 
@@ -218,8 +230,9 @@ private fun QrScreenPreview(@PreviewParameter(QrScreenStateProvider::class) stat
 
 @KotogramLaptopPreview
 @Composable
-private fun QrScreenLaptopPreview(@PreviewParameter(QrScreenStateProvider::class) state: QrScreenState) =
-    QrScreenPreview(state)
+private fun QrScreenLaptopPreview(
+    @PreviewParameter(QrScreenStateProvider::class) state: QrScreenState
+) = QrScreenPreview(state)
 
 private class QrScreenStateProvider : PreviewParameterProvider<QrScreenState> {
     override val values = sequenceOf(

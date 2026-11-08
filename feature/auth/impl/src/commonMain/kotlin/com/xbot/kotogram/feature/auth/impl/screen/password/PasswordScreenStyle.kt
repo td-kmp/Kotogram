@@ -16,8 +16,6 @@ import com.xbot.kotogram.core.designsystem.style.DefaultStyleResolver
 import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 import com.xbot.kotogram.core.designsystem.style.StyleResolver
 
-// Telegram for iOS's password entry (AuthorizationSequencePasswordEntryControllerNode) on touch screens, and Telegram
-// for macOS's (Auth_PasswordEntry, Auth_Insets) on a laptop, in their points.
 @Suppress("MagicNumber")
 internal fun interface PasswordScreenStyle : ComponentStyle<PasswordScreenStyleScope> {
     companion object : PasswordScreenStyle {
@@ -57,12 +55,12 @@ internal fun interface PasswordScreenStyle : ComponentStyle<PasswordScreenStyleS
                 )
             )
             errorFadeSpec(tween(200))
-            // WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND.
             landscapeHeight(480.dp)
         }
 
         val Adaptive = Default then PasswordScreenStyle {
             laptop {
+                infoWidth(380.dp)
                 contentMaxWidth(Dp.Unspecified)
                 animationSize(140.dp)
                 beforeTitle(20.dp)
@@ -112,7 +110,6 @@ internal class PasswordScreenStyleScope(
     var horizontalPadding: Dp = Dp.Unspecified
         private set
 
-    // Unspecified for the content's own width.
     var contentMaxWidth: Dp = Dp.Unspecified
         private set
 
@@ -131,7 +128,6 @@ internal class PasswordScreenStyleScope(
     var beforeError: Dp = Dp.Unspecified
         private set
 
-    // Under the field, with the error in it: down to the links on touch screens, to Next on a laptop.
     var afterField: Dp = Dp.Unspecified
         private set
 

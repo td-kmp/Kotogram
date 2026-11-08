@@ -1,9 +1,7 @@
 package com.xbot.kotogram.feature.auth.impl.screen.emailcode
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -29,13 +27,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.xbot.kotogram.core.designsystem.KotogramLaptopPreview
 import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.designsystem.component.ButtonState
 import com.xbot.kotogram.core.designsystem.component.CodeField
+import com.xbot.kotogram.core.designsystem.component.LottieImage
 import com.xbot.kotogram.core.designsystem.component.ProminentButton
 import com.xbot.kotogram.core.designsystem.media.derivedMediaQuery
 import com.xbot.kotogram.core.designsystem.media.mediaQuery
@@ -81,7 +79,6 @@ internal fun EmailCodeScreenContent(
     val style = rememberStyle(::EmailCodeScreenStyleScope, EmailCodeScreenStyle.Adaptive)
     val posture = mediaQuery { windowPosture }
     val landscape by derivedMediaQuery { windowHeight < style.landscapeHeight }
-    // Telegram for macOS has Next under the field; Telegram for iOS sends a full code by itself and has none.
     val nextVisible = style.mediaQueryInfo.isLaptop
     context(style) {
         Scaffold(
@@ -105,8 +102,7 @@ internal fun EmailCodeScreenContent(
                         verticalArrangement = Arrangement.Center
                     ) {
                         if (!landscape && !posture.isTabletop) {
-                            // Temporary: the step's animation goes here.
-                            Box(Modifier.size(style.animationSize).background(Color.White))
+                            LottieImage(STICKER, Modifier.size(style.animationSize))
                             Spacer(Modifier.height(style.beforeTitle))
                         }
                         Text(
@@ -158,7 +154,6 @@ internal fun EmailCodeScreenContent(
                         }
                     }
                 }
-                // Half open on a table: the form above the fold, the keyboard below it.
                 if (posture.isTabletop) Spacer(Modifier.weight(1f))
             }
         }
@@ -183,3 +178,5 @@ private class EmailCodeScreenStateProvider : PreviewParameterProvider<EmailCodeS
     private val sent = EmailCodeScreenState(emailPattern = "j*****@g****.com", codeLength = 6)
     override val values = sequenceOf(sent, sent.copy(error = AuthError.InvalidCode))
 }
+
+private const val STICKER = "files/letter.lottie"

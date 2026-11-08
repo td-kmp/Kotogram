@@ -22,7 +22,6 @@ import io.xbot.tdlib.api.AuthenticationCodeTypeSmsPhrase
 import io.xbot.tdlib.api.AuthenticationCodeTypeSmsWord
 import io.xbot.tdlib.api.AuthenticationCodeTypeTelegramMessage
 
-// Telegram for macOS's headers: its messages for a code in the app, "Enter Code" for one by SMS or call.
 val AuthenticationCodeInfo.title: StringResource
     get() = when (type) {
         is AuthenticationCodeTypeTelegramMessage -> StringResource.Text(
