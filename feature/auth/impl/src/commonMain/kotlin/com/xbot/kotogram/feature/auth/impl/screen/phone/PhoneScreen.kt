@@ -29,8 +29,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.isSpecified
-import com.xbot.kotogram.core.designsystem.KotogramLaptopPreview
-import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.core.designsystem.PreviewKotogram
+import com.xbot.kotogram.core.designsystem.PreviewKotogramLaptop
 import com.xbot.kotogram.core.designsystem.component.ButtonState
 import com.xbot.kotogram.core.designsystem.component.LottieImage
 import com.xbot.kotogram.core.designsystem.component.OptionLabel
@@ -62,7 +62,7 @@ import org.orbitmvi.orbit.compose.collectSideEffect
 internal fun PhoneScreen(
     viewModel: PhoneViewModel,
     canUseQr: Boolean,
-    onSubmitted: () -> Unit,
+    onSubmit: () -> Unit,
     onQrLoginClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -70,7 +70,7 @@ internal fun PhoneScreen(
     val focusRequester = remember { FocusRequester() }
     viewModel.collectSideEffect { effect ->
         when (effect) {
-            PhoneScreenSideEffect.Submitted -> onSubmitted()
+            PhoneScreenSideEffect.Submitted -> onSubmit()
         }
     }
     LaunchedEffect(focusRequester) { focusRequester.requestFocus() }
@@ -253,7 +253,7 @@ private fun CountryPicker(
     )
 }
 
-@KotogramPreview
+@PreviewKotogram
 @Composable
 private fun PhoneScreenPreview(@PreviewParameter(PhoneScreenStateProvider::class) state: PhoneScreenState) {
     PhoneScreenContent(
@@ -265,7 +265,7 @@ private fun PhoneScreenPreview(@PreviewParameter(PhoneScreenStateProvider::class
     )
 }
 
-@KotogramLaptopPreview
+@PreviewKotogramLaptop
 @Composable
 private fun PhoneScreenLaptopPreview(@PreviewParameter(PhoneScreenStateProvider::class) state: PhoneScreenState) =
     PhoneScreenPreview(state)

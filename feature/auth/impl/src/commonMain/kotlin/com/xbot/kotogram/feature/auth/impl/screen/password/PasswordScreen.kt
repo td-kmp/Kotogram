@@ -33,8 +33,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.isSpecified
-import com.xbot.kotogram.core.designsystem.KotogramLaptopPreview
-import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.core.designsystem.PreviewKotogram
+import com.xbot.kotogram.core.designsystem.PreviewKotogramLaptop
 import com.xbot.kotogram.core.designsystem.component.ButtonState
 import com.xbot.kotogram.core.designsystem.component.CodeField
 import com.xbot.kotogram.core.designsystem.component.IconButton
@@ -247,7 +247,7 @@ private fun Modifier.contentWidth(): Modifier {
     return if (maxWidth.isSpecified) widthIn(max = maxWidth).fillMaxWidth() else this
 }
 
-@KotogramPreview
+@PreviewKotogram
 @Composable
 private fun PasswordScreenPreview(@PreviewParameter(PasswordScreenStateProvider::class) state: PasswordScreenState) {
     PasswordScreenContent(
@@ -258,7 +258,7 @@ private fun PasswordScreenPreview(@PreviewParameter(PasswordScreenStateProvider:
     )
 }
 
-@KotogramLaptopPreview
+@PreviewKotogramLaptop
 @Composable
 private fun PasswordScreenLaptopPreview(
     @PreviewParameter(PasswordScreenStateProvider::class) state: PasswordScreenState,

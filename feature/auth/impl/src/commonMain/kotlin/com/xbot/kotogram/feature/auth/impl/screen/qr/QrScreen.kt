@@ -32,8 +32,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import com.xbot.kotogram.core.designsystem.KotogramLaptopPreview
-import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.core.designsystem.PreviewKotogram
+import com.xbot.kotogram.core.designsystem.PreviewKotogramLaptop
 import com.xbot.kotogram.core.designsystem.component.QrCode
 import com.xbot.kotogram.core.designsystem.component.TextButton
 import com.xbot.kotogram.core.designsystem.media.derivedMediaQuery
@@ -223,7 +223,7 @@ private fun ColumnScope.PhoneLoginButton(
     }
 }
 
-@KotogramPreview
+@PreviewKotogram
 @Composable
 private fun QrScreenPreview(@PreviewParameter(QrScreenStateProvider::class) state: QrScreenState) {
     QrScreenContent(
@@ -232,7 +232,7 @@ private fun QrScreenPreview(@PreviewParameter(QrScreenStateProvider::class) stat
     )
 }
 
-@KotogramLaptopPreview
+@PreviewKotogramLaptop
 @Composable
 private fun QrScreenLaptopPreview(@PreviewParameter(QrScreenStateProvider::class) state: QrScreenState) =
     QrScreenPreview(state)

@@ -10,7 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.core.designsystem.PreviewKotogram
 import com.xbot.kotogram.core.designsystem.component.ButtonState
 import com.xbot.kotogram.core.designsystem.component.TextButton
 import com.xbot.kotogram.core.designsystem.style.rememberStyle
@@ -62,7 +62,7 @@ private fun ContinueOnLanguageButton(
     }
 }
 
-@KotogramPreview
+@PreviewKotogram
 @Composable
 private fun LanguageSuggestionPreview(
     @PreviewParameter(LanguageSuggestionStateProvider::class) state: LanguageSuggestionState,

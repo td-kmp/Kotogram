@@ -29,8 +29,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import com.xbot.kotogram.core.designsystem.KotogramLaptopPreview
-import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.core.designsystem.PreviewKotogram
+import com.xbot.kotogram.core.designsystem.PreviewKotogramLaptop
 import com.xbot.kotogram.core.designsystem.component.ButtonState
 import com.xbot.kotogram.core.designsystem.component.CodeField
 import com.xbot.kotogram.core.designsystem.component.LottieImage
@@ -163,13 +163,13 @@ internal fun EmailCodeScreenContent(
     }
 }
 
-@KotogramPreview
+@PreviewKotogram
 @Composable
 private fun EmailCodeScreenPreview(@PreviewParameter(EmailCodeScreenStateProvider::class) state: EmailCodeScreenState) {
     EmailCodeScreenContent(state = state, code = TextFieldState("12"), onAction = {})
 }
 
-@KotogramLaptopPreview
+@PreviewKotogramLaptop
 @Composable
 private fun EmailCodeScreenLaptopPreview(
     @PreviewParameter(EmailCodeScreenStateProvider::class) state: EmailCodeScreenState,

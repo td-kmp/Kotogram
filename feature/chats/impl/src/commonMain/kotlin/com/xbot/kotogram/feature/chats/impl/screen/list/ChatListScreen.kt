@@ -13,14 +13,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.core.designsystem.PreviewKotogram
 import com.xbot.kotogram.core.designsystem.component.ProgressIndicator
 import com.xbot.kotogram.core.designsystem.component.TopBar
 import com.xbot.kotogram.core.designsystem.style.rememberStyle
@@ -61,6 +62,7 @@ internal fun ChatListScreenContent(
 ) {
     val style = rememberStyle(::ChatListScreenStyleScope, ChatListScreenStyle.Adaptive)
     val listState = rememberLazyListState()
+    val currentOnAction by rememberUpdatedState(onAction)
     LaunchedEffect(listState) {
         snapshotFlow {
             val info = listState.layoutInfo
@@ -69,7 +71,7 @@ internal fun ChatListScreenContent(
         }
             .distinctUntilChanged()
             .filter { (_, isNearEnd) -> isNearEnd }
-            .collect { onAction(ChatListScreenAction.OnEndReached) }
+            .collect { currentOnAction(ChatListScreenAction.OnEndReached) }
     }
     context(style) {
         Scaffold(
@@ -114,7 +116,7 @@ internal fun ChatListScreenContent(
     }
 }
 
-@KotogramPreview
+@PreviewKotogram
 @Composable
 private fun ChatListScreenPreview(@PreviewParameter(ChatListScreenStateProvider::class) state: ChatListScreenState) {
     ChatListScreenContent(state = state, onAction = {}, onChatClick = {})

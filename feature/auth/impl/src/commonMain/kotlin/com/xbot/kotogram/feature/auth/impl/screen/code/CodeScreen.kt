@@ -4,6 +4,7 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -34,8 +35,8 @@ import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import com.xbot.kotogram.core.designsystem.KotogramLaptopPreview
-import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.core.designsystem.PreviewKotogram
+import com.xbot.kotogram.core.designsystem.PreviewKotogramLaptop
 import com.xbot.kotogram.core.designsystem.component.ButtonState
 import com.xbot.kotogram.core.designsystem.component.CodeField
 import com.xbot.kotogram.core.designsystem.component.LottieImage
@@ -226,7 +227,7 @@ private fun CodeInput(
 }
 
 @Composable
-private fun CodeLinks(
+private fun ColumnScope.CodeLinks(
     info: AuthenticationCodeInfo,
     state: CodeScreenState,
     onAction: (CodeScreenAction) -> Unit,
@@ -267,14 +268,14 @@ private fun CodeLinks(
 private const val SECONDS_PER_MINUTE = 60
 private const val PIRATE_FLAG = "files/pirate_flag.lottie"
 
-@KotogramPreview
+@PreviewKotogram
 @Composable
 private fun CodeScreenPreview(@PreviewParameter(CodeScreenStateProvider::class) state: CodeScreenState) {
     CodeScreenContent(state = state, code = TextFieldState("12"), onAction = {
     }, onChangeNumberClick = {})
 }
 
-@KotogramLaptopPreview
+@PreviewKotogramLaptop
 @Composable
 private fun CodeScreenLaptopPreview(@PreviewParameter(CodeScreenStateProvider::class) state: CodeScreenState) =
     CodeScreenPreview(state)

@@ -34,7 +34,7 @@ kotlin {
         browser()
     }
 
-    jvmToolchain(21)
+    jvmToolchain(25)
 
     // TDLib runs in the process everywhere except the web, where a Web Worker owns it and its files.
     @OptIn(ExperimentalKotlinGradlePluginApi::class)

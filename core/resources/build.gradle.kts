@@ -34,7 +34,7 @@ kotlin {
         browser()
     }
 
-    jvmToolchain(21)
+    jvmToolchain(25)
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     dependencies {

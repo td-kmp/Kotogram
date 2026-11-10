@@ -47,8 +47,8 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.isSpecified
-import com.xbot.kotogram.core.designsystem.KotogramLaptopPreview
-import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.core.designsystem.PreviewKotogram
+import com.xbot.kotogram.core.designsystem.PreviewKotogramLaptop
 import com.xbot.kotogram.core.designsystem.component.ButtonState
 import com.xbot.kotogram.core.designsystem.component.ProminentButton
 import com.xbot.kotogram.core.designsystem.component.TextButton
@@ -297,7 +297,7 @@ private fun Modifier.contentWidth(): Modifier {
     return if (maxWidth.isSpecified) widthIn(max = maxWidth).fillMaxWidth() else this
 }
 
-@KotogramPreview
+@PreviewKotogram
 @Composable
 private fun RegistrationScreenPreview(
     @PreviewParameter(RegistrationScreenStateProvider::class) state: RegistrationScreenState,
@@ -311,7 +311,7 @@ private fun RegistrationScreenPreview(
     )
 }
 
-@KotogramLaptopPreview
+@PreviewKotogramLaptop
 @Composable
 private fun RegistrationScreenLaptopPreview(
     @PreviewParameter(RegistrationScreenStateProvider::class) state: RegistrationScreenState,

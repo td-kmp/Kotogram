@@ -29,7 +29,7 @@ kotlin {
         browser()
     }
 
-    jvmToolchain(21)
+    jvmToolchain(25)
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     dependencies {
@@ -38,7 +38,8 @@ kotlin {
         implementation(projects.core.account)
         implementation(projects.feature.chats.api)
         implementation(projects.core.navigation.api)
-        implementation(projects.core.designsystem)
+        implementation(projects.core.designsystem.components)
+        implementation(projects.core.designsystem.icons)
         implementation(projects.core.resources)
         implementation(libs.compose.runtime)
         implementation(libs.compose.foundation)

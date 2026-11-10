@@ -36,7 +36,7 @@ kotlin {
         browser()
     }
 
-    jvmToolchain(21)
+    jvmToolchain(25)
 
     sourceSets {
         jvmTest.dependencies {
@@ -45,7 +45,7 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(projects.core.account)
-            implementation(projects.core.designsystem)
+            implementation(projects.core.designsystem.components)
             implementation(projects.feature.media.data)
             implementation(projects.core.navigation.impl)
             implementation(projects.core.resources)

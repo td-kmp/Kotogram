@@ -39,8 +39,8 @@ calf = "0.14.0"
 coil = "3.6.3"
 compottie = "2.3.3"
 qrose = "1.3.1"
-jna = "5.19.1"
 nucleus = "3.0.0-dev-202611061347"
+nna = "0.8.0"
 roborazzi = "1.77.0"
 orbit = "12.0.1"
 koin = "4.2.2"
@@ -106,7 +106,6 @@ qrose = { group = "io.github.alexzhirkevich", name = "qrose", version.ref = "qro
 qrose-encoder-matrix = { group = "io.github.alexzhirkevich", name = "qrose-encoder-matrix", version.ref = "qrose" }
 calf-permissions = { group = "com.mohamedrejeb.calf", name = "calf-permissions", version.ref = "calf" }
 calf-file-picker = { group = "com.mohamedrejeb.calf", name = "calf-file-picker", version.ref = "calf" }
-jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
 nucleus-application = { group = "dev.nucleusframework", name = "nucleus.nucleus-application", version.ref = "nucleus" }
 nucleus-decorated-window-tao = { group = "dev.nucleusframework", name = "nucleus.decorated-window-tao", version.ref = "nucleus" }
 nucleus-decorated-window-material3 = { group = "dev.nucleusframework", name = "nucleus.decorated-window-material3", version.ref = "nucleus" }
@@ -145,6 +144,7 @@ compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-m
 
 # Desktop
 nucleus = { id = "dev.nucleusframework", version.ref = "nucleus" }
+nna = { id = "dev.nucleusframework.nna", version.ref = "nna" }
 
 # Build config
 buildkonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildkonfig" }

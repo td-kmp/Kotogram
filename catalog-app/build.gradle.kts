@@ -7,11 +7,12 @@ plugins {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 }
 
 dependencies {
-    implementation(projects.core.designsystem)
+    implementation(projects.core.designsystem.components)
+    implementation(projects.core.designsystem.icons)
     implementation(compose.desktop.currentOs)
     implementation(libs.compose.runtime)
     implementation(libs.compose.foundation)
@@ -29,4 +30,6 @@ dependencies {
 
 nucleus.application {
     mainClass = "MainKt"
+    // FFM downcalls into core:designsystem:appkit's Kotlin/Native library.
+    jvmArgs += listOf("--enable-native-access=ALL-UNNAMED")
 }

@@ -94,7 +94,7 @@ private fun AuthSteps(
                 PhoneScreen(
                     viewModel = koinViewModel(),
                     canUseQr = canUseQr,
-                    onSubmitted = { onAction(AuthScreenAction.OnEntrySubmitted) },
+                    onSubmit = { onAction(AuthScreenAction.OnEntrySubmitted) },
                     onQrLoginClick = { onAction(AuthScreenAction.OnQrLoginClick) },
                 )
             }

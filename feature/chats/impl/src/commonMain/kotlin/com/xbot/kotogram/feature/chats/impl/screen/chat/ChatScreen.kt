@@ -11,8 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.xbot.kotogram.core.designsystem.KotogramPreview
 import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.core.designsystem.PreviewKotogram
 import com.xbot.kotogram.core.designsystem.component.TextButton
 import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.chat_history_placeholder
@@ -60,7 +60,7 @@ private fun ChatScreenContent(
     }
 }
 
-@KotogramPreview
+@PreviewKotogram
 @Composable
 private fun ChatScreenPreview() {
     ChatScreenContent(state = ChatScreenState(title = "Kotogram"), onBackClick = {})

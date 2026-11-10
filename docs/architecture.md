@@ -49,7 +49,10 @@ ios-app/                     Xcode project, thin Swift host (not a Gradle module
 :core:account                AccountManager, AccountSession, extension points for features, platform storage, web worker; no UI
 :core:navigation:api         NavKey, Navigator, LocalNavigator, navigation helpers
 :core:navigation:impl        rememberNavigator, NavigationState, deep links
-:core:designsystem           KotogramTheme, tokens, components used by 2+ features
+:core:designsystem:theme     KotogramTheme and every token, media queries, styles, transitions, previews, desktop window
+:core:designsystem:components components used by 2+ features, their native variants, ProvidePlatformComponents
+:core:designsystem:icons     KotogramIcons
+:core:designsystem:appkit    AppKit's controls in Kotlin/Native for the JVM on macOS (FFM, NucleusNativeAccess)
 :core:resources              every string, StringResource, the Localization port, markup and plurals, localising extensions of TDLib's classes
 
 :feature:<name>:api
@@ -70,11 +73,11 @@ Its source sets split on where TDLib runs: `nonWebMain` (in the process) and `we
 | `feature:x:api` | `core:navigation:api`, serialization | screens, ViewModels, logic |
 | `feature:x:domain` | `tdlib-client` (the DTOs), other features' `domain`, coroutines, Arrow | `core:account`, Compose, `io.xbot.tdlib.client.*` |
 | `feature:x:data` | its `domain`, `core:account`, Koin | Compose, ViewModels |
-| `feature:x:impl` | its `api` and `domain`, other features' `api` and `domain`, `core:designsystem`, `core:resources`, `core:navigation:api`, `core:account` for `AccountScope` and `AppCoroutineScope` in `di` | any `data`, other `impl`, `io.xbot.tdlib.client.*` |
+| `feature:x:impl` | its `api` and `domain`, other features' `api` and `domain`, `core:designsystem:components` and `:icons`, `core:resources`, `core:navigation:api`, `core:account` for `AccountScope` and `AppCoroutineScope` in `di` | any `data`, other `impl`, `io.xbot.tdlib.client.*` |
 | other `core:*` | other `core:*`, no cycles | anything feature-specific |
 | `shared` | everything | business logic |
 | `android-app`, `jvm-app`, `web-app` | `shared` | DI declarations, UI |
-| `catalog-app` | `core:designsystem` | features, `shared`, TDLib |
+| `catalog-app` | `core:designsystem:components` and `:icons` | features, `shared`, TDLib |
 
 - `impl` never sees `data`. They meet only in the Koin graph started by `shared`. A detekt `ForbiddenImport` keeps `io.xbot.tdlib.client.*` out of `domain` and `impl`.
 - A feature owns its entity: `feature:chats` owns chats for everyone. Nothing flows into core just because two features want it.
@@ -260,7 +263,7 @@ component/                            # optional: composables shared by 2+ scree
 `:shared` follows the same layout for its own screen: `navigation/SplashRoute.kt`, `screen/splash/SplashScreen.kt`;
 `root/` holds the account host.
 
-- **TDLib work stays where `TdClient` is visible**: `core:account` runs the accounts and owns no subsystem; a feature's `data` owns its entity, an app-wide one too (`feature:language`). What every instance needs reaches it through `TdlibOptions` or an `AccountUpdates` follower, as the language pack's options and updates do. Files are `feature:media`'s: its `data` holds each account's Coil `ImageLoader` in the account's scope, whose fetcher takes TDLib's `File` (downloading it, then reading it by path, or through `readFilePart` on the web, whose worker owns the files), and `shared` puts the shown account's loader into `core:designsystem`'s `LocalImageLoader`, which `NetworkImage` reads. As Telegram X: one memory cache for the app with keys prefixed by account (`ImageCache`), which an account's scope clears of its own on close (`clearForAccount`) rather than calling `shutdown()`, which would clear all of it; Coil holds a loader's system callbacks weakly, so a dropped loader is collected. A download started for a view stops when its last view leaves (`ImageLoader`'s `CancelDownloadFile`), at Telegram X's image priority 15. Downloads the user asks for, with progress, will be explicit ones a view never stops, as Unigram's `_explicitDownloads`. A UI module reads such a part through the feature's `domain` or a port in `core:*` (`LocalizationSource`), never through an adapter in `shared`.
+- **TDLib work stays where `TdClient` is visible**: `core:account` runs the accounts and owns no subsystem; a feature's `data` owns its entity, an app-wide one too (`feature:language`). What every instance needs reaches it through `TdlibOptions` or an `AccountUpdates` follower, as the language pack's options and updates do. Files are `feature:media`'s: its `data` holds each account's Coil `ImageLoader` in the account's scope, whose fetcher takes TDLib's `File` (downloading it, then reading it by path, or through `readFilePart` on the web, whose worker owns the files), and `shared` puts the shown account's loader into `core:designsystem:components`' `LocalImageLoader`, which `NetworkImage` reads. As Telegram X: one memory cache for the app with keys prefixed by account (`ImageCache`), which an account's scope clears of its own on close (`clearForAccount`) rather than calling `shutdown()`, which would clear all of it; Coil holds a loader's system callbacks weakly, so a dropped loader is collected. A download started for a view stops when its last view leaves (`ImageLoader`'s `CancelDownloadFile`), at Telegram X's image priority 15. Downloads the user asks for, with progress, will be explicit ones a view never stops, as Unigram's `_explicitDownloads`. A UI module reads such a part through the feature's `domain` or a port in `core:*` (`LocalizationSource`), never through an adapter in `shared`.
 - Strings live only in `core:resources`, as in AnilibriaRefresh. State carries text as its `StringResource`; a feature's own types (`AuthError`) get theirs in the feature's `impl` `extensions`, since `core` sees no feature.
 - No `ui/`, `util/` or `utils/` folders. Helpers live next to the screen that uses them.
 - Platform code (`expect`/`actual`) mirrors the same package path in `androidMain`/`iosMain`/`jvmMain`.
@@ -270,7 +273,7 @@ component/                            # optional: composables shared by 2+ scree
 
 1. Used by one screen: `screen/<screen>/`, `private` or `internal`.
 2. Used by 2+ screens of the feature: `component/`, `internal`.
-3. Used by 2+ features: `:core:designsystem`, `public`.
+3. Used by 2+ features: `:core:designsystem:components`, `public`.
 
 ### 6.3 Screens
 
@@ -304,12 +307,12 @@ private fun PhoneScreenContent(
   previewable.
 - A screen with nothing to hold (`PremiumPurchaseScreen`, `SplashScreen`) is only a stateless `XScreen` with
   its preview. A flow host (`AuthScreen`) has no `XScreenContent`: its `NavDisplay` entries resolve ViewModels.
-- Every screen has a `private` `XScreenPreview` under its `XScreenContent`, annotated `@KotogramPreview`
-  (`:core:designsystem`: `@PreviewLightDark` plus a `@PreviewWrapper` with `KotogramTheme` and a `Surface`, so
+- Every screen has a `private` `XScreenPreview` under its `XScreenContent`, annotated `@PreviewKotogram`
+  (`:core:designsystem:theme`: `@PreviewLightDark` plus a `@PreviewWrapper` with `KotogramTheme` and a `Surface`, so
   the preview calls only the content). States come from a `private class XScreenStateProvider :
   PreviewParameterProvider<XScreenState>` in the same file, one value per state worth seeing (empty, filled,
   in progress, error). A screen with a laptop look has `XScreenLaptopPreview` too, annotated
-  `@KotogramLaptopPreview`, which calls `XScreenPreview` ([design system: previews](design/designsystem.md#previews)).
+  `@PreviewKotogramLaptop`, which calls `XScreenPreview` ([design system: previews](design/designsystem.md#previews)).
   Presentation modules add `androidRuntimeClasspath(libs.compose.ui.tooling)`.
 - Adaptive layout decisions are made by the caller (the nav entry), not by the screen.
 - Parameter order follows the Compose API guidelines: required parameters, then

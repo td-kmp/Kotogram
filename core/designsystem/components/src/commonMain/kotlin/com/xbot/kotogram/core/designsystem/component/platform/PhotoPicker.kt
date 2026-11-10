@@ -1,0 +1,10 @@
+package com.xbot.kotogram.core.designsystem.component.platform
+
+import androidx.compose.runtime.Composable
+import com.xbot.kotogram.core.designsystem.component.PhotoPickerLauncher
+
+@Composable
+internal expect fun platformPhotoPickerLauncher(onPick: (ByteArray) -> Unit): PhotoPickerLauncher?
+
+internal const val PHOTO_MAX_SIDE = 2048
+internal const val PHOTO_JPEG_QUALITY = 70

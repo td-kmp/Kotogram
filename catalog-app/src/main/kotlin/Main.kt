@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
 import com.xbot.kotogram.catalog.Catalog
+import com.xbot.kotogram.core.designsystem.component.ProvidePlatformComponents
 import com.xbot.kotogram.core.designsystem.window.KotogramWindow
 import dev.nucleusframework.application.nucleusApplication
 import dev.nucleusframework.window.material.MaterialTitleBar
@@ -52,13 +53,15 @@ fun main(args: Array<String>) {
                         .padding(horizontal = 12.dp),
                 )
             }
-            Catalog(
-                darkTheme = darkTheme,
-                onDarkThemeChange = { darkTheme = it },
-                laptop = laptop,
-                onLaptopChange = { laptop = it },
-                startPage = System.getProperty("catalog.page"),
-            )
+            ProvidePlatformComponents {
+                Catalog(
+                    darkTheme = darkTheme,
+                    onDarkThemeChange = { darkTheme = it },
+                    laptop = laptop,
+                    onLaptopChange = { laptop = it },
+                    startPage = System.getProperty("catalog.page"),
+                )
+            }
         }
     }
 }

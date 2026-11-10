@@ -3,7 +3,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
     repositories {
-        // Nucleus `dev` is a local build of NucleusFramework/Nucleus with NativeView's placedAsOverlay (docs/handoff.md).
+        // Nucleus's decorated-window-tao is a local build of the fork's placedAsOverlay over the release (docs/handoff.md).
         mavenLocal {
             mavenContent {
                 includeGroupAndSubgroups("dev.nucleusframework")
@@ -23,7 +23,7 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
-        // tdlib-kmp 1.8.69-1.0.0-alpha03 and Nucleus dev are local builds until published (docs/handoff.md).
+        // Local builds of tdlib-kmp and of Nucleus's decorated-window-tao go first (docs/handoff.md).
         mavenLocal {
             mavenContent {
                 includeGroup("io.github.xephosbot")
@@ -51,7 +51,10 @@ include(":catalog-app")
 include(":web-app")
 include(":shared")
 include(":core:account")
-include(":core:designsystem")
+include(":core:designsystem:theme")
+include(":core:designsystem:components")
+include(":core:designsystem:icons")
+include(":core:designsystem:appkit")
 include(":core:resources")
 include(":core:navigation:api")
 include(":core:navigation:impl")

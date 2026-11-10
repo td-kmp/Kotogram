@@ -25,8 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.isSpecified
-import com.xbot.kotogram.core.designsystem.KotogramLaptopPreview
-import com.xbot.kotogram.core.designsystem.KotogramPreview
+import com.xbot.kotogram.core.designsystem.PreviewKotogram
+import com.xbot.kotogram.core.designsystem.PreviewKotogramLaptop
 import com.xbot.kotogram.core.designsystem.component.ProminentButton
 import com.xbot.kotogram.core.designsystem.media.derivedMediaQuery
 import com.xbot.kotogram.core.designsystem.media.mediaQuery
@@ -120,12 +120,12 @@ private fun BackAction(
     )
 }
 
-@KotogramPreview
+@PreviewKotogram
 @Composable
 private fun PremiumPurchaseScreenPreview() {
     PremiumPurchaseScreen(onBackClick = {})
 }
 
-@KotogramLaptopPreview
+@PreviewKotogramLaptop
 @Composable
 private fun PremiumPurchaseScreenLaptopPreview() = PremiumPurchaseScreenPreview()

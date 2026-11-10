@@ -106,3 +106,21 @@ style:
 
 Compose:
   active: true
+  CompositionLocalAllowlist:
+    allowedCompositionLocals:
+      - LocalBottomSheetOverride
+      - LocalCheckboxOverride
+      - LocalFastScrollerOverride
+      - LocalGlassIconButtonOverride
+      - LocalImageLoader
+      - LocalKotogramSpacing
+      - LocalLocalization
+      - LocalMediaQueryInfo
+      - LocalMenuOverride
+      - LocalNavigator
+      - LocalProgressIndicatorOverride
+      - LocalProminentButtonOverride
+      - LocalSearchFieldOverride
+      - LocalSharedViewModelStoreOwner
+      - LocalSwitchOverride
+      - LocalUiMediaScope
