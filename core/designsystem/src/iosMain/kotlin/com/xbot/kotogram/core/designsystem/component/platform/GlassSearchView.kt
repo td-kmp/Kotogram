@@ -28,15 +28,15 @@ import platform.UIKit.UIView
 import platform.UIKit.UIVisualEffectView
 import platform.UIKit.labelColor
 
-// iOS 26's search in a toolbar: a glass capsule with UIKit's search field and, while searching, a glass cancel
-// button. One glass container holds both, so they merge and part as the button comes and goes.
 @OptIn(ExperimentalForeignApi::class)
-internal class GlassSearchView(private val onTextChange: (String) -> Unit) {
+internal class GlassSearchView(
+    private val onTextChange: (String) -> Unit,
+) {
     private val field = UISearchTextField()
     private val capsule = UIVisualEffectView(effect = capsuleEffect())
     private val cancel = UIButton.buttonWithConfiguration(
         configuration = cancelConfiguration(UIColor.labelColor),
-        primaryAction = UIAction.actionWithHandler { cancel() }
+        primaryAction = UIAction.actionWithHandler { cancel() },
     )
     val root = UIVisualEffectView(effect = UIGlassContainerEffect().apply { spacing = SPACING })
     private val capsuleToEdge = capsule.trailingAnchor.constraintEqualToAnchor(root.contentView.trailingAnchor)
@@ -70,18 +70,18 @@ internal class GlassSearchView(private val onTextChange: (String) -> Unit) {
                 field.leadingAnchor.constraintEqualToAnchor(capsule.contentView.leadingAnchor, constant = INSET),
                 field.trailingAnchor.constraintEqualToAnchor(capsule.contentView.trailingAnchor, constant = -INSET),
                 field.topAnchor.constraintEqualToAnchor(capsule.contentView.topAnchor),
-                field.bottomAnchor.constraintEqualToAnchor(capsule.contentView.bottomAnchor)
-            )
+                field.bottomAnchor.constraintEqualToAnchor(capsule.contentView.bottomAnchor),
+            ),
         )
         field.addAction(
             UIAction.actionWithHandler { onTextChange(field.text.orEmpty()) },
-            forControlEvents = UIControlEventEditingChanged
+            forControlEvents = UIControlEventEditingChanged,
         )
         field.addAction(
             UIAction.actionWithHandler { setActive(true) },
-            forControlEvents = UIControlEventEditingDidBegin
+            forControlEvents = UIControlEventEditingDidBegin,
         )
-        // An action for this event is what makes the return key put the keyboard away.
+        // Hack: an action for this event is what makes the return key put the keyboard away.
         field.addAction(UIAction.actionWithHandler {}, forControlEvents = UIControlEventEditingDidEndOnExit)
     }
 
@@ -92,7 +92,7 @@ internal class GlassSearchView(private val onTextChange: (String) -> Unit) {
         font: UIFont,
         textColor: UIColor,
         placeholderColor: UIColor,
-        tintColor: UIColor
+        tintColor: UIColor,
     ) {
         if (field.text.orEmpty() != text) field.text = text
         field.font = font
@@ -103,8 +103,8 @@ internal class GlassSearchView(private val onTextChange: (String) -> Unit) {
             string = placeholder,
             attributes = mapOf<Any?, Any?>(
                 NSFontAttributeName to font,
-                NSForegroundColorAttributeName to placeholderColor
-            )
+                NSForegroundColorAttributeName to placeholderColor,
+            ),
         )
         cancel.configuration = cancelConfiguration(textColor)
         if (text.isNotEmpty()) setActive(true)
@@ -134,7 +134,7 @@ internal class GlassSearchView(private val onTextChange: (String) -> Unit) {
                 cancel.alpha = if (value) 1.0 else 0.0
                 root.layoutIfNeeded()
             },
-            completion = { cancel.hidden = !active }
+            completion = { cancel.hidden = !active },
         )
     }
 }

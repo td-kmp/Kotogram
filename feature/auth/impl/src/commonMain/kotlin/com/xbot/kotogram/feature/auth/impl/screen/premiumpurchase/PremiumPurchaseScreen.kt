@@ -38,9 +38,11 @@ import com.xbot.kotogram.core.resources.unsupported_subtitle
 import com.xbot.kotogram.core.resources.unsupported_title
 import com.xbot.kotogram.feature.auth.impl.extensions.isBook
 
-// TDLib asks for a Premium purchase to log in, which only the official apps' store billing can make.
 @Composable
-internal fun PremiumPurchaseScreen(onBackClick: () -> Unit, modifier: Modifier = Modifier) {
+internal fun PremiumPurchaseScreen(
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val style =
         rememberStyle(::PremiumPurchaseScreenStyleScope, PremiumPurchaseScreenStyle.Adaptive)
     val posture = mediaQuery { windowPosture }
@@ -49,13 +51,13 @@ internal fun PremiumPurchaseScreen(onBackClick: () -> Unit, modifier: Modifier =
     context(style) {
         Scaffold(
             modifier = modifier,
-            contentWindowInsets = WindowInsets.safeDrawing
+            contentWindowInsets = WindowInsets.safeDrawing,
         ) { innerPadding ->
             Column(
                 Modifier
                     .fillMaxHeight()
                     .fillMaxWidth(if (posture.isBook) 0.5f else 1f)
-                    .padding(innerPadding)
+                    .padding(innerPadding),
             ) {
                 BoxWithConstraints(Modifier.weight(1f)) {
                     Column(
@@ -65,7 +67,7 @@ internal fun PremiumPurchaseScreen(onBackClick: () -> Unit, modifier: Modifier =
                             .heightIn(min = maxHeight)
                             .padding(horizontal = style.horizontalPadding),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        verticalArrangement = Arrangement.Center,
                     ) {
                         if (!landscape && !posture.isTabletop) {
                             Box(Modifier.size(style.animationSize).background(Color.White))
@@ -73,13 +75,13 @@ internal fun PremiumPurchaseScreen(onBackClick: () -> Unit, modifier: Modifier =
                         }
                         Text(
                             text = stringResource(Res.string.unsupported_title),
-                            style = style.titleTextStyle
+                            style = style.titleTextStyle,
                         )
                         Spacer(Modifier.height(style.beforeInfo))
                         Text(
                             text = stringResource(Res.string.unsupported_subtitle),
                             style = style.infoTextStyle,
-                            modifier = Modifier.widthIn(max = style.infoWidth)
+                            modifier = Modifier.widthIn(max = style.infoWidth),
                         )
                         if (!actionAtBottom) {
                             Spacer(Modifier.height(style.beforeAction))
@@ -93,7 +95,7 @@ internal fun PremiumPurchaseScreen(onBackClick: () -> Unit, modifier: Modifier =
                         onBackClick = onBackClick,
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
-                            .padding(style.bottomActionInset)
+                            .padding(style.bottomActionInset),
                     )
                 }
             }
@@ -103,7 +105,10 @@ internal fun PremiumPurchaseScreen(onBackClick: () -> Unit, modifier: Modifier =
 
 @Composable
 context(style: PremiumPurchaseScreenStyleScope)
-private fun BackAction(onBackClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun BackAction(
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     ProminentButton(
         text = stringResource(Res.string.navigation_back),
         onClick = onBackClick,
@@ -111,7 +116,7 @@ private fun BackAction(onBackClick: () -> Unit, modifier: Modifier = Modifier) {
             modifier.widthIn(max = style.contentMaxWidth).fillMaxWidth()
         } else {
             modifier
-        }
+        },
     )
 }
 

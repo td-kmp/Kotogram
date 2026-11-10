@@ -30,7 +30,7 @@ internal val SwitchPage = CatalogPage(
         CatalogExample("Press to toggle") {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.large),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Toggle(initial = false)
                 Toggle(initial = true)
@@ -39,7 +39,7 @@ internal val SwitchPage = CatalogPage(
         CatalogExample("Disabled") {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.large),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Switch(checked = false, onCheckedChange = {}, enabled = false)
                 Switch(checked = true, onCheckedChange = {}, enabled = false)
@@ -55,12 +55,12 @@ internal val SwitchPage = CatalogPage(
                     ListItem(
                         headlineContent = { Text(name) },
                         trailingContent = { Switch(checked = checked, onCheckedChange = { checked = it }) },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
             }
-        }
-    )
+        },
+    ),
 )
 
 @Composable

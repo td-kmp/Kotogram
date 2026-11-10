@@ -73,7 +73,7 @@ import org.orbitmvi.orbit.compose.collectAsState
 internal fun CodeScreen(
     viewModel: CodeViewModel,
     onChangeNumberClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val state by viewModel.collectAsState()
     val focusRequester = remember { FocusRequester() }
@@ -84,7 +84,7 @@ internal fun CodeScreen(
         onAction = viewModel::onAction,
         onChangeNumberClick = onChangeNumberClick,
         modifier = modifier,
-        focusRequester = focusRequester
+        focusRequester = focusRequester,
     )
 }
 
@@ -95,7 +95,7 @@ internal fun CodeScreenContent(
     onAction: (CodeScreenAction) -> Unit,
     onChangeNumberClick: () -> Unit,
     modifier: Modifier = Modifier,
-    focusRequester: FocusRequester = remember { FocusRequester() }
+    focusRequester: FocusRequester = remember { FocusRequester() },
 ) {
     val style = rememberStyle(::CodeScreenStyleScope, CodeScreenStyle.Adaptive)
     val posture = mediaQuery { windowPosture }
@@ -105,13 +105,13 @@ internal fun CodeScreenContent(
     context(style) {
         Scaffold(
             modifier = modifier,
-            contentWindowInsets = WindowInsets.safeDrawing
+            contentWindowInsets = WindowInsets.safeDrawing,
         ) { innerPadding ->
             Column(
                 Modifier
                     .fillMaxHeight()
                     .fillMaxWidth(if (posture.isBook) 0.5f else 1f)
-                    .padding(innerPadding)
+                    .padding(innerPadding),
             ) {
                 BoxWithConstraints(Modifier.weight(1f)) {
                     Column(
@@ -121,20 +121,20 @@ internal fun CodeScreenContent(
                             .heightIn(min = maxHeight)
                             .padding(horizontal = style.horizontalPadding),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        verticalArrangement = Arrangement.Center,
                     ) {
                         if (!landscape && !posture.isTabletop) {
                             if (info?.type is AuthenticationCodeTypeFragment) {
                                 LottieImage(
                                     PIRATE_FLAG,
                                     Modifier.size(style.animationSize),
-                                    iterations = 3
+                                    iterations = 3,
                                 )
                             } else {
                                 LottieImage(
                                     path = style.sticker,
                                     modifier = Modifier.size(style.animationSize),
-                                    colors = style.stickerColors
+                                    colors = style.stickerColors,
                                 )
                             }
                             Spacer(Modifier.height(style.beforeTitle))
@@ -147,12 +147,12 @@ internal fun CodeScreenContent(
                             animationSpec = style.errorFadeSpec,
                             modifier = Modifier
                                 .height(style.afterField)
-                                .padding(top = style.beforeError)
+                                .padding(top = style.beforeError),
                         ) { error ->
                             if (error != null) {
                                 Text(
                                     text = stringResource(error.localizedMessage()),
-                                    style = style.errorTextStyle
+                                    style = style.errorTextStyle,
                                 )
                             }
                         }
@@ -162,8 +162,8 @@ internal fun CodeScreenContent(
                                 onClick = { onAction(CodeScreenAction.OnSubmit) },
                                 state = ButtonState.of(
                                     enabled = code.text.isNotEmpty(),
-                                    loading = state.isSubmitting
-                                )
+                                    loading = state.isSubmitting,
+                                ),
                             )
                             Spacer(Modifier.height(style.beforeLinks))
                         }
@@ -178,17 +178,20 @@ internal fun CodeScreenContent(
 
 @Composable
 context(style: CodeScreenStyleScope)
-private fun CodeHeader(info: AuthenticationCodeInfo, onChangeNumberClick: () -> Unit) {
+private fun CodeHeader(
+    info: AuthenticationCodeInfo,
+    onChangeNumberClick: () -> Unit,
+) {
     Text(text = stringResource(info.title), style = style.titleTextStyle)
     Spacer(Modifier.height(style.beforeInfo))
     Text(
         text = annotatedStringResource(
             info.description,
             linkStyles = TextLinkStyles(SpanStyle(color = style.linkColor)),
-            onLinkClick = { onChangeNumberClick() }
+            onLinkClick = { onChangeNumberClick() },
         ),
         style = style.infoTextStyle,
-        modifier = Modifier.widthIn(max = style.infoWidth)
+        modifier = Modifier.widthIn(max = style.infoWidth),
     )
 }
 
@@ -198,7 +201,7 @@ private fun CodeInput(
     code: TextFieldState,
     error: AuthError?,
     onAction: (CodeScreenAction) -> Unit,
-    focusRequester: FocusRequester
+    focusRequester: FocusRequester,
 ) {
     val length = info?.type?.length ?: 0
     if (length > 0) {
@@ -207,7 +210,7 @@ private fun CodeInput(
             length = length,
             modifier = Modifier.focusRequester(focusRequester),
             isError = error != null,
-            onKeyboardAction = { onAction(CodeScreenAction.OnSubmit) }
+            onKeyboardAction = { onAction(CodeScreenAction.OnSubmit) },
         )
     } else {
         TextField(
@@ -217,7 +220,7 @@ private fun CodeInput(
             isError = error != null,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             onKeyboardAction = { onAction(CodeScreenAction.OnSubmit) },
-            lineLimits = TextFieldLineLimits.SingleLine
+            lineLimits = TextFieldLineLimits.SingleLine,
         )
     }
 }
@@ -227,7 +230,7 @@ private fun CodeLinks(
     info: AuthenticationCodeInfo,
     state: CodeScreenState,
     onAction: (CodeScreenAction) -> Unit,
-    onChangeNumberClick: () -> Unit
+    onChangeNumberClick: () -> Unit,
 ) {
     val nextType = info.nextType
     if (nextType != null) {
@@ -246,9 +249,9 @@ private fun CodeLinks(
                     stringResource(
                         countdown,
                         state.resendSecondsLeft / SECONDS_PER_MINUTE,
-                        (state.resendSecondsLeft % SECONDS_PER_MINUTE).toString().padStart(2, '0')
+                        (state.resendSecondsLeft % SECONDS_PER_MINUTE).toString().padStart(2, '0'),
                     )
-                }
+                },
             )
         }
     }
@@ -266,34 +269,31 @@ private const val PIRATE_FLAG = "files/pirate_flag.lottie"
 
 @KotogramPreview
 @Composable
-private fun CodeScreenPreview(
-    @PreviewParameter(CodeScreenStateProvider::class) state: CodeScreenState
-) {
+private fun CodeScreenPreview(@PreviewParameter(CodeScreenStateProvider::class) state: CodeScreenState) {
     CodeScreenContent(state = state, code = TextFieldState("12"), onAction = {
     }, onChangeNumberClick = {})
 }
 
 @KotogramLaptopPreview
 @Composable
-private fun CodeScreenLaptopPreview(
-    @PreviewParameter(CodeScreenStateProvider::class) state: CodeScreenState
-) = CodeScreenPreview(state)
+private fun CodeScreenLaptopPreview(@PreviewParameter(CodeScreenStateProvider::class) state: CodeScreenState) =
+    CodeScreenPreview(state)
 
 private class CodeScreenStateProvider : PreviewParameterProvider<CodeScreenState> {
     private val info = AuthenticationCodeInfo(
         phoneNumber = "+998 90 123 45 67",
         type = AuthenticationCodeTypeTelegramMessage(length = 5),
         nextType = AuthenticationCodeTypeSms(length = 5),
-        timeout = 60
+        timeout = 60,
     )
     override val values = sequenceOf(
         CodeScreenState(info = info, resendSecondsLeft = 45),
         CodeScreenState(
             info = info.copy(
                 type = AuthenticationCodeTypeSms(length = 5),
-                nextType = AuthenticationCodeTypeCall(length = 5)
-            )
+                nextType = AuthenticationCodeTypeCall(length = 5),
+            ),
         ),
-        CodeScreenState(info = info.copy(nextType = null), error = AuthError.InvalidCode)
+        CodeScreenState(info = info.copy(nextType = null), error = AuthError.InvalidCode),
     )
 }

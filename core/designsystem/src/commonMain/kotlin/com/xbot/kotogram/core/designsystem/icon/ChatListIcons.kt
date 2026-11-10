@@ -39,8 +39,8 @@ internal fun pinIcon() = icon("Pin") {
                     Offset(7.5f, 13.5f),
                     Offset(16.5f, 13.5f),
                     Offset(14f, 10.5f),
-                    Offset(14f, 6f)
-                )
+                    Offset(14f, 6f),
+                ),
             )
             line(Offset(12f, 13.5f), Offset(12f, 20.5f))
         }
@@ -90,7 +90,11 @@ internal fun bookmarkIcon() = icon("Bookmark") {
     }
 }
 
-private fun ImageVector.Builder.pencil(center: Offset, length: Float, width: Float) {
+private fun ImageVector.Builder.pencil(
+    center: Offset,
+    length: Float,
+    width: Float,
+) {
     group(rotate = 45f, pivotX = center.x, pivotY = center.y) {
         val left = center.x - width / 2
         val right = center.x + width / 2

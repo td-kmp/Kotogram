@@ -27,12 +27,15 @@ internal val IconButtonPage = CatalogPage(
         },
         CatalogExample("Disabled") { Icons(style = IconButtonStyle, enabled = false) },
         CatalogExample("GlassIconButton") { GlassIcons(enabled = true) },
-        CatalogExample("GlassIconButton, disabled") { GlassIcons(enabled = false) }
-    )
+        CatalogExample("GlassIconButton, disabled") { GlassIcons(enabled = false) },
+    ),
 )
 
 @Composable
-private fun Icons(style: IconButtonStyle, enabled: Boolean = true) {
+private fun Icons(
+    style: IconButtonStyle,
+    enabled: Boolean = true,
+) {
     Row(horizontalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.small)) {
         IconButton(KotogramIcons.Close, contentDescription = "Close", onClick = {}, enabled = enabled, style = style)
         IconButton(KotogramIcons.Back, contentDescription = "Back", onClick = {}, enabled = enabled, style = style)

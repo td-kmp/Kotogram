@@ -50,14 +50,14 @@ import com.xbot.kotogram.core.resources.voiceover_login_qrcode
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import com.xbot.kotogram.feature.auth.impl.extensions.isBook
 import com.xbot.kotogram.feature.auth.impl.extensions.localizedMessage
-import kotlin.time.Duration.Companion.seconds
 import org.orbitmvi.orbit.compose.collectAsState
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 internal fun QrScreen(
     viewModel: QrViewModel,
     onPhoneLoginClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val state by viewModel.collectAsState()
     LaunchedEffect(state.needsQrCode) {
@@ -66,7 +66,7 @@ internal fun QrScreen(
     QrScreenContent(
         state = state,
         onPhoneLoginClick = onPhoneLoginClick,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -74,7 +74,7 @@ internal fun QrScreen(
 internal fun QrScreenContent(
     state: QrScreenState,
     onPhoneLoginClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val style = rememberStyle(::QrScreenStyleScope, QrScreenStyle.Adaptive)
     val laptop = style.mediaQueryInfo.isLaptop
@@ -83,18 +83,17 @@ internal fun QrScreenContent(
     val qrCode: @Composable () -> Unit = {
         QrCode(
             data = state.link,
-            contentDescription = stringResource(Res.string.voiceover_login_qrcode)
+            contentDescription = stringResource(Res.string.voiceover_login_qrcode),
         )
     }
 
     context(style) {
         Scaffold(
             modifier = modifier,
-            contentWindowInsets = WindowInsets.safeDrawing
+            contentWindowInsets = WindowInsets.safeDrawing,
         ) { innerPadding ->
             val screen = Modifier.fillMaxSize().padding(innerPadding)
             when {
-                // The code on one side of a phone on its side or of a book-folded screen, the steps on the other.
                 !laptop && (landscape || posture.isBook) -> Row(screen) {
                     Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
                         qrCode()
@@ -104,14 +103,13 @@ internal fun QrScreenContent(
                             .weight(1f)
                             .fillMaxHeight()
                             .padding(horizontal = style.touchPadding),
-                        verticalArrangement = Arrangement.Center
+                        verticalArrangement = Arrangement.Center,
                     ) {
                         QrInstructions(state, TextAlign.Start)
                         PhoneLoginButton(onPhoneLoginClick)
                     }
                 }
 
-                // Half open on a table: the code above the fold, the steps below it.
                 !laptop && posture.isTabletop -> Column(screen) {
                     Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                         qrCode()
@@ -122,7 +120,7 @@ internal fun QrScreenContent(
                             .fillMaxWidth()
                             .padding(horizontal = style.touchPadding),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        verticalArrangement = Arrangement.Center,
                     ) {
                         QrInstructions(state, TextAlign.Center)
                         PhoneLoginButton(onPhoneLoginClick)
@@ -138,7 +136,7 @@ internal fun QrScreenContent(
                                 .heightIn(min = maxHeight)
                                 .padding(horizontal = style.horizontalPadding),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
+                            verticalArrangement = Arrangement.Center,
                         ) {
                             qrCode()
                             Spacer(Modifier.height(style.beforeTitle))
@@ -146,13 +144,12 @@ internal fun QrScreenContent(
                             if (laptop) PhoneLoginButton(onPhoneLoginClick)
                         }
                     }
-                    // Where the phone screen keeps its Next on touch screens.
                     if (!laptop) {
                         PhoneLoginButton(
                             onClick = onPhoneLoginClick,
                             modifier = Modifier
                                 .align(Alignment.CenterHorizontally)
-                                .padding(bottom = style.touchPadding)
+                                .padding(bottom = style.touchPadding),
                         )
                     }
                 }
@@ -163,13 +160,16 @@ internal fun QrScreenContent(
 
 @Composable
 context(style: QrScreenStyleScope)
-private fun ColumnScope.QrInstructions(state: QrScreenState, titleAlign: TextAlign) {
+private fun ColumnScope.QrInstructions(
+    state: QrScreenState,
+    titleAlign: TextAlign,
+) {
     Text(
         text = stringResource(Res.string.login_qr_title),
         style = style.titleTextStyle,
         textAlign = titleAlign,
         maxLines = 2,
-        modifier = Modifier.widthIn(max = style.contentWidth)
+        modifier = Modifier.widthIn(max = style.contentWidth),
     )
     Spacer(Modifier.height(style.beforeSteps))
     Column(verticalArrangement = Arrangement.spacedBy(style.betweenSteps)) {
@@ -186,33 +186,37 @@ private fun ColumnScope.QrInstructions(state: QrScreenState, titleAlign: TextAli
 
 @Composable
 context(style: QrScreenStyleScope)
-private fun QrStep(number: Int, text: String) {
+private fun QrStep(
+    number: Int,
+    text: String,
+) {
     Row {
         Box(
             modifier = Modifier
                 .size(style.stepNumberSize)
                 .background(style.stepNumberColor, CircleShape),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Text(text = number.toString(), style = style.stepNumberTextStyle)
         }
         Spacer(Modifier.width(style.stepTextGap))
-        // As on macOS: a row is its text and 8 more, with the text 2 below its top.
         Text(
             text = text,
             style = style.stepTextStyle,
             maxLines = 2,
             modifier = Modifier
                 .widthIn(max = style.stepTextWidth)
-                .padding(top = style.stepTextTop, bottom = style.stepTextBottom)
+                .padding(top = style.stepTextTop, bottom = style.stepTextBottom),
         )
     }
 }
 
 @Composable
 context(style: QrScreenStyleScope)
-private fun ColumnScope.PhoneLoginButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    // 20 to the label on macOS: the button's own padding gives the other 10.
+private fun ColumnScope.PhoneLoginButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Spacer(Modifier.height(style.beforeButton))
     TextButton(onClick = onClick, modifier = modifier) {
         Text(stringResource(Res.string.login_qr_cancel), style = style.buttonTextStyle)
@@ -224,20 +228,19 @@ private fun ColumnScope.PhoneLoginButton(onClick: () -> Unit, modifier: Modifier
 private fun QrScreenPreview(@PreviewParameter(QrScreenStateProvider::class) state: QrScreenState) {
     QrScreenContent(
         state = state,
-        onPhoneLoginClick = {}
+        onPhoneLoginClick = {},
     )
 }
 
 @KotogramLaptopPreview
 @Composable
-private fun QrScreenLaptopPreview(
-    @PreviewParameter(QrScreenStateProvider::class) state: QrScreenState
-) = QrScreenPreview(state)
+private fun QrScreenLaptopPreview(@PreviewParameter(QrScreenStateProvider::class) state: QrScreenState) =
+    QrScreenPreview(state)
 
 private class QrScreenStateProvider : PreviewParameterProvider<QrScreenState> {
     override val values = sequenceOf(
         QrScreenState(),
         QrScreenState(link = "tg://login?token=AQFJjO1qHocdoolqLtckd6dPS98k1HhnVDFilU_N_v6psw"),
-        QrScreenState(error = AuthError.TooManyAttempts(retryAfter = 30.seconds))
+        QrScreenState(error = AuthError.TooManyAttempts(retryAfter = 30.seconds)),
     )
 }

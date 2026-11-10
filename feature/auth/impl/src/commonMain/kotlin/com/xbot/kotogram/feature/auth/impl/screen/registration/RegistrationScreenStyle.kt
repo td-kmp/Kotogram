@@ -43,28 +43,28 @@ internal fun interface RegistrationScreenStyle : ComponentStyle<RegistrationScre
                     fontSize = 28.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = theme.colors.onSurface,
-                    textAlign = TextAlign.Center
-                )
+                    textAlign = TextAlign.Center,
+                ),
             )
             infoTextStyle(
                 theme.typography.bodyLarge.merge(
                     fontSize = 16.sp,
                     color = theme.colors.onSurface,
-                    textAlign = TextAlign.Center
-                )
+                    textAlign = TextAlign.Center,
+                ),
             )
             termsTextStyle(
                 theme.typography.bodyMedium.merge(
                     fontSize = 13.sp,
                     color = theme.colors.onSurfaceVariant,
-                    textAlign = TextAlign.Center
-                )
+                    textAlign = TextAlign.Center,
+                ),
             )
             errorTextStyle(
                 theme.typography.bodyMedium.merge(
                     color = theme.colors.error,
-                    textAlign = TextAlign.Center
-                )
+                    textAlign = TextAlign.Center,
+                ),
             )
             errorFadeSpec(tween(200))
             landscapeHeight(480.dp)
@@ -86,31 +86,29 @@ internal fun interface RegistrationScreenStyle : ComponentStyle<RegistrationScre
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Medium,
                         color = theme.colors.onSurface,
-                        textAlign = TextAlign.Center
-                    )
+                        textAlign = TextAlign.Center,
+                    ),
                 )
                 infoTextStyle(
                     theme.typography.bodyLarge.merge(
                         fontSize = 13.5.sp,
                         color = theme.colors.onSurfaceVariant,
-                        textAlign = TextAlign.Center
-                    )
+                        textAlign = TextAlign.Center,
+                    ),
                 )
                 termsTextStyle(
                     theme.typography.bodyLarge.merge(
                         fontSize = 13.5.sp,
                         color = theme.colors.onSurfaceVariant,
-                        textAlign = TextAlign.Center
-                    )
+                        textAlign = TextAlign.Center,
+                    ),
                 )
             }
         }
     }
 }
 
-internal infix fun RegistrationScreenStyle.then(
-    other: RegistrationScreenStyle
-): RegistrationScreenStyle = when {
+internal infix fun RegistrationScreenStyle.then(other: RegistrationScreenStyle): RegistrationScreenStyle = when {
     other === RegistrationScreenStyle -> this
 
     this === RegistrationScreenStyle -> other
@@ -124,7 +122,7 @@ internal infix fun RegistrationScreenStyle.then(
 @Suppress("TooManyFunctions")
 internal class RegistrationScreenStyleScope(
     val theme: KotogramTheme.Values,
-    override val mediaQueryInfo: MediaQueryInfo
+    override val mediaQueryInfo: MediaQueryInfo,
 ) : AdaptiveStyleScope<RegistrationScreenStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 

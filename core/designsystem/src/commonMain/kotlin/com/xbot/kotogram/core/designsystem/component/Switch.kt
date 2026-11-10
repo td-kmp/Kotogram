@@ -37,14 +37,13 @@ import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 import com.xbot.kotogram.core.designsystem.style.StyleResolver
 import com.xbot.kotogram.core.designsystem.style.rememberStyle
 
-// UIKit's and AppKit's switch on iOS and macOS, at their own size; drawn by Compose elsewhere.
 @Composable
 fun Switch(
     checked: Boolean,
     onCheckedChange: ((Boolean) -> Unit)?,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    style: SwitchStyle = SwitchStyle
+    style: SwitchStyle = SwitchStyle,
 ) {
     val switchStyle = rememberStyle(::SwitchStyleScope, SwitchStyle.Adaptive then style)
     with(LocalSwitchOverride.current) {
@@ -62,7 +61,7 @@ internal class SwitchOverrideScope(
     val onCheckedChange: ((Boolean) -> Unit)?,
     val modifier: Modifier,
     val enabled: Boolean,
-    val style: SwitchStyleScope
+    val style: SwitchStyleScope,
 )
 
 internal object DefaultSwitchOverride : SwitchOverride {
@@ -78,7 +77,7 @@ internal object DefaultSwitchOverride : SwitchOverride {
                     indication = null,
                     enabled = enabled,
                     role = Role.Switch,
-                    onValueChange = onChange
+                    onValueChange = onChange,
                 )
         } ?: Modifier
         Spacer(
@@ -95,7 +94,7 @@ internal object DefaultSwitchOverride : SwitchOverride {
                         val fraction = progress.value
                         drawRoundRect(
                             color = lerp(style.uncheckedTrackColor, style.checkedTrackColor, fraction),
-                            cornerRadius = CornerRadius(radius)
+                            cornerRadius = CornerRadius(radius),
                         )
                         if (fraction < 1f) {
                             drawRoundRect(
@@ -104,16 +103,16 @@ internal object DefaultSwitchOverride : SwitchOverride {
                                 size = Size(size.width - border, size.height - border),
                                 cornerRadius = CornerRadius(radius - border / 2),
                                 alpha = 1f - fraction,
-                                style = Stroke(border)
+                                style = Stroke(border),
                             )
                         }
                         drawCircle(
                             color = lerp(style.uncheckedThumbColor, style.checkedThumbColor, fraction),
                             radius = lerp(uncheckedThumb, checkedThumb, fraction),
-                            center = Offset(lerp(radius, size.width - radius, fraction), radius)
+                            center = Offset(lerp(radius, size.width - radius, fraction), radius),
                         )
                     }
-                }
+                },
         )
     }
 }
@@ -126,7 +125,7 @@ internal val LocalSwitchOverride: ProvidableCompositionLocal<SwitchOverride> =
 private fun SwitchPreview() {
     Row(
         modifier = Modifier.padding(KotogramTheme.spacing.large),
-        horizontalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.large)
+        horizontalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.large),
     ) {
         Switch(checked = false, onCheckedChange = {})
         Switch(checked = true, onCheckedChange = {})
@@ -138,8 +137,6 @@ private fun SwitchPreview() {
 @Composable
 private fun SwitchLaptopPreview() = SwitchPreview()
 
-// Material 3's switch on touch screens: a 52 by 32 track, a 16 thumb that grows to 24 when on. Our own smaller one
-// on a laptop.
 @Suppress("MagicNumber")
 fun interface SwitchStyle : ComponentStyle<SwitchStyleScope> {
     companion object : SwitchStyle {
@@ -174,7 +171,9 @@ fun interface SwitchStyle : ComponentStyle<SwitchStyleScope> {
 
 infix fun SwitchStyle.then(other: SwitchStyle): SwitchStyle = when {
     other === SwitchStyle -> this
+
     this === SwitchStyle -> other
+
     else -> SwitchStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
@@ -182,8 +181,10 @@ infix fun SwitchStyle.then(other: SwitchStyle): SwitchStyle = when {
 }
 
 @Suppress("TooManyFunctions")
-class SwitchStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
-    AdaptiveStyleScope<SwitchStyleScope>,
+class SwitchStyleScope(
+    val theme: KotogramTheme.Values,
+    override val mediaQueryInfo: MediaQueryInfo,
+) : AdaptiveStyleScope<SwitchStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
     var trackWidth: Dp = Dp.Unspecified

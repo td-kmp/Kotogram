@@ -39,21 +39,21 @@ internal fun interface CodeScreenStyle : ComponentStyle<CodeScreenStyleScope> {
                     fontSize = 28.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = theme.colors.onSurface,
-                    textAlign = TextAlign.Center
-                )
+                    textAlign = TextAlign.Center,
+                ),
             )
             infoTextStyle(
                 theme.typography.bodyLarge.merge(
                     fontSize = 17.sp,
                     color = theme.colors.onSurface,
-                    textAlign = TextAlign.Center
-                )
+                    textAlign = TextAlign.Center,
+                ),
             )
             errorTextStyle(
                 theme.typography.bodyMedium.merge(
                     color = theme.colors.error,
-                    textAlign = TextAlign.Center
-                )
+                    textAlign = TextAlign.Center,
+                ),
             )
             errorFadeSpec(tween(200))
             landscapeHeight(480.dp)
@@ -68,8 +68,8 @@ internal fun interface CodeScreenStyle : ComponentStyle<CodeScreenStyleScope> {
                         "Bubble.Group 1.Fill 1" to theme.colors.primary,
                         "Note.Path.Fill 1" to theme.colors.onSurfaceVariant,
                         "Note.Path-2.Stroke 1" to theme.colors.onSurfaceVariant,
-                        "Phone.Combined-Shape.Fill 1" to theme.colors.onSurfaceVariant
-                    )
+                        "Phone.Combined-Shape.Fill 1" to theme.colors.onSurfaceVariant,
+                    ),
                 )
                 animationSize(140.dp)
                 beforeTitle(20.dp)
@@ -81,15 +81,15 @@ internal fun interface CodeScreenStyle : ComponentStyle<CodeScreenStyleScope> {
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Medium,
                         color = theme.colors.onSurface,
-                        textAlign = TextAlign.Center
-                    )
+                        textAlign = TextAlign.Center,
+                    ),
                 )
                 infoTextStyle(
                     theme.typography.bodyLarge.merge(
                         fontSize = 13.5.sp,
                         color = theme.colors.onSurfaceVariant,
-                        textAlign = TextAlign.Center
-                    )
+                        textAlign = TextAlign.Center,
+                    ),
                 )
             }
         }
@@ -110,7 +110,7 @@ internal infix fun CodeScreenStyle.then(other: CodeScreenStyle): CodeScreenStyle
 @Suppress("TooManyFunctions")
 internal class CodeScreenStyleScope(
     val theme: KotogramTheme.Values,
-    override val mediaQueryInfo: MediaQueryInfo
+    override val mediaQueryInfo: MediaQueryInfo,
 ) : AdaptiveStyleScope<CodeScreenStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 

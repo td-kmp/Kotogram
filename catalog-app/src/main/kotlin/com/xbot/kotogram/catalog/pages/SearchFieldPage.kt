@@ -22,6 +22,6 @@ internal val SearchFieldPage = CatalogPage(
         },
         CatalogExample("With a query") {
             SearchField(rememberTextFieldState("Guin"), Modifier.fillMaxWidth(), placeholder = "Search")
-        }
-    )
+        },
+    ),
 )

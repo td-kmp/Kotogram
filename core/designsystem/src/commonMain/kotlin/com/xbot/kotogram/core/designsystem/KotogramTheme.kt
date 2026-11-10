@@ -36,7 +36,7 @@ import com.xbot.kotogram.core.designsystem.theme.rememberKotogramTypography
 fun KotogramTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val colorScheme = kotogramColorScheme(darkTheme, dynamicColor)
     val spacing = remember { KotogramSpacing() }
@@ -45,17 +45,17 @@ fun KotogramTheme(
         LocalUiMediaScope provides platformUiMediaScope(),
         LocalMediaQueryInfo provides platformMediaQueryInfo(),
         LocalWindowLifecycle provides
-            (LocalWindowLifecycle.current ?: LocalLifecycleOwner.current.lifecycle)
+            (LocalWindowLifecycle.current ?: LocalLifecycleOwner.current.lifecycle),
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = rememberKotogramTypography(),
-            shapes = KotogramShapes
+            shapes = KotogramShapes,
         ) {
             CompositionLocalProvider(
                 *platformComponentOverrides(),
                 *indicationOverrides(),
-                content = content
+                content = content,
             )
         }
     }
@@ -68,7 +68,10 @@ private fun indicationOverrides(): Array<ProvidedValue<*>> = if (currentPlatform
 }
 
 @Composable
-internal fun kotogramColorScheme(darkTheme: Boolean, dynamicColor: Boolean): ColorScheme {
+internal fun kotogramColorScheme(
+    darkTheme: Boolean,
+    dynamicColor: Boolean,
+): ColorScheme {
     val dynamicColorScheme = if (dynamicColor) platformDynamicColorScheme(darkTheme) else null
     return dynamicColorScheme ?: if (darkTheme) NightAccentColorScheme else DayClassicColorScheme
 }
@@ -106,12 +109,11 @@ object KotogramTheme {
             }
         }
 
-    // Material 3's MaterialTheme.Values: the theme as its styles read it, outside composition.
     @Immutable
     class Values(
         val colors: ColorScheme,
         val typography: Typography,
         val shapes: Shapes,
-        val spacing: KotogramSpacing
+        val spacing: KotogramSpacing,
     )
 }

@@ -16,32 +16,35 @@ import com.xbot.kotogram.feature.auth.impl.screen.phone.Device
 import io.xbot.tdlib.api.AuthenticationCodeInfo
 import io.xbot.tdlib.api.AuthenticationCodeTypeSms
 import io.xbot.tdlib.api.AuthenticationCodeTypeTelegramMessage
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import java.io.File
 import javax.imageio.ImageIO
 import kotlin.test.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 
 @RunWith(Parameterized::class)
-class CodeScreenScreenshotTest(private val device: Device, private val darkTheme: Boolean) {
+class CodeScreenScreenshotTest(
+    private val device: Device,
+    private val darkTheme: Boolean,
+) {
     @OptIn(ExperimentalTestApi::class)
     @Test
     fun screenshot() = runDesktopComposeUiTest(
         width = (device.width.value * device.scale).toInt(),
-        height = (device.height.value * device.scale).toInt()
+        height = (device.height.value * device.scale).toInt(),
     ) {
         setContent {
             CompositionLocalProvider(LocalDensity provides Density(device.scale)) {
                 KotogramTheme(darkTheme = darkTheme, dynamicColor = false) {
                     CompositionLocalProvider(
                         LocalUiMediaScope provides device.mediaScope,
-                        LocalMediaQueryInfo provides device.mediaQueryInfo
+                        LocalMediaQueryInfo provides device.mediaQueryInfo,
                     ) {
                         CodeScreenContent(
                             state = waiting,
                             code = TextFieldState("12"),
                             onAction = {},
-                            onChangeNumberClick = {}
+                            onChangeNumberClick = {},
                         )
                     }
                 }
@@ -67,7 +70,7 @@ private val waiting = CodeScreenState(
         phoneNumber = "+998 93 398 87 65",
         type = AuthenticationCodeTypeTelegramMessage(length = 5),
         nextType = AuthenticationCodeTypeSms(length = 5),
-        timeout = 60
+        timeout = 60,
     ),
-    resendSecondsLeft = 45
+    resendSecondsLeft = 45,
 )

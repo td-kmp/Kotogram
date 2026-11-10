@@ -1,11 +1,11 @@
 package com.xbot.kotogram.core.navigation
 
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
 import org.koin.core.definition.KoinDefinition
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 fun interface PolymorphicSerializerConfig<T : Any> {
     fun configure(builder: PolymorphicModuleBuilder<T>)
@@ -13,7 +13,6 @@ fun interface PolymorphicSerializerConfig<T : Any> {
 
 @OptIn(ExperimentalUuidApi::class)
 inline fun <reified T : Any> Module.polymorphic(
-    crossinline builder: PolymorphicModuleBuilder<T>.() -> Unit
+    crossinline builder: PolymorphicModuleBuilder<T>.() -> Unit,
 ): KoinDefinition<PolymorphicSerializerConfig<T>> =
-    // A qualifier of its own per call, so every feature can contribute one.
     single(named(Uuid.random().toString())) { PolymorphicSerializerConfig { it.builder() } }

@@ -40,18 +40,18 @@ fun <T : Any> rememberSharedViewModelStoreNavEntryDecorator(
     viewModelStoreOwner: ViewModelStoreOwner =
         checkNotNull(LocalViewModelStoreOwner.current) {
             "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
-        }
+        },
 ): SharedViewModelStoreNavEntryDecorator<T> {
     val viewModelStoreProvider = rememberViewModelStoreProvider(viewModelStoreOwner)
     return remember(viewModelStoreOwner) {
         SharedViewModelStoreNavEntryDecorator(
-            viewModelStoreProvider
+            viewModelStoreProvider,
         )
     }
 }
 
 class SharedViewModelStoreNavEntryDecorator<T : Any>(
-    viewModelStoreProvider: ViewModelStoreProvider
+    viewModelStoreProvider: ViewModelStoreProvider,
 ) : NavEntryDecorator<T>(
     onPop = { key -> viewModelStoreProvider.clearKey(key) },
     decorate = { entry ->
@@ -60,7 +60,7 @@ class SharedViewModelStoreNavEntryDecorator<T : Any>(
             rememberViewModelStoreOwner(
                 localContentKey,
                 viewModelStoreProvider,
-                savedStateRegistryOwner = LocalSavedStateRegistryOwner.current
+                savedStateRegistryOwner = LocalSavedStateRegistryOwner.current,
             )
 
         val localValues: MutableList<ProvidedValue<*>> =
@@ -71,15 +71,15 @@ class SharedViewModelStoreNavEntryDecorator<T : Any>(
             val parentOwner = rememberViewModelStoreOwner(
                 parentContentKey,
                 viewModelStoreProvider,
-                savedStateRegistryOwner = LocalSavedStateRegistryOwner.current
+                savedStateRegistryOwner = LocalSavedStateRegistryOwner.current,
             )
 
             localValues.add(LocalSharedViewModelStoreOwner provides parentOwner)
         }
         CompositionLocalProvider(
-            values = localValues.toTypedArray()
+            values = localValues.toTypedArray(),
         ) { entry.Content() }
-    }
+    },
 ) {
     companion object {
         fun parent(key: Any) = metadata {

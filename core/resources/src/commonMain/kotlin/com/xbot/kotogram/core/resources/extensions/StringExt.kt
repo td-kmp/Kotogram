@@ -12,7 +12,7 @@ private val Bold = SpanStyle(fontWeight = FontWeight.Bold)
 
 internal fun String.toTelegramText(
     args: Array<out Any>,
-    link: ((url: String) -> LinkAnnotation)? = null
+    link: ((url: String) -> LinkAnnotation)? = null,
 ): AnnotatedString = buildAnnotatedString {
     val template = this@toTelegramText
     val arguments = Arguments(args)
@@ -50,15 +50,20 @@ internal fun String.toTelegramText(
 
 internal fun String.formatTelegram(args: Array<out Any>): String = toTelegramText(args).text
 
-private fun AnnotatedString.Builder.addAnyLink(link: LinkAnnotation, start: Int, end: Int) {
+private fun AnnotatedString.Builder.addAnyLink(
+    link: LinkAnnotation,
+    start: Int,
+    end: Int,
+) {
     when (link) {
         is LinkAnnotation.Url -> addLink(link, start, end)
         is LinkAnnotation.Clickable -> addLink(link, start, end)
     }
 }
 
-// %1$@ and %1$d by position, bare %@ and %d in order across the whole string, its links included.
-private class Arguments(private val values: Array<out Any>) {
+private class Arguments(
+    private val values: Array<out Any>,
+) {
     private var next = 0
 
     fun at(position: String): String? {

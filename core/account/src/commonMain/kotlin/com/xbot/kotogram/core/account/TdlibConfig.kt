@@ -9,14 +9,14 @@ data class TdlibConfig(
     val systemLanguageCode: String,
     val deviceModel: String,
     val systemVersion: String,
-    val applicationVersion: String
+    val applicationVersion: String,
 )
 
 internal fun tdlibConfigOf(
     systemLanguageCode: String,
     deviceModel: String,
     systemVersion: String,
-    applicationVersion: String
+    applicationVersion: String,
 ): TdlibConfig {
     check(TelegramApiConfig.API_ID != 0 && TelegramApiConfig.API_HASH.isNotEmpty()) {
         "Telegram API credentials are missing: set telegram.api.id and telegram.api.hash in local.properties"
@@ -28,14 +28,14 @@ internal fun tdlibConfigOf(
         systemLanguageCode = systemLanguageCode,
         deviceModel = deviceModel,
         systemVersion = systemVersion,
-        applicationVersion = applicationVersion
+        applicationVersion = applicationVersion,
     )
 }
 
 internal fun TdlibConfig.parameters(
     id: AccountId,
     storage: AccountStorage,
-    databaseKey: ByteArray
+    databaseKey: ByteArray,
 ): SetTdlibParameters = SetTdlibParameters(
     useTestDc = useTestDc,
     databaseDirectory = storage.databaseDirectory(id),
@@ -50,5 +50,5 @@ internal fun TdlibConfig.parameters(
     systemLanguageCode = systemLanguageCode,
     deviceModel = deviceModel,
     systemVersion = systemVersion,
-    applicationVersion = applicationVersion
+    applicationVersion = applicationVersion,
 )

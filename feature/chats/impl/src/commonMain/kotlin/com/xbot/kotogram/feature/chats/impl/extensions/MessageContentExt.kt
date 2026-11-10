@@ -24,7 +24,7 @@ internal fun MessageContent.toPreview(): ChatPreview = when (this) {
     is MessageDocument -> ChatPreview.Media(
         MediaKind.Document,
         caption,
-        document.minithumbnail?.data
+        document.minithumbnail?.data,
     )
 
     is MessageAudio -> ChatPreview.Media(MediaKind.Audio, caption, null)
@@ -34,19 +34,19 @@ internal fun MessageContent.toPreview(): ChatPreview = when (this) {
     is MessageAnimation -> ChatPreview.Media(
         MediaKind.Animation,
         caption,
-        animation.minithumbnail?.data
+        animation.minithumbnail?.data,
     )
 
     is MessageVideoNote -> ChatPreview.Media(
         MediaKind.VideoNote,
         FormattedText(),
-        videoNote.minithumbnail?.data
+        videoNote.minithumbnail?.data,
     )
 
     is MessageSticker -> ChatPreview.Media(
         MediaKind.Sticker,
         FormattedText(text = sticker.emoji),
-        sticker.thumbnail?.file
+        sticker.thumbnail?.file,
     )
 
     else -> ChatPreview.Other

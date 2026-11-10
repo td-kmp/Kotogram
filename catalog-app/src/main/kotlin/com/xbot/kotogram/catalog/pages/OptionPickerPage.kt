@@ -23,7 +23,7 @@ internal val OptionPickerPage = CatalogPage(
         "SearchField, at the bottom on iOS 26 and at the top elsewhere; ListItem rows under sticky section " +
         "headers, with the platform's FastScroller. The selected option opens in sight with a check; a search " +
         "lists the matches alone, the match in semibold.",
-    examples = listOf(CatalogExample("A country, as at sign-in") { CountryPicker() })
+    examples = listOf(CatalogExample("A country, as at sign-in") { CountryPicker() }),
 )
 
 @Composable
@@ -41,7 +41,7 @@ private fun CountryPicker() {
             title = "Страна",
             selected = country,
             optionSection = { it.name.take(1) },
-            searchPlaceholder = "Поиск"
+            searchPlaceholder = "Поиск",
         )
     }
 }

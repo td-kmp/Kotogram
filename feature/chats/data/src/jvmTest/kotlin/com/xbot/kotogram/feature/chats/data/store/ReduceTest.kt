@@ -20,8 +20,10 @@ import kotlin.test.assertNotSame
 import kotlin.test.assertSame
 
 class ReduceTest {
-    private fun chat(id: Long, vararg positions: ChatPosition): Chat {
-        // Through JSON, as TDLib delivers it: most of Chat's 44 fields have defaults that way.
+    private fun chat(
+        id: Long,
+        vararg positions: ChatPosition,
+    ): Chat {
         val json = """{"@type":"chat","id":$id,"title":"chat $id","type":{"@type":"chatTypePrivate","user_id":$id},
             |"permissions":{"@type":"chatPermissions"},"notification_settings":{"@type":"chatNotificationSettings"},
             |"available_reactions":{"@type":"chatAvailableReactionsAll"},"video_chat":{"@type":"videoChat"}}
@@ -29,10 +31,12 @@ class ReduceTest {
         return (parseTdObject(json) as Chat).copy(positions = positions.toList())
     }
 
-    private fun position(list: ChatList, order: Long) = ChatPosition(list = list, order = order)
+    private fun position(
+        list: ChatList,
+        order: Long,
+    ) = ChatPosition(list = list, order = order)
 
-    private fun fold(vararg updates: Update) =
-        updates.fold(ChatsState.Empty) { state, update -> state.reduce(update) }
+    private fun fold(vararg updates: Update) = updates.fold(ChatsState.Empty) { state, update -> state.reduce(update) }
 
     private fun ChatsState.main() = chatLists[ChatListMain]?.chatIds.orEmpty()
 
@@ -41,7 +45,7 @@ class ReduceTest {
         val state = fold(
             UpdateNewChat(chat(1, position(ChatListMain, 10))),
             UpdateNewChat(chat(2, position(ChatListMain, 30))),
-            UpdateNewChat(chat(3, position(ChatListMain, 10)))
+            UpdateNewChat(chat(3, position(ChatListMain, 10))),
         )
         assertEquals(listOf(2L, 3L, 1L), state.main())
     }
@@ -50,7 +54,7 @@ class ReduceTest {
     fun orderZeroRemovesTheChatFromThatListOnly() {
         val state = fold(
             UpdateNewChat(chat(1, position(ChatListMain, 10), position(ChatListArchive, 20))),
-            UpdateChatPosition(chatId = 1, position = position(ChatListMain, 0))
+            UpdateChatPosition(chatId = 1, position = position(ChatListMain, 0)),
         )
         assertEquals(emptyList(), state.main())
         assertEquals(listOf(1L), state.chatLists[ChatListArchive]?.chatIds)
@@ -66,8 +70,8 @@ class ReduceTest {
             UpdateChatLastMessage(
                 chatId = 1,
                 lastMessage = null,
-                positions = listOf(position(ChatListMain, 30))
-            )
+                positions = listOf(position(ChatListMain, 30)),
+            ),
         )
         assertEquals(listOf(1L, 2L), state.main())
     }
@@ -79,8 +83,8 @@ class ReduceTest {
             UpdateChatLastMessage(
                 chatId = 1,
                 lastMessage = null,
-                positions = listOf(position(ChatListMain, 10))
-            )
+                positions = listOf(position(ChatListMain, 10)),
+            ),
         )
         assertEquals(emptyList(), state.chatLists[ChatListArchive]?.chatIds)
         assertEquals(listOf(1L), state.main())

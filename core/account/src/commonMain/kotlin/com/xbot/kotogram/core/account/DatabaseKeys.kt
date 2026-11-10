@@ -6,7 +6,6 @@ interface DatabaseKeys {
     suspend fun delete(id: AccountId)
 }
 
-// TDLib treats an empty key as no encryption.
 internal object NoDatabaseKeys : DatabaseKeys {
     override suspend fun getOrCreate(id: AccountId): ByteArray = ByteArray(0)
 

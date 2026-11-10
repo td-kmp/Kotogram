@@ -6,7 +6,7 @@ import com.sun.jna.Pointer
 
 internal class MacProgressIndicator {
     val handle: Pointer = requireNotNull(
-        ObjC.send(requireNotNull(ObjC.send(requireNotNull(ObjC.cls("NSProgressIndicator")), "alloc")), "init")
+        ObjC.send(requireNotNull(ObjC.send(requireNotNull(ObjC.cls("NSProgressIndicator")), "alloc")), "init"),
     )
 
     init {
@@ -16,7 +16,10 @@ internal class MacProgressIndicator {
         ObjC.sendVoid(handle, "setControlSize:", CONTROL_SIZE_SMALL)
     }
 
-    fun setColor(color: Color, background: Color) {
+    fun setColor(
+        color: Color,
+        background: Color,
+    ) {
         val light = color.luminance() > minOf(HALF_LUMINANCE, background.luminance())
         ObjC.sendVoid(handle, "setAppearance:", ObjC.appearance(dark = light))
     }
@@ -27,10 +30,6 @@ internal class MacProgressIndicator {
 
     fun setAnimating(animating: Boolean) {
         ObjC.sendVoid(handle, if (animating) "startAnimation:" else "stopAnimation:", null)
-    }
-
-    fun setVisible(visible: Boolean) {
-        ObjC.sendVoid(handle, "setHidden:", (if (visible) 0 else 1).toByte())
     }
 
     fun centerIn(parent: Pointer) {

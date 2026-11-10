@@ -49,7 +49,10 @@ import com.xbot.kotogram.feature.auth.impl.extensions.localizedMessage
 import org.orbitmvi.orbit.compose.collectAsState
 
 @Composable
-internal fun EmailCodeScreen(viewModel: EmailCodeViewModel, modifier: Modifier = Modifier) {
+internal fun EmailCodeScreen(
+    viewModel: EmailCodeViewModel,
+    modifier: Modifier = Modifier,
+) {
     val state by viewModel.collectAsState()
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(focusRequester, state.codeLength) {
@@ -64,7 +67,7 @@ internal fun EmailCodeScreen(viewModel: EmailCodeViewModel, modifier: Modifier =
         code = viewModel.code,
         onAction = viewModel::onAction,
         modifier = modifier,
-        focusRequester = focusRequester
+        focusRequester = focusRequester,
     )
 }
 
@@ -74,7 +77,7 @@ internal fun EmailCodeScreenContent(
     code: TextFieldState,
     onAction: (EmailCodeScreenAction) -> Unit,
     modifier: Modifier = Modifier,
-    focusRequester: FocusRequester = remember { FocusRequester() }
+    focusRequester: FocusRequester = remember { FocusRequester() },
 ) {
     val style = rememberStyle(::EmailCodeScreenStyleScope, EmailCodeScreenStyle.Adaptive)
     val posture = mediaQuery { windowPosture }
@@ -83,13 +86,13 @@ internal fun EmailCodeScreenContent(
     context(style) {
         Scaffold(
             modifier = modifier,
-            contentWindowInsets = WindowInsets.safeDrawing
+            contentWindowInsets = WindowInsets.safeDrawing,
         ) { innerPadding ->
             Column(
                 Modifier
                     .fillMaxHeight()
                     .fillMaxWidth(if (posture.isBook) 0.5f else 1f)
-                    .padding(innerPadding)
+                    .padding(innerPadding),
             ) {
                 BoxWithConstraints(Modifier.weight(1f)) {
                     Column(
@@ -99,7 +102,7 @@ internal fun EmailCodeScreenContent(
                             .heightIn(min = maxHeight)
                             .padding(horizontal = style.horizontalPadding),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        verticalArrangement = Arrangement.Center,
                     ) {
                         if (!landscape && !posture.isTabletop) {
                             LottieImage(STICKER, Modifier.size(style.animationSize))
@@ -107,16 +110,16 @@ internal fun EmailCodeScreenContent(
                         }
                         Text(
                             text = stringResource(Res.string.login_header_code),
-                            style = style.titleTextStyle
+                            style = style.titleTextStyle,
                         )
                         Spacer(Modifier.height(style.beforeInfo))
                         Text(
                             text = stringResource(
                                 Res.string.login_new_code_email,
-                                state.emailPattern
+                                state.emailPattern,
                             ),
                             style = style.infoTextStyle,
-                            modifier = Modifier.widthIn(max = style.infoWidth)
+                            modifier = Modifier.widthIn(max = style.infoWidth),
                         )
                         Spacer(Modifier.height(style.beforeField))
                         if (state.codeLength > 0) {
@@ -125,7 +128,7 @@ internal fun EmailCodeScreenContent(
                                 length = state.codeLength,
                                 modifier = Modifier.focusRequester(focusRequester),
                                 isError = state.error != null,
-                                onKeyboardAction = { onAction(EmailCodeScreenAction.OnSubmit) }
+                                onKeyboardAction = { onAction(EmailCodeScreenAction.OnSubmit) },
                             )
                         }
                         Crossfade(
@@ -133,12 +136,12 @@ internal fun EmailCodeScreenContent(
                             animationSpec = style.errorFadeSpec,
                             modifier = Modifier
                                 .height(style.afterField)
-                                .padding(top = style.beforeError)
+                                .padding(top = style.beforeError),
                         ) { error ->
                             if (error != null) {
                                 Text(
                                     text = stringResource(error.localizedMessage()),
-                                    style = style.errorTextStyle
+                                    style = style.errorTextStyle,
                                 )
                             }
                         }
@@ -148,8 +151,8 @@ internal fun EmailCodeScreenContent(
                                 onClick = { onAction(EmailCodeScreenAction.OnSubmit) },
                                 state = ButtonState.of(
                                     enabled = code.text.isNotEmpty(),
-                                    loading = state.isSubmitting
-                                )
+                                    loading = state.isSubmitting,
+                                ),
                             )
                         }
                     }
@@ -162,16 +165,14 @@ internal fun EmailCodeScreenContent(
 
 @KotogramPreview
 @Composable
-private fun EmailCodeScreenPreview(
-    @PreviewParameter(EmailCodeScreenStateProvider::class) state: EmailCodeScreenState
-) {
+private fun EmailCodeScreenPreview(@PreviewParameter(EmailCodeScreenStateProvider::class) state: EmailCodeScreenState) {
     EmailCodeScreenContent(state = state, code = TextFieldState("12"), onAction = {})
 }
 
 @KotogramLaptopPreview
 @Composable
 private fun EmailCodeScreenLaptopPreview(
-    @PreviewParameter(EmailCodeScreenStateProvider::class) state: EmailCodeScreenState
+    @PreviewParameter(EmailCodeScreenStateProvider::class) state: EmailCodeScreenState,
 ) = EmailCodeScreenPreview(state)
 
 private class EmailCodeScreenStateProvider : PreviewParameterProvider<EmailCodeScreenState> {

@@ -3,8 +3,12 @@ package com.xbot.kotogram.core.designsystem.icon
 import androidx.compose.ui.geometry.Offset
 import kotlin.math.hypot
 
-// The part of a square canvas at least `distance` to the left of the line a → b.
-internal fun halfPlane(a: Offset, b: Offset, distance: Float, canvas: Float): List<Offset> {
+internal fun halfPlane(
+    a: Offset,
+    b: Offset,
+    distance: Float,
+    canvas: Float,
+): List<Offset> {
     val length = hypot(b.x - a.x, b.y - a.y)
     val normal = Offset(-(b.y - a.y) / length, (b.x - a.x) / length)
     val side = { point: Offset -> (point - a).x * normal.x + (point - a).y * normal.y - distance }

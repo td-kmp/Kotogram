@@ -17,7 +17,11 @@ sealed interface AuthError {
 
     data object InvalidName : AuthError
 
-    data class TooManyAttempts(val retryAfter: Duration?) : AuthError
+    data class TooManyAttempts(
+        val retryAfter: Duration?,
+    ) : AuthError
 
-    data class Unknown(val message: String) : AuthError
+    data class Unknown(
+        val message: String,
+    ) : AuthError
 }

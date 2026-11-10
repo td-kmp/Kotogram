@@ -16,7 +16,9 @@ internal interface ChosenLanguageStore {
     suspend fun save(info: LanguagePackInfo?)
 }
 
-internal class DataStoreChosenLanguageStore(private val preferences: DataStore<Preferences>) : ChosenLanguageStore {
+internal class DataStoreChosenLanguageStore(
+    private val preferences: DataStore<Preferences>,
+) : ChosenLanguageStore {
     override suspend fun load(): LanguagePackInfo? {
         val text = preferences.data.first()[LANGUAGE] ?: return null
         return try {

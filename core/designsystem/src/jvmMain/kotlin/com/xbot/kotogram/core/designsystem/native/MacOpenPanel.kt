@@ -1,6 +1,6 @@
 package com.xbot.kotogram.core.designsystem.native
 
-// Run modal: a sheet takes a completion block, which JNA can't make.
+// Workaround: run modal, a sheet takes a completion block, which JNA can't make.
 internal object MacOpenPanel {
     fun chooseImage(): String? {
         val panel = requireNotNull(ObjC.send(requireNotNull(ObjC.cls("NSOpenPanel")), "openPanel"))

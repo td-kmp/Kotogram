@@ -26,7 +26,7 @@ fun RichText(
     text: FormattedText,
     modifier: Modifier = Modifier,
     onEntityClick: ((TextEntity) -> Unit)? = null,
-    style: RichTextStyle = RichTextStyle
+    style: RichTextStyle = RichTextStyle,
 ) {
     @Suppress("NAME_SHADOWING")
     val style = rememberStyle(::RichTextStyleScope, RichTextStyle.Default then style)
@@ -36,7 +36,6 @@ fun RichText(
     Text(text = annotated, modifier = modifier, style = LocalTextStyle.current.merge(style.textStyle))
 }
 
-// The text takes the surrounding text style; the entities get the theme's colours.
 fun interface RichTextStyle : ComponentStyle<RichTextStyleScope> {
     companion object : RichTextStyle {
         override fun RichTextStyleScope.applyStyle() {}
@@ -46,8 +45,8 @@ fun interface RichTextStyle : ComponentStyle<RichTextStyleScope> {
                 FormattedTextStyles(
                     code = SpanStyle(fontFamily = FontFamily.Monospace, background = theme.colors.surfaceVariant),
                     spoiler = SpanStyle(background = theme.colors.surfaceVariant),
-                    link = TextLinkStyles(style = SpanStyle(color = theme.colors.primary))
-                )
+                    link = TextLinkStyles(style = SpanStyle(color = theme.colors.primary)),
+                ),
             )
         }
     }
@@ -55,18 +54,21 @@ fun interface RichTextStyle : ComponentStyle<RichTextStyleScope> {
 
 infix fun RichTextStyle.then(other: RichTextStyle): RichTextStyle = when {
     other === RichTextStyle -> this
+
     this === RichTextStyle -> other
+
     else -> RichTextStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
     }
 }
 
-class RichTextStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
-    AdaptiveStyleScope<RichTextStyleScope>,
+class RichTextStyleScope(
+    val theme: KotogramTheme.Values,
+    override val mediaQueryInfo: MediaQueryInfo,
+) : AdaptiveStyleScope<RichTextStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
-    // Merged over LocalTextStyle, so unspecified values keep the surrounding text's.
     var textStyle: TextStyle = TextStyle.Default
         private set
 

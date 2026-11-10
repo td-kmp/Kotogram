@@ -24,7 +24,7 @@ internal fun MacToggleView(
     checked: Boolean,
     onCheckedChange: ((Boolean) -> Unit)?,
     enabled: Boolean,
-    modifier: Modifier
+    modifier: Modifier,
 ) {
     val currentOnCheckedChange by rememberUpdatedState(onCheckedChange)
     var toggles by remember { mutableIntStateOf(0) }
@@ -36,23 +36,21 @@ internal fun MacToggleView(
     }
     val size = remember(toggle) { toggle.fittingSize.let { DpSize(it.width.dp, it.height.dp) } }
     val dark = KotogramTheme.colors.background.isDark()
-    val inFront = isSettledInFront()
     NativeView(
         factory = {
             nucleusNsPlatformView(
                 handle = { Pointer.nativeValue(toggle.handle) },
-                onDispose = toggle::release
+                onDispose = toggle::release,
             )
         },
         modifier = modifier.size(size),
         update = {
             toggle.setEnabled(enabled)
             toggle.setDark(dark)
-            toggle.setVisible(inFront)
         },
-        placedAsOverlay = true
+        placedAsOverlay = true,
     )
-    // Every toggle recomposes this, so a change the caller doesn't take, or a click with no callback, goes back.
+    // Hack: every toggle recomposes this, so a change the caller doesn't take goes back.
     LaunchedEffect(checked, toggles) {
         if (toggle.isOn != checked) toggle.setOn(checked, animated = true)
     }

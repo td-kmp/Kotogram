@@ -14,8 +14,7 @@ import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 import com.xbot.kotogram.core.designsystem.style.StyleResolver
 
 @Suppress("MagicNumber")
-internal fun interface PremiumPurchaseScreenStyle :
-    ComponentStyle<PremiumPurchaseScreenStyleScope> {
+internal fun interface PremiumPurchaseScreenStyle : ComponentStyle<PremiumPurchaseScreenStyleScope> {
     companion object : PremiumPurchaseScreenStyle {
         override fun PremiumPurchaseScreenStyleScope.applyStyle() {}
 
@@ -32,15 +31,15 @@ internal fun interface PremiumPurchaseScreenStyle :
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     color = theme.colors.onSurface,
-                    textAlign = TextAlign.Center
-                )
+                    textAlign = TextAlign.Center,
+                ),
             )
             infoTextStyle(
                 theme.typography.bodyLarge.merge(
                     fontSize = 16.sp,
                     color = theme.colors.onSurface,
-                    textAlign = TextAlign.Center
-                )
+                    textAlign = TextAlign.Center,
+                ),
             )
             landscapeHeight(480.dp)
             beforeAction(40.dp)
@@ -58,38 +57,37 @@ internal fun interface PremiumPurchaseScreenStyle :
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Medium,
                         color = theme.colors.onSurface,
-                        textAlign = TextAlign.Center
-                    )
+                        textAlign = TextAlign.Center,
+                    ),
                 )
                 infoTextStyle(
                     theme.typography.bodyLarge.merge(
                         fontSize = 13.5.sp,
                         color = theme.colors.onSurfaceVariant,
-                        textAlign = TextAlign.Center
-                    )
+                        textAlign = TextAlign.Center,
+                    ),
                 )
             }
         }
     }
 }
 
-internal infix fun PremiumPurchaseScreenStyle.then(
-    other: PremiumPurchaseScreenStyle
-): PremiumPurchaseScreenStyle = when {
-    other === PremiumPurchaseScreenStyle -> this
+internal infix fun PremiumPurchaseScreenStyle.then(other: PremiumPurchaseScreenStyle): PremiumPurchaseScreenStyle =
+    when {
+        other === PremiumPurchaseScreenStyle -> this
 
-    this === PremiumPurchaseScreenStyle -> other
+        this === PremiumPurchaseScreenStyle -> other
 
-    else -> PremiumPurchaseScreenStyle {
-        with(this@then) { applyStyle() }
-        with(other) { applyStyle() }
+        else -> PremiumPurchaseScreenStyle {
+            with(this@then) { applyStyle() }
+            with(other) { applyStyle() }
+        }
     }
-}
 
 @Suppress("TooManyFunctions")
 internal class PremiumPurchaseScreenStyleScope(
     val theme: KotogramTheme.Values,
-    override val mediaQueryInfo: MediaQueryInfo
+    override val mediaQueryInfo: MediaQueryInfo,
 ) : AdaptiveStyleScope<PremiumPurchaseScreenStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 

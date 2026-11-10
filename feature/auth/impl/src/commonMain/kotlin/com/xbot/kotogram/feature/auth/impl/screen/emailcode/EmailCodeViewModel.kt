@@ -19,7 +19,7 @@ import org.orbitmvi.orbit.viewmodel.orbitContainer
 
 internal class EmailCodeViewModel(
     savedStateHandle: SavedStateHandle,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
 ) : ViewModel(),
     OrbitContainerHost<EmailCodeScreenState, EmailCodeScreenState, Nothing> {
 
@@ -35,7 +35,7 @@ internal class EmailCodeViewModel(
                     reduce {
                         state.copy(
                             emailPattern = authState.codeInfo.emailAddressPattern,
-                            codeLength = authState.codeInfo.length
+                            codeLength = authState.codeInfo.length,
                         )
                     }
                 }

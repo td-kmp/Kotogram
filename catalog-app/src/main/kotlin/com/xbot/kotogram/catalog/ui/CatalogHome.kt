@@ -22,7 +22,7 @@ import com.xbot.kotogram.core.designsystem.KotogramTheme
 fun CatalogHome(
     pages: List<CatalogPage>,
     onPageClick: (CatalogPage) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val spacing = KotogramTheme.spacing
     LazyVerticalGrid(
@@ -30,7 +30,7 @@ fun CatalogHome(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(spacing.large),
         horizontalArrangement = Arrangement.spacedBy(spacing.small),
-        verticalArrangement = Arrangement.spacedBy(spacing.small)
+        verticalArrangement = Arrangement.spacedBy(spacing.small),
     ) {
         items(pages, key = { it.id }) { page ->
             CatalogItem(page = page, onClick = { onPageClick(page) })
@@ -39,23 +39,27 @@ fun CatalogHome(
 }
 
 @Composable
-private fun CatalogItem(page: CatalogPage, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun CatalogItem(
+    page: CatalogPage,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val spacing = KotogramTheme.spacing
     OutlinedCard(
         onClick = onClick,
         modifier = modifier.height(CellHeight),
-        shape = KotogramTheme.shapes.medium
+        shape = KotogramTheme.shapes.medium,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(spacing.large),
-            verticalArrangement = Arrangement.spacedBy(spacing.extraSmall)
+            verticalArrangement = Arrangement.spacedBy(spacing.extraSmall),
         ) {
             Text(
                 text = page.section.title,
                 style = KotogramTheme.typography.labelSmall,
-                color = KotogramTheme.colors.onSurfaceVariant
+                color = KotogramTheme.colors.onSurfaceVariant,
             )
             Text(page.name, style = KotogramTheme.typography.titleMedium)
             Text(
@@ -63,7 +67,7 @@ private fun CatalogItem(page: CatalogPage, onClick: () -> Unit, modifier: Modifi
                 style = KotogramTheme.typography.bodySmall,
                 color = KotogramTheme.colors.onSurfaceVariant,
                 maxLines = DESCRIPTION_LINES,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }

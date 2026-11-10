@@ -23,12 +23,6 @@ import com.xbot.kotogram.shared.di.initKoin
 import io.xbot.tdlib.api.AuthorizationStateWaitPhoneNumber
 import io.xbot.tdlib.api.GetOption
 import io.xbot.tdlib.api.OptionValueString
-import java.nio.file.Files
-import java.nio.file.Path
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -43,6 +37,12 @@ import org.koin.core.parameter.parametersOf
 import org.koin.dsl.koinConfiguration
 import org.koin.dsl.module
 import org.koin.mp.KoinPlatform
+import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.seconds
 
 class KoinGraphTest {
     private val root = Files.createTempDirectory("kotogram-graph")
@@ -60,9 +60,9 @@ class KoinGraphTest {
                                 single<AccountStorage> { TemporaryAccountStorage(root) }
                                 single<AppStorage> { TemporaryAppStorage(root) }
                                 single<AccountRegistryStore> { InMemoryAccountRegistryStore() }
-                            }
+                            },
                         )
-                    }
+                    },
                 )
                 val koin = KoinPlatform.getKoin()
                 val manager = koin.get<AccountManager>()
@@ -71,10 +71,9 @@ class KoinGraphTest {
                     assertEquals(AccountId(1), session.id)
                     session.authorizationState.first { it == AuthorizationStateWaitPhoneNumber }
                     assertEquals(BundledLocalization, koin.get<LocalizationSource>().localization.first { it != null })
-                    // Sent before setTdlibParameters, which TDLib reads only then.
                     assertEquals(
                         OptionValueString("$root/langpack"),
-                        koin.get<AppClient>().send(GetOption(name = "language_pack_database_path")).getOrNull()
+                        koin.get<AppClient>().send(GetOption(name = "language_pack_database_path")).getOrNull(),
                     )
 
                     val definitions = koin.instanceRegistry.instances.values
@@ -83,7 +82,6 @@ class KoinGraphTest {
                         .distinct()
                     assertTrue(definitions.size > 2, "only the declared client and context")
                     definitions.forEach { definition ->
-                        // What koinViewModel() hands over: ChatViewModel's chat id and an entry's SavedStateHandle.
                         session.koinScope.get<Any>(definition.primaryType) { parametersOf(1L, SavedStateHandle()) }
                     }
 
@@ -111,10 +109,12 @@ private val testConfig = TdlibConfig(
     systemLanguageCode = "en",
     deviceModel = "kotogram test",
     systemVersion = "jvm",
-    applicationVersion = "test"
+    applicationVersion = "test",
 )
 
-private class TemporaryAccountStorage(private val root: Path) : AccountStorage {
+private class TemporaryAccountStorage(
+    private val root: Path,
+) : AccountStorage {
     override fun databaseDirectory(id: AccountId) = "$root/${id.value}/db"
 
     override fun filesDirectory(id: AccountId) = "$root/${id.value}/files"
@@ -122,7 +122,9 @@ private class TemporaryAccountStorage(private val root: Path) : AccountStorage {
     override suspend fun delete(id: AccountId) = Unit
 }
 
-private class TemporaryAppStorage(root: Path) : AppStorage {
+private class TemporaryAppStorage(
+    root: Path,
+) : AppStorage {
     override val tdlibDirectory = root.toString()
 
     override val preferences = PreferenceDataStoreFactory.createWithPath { "$root/app.preferences_pb".toPath() }

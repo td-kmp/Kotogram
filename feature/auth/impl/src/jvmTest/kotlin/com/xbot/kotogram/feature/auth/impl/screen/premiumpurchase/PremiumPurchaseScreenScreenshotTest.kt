@@ -12,29 +12,29 @@ import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.media.LocalUiMediaScope
 import com.xbot.kotogram.core.designsystem.style.LocalMediaQueryInfo
 import com.xbot.kotogram.feature.auth.impl.screen.phone.Device
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import java.io.File
 import javax.imageio.ImageIO
 import kotlin.test.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 
 @RunWith(Parameterized::class)
 class PremiumPurchaseScreenScreenshotTest(
     private val device: Device,
-    private val darkTheme: Boolean
+    private val darkTheme: Boolean,
 ) {
     @OptIn(ExperimentalTestApi::class)
     @Test
     fun screenshot() = runDesktopComposeUiTest(
         width = (device.width.value * device.scale).toInt(),
-        height = (device.height.value * device.scale).toInt()
+        height = (device.height.value * device.scale).toInt(),
     ) {
         setContent {
             CompositionLocalProvider(LocalDensity provides Density(device.scale)) {
                 KotogramTheme(darkTheme = darkTheme, dynamicColor = false) {
                     CompositionLocalProvider(
                         LocalUiMediaScope provides device.mediaScope,
-                        LocalMediaQueryInfo provides device.mediaQueryInfo
+                        LocalMediaQueryInfo provides device.mediaQueryInfo,
                     ) {
                         PremiumPurchaseScreen(onBackClick = {})
                     }
@@ -44,7 +44,7 @@ class PremiumPurchaseScreenScreenshotTest(
         waitForIdle()
         val file =
             File(
-                "build/screenshots/premiumpurchase/${device.id}_${if (darkTheme) "dark" else "light"}.png"
+                "build/screenshots/premiumpurchase/${device.id}_${if (darkTheme) "dark" else "light"}.png",
             )
         file.parentFile.mkdirs()
         ImageIO.write(onRoot().captureToImage().toAwtImage(), "png", file)

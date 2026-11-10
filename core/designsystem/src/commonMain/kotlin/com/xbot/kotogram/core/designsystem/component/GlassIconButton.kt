@@ -8,7 +8,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.xbot.kotogram.core.designsystem.style.rememberStyle
 
-// UIKit's and AppKit's glass button on iOS 26 and macOS 26 and later, for a bar over content; IconButton elsewhere.
 @Composable
 fun GlassIconButton(
     icon: ImageVector,
@@ -16,7 +15,7 @@ fun GlassIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    style: IconButtonStyle = IconButtonStyle
+    style: IconButtonStyle = IconButtonStyle,
 ) {
     val buttonStyle = rememberStyle(::IconButtonStyleScope, IconButtonStyle.Adaptive then style)
     with(LocalGlassIconButtonOverride.current) {
@@ -36,7 +35,7 @@ internal class GlassIconButtonOverrideScope(
     val onClick: () -> Unit,
     val modifier: Modifier,
     val enabled: Boolean,
-    val style: IconButtonStyleScope
+    val style: IconButtonStyleScope,
 ) {
     val iconColor: Color get() = if (enabled) style.contentColor else style.disabledContentColor
 }

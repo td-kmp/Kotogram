@@ -26,7 +26,6 @@ internal object IosGlassIconButtonOverride : GlassIconButtonOverride {
     @Composable
     override fun GlassIconButtonOverrideScope.GlassIconButton() {
         val currentOnClick by rememberUpdatedState(onClick)
-        // A template image, which UIKit tints with the configuration's colour.
         val bitmap = rememberIconBitmap(icon, style.iconSize, Color.Black)
         val scale = LocalDensity.current.density
         val templateImage = remember(bitmap, scale) {
@@ -39,7 +38,7 @@ internal object IosGlassIconButtonOverride : GlassIconButtonOverride {
             factory = {
                 UIButton.buttonWithConfiguration(
                     configuration = UIButtonConfiguration.glassButtonConfiguration(),
-                    primaryAction = UIAction.actionWithHandler { currentOnClick() }
+                    primaryAction = UIAction.actionWithHandler { currentOnClick() },
                 ).apply { alpha = 0.0 }
             },
             modifier = modifier.minimumInteractiveComponentSize().size(style.size),
@@ -55,7 +54,7 @@ internal object IosGlassIconButtonOverride : GlassIconButtonOverride {
                 button.accessibilityLabel = contentDescription
                 fade(button, visible = inFront)
             },
-            properties = GlassProperties
+            properties = GlassProperties,
         )
     }
 }

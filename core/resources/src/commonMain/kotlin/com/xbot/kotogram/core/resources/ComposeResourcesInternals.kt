@@ -1,4 +1,4 @@
-// Compose resources keep their CLDR rules and environment internal; every use of them stays in this file.
+// Hack: Compose resources keep their CLDR rules and environment internal; every use stays in this file.
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @file:OptIn(InternalResourceApi::class)
 
@@ -39,15 +39,22 @@ private val categories = listOf(
     PluralCategory.TWO,
     PluralCategory.FEW,
     PluralCategory.MANY,
-    PluralCategory.OTHER
+    PluralCategory.OTHER,
 )
 
-internal fun pluralForm(value: LanguagePackStringValuePluralized, pluralCode: String, quantity: Int): String {
+internal fun pluralForm(
+    value: LanguagePackStringValuePluralized,
+    pluralCode: String,
+    quantity: Int,
+): String {
     val forms = with(value) { listOf(zeroValue, oneValue, twoValue, fewValue, manyValue, otherValue) }
     return forms[formIndex(pluralCode, quantity)].ifEmpty { value.otherValue }
 }
 
-private fun formIndex(pluralCode: String, quantity: Int): Int {
+private fun formIndex(
+    pluralCode: String,
+    quantity: Int,
+): Int {
     val parts = pluralCode.split('-', '_')
     val language = parts.first().lowercase()
     val region = parts.getOrNull(1)?.uppercase()
@@ -70,10 +77,13 @@ private object BundledComposeEnvironment : ComposeEnvironment {
     }
 }
 
-private fun bundledEnvironment(theme: ThemeQualifier, density: DensityQualifier) = ResourceEnvironment(
+private fun bundledEnvironment(
+    theme: ThemeQualifier,
+    density: DensityQualifier,
+) = ResourceEnvironment(
     language = LanguageQualifier(BUNDLED_LANGUAGE),
     script = ScriptQualifier(""),
     region = RegionQualifier(""),
     theme = theme,
-    density = density
+    density = density,
 )

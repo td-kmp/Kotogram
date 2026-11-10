@@ -4,10 +4,9 @@ internal class SampleCountry(
     val flag: String,
     val name: String,
     val englishName: String,
-    val code: String
+    val code: String,
 )
 
-// In Russian, as a Russian user sees TDLib's list: sorted by the localised name.
 internal val SampleCountries: List<SampleCountry> = listOf(
     SampleCountry("🇦🇺", "Австралия", "Australia", "+61"),
     SampleCountry("🇦🇹", "Австрия", "Austria", "+43"),
@@ -87,5 +86,5 @@ internal val SampleCountries: List<SampleCountry> = listOf(
     SampleCountry("🇪🇪", "Эстония", "Estonia", "+372"),
     SampleCountry("🇪🇹", "Эфиопия", "Ethiopia", "+251"),
     SampleCountry("🇰🇷", "Южная Корея", "South Korea", "+82"),
-    SampleCountry("🇯🇵", "Япония", "Japan", "+81")
+    SampleCountry("🇯🇵", "Япония", "Japan", "+81"),
 )

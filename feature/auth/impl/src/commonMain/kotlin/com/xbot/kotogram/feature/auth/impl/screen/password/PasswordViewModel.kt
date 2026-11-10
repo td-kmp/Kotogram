@@ -19,7 +19,7 @@ import org.orbitmvi.orbit.viewmodel.orbitContainer
 
 internal class PasswordViewModel(
     savedStateHandle: SavedStateHandle,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
 ) : ViewModel(),
     OrbitContainerHost<PasswordScreenState, PasswordScreenState, Nothing> {
 
@@ -39,7 +39,7 @@ internal class PasswordViewModel(
                         state.copy(
                             hint = authState.passwordHint,
                             hasRecoveryEmail = authState.hasRecoveryEmailAddress,
-                            recoveryEmailPattern = authState.recoveryEmailAddressPattern
+                            recoveryEmailPattern = authState.recoveryEmailAddressPattern,
                         )
                     }
                 }
@@ -77,7 +77,7 @@ internal class PasswordViewModel(
         if (!state.hasRecoveryEmail) return@intent
         authRepository.requestAuthenticationPasswordRecovery().fold(
             ifLeft = { error -> reduce { state.copy(error = error) } },
-            ifRight = { reduce { state.copy(isRecovering = true, error = null) } }
+            ifRight = { reduce { state.copy(isRecovering = true, error = null) } },
         )
     }
 

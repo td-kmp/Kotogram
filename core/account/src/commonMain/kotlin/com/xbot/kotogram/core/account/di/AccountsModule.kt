@@ -32,7 +32,7 @@ val accountsModule = module {
             store = get(),
             storage = get(),
             keys = get(),
-            koin = getKoin()
+            koin = getKoin(),
         )
     }
     single<AppClient> { DefaultAppClient(accounts = get()) }

@@ -15,7 +15,6 @@ import dev.nucleusframework.window.material.MaterialTitleBar
 import kotlinx.coroutines.runBlocking
 import org.koin.core.context.stopKoin
 
-// As Telegram for macOS: 700×550 at first launch, never smaller than 380×550, no maximum.
 private val InitialWindowSize = DpSize(700.dp, 550.dp)
 private val MinimumWindowSize = DpSize(380.dp, 550.dp)
 
@@ -25,24 +24,24 @@ fun main(args: Array<String>) {
         Thread {
             runBlocking { closeAccounts() }
             stopKoin()
-        }
+        },
     )
     nucleusApplication(args) {
         KotogramWindow(
             onCloseRequest = ::exitApplication,
             state = rememberWindowState(
                 position = WindowPosition(Alignment.Center),
-                size = InitialWindowSize
+                size = InitialWindowSize,
             ),
             title = "Kotogram",
-            minimumSize = MinimumWindowSize
+            minimumSize = MinimumWindowSize,
         ) {
             MaterialTitleBar {
                 Text(
                     text = "Kotogram",
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
-                        .padding(horizontal = 12.dp)
+                        .padding(horizontal = 12.dp),
                 )
             }
             App()

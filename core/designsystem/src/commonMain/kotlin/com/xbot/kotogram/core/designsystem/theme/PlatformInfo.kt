@@ -6,7 +6,10 @@ import androidx.compose.runtime.ProvidedValue
 import com.xbot.kotogram.core.designsystem.media.UiMediaScope
 import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 
-internal class PlatformInfo(val isApple: Boolean, val isDesktop: Boolean)
+internal class PlatformInfo(
+    val isApple: Boolean,
+    val isDesktop: Boolean,
+)
 
 internal expect val currentPlatform: PlatformInfo
 

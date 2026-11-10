@@ -14,8 +14,6 @@ import com.xbot.kotogram.core.designsystem.style.DefaultStyleResolver
 import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 import com.xbot.kotogram.core.designsystem.style.StyleResolver
 
-// Telegram for iOS's ChatListItem on touch screens and Telegram for macOS's ChatListRowItem and ChatListRowView on
-// a laptop, in their points.
 @Suppress("MagicNumber")
 internal fun interface ChatListScreenStyle : ComponentStyle<ChatListScreenStyleScope> {
     companion object : ChatListScreenStyle {
@@ -37,7 +35,6 @@ internal fun interface ChatListScreenStyle : ComponentStyle<ChatListScreenStyleS
             titleDateGap(10.dp)
             titleIconGap(3.dp)
             emojiStatusSize(20.dp)
-            // The glyph of PeerMutedIcon's 24-point box, which starts 5 before its origin.
             mutedIconSize(14.dp)
             mutedIconGap(3.dp)
             statusIconSize(24.dp)
@@ -47,7 +44,6 @@ internal fun interface ChatListScreenStyle : ComponentStyle<ChatListScreenStyleS
             badgeGap(6.dp)
             badgeBottom(17.dp)
             badgeTextReserve(5.dp)
-            // The glyph of ic_chatslistpin's 20-point image.
             pinnedIconSize(16.dp)
             thumbnailSize(18.dp)
             thumbnailSpacing(2.dp)
@@ -73,52 +69,52 @@ internal fun interface ChatListScreenStyle : ComponentStyle<ChatListScreenStyleS
                 theme.typography.bodyLarge.merge(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = theme.colors.onSurface
-                )
+                    color = theme.colors.onSurface,
+                ),
             )
             previewTextStyle(
                 theme.typography.bodyLarge.merge(
                     fontSize = 15.sp,
-                    color = theme.colors.onSurfaceVariant
-                )
+                    color = theme.colors.onSurfaceVariant,
+                ),
             )
             authorTextStyle(
                 theme.typography.bodyLarge.merge(
                     fontSize = 15.sp,
-                    color = theme.colors.onSurface
-                )
+                    color = theme.colors.onSurface,
+                ),
             )
             draftTextStyle(
                 theme.typography.bodyLarge.merge(
                     fontSize = 15.sp,
-                    color = theme.colors.error
-                )
+                    color = theme.colors.error,
+                ),
             )
             dateTextStyle(
                 theme.typography.bodyLarge.merge(
                     fontSize = 14.sp,
-                    color = theme.colors.onSurfaceVariant
-                )
+                    color = theme.colors.onSurfaceVariant,
+                ),
             )
             badgeTextStyle(
                 theme.typography.bodyLarge.merge(
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
                     fontFeatureSettings = "tnum",
-                    color = Color.White
-                )
+                    color = Color.White,
+                ),
             )
             tabTextStyle(
                 theme.typography.bodyLarge.merge(
                     fontSize = 17.sp,
-                    color = theme.colors.onSurface
-                )
+                    color = theme.colors.onSurface,
+                ),
             )
             tabBadgeTextStyle(
                 theme.typography.bodyLarge.merge(
                     fontSize = 14.sp,
-                    color = Color.White
-                )
+                    color = Color.White,
+                ),
             )
         }
 
@@ -158,70 +154,67 @@ internal fun interface ChatListScreenStyle : ComponentStyle<ChatListScreenStyleS
                     theme.typography.bodyLarge.merge(
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
-                        color = theme.colors.onSurface
-                    )
+                        color = theme.colors.onSurface,
+                    ),
                 )
                 previewTextStyle(
                     theme.typography.bodyLarge.merge(
                         fontSize = 13.sp,
-                        color = theme.colors.onSurfaceVariant
-                    )
+                        color = theme.colors.onSurfaceVariant,
+                    ),
                 )
                 authorTextStyle(
                     theme.typography.bodyLarge.merge(
                         fontSize = 13.sp,
-                        color = theme.colors.onSurface
-                    )
+                        color = theme.colors.onSurface,
+                    ),
                 )
                 draftTextStyle(
                     theme.typography.bodyLarge.merge(
                         fontSize = 13.sp,
-                        color = theme.colors.error
-                    )
+                        color = theme.colors.error,
+                    ),
                 )
                 dateTextStyle(
                     theme.typography.bodyLarge.merge(
                         fontSize = 12.sp,
-                        color = theme.colors.onSurfaceVariant
-                    )
+                        color = theme.colors.onSurfaceVariant,
+                    ),
                 )
                 badgeTextStyle(
                     theme.typography.bodyLarge.merge(
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium,
                         fontFeatureSettings = "tnum",
-                        color = Color.White
-                    )
+                        color = Color.White,
+                    ),
                 )
             }
         }
     }
 }
 
-internal infix fun ChatListScreenStyle.then(other: ChatListScreenStyle): ChatListScreenStyle =
-    when {
-        other === ChatListScreenStyle -> this
+internal infix fun ChatListScreenStyle.then(other: ChatListScreenStyle): ChatListScreenStyle = when {
+    other === ChatListScreenStyle -> this
 
-        this === ChatListScreenStyle -> other
+    this === ChatListScreenStyle -> other
 
-        else -> ChatListScreenStyle {
-            with(this@then) { applyStyle() }
-            with(other) { applyStyle() }
-        }
+    else -> ChatListScreenStyle {
+        with(this@then) { applyStyle() }
+        with(other) { applyStyle() }
     }
+}
 
 @Suppress("TooManyFunctions")
 internal class ChatListScreenStyleScope(
     val theme: KotogramTheme.Values,
-    override val mediaQueryInfo: MediaQueryInfo
+    override val mediaQueryInfo: MediaQueryInfo,
 ) : AdaptiveStyleScope<ChatListScreenStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
-    // Unspecified for Telegram for iOS's: the title's line and three more, less 8.
     var rowHeight: Dp = Dp.Unspecified
         private set
 
-    // TextNode's lineSpacing: a line is floor(ascent + descent) and that share of it again. Zero for the font's own.
     var titleLineSpacing: Float = 0f
         private set
 
@@ -246,7 +239,6 @@ internal class ChatListScreenStyleScope(
     var dateTop: Dp = Dp.Unspecified
         private set
 
-    // From the title's line down to the author's or the text's.
     var authorGap: Dp = Dp.Unspecified
         private set
 
@@ -268,7 +260,6 @@ internal class ChatListScreenStyleScope(
     var mutedIconSize: Dp = Dp.Unspecified
         private set
 
-    // From the title or the emoji status to the muted icon's box, which has its own margin on iOS.
     var mutedIconGap: Dp = Dp.Unspecified
         private set
 

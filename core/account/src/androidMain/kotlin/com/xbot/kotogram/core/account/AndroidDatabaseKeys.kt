@@ -4,6 +4,10 @@ import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import co.touchlab.kermit.Logger
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 import java.security.GeneralSecurityException
@@ -13,12 +17,10 @@ import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 
-internal class AndroidDatabaseKeys(private val context: Context) : DatabaseKeys {
+internal class AndroidDatabaseKeys(
+    private val context: Context,
+) : DatabaseKeys {
     private val mutex = Mutex()
 
     override suspend fun getOrCreate(id: AccountId): ByteArray? = withContext(Dispatchers.IO) {
@@ -45,7 +47,6 @@ internal class AndroidDatabaseKeys(private val context: Context) : DatabaseKeys 
         }
     }
 
-    // Named by the data centers too: test DC ids repeat production ones, and deleting one mustn't take the other's key.
     private fun alias(id: AccountId) = "$accountsDirectoryName.database_key.${id.value}"
 
     private fun keyFile(id: AccountId) =
@@ -53,11 +54,13 @@ internal class AndroidDatabaseKeys(private val context: Context) : DatabaseKeys 
 
     private fun keyStore() = KeyStore.getInstance(KEY_STORE).apply { load(null) }
 
-    private fun create(id: AccountId, file: File): ByteArray =
-        ByteArray(KEY_SIZE_BYTES).also { key ->
-            SecureRandom().nextBytes(key)
-            file.writeBytes(encrypt(id, key))
-        }
+    private fun create(
+        id: AccountId,
+        file: File,
+    ): ByteArray = ByteArray(KEY_SIZE_BYTES).also { key ->
+        SecureRandom().nextBytes(key)
+        file.writeBytes(encrypt(id, key))
+    }
 
     private fun secretKey(id: AccountId): SecretKey {
         (keyStore().getKey(alias(id), null) as? SecretKey)?.let { return it }
@@ -65,28 +68,34 @@ internal class AndroidDatabaseKeys(private val context: Context) : DatabaseKeys 
         generator.init(
             KeyGenParameterSpec.Builder(
                 alias(id),
-                KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+                KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
             )
                 .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                 .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
                 .setKeySize(KEY_SIZE_BITS)
-                .build()
+                .build(),
         )
         return generator.generateKey()
     }
 
-    private fun encrypt(id: AccountId, plain: ByteArray): ByteArray {
+    private fun encrypt(
+        id: AccountId,
+        plain: ByteArray,
+    ): ByteArray {
         val cipher = Cipher.getInstance(TRANSFORMATION)
         cipher.init(Cipher.ENCRYPT_MODE, secretKey(id))
         return cipher.iv + cipher.doFinal(plain)
     }
 
-    private fun decrypt(id: AccountId, data: ByteArray): ByteArray {
+    private fun decrypt(
+        id: AccountId,
+        data: ByteArray,
+    ): ByteArray {
         val cipher = Cipher.getInstance(TRANSFORMATION)
         cipher.init(
             Cipher.DECRYPT_MODE,
             secretKey(id),
-            GCMParameterSpec(TAG_BITS, data, 0, IV_SIZE)
+            GCMParameterSpec(TAG_BITS, data, 0, IV_SIZE),
         )
         return cipher.doFinal(data, IV_SIZE, data.size - IV_SIZE)
     }

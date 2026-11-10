@@ -6,7 +6,7 @@ import io.xbot.tdlib.api.LanguagePackStringValue
 data class LanguagePack(
     val info: LanguagePackInfo,
     val strings: Map<String, LanguagePackStringValue>,
-    val baseStrings: Map<String, LanguagePackStringValue> = emptyMap()
+    val baseStrings: Map<String, LanguagePackStringValue> = emptyMap(),
 ) {
     fun string(key: String): LanguagePackStringValue? = strings[key] ?: baseStrings[key]
 }

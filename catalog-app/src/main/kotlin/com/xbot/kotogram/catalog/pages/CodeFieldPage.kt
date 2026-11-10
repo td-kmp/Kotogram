@@ -37,7 +37,7 @@ internal val CodeFieldPage = CatalogPage(
                 state = rememberTextFieldState("12345"),
                 length = 5,
                 isError = true,
-                supportingText = { Text("Invalid code. Please try again.") }
+                supportingText = { Text("Invalid code. Please try again.") },
             )
         },
         CatalogExample("In a column 280 wide: cells narrow when large text needs more room") {
@@ -47,8 +47,8 @@ internal val CodeFieldPage = CatalogPage(
         },
         CatalogExample("Disabled while the code is checked") {
             CodeField(state = rememberTextFieldState("12345"), length = 5, enabled = false)
-        }
-    )
+        },
+    ),
 )
 
 @Composable

@@ -14,13 +14,12 @@ internal expect fun Scope.platformAccountsRoot(): String
 
 internal actual fun platformTdLib(): TdLib = NativeTdLib
 
-internal actual fun Scope.platformAccountStorage(): AccountStorage =
-    DirectoryAccountStorage(platformAccountsRoot())
+internal actual fun Scope.platformAccountStorage(): AccountStorage = DirectoryAccountStorage(platformAccountsRoot())
 
 internal actual fun Scope.platformAppStorage(): AppStorage {
     val root = platformAccountsRoot()
     return DefaultAppStorage(
         tdlibDirectory = root,
-        preferences = PreferenceDataStoreFactory.createWithPath { "$root/registry.preferences_pb".toPath() }
+        preferences = PreferenceDataStoreFactory.createWithPath { "$root/registry.preferences_pb".toPath() },
     )
 }

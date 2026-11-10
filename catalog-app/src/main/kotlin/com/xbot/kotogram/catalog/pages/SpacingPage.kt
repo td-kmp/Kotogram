@@ -34,15 +34,18 @@ internal val SpacingPage = CatalogPage(
                 SpacingSample("large", spacing.large)
                 SpacingSample("extraLarge", spacing.extraLarge)
             }
-        }
-    )
+        },
+    ),
 )
 
 @Composable
-private fun SpacingSample(name: String, value: Dp) {
+private fun SpacingSample(
+    name: String,
+    value: Dp,
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.large)
+        horizontalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.large),
     ) {
         Text(name, style = KotogramTheme.typography.bodyMedium, modifier = Modifier.width(LabelWidth))
         Box(Modifier.width(MaxSample), contentAlignment = Alignment.CenterStart) {
@@ -51,7 +54,7 @@ private fun SpacingSample(name: String, value: Dp) {
         Text(
             text = "${value.value.toInt()} dp",
             style = KotogramTheme.typography.bodySmall,
-            color = KotogramTheme.colors.onSurfaceVariant
+            color = KotogramTheme.colors.onSurfaceVariant,
         )
     }
 }

@@ -24,8 +24,10 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
-internal class DefaultChatRepository(private val store: ChatStore, private val client: TdClient) :
-    ChatRepository {
+internal class DefaultChatRepository(
+    private val store: ChatStore,
+    private val client: TdClient,
+) : ChatRepository {
 
     override fun chatList(list: ChatList): Flow<List<ChatListEntry>> = store.state
         .distinctUntilChanged { old, new -> old.hasSameEntriesAs(new, list) }
@@ -34,7 +36,7 @@ internal class DefaultChatRepository(private val store: ChatStore, private val c
     override suspend fun loadMore(list: ChatList): Either<ChatError, Boolean> =
         client.sendCatching(LoadChats(chatList = list, limit = PAGE_SIZE))
             .map { true }
-            // TDLib's way of saying the whole list is loaded.
+            // Workaround: TDLib answers 404 once the whole list is loaded.
             .recover { error -> if (error.isNotFound) false else raise(error.toChatError()) }
 
     override fun folderTabs(): Flow<List<ChatFolderTab>> = store.state
@@ -44,13 +46,13 @@ internal class DefaultChatRepository(private val store: ChatStore, private val c
         .map { it.folderTabs() }
 
     override fun chat(chatId: Long): Flow<Chat?> = flow {
-        // A restored back stack can name a chat TDLib hasn't told this instance about yet.
+        // Workaround: a restored back stack can name a chat TDLib hasn't told this instance about yet.
         if (store.state.value.chats[chatId] == null) client.sendCatching(GetChat(chatId = chatId))
         emitAll(
             store.state
                 .map { it.chats[chatId] }
-                // By identity: equals on DTOs is deep and has a ByteArray hole.
-                .distinctUntilChanged { old, new -> old === new }
+                // Workaround: compared by identity, generated equals on DTOs is deep and has a ByteArray hole.
+                .distinctUntilChanged { old, new -> old === new },
         )
     }
 

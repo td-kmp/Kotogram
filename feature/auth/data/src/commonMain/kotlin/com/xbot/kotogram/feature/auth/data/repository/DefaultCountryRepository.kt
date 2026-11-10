@@ -11,16 +11,15 @@ import io.xbot.tdlib.api.GetPhoneNumberInfo
 import io.xbot.tdlib.api.PhoneNumberInfo
 import io.xbot.tdlib.client.TdClient
 
-internal class DefaultCountryRepository(private val client: TdClient) : CountryRepository {
+internal class DefaultCountryRepository(
+    private val client: TdClient,
+) : CountryRepository {
 
     override suspend fun getCountries(): Either<AuthError, List<CountryInfo>> =
         client.request(GetCountries).map { it.countries }
 
-    override suspend fun getCountryCode(): Either<AuthError, String> =
-        client.request(GetCountryCode).map { it.text }
+    override suspend fun getCountryCode(): Either<AuthError, String> = client.request(GetCountryCode).map { it.text }
 
-    override suspend fun getPhoneNumberInfo(
-        phoneNumberPrefix: String
-    ): Either<AuthError, PhoneNumberInfo> =
+    override suspend fun getPhoneNumberInfo(phoneNumberPrefix: String): Either<AuthError, PhoneNumberInfo> =
         client.request(GetPhoneNumberInfo(phoneNumberPrefix = phoneNumberPrefix))
 }

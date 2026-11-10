@@ -4,5 +4,5 @@ import com.xbot.kotogram.feature.auth.domain.model.AuthError
 
 internal data class EmailAddressScreenState(
     val isSubmitting: Boolean = false,
-    val error: AuthError? = null
+    val error: AuthError? = null,
 )

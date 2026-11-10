@@ -14,7 +14,6 @@ import org.koin.compose.koinInject
 fun App() {
     val localization by koinInject<LocalizationSource>().localization.collectAsStateWithLifecycle()
     KotogramTheme {
-        // The chosen language comes first, so that no screen shows in English before it.
         when (val current = localization) {
             null -> SplashScreen()
             else -> ProvideLocalization(current) { RootNavigation() }

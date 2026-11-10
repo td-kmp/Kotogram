@@ -4,7 +4,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import com.sun.jna.Pointer
 
-// Opens as Telegram for macOS's menus do: top left corner at the click, or under the anchor when opened by keyboard.
 internal object MacMenu {
     private const val ACTION = "select:"
     private var chosen: Int? = null
@@ -16,7 +15,13 @@ internal object MacMenu {
         requireNotNull(ObjC.send(requireNotNull(ObjC.send(cls, "alloc")), "init"))
     }
 
-    fun show(window: Pointer, titles: List<String>, selectedIndex: Int, anchor: Rect, height: Float): Int? {
+    fun show(
+        window: Pointer,
+        titles: List<String>,
+        selectedIndex: Int,
+        anchor: Rect,
+        height: Float,
+    ): Int? {
         chosen = null
         val allocated = requireNotNull(ObjC.send(requireNotNull(ObjC.cls("NSMenu")), "alloc"))
         val menu = requireNotNull(ObjC.send(allocated, "initWithTitle:", ObjC.string("")))
@@ -27,8 +32,8 @@ internal object MacMenu {
                     "addItemWithTitle:action:keyEquivalent:",
                     ObjC.string(title),
                     ObjC.sel(ACTION),
-                    ObjC.string("")
-                )
+                    ObjC.string(""),
+                ),
             )
             ObjC.sendVoid(item, "setTarget:", target)
             ObjC.sendVoid(item, "setTag:", index.toLong())

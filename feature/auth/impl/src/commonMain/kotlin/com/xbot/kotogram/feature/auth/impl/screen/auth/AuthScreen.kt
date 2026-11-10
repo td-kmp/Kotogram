@@ -33,7 +33,10 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.orbitmvi.orbit.compose.collectAsState
 
 @Composable
-internal fun AuthScreen(viewModel: AuthViewModel, modifier: Modifier = Modifier) {
+internal fun AuthScreen(
+    viewModel: AuthViewModel,
+    modifier: Modifier = Modifier,
+) {
     val state by viewModel.collectAsState()
     val onBack = { viewModel.onAction(AuthScreenAction.OnBack) }
 
@@ -43,7 +46,7 @@ internal fun AuthScreen(viewModel: AuthViewModel, modifier: Modifier = Modifier)
             backStack = state.backStack,
             canUseQr = state.canUseQr,
             onAction = viewModel::onAction,
-            onBack = onBack
+            onBack = onBack,
         )
 
         AnimatedVisibility(
@@ -53,10 +56,10 @@ internal fun AuthScreen(viewModel: AuthViewModel, modifier: Modifier = Modifier)
                 .safeDrawingPadding()
                 .padding(bottom = KotogramTheme.spacing.medium),
             enter = fadeIn(tween(LANGUAGE_SUGGESTION_FADE_MILLIS)),
-            exit = fadeOut(tween(LANGUAGE_SUGGESTION_FADE_MILLIS))
+            exit = fadeOut(tween(LANGUAGE_SUGGESTION_FADE_MILLIS)),
         ) {
             LanguageSuggestion(
-                viewModel = koinViewModel(viewModelStoreOwner = rememberViewModelStoreOwner())
+                viewModel = koinViewModel(viewModelStoreOwner = rememberViewModelStoreOwner()),
             )
         }
     }
@@ -67,7 +70,7 @@ private fun AuthSteps(
     backStack: List<AuthStep>,
     canUseQr: Boolean,
     onAction: (AuthScreenAction) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
 ) {
     val transitions = rememberNavTransitions<Scene<AuthStep>>()
     NavDisplay(
@@ -78,13 +81,13 @@ private fun AuthSteps(
         predictivePopTransitionSpec = transitions.predictivePop,
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
-            rememberViewModelStoreNavEntryDecorator()
+            rememberViewModelStoreNavEntryDecorator(),
         ),
         entryProvider = entryProvider {
             entry<AuthStep.QrCode> {
                 QrScreen(
                     viewModel = koinViewModel(),
-                    onPhoneLoginClick = { onAction(AuthScreenAction.OnPhoneLoginClick) }
+                    onPhoneLoginClick = { onAction(AuthScreenAction.OnPhoneLoginClick) },
                 )
             }
             entry<AuthStep.PhoneNumber> {
@@ -92,41 +95,41 @@ private fun AuthSteps(
                     viewModel = koinViewModel(),
                     canUseQr = canUseQr,
                     onSubmitted = { onAction(AuthScreenAction.OnEntrySubmitted) },
-                    onQrLoginClick = { onAction(AuthScreenAction.OnQrLoginClick) }
+                    onQrLoginClick = { onAction(AuthScreenAction.OnQrLoginClick) },
                 )
             }
             entry<AuthStep.Code> {
                 CodeScreen(
                     viewModel = koinViewModel(),
-                    onChangeNumberClick = onBack
+                    onChangeNumberClick = onBack,
                 )
             }
             entry<AuthStep.Password> {
                 PasswordScreen(
-                    viewModel = koinViewModel()
+                    viewModel = koinViewModel(),
                 )
             }
             entry<AuthStep.EmailAddress> {
                 EmailAddressScreen(
-                    viewModel = koinViewModel()
+                    viewModel = koinViewModel(),
                 )
             }
             entry<AuthStep.EmailCode> {
                 EmailCodeScreen(
-                    viewModel = koinViewModel()
+                    viewModel = koinViewModel(),
                 )
             }
             entry<AuthStep.Registration> {
                 RegistrationScreen(
-                    viewModel = koinViewModel()
+                    viewModel = koinViewModel(),
                 )
             }
             entry<AuthStep.PremiumPurchase> {
                 PremiumPurchaseScreen(
-                    onBackClick = onBack
+                    onBackClick = onBack,
                 )
             }
-        }
+        },
     )
 }
 

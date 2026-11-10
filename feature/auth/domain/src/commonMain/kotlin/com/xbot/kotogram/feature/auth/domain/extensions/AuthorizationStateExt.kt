@@ -15,7 +15,8 @@ val AuthorizationState.acceptsPhoneNumber: Boolean
         AuthorizationStateReady,
         AuthorizationStateLoggingOut,
         AuthorizationStateClosing,
-        AuthorizationStateClosed -> false
+        AuthorizationStateClosed,
+        -> false
 
         else -> true
     }

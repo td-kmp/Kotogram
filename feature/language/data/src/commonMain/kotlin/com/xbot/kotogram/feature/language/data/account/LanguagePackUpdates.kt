@@ -8,9 +8,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 
-// Every instance shares the pack, and whichever one fetched a change reports it.
-internal class LanguagePackUpdates(private val languages: DefaultLanguageRepository) : AccountUpdates {
-    override fun start(scope: CoroutineScope, client: TdClient) {
+internal class LanguagePackUpdates(
+    private val languages: DefaultLanguageRepository,
+) : AccountUpdates {
+    override fun start(
+        scope: CoroutineScope,
+        client: TdClient,
+    ) {
         scope.launch(start = CoroutineStart.UNDISPATCHED) {
             client.updatesOf<UpdateLanguagePackStrings>().collect { languages.onStringsChanged(it) }
         }

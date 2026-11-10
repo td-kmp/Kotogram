@@ -13,7 +13,7 @@ import org.orbitmvi.orbit.viewmodel.orbitContainer
 
 internal class EmailAddressViewModel(
     savedStateHandle: SavedStateHandle,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
 ) : ViewModel(),
     OrbitContainerHost<EmailAddressScreenState, EmailAddressScreenState, Nothing> {
 

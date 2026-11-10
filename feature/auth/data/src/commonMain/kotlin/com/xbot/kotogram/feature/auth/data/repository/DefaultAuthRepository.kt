@@ -34,13 +34,12 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-// One method per TDLib authorization function.
 @Suppress("TooManyFunctions")
 internal class DefaultAuthRepository(
     private val context: AccountContext,
     private val client: TdClient,
     private val accounts: AccountManager,
-    private val photos: GeneratedPhotos
+    private val photos: GeneratedPhotos,
 ) : AuthRepository {
 
     override val authorizationState: Flow<AuthorizationState> =
@@ -62,8 +61,7 @@ internal class DefaultAuthRepository(
 
     override fun restartSignIn() = accounts.restartSignIn(context.id)
 
-    override suspend fun checkAuthenticationCode(code: String) =
-        call(CheckAuthenticationCode(code = code))
+    override suspend fun checkAuthenticationCode(code: String) = call(CheckAuthenticationCode(code = code))
 
     override suspend fun resendAuthenticationCode() =
         call(ResendAuthenticationCode(reason = ResendCodeReasonUserRequest))
@@ -77,27 +75,27 @@ internal class DefaultAuthRepository(
     override suspend fun checkAuthenticationPassword(password: String) =
         call(CheckAuthenticationPassword(password = password))
 
-    override suspend fun requestAuthenticationPasswordRecovery() =
-        call(RequestAuthenticationPasswordRecovery)
+    override suspend fun requestAuthenticationPasswordRecovery() = call(RequestAuthenticationPasswordRecovery)
 
     override suspend fun recoverAuthenticationPassword(recoveryCode: String) =
         call(RecoverAuthenticationPassword(recoveryCode = recoveryCode))
 
-    override suspend fun registerUser(firstName: String, lastName: String, photo: ByteArray?) =
-        call(RegisterUser(firstName = firstName, lastName = lastName)).onRight {
-            if (photo != null) setPhotoWhenReady(photo)
-        }
+    override suspend fun registerUser(
+        firstName: String,
+        lastName: String,
+        photo: ByteArray?,
+    ) = call(RegisterUser(firstName = firstName, lastName = lastName)).onRight {
+        if (photo != null) setPhotoWhenReady(photo)
+    }
 
-    // The account's scope: the sign-in screens are gone by Ready.
     private fun setPhotoWhenReady(photo: ByteArray) {
         context.scope.launch {
             client.authorizationState.first { it is AuthorizationStateReady }
             client.sendCatching(
-                SetProfilePhoto(photo = InputChatPhotoStatic(photos.add(photo)), isPublic = false)
+                SetProfilePhoto(photo = InputChatPhotoStatic(photos.add(photo)), isPublic = false),
             )
         }
     }
 
-    private suspend fun call(function: TdFunction<TdObject>): Either<AuthError, Unit> =
-        client.request(function).map {}
+    private suspend fun call(function: TdFunction<TdObject>): Either<AuthError, Unit> = client.request(function).map {}
 }

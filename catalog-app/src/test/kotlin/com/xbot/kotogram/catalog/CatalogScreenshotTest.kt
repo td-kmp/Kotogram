@@ -19,16 +19,16 @@ import com.xbot.kotogram.catalog.ui.CatalogTopBar
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.style.ProvideFormFactor
 import io.github.takahirom.roborazzi.captureRoboImage
-import kotlin.test.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
+import kotlin.test.Test
 
 @RunWith(Parameterized::class)
 class CatalogScreenshotTest(
     private val screen: String,
     private val darkTheme: Boolean,
     private val fontScale: Float,
-    private val laptop: Boolean
+    private val laptop: Boolean,
 ) {
     private val windowHeight = if (screen == HOME) HOME_HEIGHT else PAGE_HEIGHT
     private val scaleSuffix = if (fontScale == 1f) "" else "_font${fontScale.toInt()}x"
@@ -37,7 +37,6 @@ class CatalogScreenshotTest(
     @OptIn(ExperimentalTestApi::class)
     @Test
     fun screenshot() = runDesktopComposeUiTest(width = WIDTH, height = windowHeight) {
-        // The QR code waits for its animation and fades in; a frozen clock makes every run the same.
         mainClock.autoAdvance = false
         setContent {
             val density = Density(LocalDensity.current.density, fontScale)
@@ -62,8 +61,8 @@ class CatalogScreenshotTest(
         onNodeWithTag(SCREEN_TAG).captureRoboImage(
             filePath = "screenshots/${screen}_${if (darkTheme) "dark" else "light"}$scaleSuffix$formFactorSuffix.png",
             roborazziOptions = RoborazziOptions(
-                compareOptions = RoborazziOptions.CompareOptions(changeThreshold = CHANGE_THRESHOLD)
-            )
+                compareOptions = RoborazziOptions.CompareOptions(changeThreshold = CHANGE_THRESHOLD),
+            ),
         )
     }
 
@@ -71,10 +70,9 @@ class CatalogScreenshotTest(
         @JvmStatic
         @Parameterized.Parameters(name = "{0}, dark {1}, font scale {2}, laptop {3}")
         fun screens(): List<Array<Any>> {
-            val themes = (listOf(HOME) + CatalogPages.map { it.id }).flatMap { screen ->
+            val themes = (listOf(HOME) + CatalogPages.map { it.id } - MOVING_SCREENS).flatMap { screen ->
                 listOf(false, true).map { darkTheme -> arrayOf<Any>(screen, darkTheme, 1f, true) }
             }
-            // Android lets text grow to twice its size; the fields must grow with it, and differ on touch screens.
             val largeText = FIELD_SCREENS.map { screen -> arrayOf<Any>(screen, false, LARGE_FONT_SCALE, true) }
             val touch = TOUCH_SCREENS.map { screen -> arrayOf<Any>(screen, false, 1f, false) }
             return themes + largeText + touch
@@ -86,6 +84,8 @@ private const val HOME = "home"
 private const val HOME_TITLE = "Kotogram design system"
 private val FIELD_SCREENS = listOf("text-field", "secure-text-field", "search-field", "code-field")
 private val TOUCH_SCREENS = FIELD_SCREENS + listOf("icon-button", "checkbox", "switch", "top-bar")
+
+private val MOVING_SCREENS = setOf("transitions")
 private const val LARGE_FONT_SCALE = 2f
 private const val SCREEN_TAG = "catalog-screen"
 private const val WIDTH = 900

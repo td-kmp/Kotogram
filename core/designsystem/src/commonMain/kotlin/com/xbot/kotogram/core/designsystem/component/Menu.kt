@@ -44,10 +44,10 @@ import com.xbot.kotogram.core.designsystem.style.DefaultStyleResolver
 import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 import com.xbot.kotogram.core.designsystem.style.StyleResolver
 import com.xbot.kotogram.core.designsystem.style.rememberStyle
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.TimeSource
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TimeSource
 
 @Composable
 fun <T> Menu(
@@ -58,7 +58,7 @@ fun <T> Menu(
     onItemClick: (T) -> Unit,
     modifier: Modifier = Modifier,
     selectedItem: T? = null,
-    style: MenuStyle = MenuStyle
+    style: MenuStyle = MenuStyle,
 ) {
     val menuStyle = rememberStyle(::MenuStyleScope, MenuStyle.Adaptive then style)
     with(LocalMenuOverride.current) {
@@ -69,7 +69,7 @@ fun <T> Menu(
             selectedIndex = items.indexOf(selectedItem),
             onSelect = { onItemClick(items[it]) },
             modifier = modifier,
-            style = menuStyle
+            style = menuStyle,
         ).Menu()
     }
 }
@@ -86,7 +86,7 @@ internal class MenuOverrideScope(
     val selectedIndex: Int,
     val onSelect: (Int) -> Unit,
     val modifier: Modifier,
-    val style: MenuStyleScope
+    val style: MenuStyleScope,
 )
 
 internal object DefaultMenuOverride : MenuOverride {
@@ -115,7 +115,7 @@ internal object DefaultMenuOverride : MenuOverride {
                     true
                 }
                 .focusable(),
-            scrollState = scrollState
+            scrollState = scrollState,
         ) {
             LaunchedEffect(Unit) {
                 menuFocus.requestFocus()
@@ -140,20 +140,23 @@ internal object DefaultMenuOverride : MenuOverride {
                     } else {
                         null
                     },
-                    contentPadding = PaddingValues(horizontal = style.itemHorizontalPadding)
+                    contentPadding = PaddingValues(horizontal = style.itemHorizontalPadding),
                 )
             }
         }
     }
 }
 
-// Type-select as NSMenu does: letters typed within a second make one prefix; leading emoji are skipped.
 private class TypeSelect {
     private var query = ""
     private var lastTyped = TimeSource.Monotonic.markNow()
 
-    fun find(event: KeyEvent, titles: List<String>): Int? {
-        val char = event.typedChar()?.takeIf { it.isLetterOrDigit() || it == ' ' && query.isNotEmpty() } ?: return null
+    fun find(
+        event: KeyEvent,
+        titles: List<String>,
+    ): Int? {
+        val char =
+            event.typedChar()?.takeIf { it.isLetterOrDigit() || (it == ' ' && query.isNotEmpty()) } ?: return null
         if (lastTyped.elapsedNow() > TypeSelectTimeout) query = ""
         lastTyped = TimeSource.Monotonic.markNow()
         query += char
@@ -173,9 +176,6 @@ private val TypeSelectTimeout = 1.seconds
 internal val LocalMenuOverride: ProvidableCompositionLocal<MenuOverride> =
     staticCompositionLocalOf { DefaultMenuOverride }
 
-// Material 3's menu: its baseline on touch screens and its laptop values on a laptop (the adaptive menu styles of
-// aosp/4424517: items 44 high with 10 at the sides, inside 10 at the sides and 12 above and below, rounded). M3's
-// DropdownMenuPositionProvider keeps a menu 48 from the window's edges; a taller one covers the window.
 @Suppress("MagicNumber")
 fun interface MenuStyle : ComponentStyle<MenuStyleScope> {
     companion object : MenuStyle {
@@ -204,15 +204,19 @@ fun interface MenuStyle : ComponentStyle<MenuStyleScope> {
 
 infix fun MenuStyle.then(other: MenuStyle): MenuStyle = when {
     other === MenuStyle -> this
+
     this === MenuStyle -> other
+
     else -> MenuStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
     }
 }
 
-class MenuStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
-    AdaptiveStyleScope<MenuStyleScope>,
+class MenuStyleScope(
+    val theme: KotogramTheme.Values,
+    override val mediaQueryInfo: MediaQueryInfo,
+) : AdaptiveStyleScope<MenuStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
     var itemHeight: Dp = Dp.Unspecified
@@ -224,7 +228,6 @@ class MenuStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInf
     var horizontalPadding: Dp = Dp.Unspecified
         private set
 
-    // Over Material 3's own 8 above and below.
     var extraVerticalPadding: Dp = Dp.Unspecified
         private set
 

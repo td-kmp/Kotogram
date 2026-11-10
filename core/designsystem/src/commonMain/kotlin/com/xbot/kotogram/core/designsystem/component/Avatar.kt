@@ -23,7 +23,6 @@ import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 import com.xbot.kotogram.core.designsystem.style.StyleResolver
 import com.xbot.kotogram.core.designsystem.style.rememberStyle
 
-// A peer's photo, or its letters on the gradient of its accent colour; sized by the modifier.
 @Composable
 fun Avatar(
     photo: Any?,
@@ -32,7 +31,7 @@ fun Avatar(
     modifier: Modifier = Modifier,
     thumbnail: Any? = null,
     contentDescription: String? = null,
-    style: AvatarStyle = AvatarStyle
+    style: AvatarStyle = AvatarStyle,
 ) {
     val avatarStyle = rememberStyle(::AvatarStyleScope, AvatarStyle.Default then style)
     if (photo != null || thumbnail != null) {
@@ -40,7 +39,7 @@ fun Avatar(
             model = photo,
             contentDescription = contentDescription,
             thumbnail = thumbnail,
-            modifier = modifier.clip(CircleShape)
+            modifier = modifier.clip(CircleShape),
         )
         return
     }
@@ -53,11 +52,11 @@ fun Avatar(
                     Brush.linearGradient(
                         listOf(start, end),
                         Offset(0f, size.height),
-                        Offset(size.width, 0f)
-                    )
+                        Offset(size.width, 0f),
+                    ),
                 )
             },
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         val fontSize = with(LocalDensity.current) { (maxWidth * avatarStyle.lettersScale).toSp() }
         Text(text = letters, style = avatarStyle.lettersTextStyle.merge(fontSize = fontSize))
@@ -68,7 +67,6 @@ fun interface AvatarStyle : ComponentStyle<AvatarStyleScope> {
     companion object : AvatarStyle {
         override fun AvatarStyleScope.applyStyle() {}
 
-        // Telegram for iOS's AvatarNode: the gradient from bottom left to top right, the letters 26 of 60.
         @Suppress("MagicNumber")
         val Default = AvatarStyle {
             gradients(
@@ -79,12 +77,12 @@ fun interface AvatarStyle : ComponentStyle<AvatarStyleScope> {
                     Color(0xFFA0DE7E) to Color(0xFF54CB68),
                     Color(0xFF00FCFD) to Color(0xFF4ACCCD),
                     Color(0xFF72D5FD) to Color(0xFF2A9EF1),
-                    Color(0xFFE0A2F3) to Color(0xFFD669ED)
-                )
+                    Color(0xFFE0A2F3) to Color(0xFFD669ED),
+                ),
             )
             lettersScale(26f / 60f)
             lettersTextStyle(
-                theme.typography.bodyLarge.merge(color = Color.White, fontWeight = FontWeight.Bold)
+                theme.typography.bodyLarge.merge(color = Color.White, fontWeight = FontWeight.Bold),
             )
         }
     }
@@ -103,7 +101,7 @@ infix fun AvatarStyle.then(other: AvatarStyle): AvatarStyle = when {
 
 class AvatarStyleScope(
     val theme: KotogramTheme.Values,
-    override val mediaQueryInfo: MediaQueryInfo
+    override val mediaQueryInfo: MediaQueryInfo,
 ) : AdaptiveStyleScope<AvatarStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 

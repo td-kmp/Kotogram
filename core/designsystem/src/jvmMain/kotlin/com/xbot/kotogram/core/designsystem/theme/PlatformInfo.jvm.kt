@@ -35,7 +35,7 @@ internal actual fun platformComponentOverrides(): Array<ProvidedValue<*>> {
         LocalSwitchOverride provides MacSwitchOverride,
         LocalCheckboxOverride provides MacCheckboxOverride,
         if (MacGlassButton.isSupported) LocalProminentButtonOverride provides MacGlassProminentButtonOverride else null,
-        if (MacGlassButton.isSupported) LocalGlassIconButtonOverride provides MacGlassIconButtonOverride else null
+        if (MacGlassButton.isSupported) LocalGlassIconButtonOverride provides MacGlassIconButtonOverride else null,
     ).toTypedArray()
 }
 

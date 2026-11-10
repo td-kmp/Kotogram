@@ -35,8 +35,8 @@ internal val NetworkImagePage = CatalogPage(
                     contentDescription = null,
                     modifier = Modifier.size(
                         width = 160.dp,
-                        height = 100.dp
-                    ).clip(RoundedCornerShape(12.dp))
+                        height = 100.dp,
+                    ).clip(RoundedCornerShape(12.dp)),
                 )
             }
         },
@@ -48,8 +48,8 @@ internal val NetworkImagePage = CatalogPage(
         },
         CatalogExample("A thumbnail until the image comes") {
             Thumbnailed()
-        }
-    )
+        },
+    ),
 )
 
 @Composable
@@ -58,7 +58,7 @@ private fun Thumbnailed() {
         model = null,
         contentDescription = null,
         thumbnail = SampleThumbnail,
-        modifier = Modifier.size(width = 160.dp, height = 100.dp).clip(RoundedCornerShape(12.dp))
+        modifier = Modifier.size(width = 160.dp, height = 100.dp).clip(RoundedCornerShape(12.dp)),
     )
 }
 

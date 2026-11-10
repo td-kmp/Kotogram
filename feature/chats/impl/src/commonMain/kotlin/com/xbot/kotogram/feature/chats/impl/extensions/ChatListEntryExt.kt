@@ -8,11 +8,11 @@ import com.xbot.kotogram.feature.chats.impl.screen.list.OutgoingStatus
 import io.xbot.tdlib.api.ChatTypeBasicGroup
 import io.xbot.tdlib.api.ChatTypeSupergroup
 import io.xbot.tdlib.api.EmojiStatusTypeCustomEmoji
-import kotlin.time.Clock
-import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 internal fun ChatListEntry.toRow(): ChatListRow {
     val message = chat.lastMessage
@@ -24,10 +24,9 @@ internal fun ChatListEntry.toRow(): ChatListRow {
             photo = chat.photo?.small,
             thumbnail = chat.photo?.minithumbnail?.data,
             letters = chat.title.letters(),
-            colorIndex = chat.accentColorId
+            colorIndex = chat.accentColorId,
         ),
         emojiStatusId = (chat.emojiStatus?.type as? EmojiStatusTypeCustomEmoji)?.customEmojiId,
-        // A mute by the scope's default isn't resolved: the store has no scope settings yet.
         isMuted =
             !chat.notificationSettings.useDefaultMuteFor && chat.notificationSettings.muteFor > 0,
         isPinned = position?.isPinned == true,
@@ -39,11 +38,10 @@ internal fun ChatListEntry.toRow(): ChatListRow {
         hasUnreadMention = chat.unreadMentionCount > 0,
         isMarkedAsUnread = chat.isMarkedAsUnread,
         senderName = senderName().takeIf { draft == null },
-        preview = draft ?: message?.content?.toPreview() ?: ChatPreview.Empty
+        preview = draft ?: message?.content?.toPreview() ?: ChatPreview.Empty,
     )
 }
 
-// Telegram's displayLetters: the first letters of the first two words.
 private fun String.letters(): String =
     split(' ').filter { it.isNotBlank() }.take(2).joinToString("") { it.take(1).uppercase() }
 

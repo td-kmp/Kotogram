@@ -11,15 +11,16 @@ class PluralFormTest {
         twoValue = "two",
         fewValue = "few",
         manyValue = "many",
-        otherValue = "other"
+        otherValue = "other",
     )
 
-    private fun forms(pluralCode: String, vararg quantities: Int) =
-        quantities.map { pluralForm(allForms, pluralCode, it) }
+    private fun forms(
+        pluralCode: String,
+        vararg quantities: Int,
+    ) = quantities.map { pluralForm(allForms, pluralCode, it) }
 
     @Test
-    fun englishHasOneAndOther() =
-        assertEquals(listOf("other", "one", "other", "other"), forms("en", 0, 1, 2, 21))
+    fun englishHasOneAndOther() = assertEquals(listOf("other", "one", "other", "other"), forms("en", 0, 1, 2, 21))
 
     @Test
     fun russianFollowsTheLastDigits() =
@@ -36,7 +37,7 @@ class PluralFormTest {
     @Test
     fun anEmptyFormFallsToOther() = assertEquals(
         "other",
-        pluralForm(allForms.copy(manyValue = ""), "ru", 25)
+        pluralForm(allForms.copy(manyValue = ""), "ru", 25),
     )
 
     @Test

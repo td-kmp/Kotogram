@@ -22,7 +22,12 @@ internal fun bellOffIcon() = icon("BellOff") {
     val gap = 1.2f
     val belowSlash = halfPlane(start, end, gap, CANVAS)
     val aboveSlash = halfPlane(end, start, gap, CANVAS)
-    group(clipPathData = clip { polygon(belowSlash); polygon(aboveSlash) }) {
+    group(
+        clipPathData = clip {
+            polygon(belowSlash)
+            polygon(aboveSlash)
+        },
+    ) {
         bell()
     }
     stroke(width = LINE) { line(start, end) }
@@ -55,5 +60,3 @@ private fun ImageVector.Builder.bell() = stroke(width = LINE) {
     line(Offset(12f, 3.8f), Offset(12f, 5.5f))
     arc(Offset(12f, 17.5f), 2f, 0f, 180f)
 }
-
-// A pencil pointing down to the left, centred on `center`.

@@ -7,12 +7,11 @@ import coil3.memory.MemoryCache
 import com.xbot.kotogram.core.account.AccountContext
 import com.xbot.kotogram.feature.media.domain.repository.FileRepository
 
-// One memory cache for the app, its keys prefixed by account, as Telegram X's ImageCache.
 internal class AccountImageLoader(
     account: AccountContext,
     platformContext: PlatformContext,
     private val memoryCache: MemoryCache,
-    repository: FileRepository
+    repository: FileRepository,
 ) : AutoCloseable {
     private val keyPrefix = "${account.id.value}_"
 
@@ -25,7 +24,7 @@ internal class AccountImageLoader(
         }
         .build()
 
-    // Not shutdown(), which clears the whole cache; Coil holds the loader's system callbacks weakly.
+    // Workaround: shutdown() would clear the cache every account shares; Coil holds the loader's callbacks weakly.
     override fun close() {
         memoryCache.keys.filter { it.key.startsWith(keyPrefix) }.forEach(memoryCache::remove)
     }

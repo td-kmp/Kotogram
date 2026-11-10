@@ -25,14 +25,14 @@ internal fun <S> androidNavTransitions(density: Density): NavTransitions<S> {
             ContentTransform(
                 fadeIn(tween(83, delayMillis = 50, easing = LinearEasing)) +
                     slideInHorizontally(slide) { shift },
-                slideOutHorizontally(slide) { -shift }
+                slideOutHorizontally(slide) { -shift },
             )
         },
         pop = {
             ContentTransform(
                 slideInHorizontally(slide) { -shift },
                 fadeOut(tween(83, delayMillis = 35, easing = LinearEasing)) +
-                    slideOutHorizontally(slide) { shift }
+                    slideOutHorizontally(slide) { shift },
             )
         },
         predictivePop = { edge ->
@@ -54,10 +54,10 @@ internal fun <S> androidNavTransitions(density: Density): NavTransitions<S> {
                         keyframes {
                             durationMillis = DURATION
                             1f at DURATION * 4 / 5
-                        }
-                    )
+                        },
+                    ),
             )
-        }
+        },
     )
 }
 

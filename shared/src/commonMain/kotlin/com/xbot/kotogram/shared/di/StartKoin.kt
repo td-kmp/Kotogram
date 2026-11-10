@@ -27,7 +27,7 @@ fun initKoin(config: KoinConfiguration? = null) {
             chatsImplModule,
             languageDataModule,
             languageImplModule,
-            mediaDataModule
+            mediaDataModule,
         )
         includes(config)
     }.koin

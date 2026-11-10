@@ -27,23 +27,22 @@ fun LottieImage(
     path: String,
     modifier: Modifier = Modifier,
     iterations: Int = 1,
-    colors: Map<String, Color> = emptyMap()
+    colors: Map<String, Color> = emptyMap(),
 ) = LottieImage(
     remember(path) {
         BytesSpec("res_$path") { Res.readBytes(path) }
     },
     modifier,
     iterations,
-    colors
+    colors,
 )
 
-// Anything the account's image loader fetches, such as a sticker's TDLib file, read through its fetcher.
 @Composable
 fun LottieImage(
     model: Any,
     modifier: Modifier = Modifier,
     iterations: Int = 1,
-    colors: Map<String, Color> = emptyMap()
+    colors: Map<String, Color> = emptyMap(),
 ) {
     val context = LocalPlatformContext.current
     val imageLoader = LocalImageLoader.current ?: remember(context) { ImageLoader(context) }
@@ -55,7 +54,10 @@ fun LottieImage(
     LottieImage(spec, modifier, iterations, colors)
 }
 
-private suspend fun ImageLoader.fetchBytes(model: Any, options: Options): ByteArray {
+private suspend fun ImageLoader.fetchBytes(
+    model: Any,
+    options: Options,
+): ByteArray {
     val data = components.map(model, options)
     val (fetcher, _) = checkNotNull(components.newFetcher(data, options, this)) {
         "No fetcher for $data"
@@ -70,7 +72,7 @@ private fun LottieImage(
     spec: LottieCompositionSpec,
     modifier: Modifier,
     iterations: Int,
-    colors: Map<String, Color>
+    colors: Map<String, Color>,
 ) {
     val composition by rememberLottieComposition(spec)
     val dynamicProperties = rememberLottieDynamicProperties(colors) {
@@ -80,17 +82,19 @@ private fun LottieImage(
         painter = rememberLottiePainter(
             composition = composition,
             iterations = iterations,
-            dynamicProperties = dynamicProperties.takeIf { colors.isNotEmpty() }
+            dynamicProperties = dynamicProperties.takeIf { colors.isNotEmpty() },
         ),
         contentDescription = null,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
-// Compottie's JsonString keys its cache by the JSON's md5, read and inflated on every show.
+// Workaround: Compottie's JsonString keys its cache by the JSON's md5, read and inflated on every show.
 @Immutable
-private class BytesSpec(override val key: String, private val read: suspend () -> ByteArray) :
-    LottieCompositionSpec {
+private class BytesSpec(
+    override val key: String,
+    private val read: suspend () -> ByteArray,
+) : LottieCompositionSpec {
     override suspend fun load(): LottieComposition {
         val bytes = read()
         return when {
@@ -101,7 +105,10 @@ private class BytesSpec(override val key: String, private val read: suspend () -
     }
 }
 
-private fun LottieDynamicProperties.repaint(keyPath: String, tint: Color) {
+private fun LottieDynamicProperties.repaint(
+    keyPath: String,
+    tint: Color,
+) {
     val parts = keyPath.split('.')
     val shape = parts.drop(1).toTypedArray()
     shapeLayer(parts.first()) {

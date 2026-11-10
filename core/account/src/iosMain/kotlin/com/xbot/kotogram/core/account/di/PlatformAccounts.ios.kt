@@ -18,7 +18,7 @@ internal actual fun Scope.platformAccountsRoot(): String {
     val supportDirectory = NSSearchPathForDirectoriesInDomains(
         NSApplicationSupportDirectory,
         NSUserDomainMask,
-        true
+        true,
     )
         .first() as String
     return "$supportDirectory/$accountsDirectoryName"
@@ -32,9 +32,9 @@ internal actual fun Scope.platformTdlibConfig(): TdlibConfig {
         systemVersion = "${device.systemName} ${device.systemVersion}",
         applicationVersion =
             NSBundle.mainBundle.objectForInfoDictionaryKey(
-                "CFBundleShortVersionString"
+                "CFBundleShortVersionString",
             ) as? String
-                ?: ""
+                ?: "",
     )
 }
 

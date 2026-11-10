@@ -15,8 +15,6 @@ import com.xbot.kotogram.core.designsystem.style.DefaultStyleResolver
 import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 import com.xbot.kotogram.core.designsystem.style.StyleResolver
 
-// Our own on touch screens, in Telegram for iOS's type, as it has no such screen; Telegram for macOS's QR login screen
-// on a laptop, in its points.
 @Suppress("MagicNumber")
 internal fun interface QrScreenStyle : ComponentStyle<QrScreenStyleScope> {
     companion object : QrScreenStyle {
@@ -40,28 +38,27 @@ internal fun interface QrScreenStyle : ComponentStyle<QrScreenStyleScope> {
                 theme.typography.bodyLarge.merge(
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    color = theme.colors.onSurface
-                )
+                    color = theme.colors.onSurface,
+                ),
             )
             stepTextStyle(
-                theme.typography.bodyLarge.merge(fontSize = 17.sp, color = theme.colors.onSurface)
+                theme.typography.bodyLarge.merge(fontSize = 17.sp, color = theme.colors.onSurface),
             )
             stepNumberTextStyle(
                 theme.typography.bodyLarge.merge(
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Medium,
                     fontFamily = FontFamily.Monospace,
-                    color = theme.colors.onPrimary
-                )
+                    color = theme.colors.onPrimary,
+                ),
             )
             buttonTextStyle(theme.typography.bodyLarge.merge(fontSize = 16.sp))
             errorTextStyle(
                 theme.typography.bodySmall.merge(
                     color = theme.colors.error,
-                    textAlign = TextAlign.Center
-                )
+                    textAlign = TextAlign.Center,
+                ),
             )
-            // WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND.
             landscapeHeight(480.dp)
         }
 
@@ -78,28 +75,28 @@ internal fun interface QrScreenStyle : ComponentStyle<QrScreenStyleScope> {
                     theme.typography.bodyLarge.merge(
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium,
-                        color = theme.colors.onSurface
-                    )
+                        color = theme.colors.onSurface,
+                    ),
                 )
                 stepTextStyle(
                     theme.typography.bodyLarge.merge(
                         fontSize = 13.sp,
-                        color = theme.colors.onSurface
-                    )
+                        color = theme.colors.onSurface,
+                    ),
                 )
                 stepNumberTextStyle(
                     theme.typography.bodyLarge.merge(
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
                         fontFamily = FontFamily.Monospace,
-                        color = theme.colors.onPrimary
-                    )
+                        color = theme.colors.onPrimary,
+                    ),
                 )
                 buttonTextStyle(
                     theme.typography.bodyLarge.merge(
                         fontSize = 13.5.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                        fontWeight = FontWeight.Medium,
+                    ),
                 )
             }
         }
@@ -120,7 +117,7 @@ internal infix fun QrScreenStyle.then(other: QrScreenStyle): QrScreenStyle = whe
 @Suppress("TooManyFunctions")
 internal class QrScreenStyleScope(
     val theme: KotogramTheme.Values,
-    override val mediaQueryInfo: MediaQueryInfo
+    override val mediaQueryInfo: MediaQueryInfo,
 ) : AdaptiveStyleScope<QrScreenStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 

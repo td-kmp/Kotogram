@@ -29,14 +29,14 @@ private val Common = listOf(
     "ChevronRight" to KotogramIcons.ChevronRight,
     "More" to KotogramIcons.More,
     "Check" to KotogramIcons.Check,
-    "DoubleCheck" to KotogramIcons.DoubleCheck
+    "DoubleCheck" to KotogramIcons.DoubleCheck,
 )
 
 private val SignIn = listOf(
     "Eye" to KotogramIcons.Eye,
     "EyeOff" to KotogramIcons.EyeOff,
     "QrCode" to KotogramIcons.QrCode,
-    "Smartphone" to KotogramIcons.Smartphone
+    "Smartphone" to KotogramIcons.Smartphone,
 )
 
 private val ChatList = listOf(
@@ -49,7 +49,7 @@ private val ChatList = listOf(
     "Lock" to KotogramIcons.Lock,
     "Archive" to KotogramIcons.Archive,
     "Folder" to KotogramIcons.Folder,
-    "Bookmark" to KotogramIcons.Bookmark
+    "Bookmark" to KotogramIcons.Bookmark,
 )
 
 private val Chat = listOf(
@@ -65,7 +65,7 @@ private val Chat = listOf(
     "Call" to KotogramIcons.Call,
     "Video" to KotogramIcons.Video,
     "Info" to KotogramIcons.Info,
-    "Camera" to KotogramIcons.Camera
+    "Camera" to KotogramIcons.Camera,
 )
 
 private val SettingsAndProfile = listOf(
@@ -83,7 +83,7 @@ private val SettingsAndProfile = listOf(
     "Block" to KotogramIcons.Block,
     "Shield" to KotogramIcons.Shield,
     "Plus" to KotogramIcons.Plus,
-    "Message" to KotogramIcons.Message
+    "Message" to KotogramIcons.Message,
 )
 
 private val AllIcons = Common + SignIn + ChatList + Chat + SettingsAndProfile
@@ -100,27 +100,34 @@ internal val IconsPage = CatalogPage(
         CatalogExample("Chat list") { IconGrid(ChatList, 24.dp) },
         CatalogExample("Chat") { IconGrid(Chat, 24.dp) },
         CatalogExample("Settings and profile") { IconGrid(SettingsAndProfile, 24.dp) },
-        CatalogExample("At three times the size") { IconGrid(AllIcons, 72.dp) }
-    )
+        CatalogExample("At three times the size") { IconGrid(AllIcons, 72.dp) },
+    ),
 )
 
 @Composable
-private fun IconGrid(icons: List<Pair<String, ImageVector>>, size: Dp) {
+private fun IconGrid(
+    icons: List<Pair<String, ImageVector>>,
+    size: Dp,
+) {
     val spacing = KotogramTheme.spacing
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(spacing.large),
-        verticalArrangement = Arrangement.spacedBy(spacing.large)
+        verticalArrangement = Arrangement.spacedBy(spacing.large),
     ) {
         icons.forEach { (name, icon) -> IconSample(name, icon, size) }
     }
 }
 
 @Composable
-private fun IconSample(name: String, icon: ImageVector, size: Dp) {
+private fun IconSample(
+    name: String,
+    icon: ImageVector,
+    size: Dp,
+) {
     Column(
         modifier = Modifier.width(maxOf(size, CellWidth)),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.extraSmall)
+        verticalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.extraSmall),
     ) {
         Icon(icon, contentDescription = name, modifier = Modifier.size(size))
         Text(name, style = KotogramTheme.typography.bodySmall, color = KotogramTheme.colors.onSurfaceVariant)

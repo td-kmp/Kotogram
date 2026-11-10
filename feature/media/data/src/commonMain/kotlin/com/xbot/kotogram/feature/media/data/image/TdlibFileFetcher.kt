@@ -15,11 +15,10 @@ import io.xbot.tdlib.api.File
 import okio.Buffer
 import okio.Path.Companion.toPath
 
-// Hands Coil a TDLib file, downloading it first when it isn't on disk yet.
 internal class TdlibFileFetcher(
     private val file: File,
     private val options: Options,
-    private val repository: FileRepository
+    private val repository: FileRepository,
 ) : Fetcher {
 
     override suspend fun fetch(): FetchResult {
@@ -34,14 +33,21 @@ internal class TdlibFileFetcher(
         return SourceFetchResult(
             source = source,
             mimeType = null,
-            dataSource = if (wasLocal) DataSource.DISK else DataSource.NETWORK
+            dataSource = if (wasLocal) DataSource.DISK else DataSource.NETWORK,
         )
     }
 
-    class Factory(private val repository: FileRepository) : Fetcher.Factory<File> {
-        override fun create(data: File, options: Options, imageLoader: ImageLoader): Fetcher =
-            TdlibFileFetcher(data, options, repository)
+    class Factory(
+        private val repository: FileRepository,
+    ) : Fetcher.Factory<File> {
+        override fun create(
+            data: File,
+            options: Options,
+            imageLoader: ImageLoader,
+        ): Fetcher = TdlibFileFetcher(data, options, repository)
     }
 }
 
-class FileLoadException(val error: MediaError) : Exception(error.toString())
+class FileLoadException(
+    val error: MediaError,
+) : Exception(error.toString())

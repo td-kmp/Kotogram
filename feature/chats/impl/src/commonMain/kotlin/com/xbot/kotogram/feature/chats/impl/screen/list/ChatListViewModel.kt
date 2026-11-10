@@ -19,7 +19,7 @@ import org.orbitmvi.orbit.viewmodel.orbitContainer
 
 internal class ChatListViewModel(
     private val repository: ChatRepository,
-    private val customEmojiRepository: CustomEmojiRepository
+    private val customEmojiRepository: CustomEmojiRepository,
 ) : ViewModel(),
     OrbitContainerHost<ChatListScreenState, ChatListScreenState, Nothing> {
 
@@ -53,9 +53,7 @@ internal class ChatListViewModel(
         }
     }
 
-    private suspend fun Syntax<ChatListScreenState, Nothing>.resolveCustomEmoji(
-        rows: List<ChatListRow>
-    ) {
+    private suspend fun Syntax<ChatListScreenState, Nothing>.resolveCustomEmoji(rows: List<ChatListRow>) {
         val missing = rows.flatMapTo(HashSet()) { it.customEmojiIds } - state.customEmoji.keys
         if (missing.isEmpty()) return
         customEmojiRepository.stickers(missing).onRight { found ->
@@ -70,7 +68,7 @@ internal class ChatListViewModel(
                 selected = chatList,
                 rows = emptyList(),
                 isComplete = false,
-                loadFailed = false
+                loadFailed = false,
             )
         }
         selected.value = chatList
@@ -82,7 +80,7 @@ internal class ChatListViewModel(
         reduce { state.copy(isLoading = true, loadFailed = false) }
         repository.loadMore(list).fold(
             ifLeft = { reduce { state.copy(isLoading = false, loadFailed = true) } },
-            ifRight = { hasMore -> reduce { state.copy(isLoading = false, isComplete = !hasMore) } }
+            ifRight = { hasMore -> reduce { state.copy(isLoading = false, isComplete = !hasMore) } },
         )
     }
 }

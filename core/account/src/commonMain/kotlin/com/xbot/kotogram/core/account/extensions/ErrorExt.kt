@@ -15,7 +15,6 @@ val Error.isFlood: Boolean
         message.startsWith("FLOOD_WAIT") ||
         message == "PHONE_NUMBER_FLOOD"
 
-// TDLib reports "Too Many Requests: retry after N"; the server's raw form is FLOOD_WAIT_N.
 val Error.retryAfter: Duration?
     get() = (
         retryAfterPattern.find(message)?.groupValues?.get(1)?.toIntOrNull()

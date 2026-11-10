@@ -27,7 +27,6 @@ val authImplModule = module {
         subclass(AuthRoute::class)
     }
 
-    // One entry for the whole flow: its steps are AuthScreen's own NavDisplay.
     navigation<AuthRoute> { AuthScreen(viewModel = koinViewModel()) }
 
     scope(AccountScope) {

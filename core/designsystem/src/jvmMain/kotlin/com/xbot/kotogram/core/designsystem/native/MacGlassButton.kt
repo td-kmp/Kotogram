@@ -7,15 +7,17 @@ import com.sun.jna.Native
 import com.sun.jna.NativeLibrary
 import com.sun.jna.Pointer
 
-internal class MacGlassButton(onClick: () -> Unit) {
+internal class MacGlassButton(
+    onClick: () -> Unit,
+) {
     val handle: Pointer = requireNotNull(
         ObjC.send(
             requireNotNull(ObjC.cls("NSButton")),
             "buttonWithTitle:target:action:",
             ObjC.string(""),
             ControlTarget.instance,
-            ObjC.sel(ControlTarget.ACTION)
-        )
+            ObjC.sel(ControlTarget.ACTION),
+        ),
     )
 
     private val spinner = MacProgressIndicator()
@@ -31,7 +33,12 @@ internal class MacGlassButton(onClick: () -> Unit) {
         spinner.centerIn(handle)
     }
 
-    fun setTitle(text: String, fontSize: Double, fontWeight: Double, color: Color) {
+    fun setTitle(
+        text: String,
+        fontSize: Double,
+        fontWeight: Double,
+        color: Color,
+    ) {
         ObjC.sendVoid(handle, "setAttributedTitle:", attributedTitle(text, fontSize, fontWeight, color))
     }
 
@@ -43,7 +50,11 @@ internal class MacGlassButton(onClick: () -> Unit) {
         ObjC.sendVoid(handle, "setAppearance:", ObjC.appearance(dark))
     }
 
-    fun setLoading(loading: Boolean, color: Color, background: Color) {
+    fun setLoading(
+        loading: Boolean,
+        color: Color,
+        background: Color,
+    ) {
         spinner.setColor(color, background)
         spinner.setAnimating(loading)
     }
@@ -52,19 +63,20 @@ internal class MacGlassButton(onClick: () -> Unit) {
         ObjC.sendVoid(handle, "setEnabled:", (if (enabled) 1 else 0).toByte())
     }
 
-    fun setVisible(visible: Boolean) {
-        ObjC.sendVoid(handle, "setHidden:", (if (visible) 0 else 1).toByte())
-    }
-
     fun release() {
         ControlTarget.actions.remove(Pointer.nativeValue(handle))
         spinner.release()
         ObjC.sendVoid(handle, "release")
     }
 
-    private fun attributedTitle(text: String, fontSize: Double, fontWeight: Double, color: Color): Pointer {
+    private fun attributedTitle(
+        text: String,
+        fontSize: Double,
+        fontWeight: Double,
+        color: Color,
+    ): Pointer {
         val nsFont = requireNotNull(
-            ObjC.send(requireNotNull(ObjC.cls("NSFont")), "systemFontOfSize:weight:", fontSize, fontWeight)
+            ObjC.send(requireNotNull(ObjC.cls("NSFont")), "systemFontOfSize:weight:", fontSize, fontWeight),
         )
         val keys = pointers(appKitString("NSFontAttributeName"), appKitString("NSForegroundColorAttributeName"))
         val values = pointers(nsFont, nsColor(color))
@@ -84,8 +96,8 @@ internal class MacGlassButton(onClick: () -> Unit) {
                 srgb.red.toDouble(),
                 srgb.green.toDouble(),
                 srgb.blue.toDouble(),
-                srgb.alpha.toDouble()
-            )
+                srgb.alpha.toDouble(),
+            ),
         )
     }
 

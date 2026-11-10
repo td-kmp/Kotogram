@@ -16,18 +16,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import com.xbot.kotogram.core.designsystem.component.PhotoPickerLauncher
-import java.io.ByteArrayOutputStream
-import kotlin.math.max
-import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
+import kotlin.math.max
+import kotlin.math.roundToInt
 
 // Adapted from Calf's FilePickerLauncher.android.kt (Mohamed Rejeb, Apache-2.0).
 @Composable
-internal actual fun platformPhotoPickerLauncher(
-    onPicked: (ByteArray) -> Unit
-): PhotoPickerLauncher? {
+internal actual fun platformPhotoPickerLauncher(onPicked: (ByteArray) -> Unit): PhotoPickerLauncher? {
     val resolver = LocalContext.current.contentResolver
     val scope = rememberCoroutineScope()
     val currentOnPicked by rememberUpdatedState(onPicked)
@@ -52,7 +50,7 @@ private fun ContentResolver.readJpeg(uri: Uri): ByteArray? {
                     (
                         info.size.height *
                             scale
-                        ).roundToInt()
+                        ).roundToInt(),
                 )
             }
         }
@@ -64,7 +62,7 @@ private fun ContentResolver.readJpeg(uri: Uri): ByteArray? {
                     decoded,
                     (decoded.width * scale).roundToInt(),
                     (decoded.height * scale).roundToInt(),
-                    true
+                    true,
                 )
             } else {
                 decoded
@@ -77,7 +75,10 @@ private fun ContentResolver.readJpeg(uri: Uri): ByteArray? {
     }
 }
 
-private fun scale(width: Int, height: Int): Float = minOf(
+private fun scale(
+    width: Int,
+    height: Int,
+): Float = minOf(
     1f,
-    PHOTO_MAX_SIDE.toFloat() / max(width, height)
+    PHOTO_MAX_SIDE.toFloat() / max(width, height),
 )

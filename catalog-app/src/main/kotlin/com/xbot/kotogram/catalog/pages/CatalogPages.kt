@@ -8,6 +8,7 @@ val CatalogPages: List<CatalogPage> = listOf(
     ShapesPage,
     SpacingPage,
     IconsPage,
+    TransitionsPage,
     ButtonsPage,
     IconButtonPage,
     CheckboxPage,
@@ -25,5 +26,5 @@ val CatalogPages: List<CatalogPage> = listOf(
     NetworkImagePage,
     ProgressIndicatorPage,
     RichTextPage,
-    QrCodePage
+    QrCodePage,
 )

@@ -22,19 +22,19 @@ fun NucleusApplicationScope.KotogramWindow(
     minimumSize: DpSize? = null,
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
-    content: @Composable NucleusDecoratedWindowScope.() -> Unit
+    content: @Composable NucleusDecoratedWindowScope.() -> Unit,
 ) {
     val colorScheme = kotogramColorScheme(darkTheme, dynamicColor)
     NucleusDecoratedWindowTheme(
         isDark = darkTheme,
         windowStyle = rememberMaterialWindowStyle(colorScheme),
-        titleBarStyle = rememberMaterialTitleBarStyle(colorScheme.copy(surface = colorScheme.background))
+        titleBarStyle = rememberMaterialTitleBarStyle(colorScheme.copy(surface = colorScheme.background)),
     ) {
         DecoratedWindow(
             onCloseRequest = onCloseRequest,
             state = state,
             title = title,
-            minimumSize = minimumSize
+            minimumSize = minimumSize,
         ) {
             val window = this
             KotogramTheme(darkTheme = darkTheme, dynamicColor = dynamicColor) {

@@ -37,7 +37,7 @@ internal object MacPopUpMenuOverride : MenuOverride {
             modifier.onGloballyPositioned { coordinates ->
                 coordinates.parentLayoutCoordinates?.let { anchor = it.boundsInWindow() }
                 rootHeight = coordinates.findRootCoordinates().size.height.toFloat()
-            }
+            },
         )
         LaunchedEffect(expanded) {
             if (!expanded) return@LaunchedEffect
@@ -46,7 +46,7 @@ internal object MacPopUpMenuOverride : MenuOverride {
                 titles = titles,
                 selectedIndex = selectedIndex,
                 anchor = Rect(anchor.topLeft / density.density, anchor.bottomRight / density.density),
-                height = rootHeight / density.density
+                height = rootHeight / density.density,
             )
             chosen?.let(currentOnSelect)
             currentOnDismiss()

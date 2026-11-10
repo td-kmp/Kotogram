@@ -22,14 +22,12 @@ import com.xbot.kotogram.core.designsystem.style.StyleResolver
 import com.xbot.kotogram.core.designsystem.style.rememberStyle
 import kotlinx.coroutines.launch
 
-// Shown while composed: UIKit's page sheet on iOS, Material 3's modal bottom sheet elsewhere. Its content brings
-// its own top bar, and closes the sheet with BottomSheetScope.dismiss.
 @Composable
 fun BottomSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
     style: BottomSheetStyle = BottomSheetStyle,
-    content: @Composable BottomSheetScope.() -> Unit
+    content: @Composable BottomSheetScope.() -> Unit,
 ) {
     val sheetStyle = rememberStyle(::BottomSheetStyleScope, BottomSheetStyle.Default then style)
     with(LocalBottomSheetOverride.current) {
@@ -38,12 +36,13 @@ fun BottomSheet(
 }
 
 interface BottomSheetScope : ColumnScope {
-    // Hides the sheet the way a swipe does, then calls onDismissRequest.
     fun dismiss()
 }
 
-internal class DefaultBottomSheetScope(column: ColumnScope, private val onDismiss: () -> Unit) :
-    BottomSheetScope,
+internal class DefaultBottomSheetScope(
+    column: ColumnScope,
+    private val onDismiss: () -> Unit,
+) : BottomSheetScope,
     ColumnScope by column {
     override fun dismiss() = onDismiss()
 }
@@ -57,7 +56,7 @@ internal class BottomSheetOverrideScope(
     val onDismissRequest: () -> Unit,
     val modifier: Modifier,
     val style: BottomSheetStyleScope,
-    val content: @Composable BottomSheetScope.() -> Unit
+    val content: @Composable BottomSheetScope.() -> Unit,
 )
 
 internal object DefaultBottomSheetOverride : BottomSheetOverride {
@@ -67,7 +66,6 @@ internal object DefaultBottomSheetOverride : BottomSheetOverride {
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         val scope = rememberCoroutineScope()
         val currentOnDismissRequest by rememberUpdatedState(onDismissRequest)
-        // Material 3's own way to close it in code: hide, then leave the composition.
         val dismiss: () -> Unit = remember(sheetState, scope) {
             {
                 scope.launch { sheetState.hide() }.invokeOnCompletion {
@@ -81,7 +79,7 @@ internal object DefaultBottomSheetOverride : BottomSheetOverride {
             sheetState = sheetState,
             containerColor = style.containerColor,
             contentColor = style.contentColor,
-            dragHandle = null
+            dragHandle = null,
         ) {
             DefaultBottomSheetScope(this, dismiss).content()
         }
@@ -91,7 +89,6 @@ internal object DefaultBottomSheetOverride : BottomSheetOverride {
 internal val LocalBottomSheetOverride: ProvidableCompositionLocal<BottomSheetOverride> =
     staticCompositionLocalOf { DefaultBottomSheetOverride }
 
-// The screen's background, as Telegram's sheets have. No drag handle: the content's top bar closes it.
 fun interface BottomSheetStyle : ComponentStyle<BottomSheetStyleScope> {
     companion object : BottomSheetStyle {
         override fun BottomSheetStyleScope.applyStyle() {}
@@ -105,15 +102,19 @@ fun interface BottomSheetStyle : ComponentStyle<BottomSheetStyleScope> {
 
 infix fun BottomSheetStyle.then(other: BottomSheetStyle): BottomSheetStyle = when {
     other === BottomSheetStyle -> this
+
     this === BottomSheetStyle -> other
+
     else -> BottomSheetStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
     }
 }
 
-class BottomSheetStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
-    AdaptiveStyleScope<BottomSheetStyleScope>,
+class BottomSheetStyleScope(
+    val theme: KotogramTheme.Values,
+    override val mediaQueryInfo: MediaQueryInfo,
+) : AdaptiveStyleScope<BottomSheetStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
     var containerColor: Color = Color.Unspecified

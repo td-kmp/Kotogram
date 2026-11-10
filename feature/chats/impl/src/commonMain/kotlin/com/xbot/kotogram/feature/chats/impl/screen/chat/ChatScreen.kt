@@ -24,7 +24,7 @@ import org.orbitmvi.orbit.compose.collectAsState
 internal fun ChatScreen(
     viewModel: ChatViewModel,
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val state by viewModel.collectAsState()
     ChatScreenContent(state = state, onBackClick = onBackClick, modifier = modifier)
@@ -35,7 +35,7 @@ internal fun ChatScreen(
 private fun ChatScreenContent(
     state: ChatScreenState,
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Scaffold(
         modifier = modifier,
@@ -47,14 +47,14 @@ private fun ChatScreenContent(
                     TextButton(onClick = onBackClick) {
                         Text(stringResource(Res.string.navigation_back))
                     }
-                }
+                },
             )
-        }
+        },
     ) { innerPadding ->
         Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
             Text(
                 stringResource(Res.string.chat_history_placeholder),
-                style = KotogramTheme.typography.bodyMedium
+                style = KotogramTheme.typography.bodyMedium,
             )
         }
     }

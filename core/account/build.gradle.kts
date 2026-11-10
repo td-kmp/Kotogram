@@ -2,9 +2,9 @@ import com.android.build.api.withAndroid
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.BOOLEAN
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.INT
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
-import java.util.Properties
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.multiplatform.library)
@@ -98,27 +98,27 @@ buildkonfig {
             INT,
             "API_ID",
             localProperties.getProperty("telegram.api.id") ?: System.getenv("TELEGRAM_API_ID")
-                ?: "0"
+                ?: "0",
         )
         buildConfigField(
             STRING,
             "API_HASH",
             localProperties.getProperty("telegram.api.hash") ?: System.getenv("TELEGRAM_API_HASH")
-                ?: ""
+                ?: "",
         )
         buildConfigField(
             INT,
             "TDLIB_LOG_VERBOSITY",
             providers.gradleProperty("tdlib.log.verbosity").orNull
                 ?: localProperties.getProperty("tdlib.log.verbosity")
-                ?: "4"
+                ?: "4",
         )
         buildConfigField(
             BOOLEAN,
             "USE_TEST_DC",
             providers.gradleProperty("telegram.test.dc").orNull
                 ?: localProperties.getProperty("telegram.test.dc")
-                ?: "false"
+                ?: "false",
         )
     }
 }

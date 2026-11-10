@@ -104,7 +104,7 @@ fun CodeField(
     keyboardOptions: KeyboardOptions = CodeFieldKeyboardOptions,
     onKeyboardAction: KeyboardActionHandler? = null,
     style: CodeFieldStyle = CodeFieldStyle,
-    interactionSource: MutableInteractionSource? = null
+    interactionSource: MutableInteractionSource? = null,
 ) {
     @Suppress("NAME_SHADOWING")
     val interactionSource = interactionSource ?: remember { MutableInteractionSource() }
@@ -116,7 +116,6 @@ fun CodeField(
     LaunchedEffect(isError) {
         if (isError) shake.shake(style)
     }
-    // Digits go in at the end only: a tap or a selection elsewhere would edit a cell the user can't see.
     LaunchedEffect(state) {
         snapshotFlow { state.selection to state.text.length }.collect { (selection, end) ->
             if (selection != TextRange(end)) state.edit { placeCursorAtEnd() }
@@ -128,7 +127,7 @@ fun CodeField(
             unfocusedIndicatorColor = style.unfocusedIndicatorColor,
             disabledIndicatorColor = style.disabledIndicatorColor,
             errorIndicatorColor = style.errorIndicatorColor,
-            labelColor = style.labelColor
+            labelColor = style.labelColor,
         )
         CompositionLocalProvider(LocalTextSelectionColors provides HiddenSelectionColors) {
             BasicTextField(
@@ -152,9 +151,9 @@ fun CodeField(
                         supportingText = supportingText,
                         shakeOffset = { shake.value },
                         interactionSource = interactionSource,
-                        colors = colors
+                        colors = colors,
                     )
-                }
+                },
             )
         }
     }
@@ -171,20 +170,19 @@ private fun CodeFieldDecoration(
     supportingText: @Composable (() -> Unit)?,
     shakeOffset: () -> Float,
     interactionSource: InteractionSource,
-    colors: TextFieldColors
+    colors: TextFieldColors,
 ) {
     val focused by interactionSource.collectIsFocusedAsState()
     val activeIndex = minOf(text.length, length - 1)
     val supportingColor by animateColorAsState(
         targetValue = colors.supportingTextColor(enabled, isError, focused),
         animationSpec = style.borderSpec,
-        label = "CodeFieldSupportingText"
+        label = "CodeFieldSupportingText",
     )
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        // Only the cells shake, as Telegram for macOS shakes its control and not the error under it.
         Box(
             modifier = Modifier.offset { IntOffset(shakeOffset().dp.roundToPx(), 0) },
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Box(Modifier.matchParentSize().alpha(0f)) { innerTextField() }
             CodeCells(length, text, activeIndex, focused, enabled, isError, colors)
@@ -196,14 +194,14 @@ private fun CodeFieldDecoration(
                     fadeOut(tween(style.digitMillis))
             },
             contentKey = { it != null },
-            label = "CodeFieldSupportingText"
+            label = "CodeFieldSupportingText",
         ) { content ->
             if (content != null) {
                 Box(Modifier.padding(top = style.supportingGap)) {
                     CompositionLocalProvider(
                         LocalContentColor provides supportingColor,
                         LocalTextStyle provides style.supportingTextStyle,
-                        content = content
+                        content = content,
                     )
                 }
             }
@@ -220,7 +218,7 @@ private fun CodeCells(
     focused: Boolean,
     enabled: Boolean,
     isError: Boolean,
-    colors: TextFieldColors
+    colors: TextFieldColors,
 ) {
     Layout(
         content = {
@@ -230,11 +228,11 @@ private fun CodeCells(
                     active = focused && enabled && index == activeIndex,
                     enabled = enabled,
                     isError = isError,
-                    colors = colors
+                    colors = colors,
                 )
             }
         },
-        measurePolicy = remember(style) { CodeCellsMeasurePolicy(style) }
+        measurePolicy = remember(style) { CodeCellsMeasurePolicy(style) },
     )
 }
 
@@ -245,20 +243,20 @@ private fun CodeCell(
     active: Boolean,
     enabled: Boolean,
     isError: Boolean,
-    colors: TextFieldColors
+    colors: TextFieldColors,
 ) {
     val borderColor by animateColorAsState(
         targetValue = if (active) {
             colors.indicatorColor(
                 enabled,
                 isError,
-                focused = true
+                focused = true,
             )
         } else {
             Color.Transparent
         },
         animationSpec = style.borderSpec,
-        label = "CodeCellBorder"
+        label = "CodeCellBorder",
     )
     val textColor = colors.textColor(enabled, isError, active)
     val rise = with(LocalDensity.current) { style.digitRise.roundToPx() }
@@ -267,7 +265,7 @@ private fun CodeCell(
             .fillMaxSize()
             .background(colors.containerColor(enabled, isError, active), style.shape)
             .border(style.activeBorderWidth, borderColor, style.shape),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         AnimatedContent(
             targetState = digit,
@@ -282,25 +280,26 @@ private fun CodeCell(
                     ) using SizeTransform(clip = false)
             },
             contentAlignment = Alignment.Center,
-            label = "CodeDigit"
+            label = "CodeDigit",
         ) { shown ->
             if (shown != null) {
                 BasicText(
                     text = shown.toString(),
                     style = style.textStyle.copy(color = textColor),
                     softWrap = false,
-                    maxLines = 1
+                    maxLines = 1,
                 )
             }
         }
     }
 }
 
-// Cells grow with the digits, which follow the system's font scale, and narrow when the row runs out of width.
-private class CodeCellsMeasurePolicy(private val style: CodeFieldStyleScope) : MeasurePolicy {
+private class CodeCellsMeasurePolicy(
+    private val style: CodeFieldStyleScope,
+) : MeasurePolicy {
     override fun MeasureScope.measure(
         measurables: List<Measurable>,
-        constraints: Constraints
+        constraints: Constraints,
     ): MeasureResult {
         val count = measurables.size
         val gap = style.cellSpacing.roundToPx()
@@ -308,7 +307,7 @@ private class CodeCellsMeasurePolicy(private val style: CodeFieldStyleScope) : M
         val fontScale = if (fontSize.isSp) {
             maxOf(
                 1f,
-                fontSize.toPx() / fontSize.value.dp.toPx()
+                fontSize.toPx() / fontSize.value.dp.toPx(),
             )
         } else {
             1f
@@ -331,19 +330,20 @@ private class CodeCellsMeasurePolicy(private val style: CodeFieldStyleScope) : M
     }
 }
 
-private class CodeInputTransformation(private val codeLength: Int) : InputTransformation {
+private class CodeInputTransformation(
+    private val codeLength: Int,
+) : InputTransformation {
     override fun TextFieldBuffer.transformInput() {
         val digits = asCharSequence().filter(Char::isDigit)
         when {
             digits.length <= codeLength -> if (!digits.contentEquals(
-                    asCharSequence()
+                    asCharSequence(),
                 )
             ) {
                 replace(0, length, digits)
             }
 
             else -> {
-                // A whole code pasted over a full field replaces it, as Telegram for macOS's insertAll does.
                 val inserted = insertedDigits()
                 if (inserted.length >=
                     codeLength
@@ -357,7 +357,6 @@ private class CodeInputTransformation(private val codeLength: Int) : InputTransf
         placeCursorAtEnd()
     }
 
-    // The cursor stays at the end, so whatever follows the old text is what came in.
     private fun TextFieldBuffer.insertedDigits(): String {
         val current = asCharSequence()
         val inserted = if (current.startsWith(originalText)) {
@@ -376,22 +375,22 @@ private suspend fun Animatable<Float, *>.shake(style: CodeFieldStyleScope) {
         animationSpec = repeatable(
             iterations = style.shakeLegs,
             animation = tween(style.shakeLegMillis, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        )
+            repeatMode = RepeatMode.Reverse,
+        ),
     )
     snapTo(0f)
 }
 
 private val HiddenSelectionColors = TextSelectionColors(
     handleColor = Color.Transparent,
-    backgroundColor = Color.Transparent
+    backgroundColor = Color.Transparent,
 )
 
 private val CodeFieldKeyboardOptions = KeyboardOptions(
     keyboardType = KeyboardType.NumberPassword,
     imeAction = ImeAction.Done,
     autoCorrectEnabled = false,
-    platformImeOptions = OneTimeCodeImeOptions
+    platformImeOptions = OneTimeCodeImeOptions,
 )
 
 @KotogramPreview
@@ -399,7 +398,7 @@ private val CodeFieldKeyboardOptions = KeyboardOptions(
 private fun CodeFieldPreview() {
     Column(
         modifier = Modifier.padding(KotogramTheme.spacing.large),
-        verticalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.large)
+        verticalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.large),
     ) {
         CodeField(state = rememberTextFieldState("123"), length = 5)
         CodeField(state = rememberTextFieldState("123456"), length = 6)
@@ -411,9 +410,6 @@ private fun CodeFieldPreview() {
 @Composable
 private fun CodeFieldLaptopPreview() = CodeFieldPreview()
 
-// Telegram for macOS's CodeEntryControl on a laptop; on touch screens the cells of Telegram for iOS's CodeInputView:
-// 43 by 51, 15 apart, 23-point digits, a radius of 15. Telegram for macOS marks the cell to fill on every platform,
-// unlike the text field's focus ring.
 @Suppress("MagicNumber")
 fun interface CodeFieldStyle : ComponentStyle<CodeFieldStyleScope> {
     companion object : CodeFieldStyle {
@@ -427,8 +423,8 @@ fun interface CodeFieldStyle : ComponentStyle<CodeFieldStyleScope> {
                 theme.typography.headlineSmall.merge(
                     fontSize = 23.sp,
                     fontWeight = FontWeight.Normal,
-                    fontFeatureSettings = "tnum"
-                )
+                    fontFeatureSettings = "tnum",
+                ),
             )
             activeBorderWidth(1.dp)
             focusedIndicatorColor(theme.colors.primary)
@@ -456,8 +452,8 @@ fun interface CodeFieldStyle : ComponentStyle<CodeFieldStyleScope> {
                 textStyle(
                     theme.typography.headlineSmall.merge(
                         fontSize = 24.sp,
-                        fontFeatureSettings = "tnum"
-                    )
+                        fontFeatureSettings = "tnum",
+                    ),
                 )
             }
         }
@@ -478,7 +474,7 @@ infix fun CodeFieldStyle.then(other: CodeFieldStyle): CodeFieldStyle = when {
 @Suppress("TooManyFunctions")
 class CodeFieldStyleScope(
     val theme: KotogramTheme.Values,
-    override val mediaQueryInfo: MediaQueryInfo
+    override val mediaQueryInfo: MediaQueryInfo,
 ) : AdaptiveStyleScope<CodeFieldStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 

@@ -12,12 +12,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
-// The server's pick for the system_language_code this instance sent, before authorization too.
 internal class SuggestedLanguagePack : AccountUpdates {
     private val mutableLanguagePackId = MutableStateFlow("")
     val languagePackId: StateFlow<String> = mutableLanguagePackId.asStateFlow()
 
-    override fun start(scope: CoroutineScope, client: TdClient) {
+    override fun start(
+        scope: CoroutineScope,
+        client: TdClient,
+    ) {
         scope.launch(start = CoroutineStart.UNDISPATCHED) {
             client.updatesOf<UpdateOption>()
                 .filter { it.name == SUGGESTED_LANGUAGE_PACK_ID }

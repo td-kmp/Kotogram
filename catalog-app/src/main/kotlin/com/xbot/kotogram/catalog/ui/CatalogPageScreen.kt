@@ -15,23 +15,29 @@ import com.xbot.kotogram.catalog.model.CatalogPage
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 
 @Composable
-fun CatalogPageScreen(page: CatalogPage, modifier: Modifier = Modifier) {
+fun CatalogPageScreen(
+    page: CatalogPage,
+    modifier: Modifier = Modifier,
+) {
     val spacing = KotogramTheme.spacing
     Column(
         modifier = modifier.padding(horizontal = spacing.extraLarge, vertical = spacing.large),
-        verticalArrangement = Arrangement.spacedBy(spacing.large)
+        verticalArrangement = Arrangement.spacedBy(spacing.large),
     ) {
         Text(
             text = page.description,
             style = KotogramTheme.typography.bodyLarge,
-            color = KotogramTheme.colors.onSurfaceVariant
+            color = KotogramTheme.colors.onSurfaceVariant,
         )
         page.examples.forEach { example -> CatalogExampleCard(example) }
     }
 }
 
 @Composable
-private fun CatalogExampleCard(example: CatalogExample, modifier: Modifier = Modifier) {
+private fun CatalogExampleCard(
+    example: CatalogExample,
+    modifier: Modifier = Modifier,
+) {
     val spacing = KotogramTheme.spacing
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(spacing.small)) {
         Text(example.name, style = KotogramTheme.typography.titleSmall)
@@ -39,7 +45,7 @@ private fun CatalogExampleCard(example: CatalogExample, modifier: Modifier = Mod
             modifier = Modifier
                 .fillMaxWidth()
                 .border(1.dp, KotogramTheme.colors.outlineVariant, KotogramTheme.shapes.medium)
-                .padding(spacing.large)
+                .padding(spacing.large),
         ) {
             example.content()
         }

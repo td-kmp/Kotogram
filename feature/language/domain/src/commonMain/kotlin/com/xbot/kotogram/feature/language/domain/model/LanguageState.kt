@@ -5,5 +5,7 @@ sealed interface LanguageState {
 
     data object Bundled : LanguageState
 
-    data class Loaded(val pack: LanguagePack) : LanguageState
+    data class Loaded(
+        val pack: LanguagePack,
+    ) : LanguageState
 }

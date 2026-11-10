@@ -9,7 +9,6 @@ import io.xbot.tdlib.api.GetLanguagePackStrings
 import io.xbot.tdlib.api.LanguagePackInfo
 import io.xbot.tdlib.api.LanguagePackStringValue
 
-// TDLib answers from its database once a pack is whole there, and else downloads the pack and keeps it.
 internal suspend fun AppClient.languagePack(info: LanguagePackInfo): Either<Error, LanguagePack> = either {
     val strings = strings(info.id).bind()
     val baseStrings = if (info.baseLanguagePackId.isEmpty()) emptyMap() else strings(info.baseLanguagePackId).bind()

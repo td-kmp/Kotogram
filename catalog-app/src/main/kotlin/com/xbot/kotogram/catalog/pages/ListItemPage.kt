@@ -36,7 +36,7 @@ internal val ListItemPage = CatalogPage(
                 leadingContent = { Text("🇺🇿") },
                 trailingContent = { Text("+998") },
                 onClick = {},
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
         },
         CatalogExample("Overline and two lines") {
@@ -46,7 +46,7 @@ internal val ListItemPage = CatalogPage(
                 supportingContent = { Text("Others can find you by it and message you without your number.") },
                 leadingContent = { Icon(KotogramIcons.AtSign, contentDescription = null) },
                 position = ListItemPosition.Single,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
         },
         CatalogExample("Disabled") {
@@ -56,10 +56,10 @@ internal val ListItemPage = CatalogPage(
                 onClick = {},
                 enabled = false,
                 position = ListItemPosition.Single,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
-        }
-    )
+        },
+    ),
 )
 
 @Composable
@@ -69,27 +69,27 @@ private fun SettingsGroup() {
         Modifier
             .fillMaxWidth()
             .background(KotogramTheme.colors.surfaceDim, KotogramTheme.shapes.medium)
-            .padding(KotogramTheme.spacing.small)
+            .padding(KotogramTheme.spacing.small),
     ) {
         ListItem(
             headlineContent = { Text("Notifications") },
             leadingContent = { Icon(KotogramIcons.Bell, contentDescription = null) },
             trailingContent = { Icon(KotogramIcons.ChevronRight, contentDescription = null) },
             onClick = {},
-            position = ListItemPosition.First
+            position = ListItemPosition.First,
         )
         ListItem(
             headlineContent = { Text("Language") },
             leadingContent = { Icon(KotogramIcons.Globe, contentDescription = null) },
             trailingContent = { Text("English") },
             onClick = {},
-            position = ListItemPosition.Middle
+            position = ListItemPosition.Middle,
         )
         ListItem(
             headlineContent = { Text("Sync contacts") },
             leadingContent = { Icon(KotogramIcons.Person, contentDescription = null) },
             trailingContent = { Switch(checked = sync, onCheckedChange = { sync = it }) },
-            position = ListItemPosition.Last
+            position = ListItemPosition.Last,
         )
     }
 }

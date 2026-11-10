@@ -37,13 +37,12 @@ import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 import com.xbot.kotogram.core.designsystem.style.StyleResolver
 import com.xbot.kotogram.core.designsystem.style.rememberStyle
 
-// The placeholder is a string: a native field draws it on iOS.
 @Composable
 fun SearchField(
     state: TextFieldState,
     modifier: Modifier = Modifier,
     placeholder: String = "",
-    style: SearchFieldStyle = SearchFieldStyle
+    style: SearchFieldStyle = SearchFieldStyle,
 ) {
     val fieldStyle = rememberStyle(::SearchFieldStyleScope, SearchFieldStyle.Adaptive then style)
     with(LocalSearchFieldOverride.current) {
@@ -60,7 +59,7 @@ internal class SearchFieldOverrideScope(
     val state: TextFieldState,
     val placeholder: String,
     val modifier: Modifier,
-    val style: SearchFieldStyleScope
+    val style: SearchFieldStyleScope,
 )
 
 internal object DefaultSearchFieldOverride : SearchFieldOverride {
@@ -80,13 +79,13 @@ internal object DefaultSearchFieldOverride : SearchFieldOverride {
                         imageVector = KotogramIcons.Clear,
                         contentDescription = null,
                         modifier = Modifier.clickable(role = Role.Button) { state.clearText() },
-                        tint = style.iconColor
+                        tint = style.iconColor,
                     )
                 }
             },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             lineLimits = TextFieldLineLimits.SingleLine,
-            style = textFieldStyle
+            style = textFieldStyle,
         )
     }
 }
@@ -94,7 +93,6 @@ internal object DefaultSearchFieldOverride : SearchFieldOverride {
 internal val LocalSearchFieldOverride: ProvidableCompositionLocal<SearchFieldOverride> =
     staticCompositionLocalOf { DefaultSearchFieldOverride }
 
-// The field is the design system's text field without an indicator, in this style's shape and type.
 private fun SearchFieldStyleScope.textFieldStyle(): TextFieldStyle {
     val search = this
     return TextFieldStyle {
@@ -117,7 +115,7 @@ private fun SearchFieldPreview() {
     SearchField(
         state = rememberTextFieldState(),
         modifier = Modifier.fillMaxWidth().padding(KotogramTheme.spacing.large),
-        placeholder = "Search"
+        placeholder = "Search",
     )
 }
 
@@ -125,7 +123,6 @@ private fun SearchFieldPreview() {
 @Composable
 private fun SearchFieldLaptopPreview() = SearchFieldPreview()
 
-// UIKit's search capsule in a toolbar on touch screens (48 high, 17 regular); our own on a laptop.
 @Suppress("MagicNumber")
 fun interface SearchFieldStyle : ComponentStyle<SearchFieldStyleScope> {
     companion object : SearchFieldStyle {
@@ -157,15 +154,19 @@ fun interface SearchFieldStyle : ComponentStyle<SearchFieldStyleScope> {
 
 infix fun SearchFieldStyle.then(other: SearchFieldStyle): SearchFieldStyle = when {
     other === SearchFieldStyle -> this
+
     this === SearchFieldStyle -> other
+
     else -> SearchFieldStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
     }
 }
 
-class SearchFieldStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
-    AdaptiveStyleScope<SearchFieldStyleScope>,
+class SearchFieldStyleScope(
+    val theme: KotogramTheme.Values,
+    override val mediaQueryInfo: MediaQueryInfo,
+) : AdaptiveStyleScope<SearchFieldStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
     var height: Dp = Dp.Unspecified

@@ -9,8 +9,8 @@ import androidx.compose.ui.window.ComposeViewport
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.shared.App
 import com.xbot.kotogram.shared.di.initKoin
-import kotlin.js.ExperimentalWasmJsInterop
 import kotlinx.browser.document
+import kotlin.js.ExperimentalWasmJsInterop
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
@@ -29,16 +29,19 @@ fun main() {
                     }
                 }
             }
-        }
+        },
     )
 }
 
-// Two workers on one IndexedDB would erase each other's files, so only one tab runs TDLib.
+// Workaround: two workers on one IndexedDB erase each other's files, so only one tab runs TDLib.
 @OptIn(ExperimentalWasmJsInterop::class)
-@Suppress("UnusedParameter") // Used by the JavaScript below.
-private fun whenTheOnlyTab(onAcquired: () -> Unit, onBusy: () -> Unit): Unit = js(
+@Suppress("UnusedParameter")
+private fun whenTheOnlyTab(
+    onAcquired: () -> Unit,
+    onBusy: () -> Unit,
+): Unit = js(
     """navigator.locks.request("kotogram-tdlib", { ifAvailable: true }, (lock) => {
         if (lock) { onAcquired(); return new Promise(() => {}); }
         onBusy();
-    })"""
+    })""",
 )

@@ -2,7 +2,6 @@ package com.xbot.kotogram.core.designsystem.native
 
 import com.sun.jna.Pointer
 
-// One target for every native control, which finds the control's action by the sender.
 internal object ControlTarget {
     const val ACTION = "click:"
 

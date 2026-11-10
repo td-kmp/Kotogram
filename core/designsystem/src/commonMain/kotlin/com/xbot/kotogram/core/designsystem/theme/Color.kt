@@ -39,7 +39,7 @@ internal val DayClassicColorScheme = lightColorScheme(
     surfaceContainerLow = Color(0xFFFFFFFF),
     surfaceContainer = Color(0xFFFFFFFF),
     surfaceContainerHigh = Color(0xFFF4F4F4),
-    surfaceContainerHighest = Color(0xFFF4F4F4)
+    surfaceContainerHighest = Color(0xFFF4F4F4),
 )
 
 internal val NightAccentColorScheme = darkColorScheme(
@@ -75,5 +75,5 @@ internal val NightAccentColorScheme = darkColorScheme(
     surfaceContainerLow = Color(0xFF18222D),
     surfaceContainer = Color(0xFF18222D),
     surfaceContainerHigh = Color(0xFF213040),
-    surfaceContainerHighest = Color(0xFF213040)
+    surfaceContainerHighest = Color(0xFF213040),
 )

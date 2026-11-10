@@ -19,7 +19,8 @@ val AuthorizationState?.isLoginStep: Boolean
         is AuthorizationStateWaitCode,
         is AuthorizationStateWaitOtherDeviceConfirmation,
         is AuthorizationStateWaitRegistration,
-        is AuthorizationStateWaitPassword -> true
+        is AuthorizationStateWaitPassword,
+        -> true
 
         else -> false
     }

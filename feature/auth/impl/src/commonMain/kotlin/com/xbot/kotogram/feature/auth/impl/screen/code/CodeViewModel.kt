@@ -22,7 +22,7 @@ import org.orbitmvi.orbit.viewmodel.orbitContainer
 
 internal class CodeViewModel(
     savedStateHandle: SavedStateHandle,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
 ) : ViewModel(),
     OrbitContainerHost<CodeScreenState, CodeScreenState, Nothing> {
 
@@ -39,7 +39,7 @@ internal class CodeViewModel(
                     reduce {
                         state.copy(
                             info = authState.codeInfo,
-                            resendSecondsLeft = authState.codeInfo.timeout
+                            resendSecondsLeft = authState.codeInfo.timeout,
                         )
                     }
                     while (state.resendSecondsLeft > 0) {

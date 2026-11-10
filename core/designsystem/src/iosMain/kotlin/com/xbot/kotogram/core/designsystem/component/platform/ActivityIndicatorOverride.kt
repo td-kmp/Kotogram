@@ -39,7 +39,7 @@ internal object ActivityIndicatorOverride : ProgressIndicatorOverride {
                 indicator.color = uiColor
                 indicator.hidden = !inFront
             },
-            properties = SpinnerProperties
+            properties = SpinnerProperties,
         )
     }
 }

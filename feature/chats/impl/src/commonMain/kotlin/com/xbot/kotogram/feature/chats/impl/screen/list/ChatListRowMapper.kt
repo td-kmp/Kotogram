@@ -10,5 +10,5 @@ internal class ChatListRowMapper :
     RowMapper<ChatListEntry, ChatListRow> by MemoizingRowMapper<ChatListEntry, Long, ChatListRow>(
         key = { it.chat.id },
         hasSameInputs = ChatListEntry::hasSameInputsAs,
-        toRow = ChatListEntry::toRow
+        toRow = ChatListEntry::toRow,
     )

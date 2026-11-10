@@ -5,8 +5,10 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-// A point `radius` away at `degrees`, clockwise from the x axis as on screen.
-internal fun Offset.Companion.polar(radius: Float, degrees: Float): Offset {
+internal fun Offset.Companion.polar(
+    radius: Float,
+    degrees: Float,
+): Offset {
     val radians = degrees * PI / HALF_TURN
     return Offset((radius * cos(radians)).toFloat(), (radius * sin(radians)).toFloat())
 }

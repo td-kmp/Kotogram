@@ -11,12 +11,11 @@ import org.orbitmvi.orbit.viewmodel.orbitContainer
 internal class LanguageSuggestionViewModel(
     private val languageSuggestionRepository: LanguageSuggestionRepository,
     private val languageRepository: LanguageRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
 ) : ViewModel(),
     OrbitContainerHost<LanguageSuggestionState, LanguageSuggestionState, Nothing> {
 
     override val container = orbitContainer<LanguageSuggestionState, Nothing>(LanguageSuggestionState()) {
-        // As Telegram for macOS: only until the device's first account is signed in.
         combine(languageSuggestionRepository.suggestion, authRepository.isFirstSignIn) { suggestion, isFirst ->
             suggestion.takeIf { isFirst }
         }.collect { suggestion -> reduce { state.copy(suggestion = suggestion) } }

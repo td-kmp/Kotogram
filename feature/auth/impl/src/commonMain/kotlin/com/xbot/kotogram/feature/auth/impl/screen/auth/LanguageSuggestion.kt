@@ -18,17 +18,19 @@ import com.xbot.kotogram.feature.language.domain.model.LanguageSuggestion
 import org.orbitmvi.orbit.compose.collectAsState
 
 @Composable
-internal fun LanguageSuggestion(viewModel: LanguageSuggestionViewModel, modifier: Modifier = Modifier) {
+internal fun LanguageSuggestion(
+    viewModel: LanguageSuggestionViewModel,
+    modifier: Modifier = Modifier,
+) {
     val state by viewModel.collectAsState()
     LanguageSuggestionContent(state = state, onAction = viewModel::onAction, modifier = modifier)
 }
 
-// Fades in once the server's suggestion and its one string are in, and out when it's the language in use.
 @Composable
 private fun LanguageSuggestionContent(
     state: LanguageSuggestionState,
     onAction: (LanguageSuggestionAction) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val style = rememberStyle(::LanguageSuggestionStyleScope, LanguageSuggestionStyle.Default)
     AnimatedContent(
@@ -36,25 +38,24 @@ private fun LanguageSuggestionContent(
         modifier = modifier,
         transitionSpec = { fadeIn(style.fadeSpec) togetherWith fadeOut(style.fadeSpec) using null },
         contentKey = { it?.suggestion?.languagePackId },
-        label = "LanguageSuggestion"
+        label = "LanguageSuggestion",
     ) { shown ->
         shown?.suggestion?.let { suggestion ->
             ContinueOnLanguageButton(
                 text = suggestion.text,
                 isLoading = shown.isSwitching,
-                onClick = { onAction(LanguageSuggestionAction.OnContinueClick) }
+                onClick = { onAction(LanguageSuggestionAction.OnContinueClick) },
             )
         }
     }
 }
 
-// Its text is in the language it offers, from that language's pack.
 @Composable
 private fun ContinueOnLanguageButton(
     text: String,
     isLoading: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     TextButton(onClick = onClick, modifier = modifier, state = ButtonState.of(enabled = true, loading = isLoading)) {
         Text(text)
@@ -64,7 +65,7 @@ private fun ContinueOnLanguageButton(
 @KotogramPreview
 @Composable
 private fun LanguageSuggestionPreview(
-    @PreviewParameter(LanguageSuggestionStateProvider::class) state: LanguageSuggestionState
+    @PreviewParameter(LanguageSuggestionStateProvider::class) state: LanguageSuggestionState,
 ) {
     LanguageSuggestionContent(state = state, onAction = {})
 }
@@ -74,6 +75,6 @@ private class LanguageSuggestionStateProvider : PreviewParameterProvider<Languag
 
     override val values = sequenceOf(
         LanguageSuggestionState(suggestion = russian),
-        LanguageSuggestionState(suggestion = russian, isSwitching = true)
+        LanguageSuggestionState(suggestion = russian, isSwitching = true),
     )
 }

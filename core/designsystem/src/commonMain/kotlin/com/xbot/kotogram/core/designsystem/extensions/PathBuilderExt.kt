@@ -9,9 +9,16 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-internal fun PathBuilder.circle(center: Offset, radius: Float) = ellipse(center, radius, radius)
+internal fun PathBuilder.circle(
+    center: Offset,
+    radius: Float,
+) = ellipse(center, radius, radius)
 
-internal fun PathBuilder.ellipse(center: Offset, radiusX: Float, radiusY: Float) {
+internal fun PathBuilder.ellipse(
+    center: Offset,
+    radiusX: Float,
+    radiusY: Float,
+) {
     moveTo(center.x + radiusX, center.y)
     arcTo(radiusX, radiusY, 0f, isMoreThanHalf = false, isPositiveArc = true, center.x - radiusX, center.y)
     arcTo(radiusX, radiusY, 0f, isMoreThanHalf = false, isPositiveArc = true, center.x + radiusX, center.y)
@@ -27,12 +34,21 @@ internal fun PathBuilder.polyline(points: List<Offset>) {
     points.forEachIndexed { index, point -> if (index == 0) moveTo(point.x, point.y) else lineTo(point.x, point.y) }
 }
 
-internal fun PathBuilder.line(from: Offset, to: Offset) {
+internal fun PathBuilder.line(
+    from: Offset,
+    to: Offset,
+) {
     moveTo(from.x, from.y)
     lineTo(to.x, to.y)
 }
 
-internal fun PathBuilder.roundRect(left: Float, top: Float, right: Float, bottom: Float, radius: Float) {
+internal fun PathBuilder.roundRect(
+    left: Float,
+    top: Float,
+    right: Float,
+    bottom: Float,
+    radius: Float,
+) {
     moveTo(left + radius, top)
     lineTo(right - radius, top)
     arcTo(radius, radius, 0f, isMoreThanHalf = false, isPositiveArc = true, right, top + radius)
@@ -45,8 +61,12 @@ internal fun PathBuilder.roundRect(left: Float, top: Float, right: Float, bottom
     close()
 }
 
-// An open arc for stroking; angles in degrees, clockwise from the x axis as on screen.
-internal fun PathBuilder.arc(center: Offset, radius: Float, startDegrees: Float, sweepDegrees: Float) {
+internal fun PathBuilder.arc(
+    center: Offset,
+    radius: Float,
+    startDegrees: Float,
+    sweepDegrees: Float,
+) {
     val start = center + Offset.polar(radius, startDegrees)
     val end = center + Offset.polar(radius, startDegrees + sweepDegrees)
     moveTo(start.x, start.y)
@@ -57,12 +77,17 @@ internal fun PathBuilder.arc(center: Offset, radius: Float, startDegrees: Float,
         isMoreThanHalf = abs(sweepDegrees) > HALF_TURN,
         isPositiveArc = sweepDegrees > 0f,
         end.x,
-        end.y
+        end.y,
     )
 }
 
-// A gear's outline: `teeth` flat-topped teeth between two radii, as one closed polygon.
-internal fun PathBuilder.gear(center: Offset, innerRadius: Float, outerRadius: Float, teeth: Int, toothDegrees: Float) {
+internal fun PathBuilder.gear(
+    center: Offset,
+    innerRadius: Float,
+    outerRadius: Float,
+    teeth: Int,
+    toothDegrees: Float,
+) {
     val step = 2 * HALF_TURN / teeth
     val flank = toothDegrees / 2
     val points = (0 until teeth).flatMap { tooth ->
@@ -71,14 +96,17 @@ internal fun PathBuilder.gear(center: Offset, innerRadius: Float, outerRadius: F
             center + Offset.polar(innerRadius, angle - flank - FLANK_SLOPE),
             center + Offset.polar(outerRadius, angle - flank),
             center + Offset.polar(outerRadius, angle + flank),
-            center + Offset.polar(innerRadius, angle + flank + FLANK_SLOPE)
+            center + Offset.polar(innerRadius, angle + flank + FLANK_SLOPE),
         )
     }
     polygon(points)
 }
 
-// One contour for two crossed bars with round ends, so that it can cut a hole with the even-odd rule.
-internal fun PathBuilder.cross(center: Offset, halfExtent: Float, halfWidth: Float) {
+internal fun PathBuilder.cross(
+    center: Offset,
+    halfExtent: Float,
+    halfWidth: Float,
+) {
     val reach = halfExtent * sqrt(2f)
     val corner = halfWidth * sqrt(2f)
     repeat(ARMS) { arm ->
@@ -96,8 +124,12 @@ internal fun PathBuilder.cross(center: Offset, halfExtent: Float, halfWidth: Flo
     close()
 }
 
-// A disk with a smaller disk bitten out of its edge, as one contour.
-internal fun PathBuilder.circleWithBite(center: Offset, radius: Float, biteCenter: Offset, biteRadius: Float) {
+internal fun PathBuilder.circleWithBite(
+    center: Offset,
+    radius: Float,
+    biteCenter: Offset,
+    biteRadius: Float,
+) {
     val distance = (biteCenter - center).getDistance()
     val along = (radius * radius - biteRadius * biteRadius + distance * distance) / (2 * distance)
     val half = sqrt(radius * radius - along * along)
@@ -119,12 +151,16 @@ internal fun PathBuilder.circleWithBite(center: Offset, radius: Float, biteCente
         isMoreThanHalf = if (throughInside) inner > PI else inner < PI,
         isPositiveArc = throughInside,
         start.x,
-        start.y
+        start.y,
     )
     close()
 }
 
-private fun sweep(center: Offset, from: Offset, to: Offset): Double {
+private fun sweep(
+    center: Offset,
+    from: Offset,
+    to: Offset,
+): Double {
     val start = atan2((from.y - center.y).toDouble(), (from.x - center.x).toDouble())
     val end = atan2((to.y - center.y).toDouble(), (to.x - center.x).toDouble())
     return ((end - start) % (2 * PI) + 2 * PI) % (2 * PI)

@@ -68,7 +68,7 @@ fun PhoneNumberField(
     readOnly: Boolean = false,
     focusRequester: FocusRequester = remember { FocusRequester() },
     style: PhoneNumberFieldStyle = PhoneNumberFieldStyle,
-    countryMenu: @Composable () -> Unit = {}
+    countryMenu: @Composable () -> Unit = {},
 ) {
     @Suppress("NAME_SHADOWING")
     val style = rememberStyle(::PhoneNumberFieldStyleScope, PhoneNumberFieldStyle.Adaptive then style)
@@ -102,17 +102,17 @@ fun PhoneNumberField(
                             Text(
                                 text = format.hint(state.text, numberPlaceholder),
                                 style = style.numberTextStyle.copy(color = style.hintColor),
-                                maxLines = 1
+                                maxLines = 1,
                             )
                             innerTextField()
                         }
-                    }
+                    },
                 )
             }
             HorizontalDivider(
                 modifier = Modifier.padding(start = style.inset, top = style.countryHeight, end = style.inset),
                 thickness = Dp.Hairline,
-                color = style.separatorColor
+                color = style.separatorColor,
             )
         }
     }
@@ -120,7 +120,11 @@ fun PhoneNumberField(
 
 @Composable
 context(style: PhoneNumberFieldStyleScope)
-private fun CountryRow(country: String, onClick: () -> Unit, enabled: Boolean) {
+private fun CountryRow(
+    country: String,
+    onClick: () -> Unit,
+    enabled: Boolean,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -130,31 +134,30 @@ private fun CountryRow(country: String, onClick: () -> Unit, enabled: Boolean) {
                 indication = KotogramTheme.indication,
                 enabled = enabled,
                 role = Role.DropdownList,
-                onClick = onClick
+                onClick = onClick,
             )
             .padding(horizontal = style.inset),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = country,
             style = style.countryTextStyle,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
         Icon(
             imageVector = KotogramIcons.ChevronRight,
             contentDescription = null,
             tint = style.chevronColor,
-            modifier = Modifier.size(style.chevronSize)
+            modifier = Modifier.size(style.chevronSize),
         )
     }
 }
 
-// "+", the calling code, a space and the number on TDLib's pattern, where a digit or '-' stands for a digit.
 private class PhoneNumberFormat(
     private val callingCodeLength: Int,
-    private val pattern: String
+    private val pattern: String,
 ) : OutputTransformation {
     override fun TextFieldBuffer.transformOutput() {
         format(originalText).forEachIndexed { index, char ->
@@ -162,8 +165,10 @@ private class PhoneNumberFormat(
         }
     }
 
-    // The pattern past what is typed, drawn behind the text as Telegram for macOS's placeholder.
-    fun hint(digits: CharSequence, placeholder: String): AnnotatedString {
+    fun hint(
+        digits: CharSequence,
+        placeholder: String,
+    ): AnnotatedString {
         val code = digits.length.coerceAtMost(callingCodeLength)
         if (code == 0) return AnnotatedString("")
         val prefix = "+${digits.subSequence(0, code)} "
@@ -196,23 +201,17 @@ private object DigitsOnly : InputTransformation {
     }
 }
 
-// E.164 allows 15 digits, calling code included.
 private const val MAX_DIGITS = 15
 
-// macOS's grey card (Auth_PhoneInput, PhoneInputUI) in its points on a laptop; on touch screens the same card at
-// Telegram for iOS's row height and type (AuthorizationSequencePhoneEntryControllerNode).
 @Suppress("MagicNumber")
 fun interface PhoneNumberFieldStyle : ComponentStyle<PhoneNumberFieldStyleScope> {
     companion object : PhoneNumberFieldStyle {
         override fun PhoneNumberFieldStyleScope.applyStyle() {}
 
         val Default = PhoneNumberFieldStyle {
-            // Telegram for macOS's field and M3's TextField minimum; a caller's width constraint overrides it.
             width(280.dp)
             shape(theme.shapes.medium)
             containerColor(theme.colors.surfaceVariant)
-            // grayIcon over grayBackground at this alpha is Telegram's day border (EAEAEA); its dark palettes set
-            // border to grayBackground itself, so the separator and the chevron vanish at night.
             separatorColor(theme.colors.outline.copy(alpha = 0.12f))
             chevronColor(theme.colors.outline)
             cursorColor(theme.colors.primary)
@@ -226,8 +225,8 @@ fun interface PhoneNumberFieldStyle : ComponentStyle<PhoneNumberFieldStyleScope>
                 theme.typography.bodyLarge.merge(
                     fontSize = 20.sp,
                     fontFamily = FontFamily.Monospace,
-                    color = theme.colors.onSurface
-                )
+                    color = theme.colors.onSurface,
+                ),
             )
         }
 
@@ -243,8 +242,8 @@ fun interface PhoneNumberFieldStyle : ComponentStyle<PhoneNumberFieldStyleScope>
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         fontFamily = FontFamily.Monospace,
-                        color = theme.colors.onSurface
-                    )
+                        color = theme.colors.onSurface,
+                    ),
                 )
             }
         }
@@ -253,15 +252,19 @@ fun interface PhoneNumberFieldStyle : ComponentStyle<PhoneNumberFieldStyleScope>
 
 infix fun PhoneNumberFieldStyle.then(other: PhoneNumberFieldStyle): PhoneNumberFieldStyle = when {
     other === PhoneNumberFieldStyle -> this
+
     this === PhoneNumberFieldStyle -> other
+
     else -> PhoneNumberFieldStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
     }
 }
 
-class PhoneNumberFieldStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
-    AdaptiveStyleScope<PhoneNumberFieldStyleScope>,
+class PhoneNumberFieldStyleScope(
+    val theme: KotogramTheme.Values,
+    override val mediaQueryInfo: MediaQueryInfo,
+) : AdaptiveStyleScope<PhoneNumberFieldStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
     var width: Dp = Dp.Unspecified

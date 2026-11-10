@@ -48,7 +48,7 @@ internal val TextFieldPage = CatalogPage(
                 suggestion = { Suggestions(state, "kotogram_cat", "kotogram42") },
                 placeholder = { Text("Enter a username") },
                 prefix = { Text("@") },
-                supportingText = { Text("You can use a–z, 0–9 and underscores.") }
+                supportingText = { Text("You can use a–z, 0–9 and underscores.") },
             )
         },
         CatalogExample("Error") {
@@ -56,7 +56,7 @@ internal val TextFieldPage = CatalogPage(
                 state = rememberTextFieldState("admin"),
                 prefix = { Text("@") },
                 isError = true,
-                supportingText = { Text("This username is already taken.") }
+                supportingText = { Text("This username is already taken.") },
             )
         },
         CatalogExample("Prefix and suffix") {
@@ -64,7 +64,7 @@ internal val TextFieldPage = CatalogPage(
                 state = rememberTextFieldState("90 123 45 67"),
                 title = { Text("Phone number") },
                 prefix = { Text("+998") },
-                suffix = { Text("UZ") }
+                suffix = { Text("UZ") },
             )
         },
         CatalogExample("Icons") {
@@ -73,18 +73,18 @@ internal val TextFieldPage = CatalogPage(
                 state = state,
                 placeholder = { Text("Search") },
                 leadingIcon = { Icon(KotogramIcons.Search, contentDescription = null) },
-                trailingIcon = { ClearButton(state) }
+                trailingIcon = { ClearButton(state) },
             )
         },
         CatalogExample("Several lines") {
             TextField(
                 state = rememberTextFieldState(
-                    "A few words about yourself that run over a line, then another, and one more to show the growth."
+                    "A few words about yourself that run over a line, then another, and one more to show the growth.",
                 ),
                 modifier = Modifier.width(280.dp),
                 title = { Text("Bio") },
                 lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 1, maxHeightInLines = 4),
-                supportingText = { Text("70 characters left.") }
+                supportingText = { Text("70 characters left.") },
             )
         },
         CatalogExample("Disabled") {
@@ -92,19 +92,22 @@ internal val TextFieldPage = CatalogPage(
         },
         CatalogExample("Focused: a ring on touch screens, none on a laptop") {
             FocusedTextField()
-        }
-    )
+        },
+    ),
 )
 
 @Composable
-private fun Suggestions(state: TextFieldState, vararg names: String) {
+private fun Suggestions(
+    state: TextFieldState,
+    vararg names: String,
+) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.extraSmall)) {
         Text("Try")
         names.forEach { name ->
             Text(
                 text = name,
                 color = KotogramTheme.colors.primary,
-                modifier = Modifier.clickable { state.setTextAndPlaceCursorAtEnd(name) }
+                modifier = Modifier.clickable { state.setTextAndPlaceCursorAtEnd(name) },
             )
         }
     }
@@ -118,7 +121,7 @@ private fun ClearButton(state: TextFieldState) {
             .fillMaxSize()
             .clip(CircleShape)
             .clickable { state.clearText() },
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Icon(KotogramIcons.Clear, contentDescription = "Clear")
     }
@@ -130,7 +133,7 @@ private fun FocusedTextField() {
     TextField(
         state = rememberTextFieldState("kotogram"),
         modifier = Modifier.focusRequester(requester),
-        title = { Text("Username") }
+        title = { Text("Username") },
     )
     LaunchedEffect(requester) { requester.requestFocus() }
 }

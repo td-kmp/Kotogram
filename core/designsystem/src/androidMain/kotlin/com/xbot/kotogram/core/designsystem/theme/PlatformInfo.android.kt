@@ -22,7 +22,7 @@ internal actual fun platformComponentOverrides(): Array<ProvidedValue<*>> = empt
 @Composable
 internal actual fun platformUiMediaScope(): UiMediaScope = rememberUiMediaScope()
 
-// Material 3's mediaQueryInfo (ComponentStyles.android.kt of androidx-main).
+// Adapted from Material 3's mediaQueryInfo (ComponentStyles.android.kt of androidx-main, Apache-2.0).
 @Composable
 internal actual fun platformMediaQueryInfo(): MediaQueryInfo {
     val packageManager = LocalContext.current.packageManager
@@ -30,7 +30,7 @@ internal actual fun platformMediaQueryInfo(): MediaQueryInfo {
         MediaQueryInfo(
             isLaptop = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1 && packageManager.isLaptop(),
             isTv = packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK),
-            isAuto = packageManager.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)
+            isAuto = packageManager.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE),
         )
     }
 }

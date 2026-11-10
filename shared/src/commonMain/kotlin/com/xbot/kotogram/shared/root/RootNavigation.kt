@@ -1,6 +1,7 @@
 package com.xbot.kotogram.shared.root
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -8,6 +9,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
@@ -51,12 +53,14 @@ internal fun RootNavigation(modifier: Modifier = Modifier) {
 
 @OptIn(KoinExperimentalAPI::class, KoinDelicateAPI::class)
 @Composable
-private fun Account(session: AccountSession, onRootBack: (() -> Unit)? = null) {
+private fun Account(
+    session: AccountSession,
+    onRootBack: (() -> Unit)? = null,
+) {
     key(session.id) {
-        // The last screen TDLib decided: a closing account keeps it until its replacement shows.
         val roots = remember(session) { session.authorizationState.mapNotNull { it.toRoute() } }
         val root by roots.collectAsStateWithLifecycle(
-            initialValue = session.authorizationState.value.toRoute()
+            initialValue = session.authorizationState.value.toRoute(),
         )
 
         UnboundKoinScope(session.koinScope) {
@@ -66,7 +70,7 @@ private fun Account(session: AccountSession, onRootBack: (() -> Unit)? = null) {
                     if (current != null) {
                         AccountNavigation(
                             root = current,
-                            onRootBack = onRootBack
+                            onRootBack = onRootBack,
                         )
                     } else {
                         SplashScreen()
@@ -79,10 +83,13 @@ private fun Account(session: AccountSession, onRootBack: (() -> Unit)? = null) {
 
 @OptIn(KoinExperimentalAPI::class)
 @Composable
-private fun AccountNavigation(root: NavKey, onRootBack: (() -> Unit)?) {
+private fun AccountNavigation(
+    root: NavKey,
+    onRootBack: (() -> Unit)?,
+) {
     val navigator = rememberNavigator(
         startRoute = root,
-        serializersModule = koinNavSerializersModule()
+        serializersModule = koinNavSerializersModule(),
     )
     LaunchedEffect(navigator, root) {
         navigator.setRoot(root)
@@ -92,7 +99,7 @@ private fun AccountNavigation(root: NavKey, onRootBack: (() -> Unit)?) {
         NavigationBackHandler(
             state = rememberNavigationEventState(NavigationEventInfo.None),
             isBackEnabled = navigator.backStack.size <= 1,
-            onBackCompleted = onRootBack
+            onBackCompleted = onRootBack,
         )
     }
 
@@ -100,15 +107,17 @@ private fun AccountNavigation(root: NavKey, onRootBack: (() -> Unit)?) {
     CompositionLocalProvider(LocalNavigator provides navigator) {
         NavDisplay(
             backStack = navigator.backStack,
+            // Hack: Surface makes its content fill it, and a transition clips a screen by making it smaller.
+            modifier = Modifier.wrapContentSize(Alignment.TopStart),
             onBack = navigator::navigateBack,
             transitionSpec = transitions.push,
             popTransitionSpec = transitions.pop,
             predictivePopTransitionSpec = transitions.predictivePop,
             entryDecorators = listOf(
                 rememberSaveableStateHolderNavEntryDecorator(),
-                rememberSharedViewModelStoreNavEntryDecorator()
+                rememberSharedViewModelStoreNavEntryDecorator(),
             ),
-            entryProvider = koinEntryProvider()
+            entryProvider = koinEntryProvider(),
         )
     }
 }

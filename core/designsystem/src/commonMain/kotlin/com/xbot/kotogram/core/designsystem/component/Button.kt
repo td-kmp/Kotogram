@@ -45,10 +45,14 @@ import androidx.compose.material3.Button as MaterialButton
 enum class ButtonState {
     Enabled,
     Disabled,
-    Loading;
+    Loading,
+    ;
 
     companion object {
-        fun of(enabled: Boolean, loading: Boolean = false): ButtonState = when {
+        fun of(
+            enabled: Boolean,
+            loading: Boolean = false,
+        ): ButtonState = when {
             loading -> Loading
             enabled -> Enabled
             else -> Disabled
@@ -63,7 +67,7 @@ fun Button(
     state: ButtonState = ButtonState.Enabled,
     style: ButtonStyle = ButtonStyle,
     interactionSource: MutableInteractionSource? = null,
-    content: @Composable RowScope.() -> Unit
+    content: @Composable RowScope.() -> Unit,
 ) {
     context(rememberStyle(::ButtonStyleScope, ButtonStyle.Adaptive then style)) {
         StyledButton(onClick, modifier, state, interactionSource, content)
@@ -77,7 +81,7 @@ fun TextButton(
     state: ButtonState = ButtonState.Enabled,
     style: TextButtonStyle = TextButtonStyle,
     interactionSource: MutableInteractionSource? = null,
-    content: @Composable RowScope.() -> Unit
+    content: @Composable RowScope.() -> Unit,
 ) {
     context(rememberStyle(::ButtonStyleScope, TextButtonStyle.Adaptive then style)) {
         StyledButton(onClick, modifier, state, interactionSource, content)
@@ -91,7 +95,7 @@ internal fun StyledButton(
     modifier: Modifier,
     state: ButtonState,
     interactionSource: MutableInteractionSource?,
-    content: @Composable RowScope.() -> Unit
+    content: @Composable RowScope.() -> Unit,
 ) {
     val source = interactionSource ?: remember { MutableInteractionSource() }
     MaterialButton(
@@ -102,7 +106,7 @@ internal fun StyledButton(
         colors = style.buttonColors().during(state),
         elevation = null,
         contentPadding = style.contentPadding,
-        interactionSource = source
+        interactionSource = source,
     ) {
         CompositionLocalProvider(LocalTextStyle provides style.textStyle) {
             ButtonContent(state, content)
@@ -114,7 +118,6 @@ internal fun StyledButton(
 private fun pressFeedback(source: MutableInteractionSource): Modifier =
     if (currentPlatform.isApple) Modifier.indication(source, KotogramTheme.indication) else Modifier
 
-// A loading button keeps its colours and its width: the spinner takes the place of the content.
 private fun ButtonColors.during(state: ButtonState): ButtonColors = if (state == ButtonState.Loading) {
     copy(disabledContainerColor = containerColor, disabledContentColor = contentColor)
 } else {
@@ -123,19 +126,22 @@ private fun ButtonColors.during(state: ButtonState): ButtonColors = if (state ==
 
 @Composable
 context(style: ButtonStyleScope)
-private fun ButtonContent(state: ButtonState, content: @Composable RowScope.() -> Unit) {
+private fun ButtonContent(
+    state: ButtonState,
+    content: @Composable RowScope.() -> Unit,
+) {
     Box(contentAlignment = Alignment.Center) {
         Row(
             modifier = Modifier.alpha(if (state == ButtonState.Loading) 0f else 1f),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
-            content = content
+            content = content,
         )
         if (state == ButtonState.Loading) {
             val contentColor = LocalContentColor.current
             ProgressIndicator(
                 modifier = Modifier.size(style.progressSize),
-                style = remember(contentColor) { ProgressIndicatorStyle { color(contentColor) } }
+                style = remember(contentColor) { ProgressIndicatorStyle { color(contentColor) } },
             )
         }
     }
@@ -158,9 +164,6 @@ private fun ButtonPreview() {
 @Composable
 private fun ButtonLaptopPreview() = ButtonPreview()
 
-// Telegram for iOS's sign-in button on touch screens (SolidRoundedButtonNode: 50 high, 17 semibold, a 22 spinner);
-// Telegram for macOS's on a laptop (Auth_NextView: a pill at least 36 high, 15 on each side, 14 medium). The colours
-// are Material 3's filled button's.
 @Suppress("MagicNumber")
 fun interface ButtonStyle : ComponentStyle<ButtonStyleScope> {
     companion object : ButtonStyle {
@@ -191,16 +194,15 @@ fun interface ButtonStyle : ComponentStyle<ButtonStyleScope> {
 
 infix fun ButtonStyle.then(other: ButtonStyle): ButtonStyle = when {
     other === ButtonStyle -> this
+
     this === ButtonStyle -> other
+
     else -> ButtonStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
     }
 }
 
-// Telegram's text buttons are links in the regular weight, not Material's medium labels: Telegram for iOS's 16 on
-// touch screens (AuthorizationSequencePasswordEntryControllerNode), Telegram for macOS's 14 on a laptop. As high as
-// the filled button, so a screen can swap one for the other in place.
 @Suppress("MagicNumber")
 fun interface TextButtonStyle : ComponentStyle<ButtonStyleScope> {
     companion object : TextButtonStyle {
@@ -231,15 +233,19 @@ fun interface TextButtonStyle : ComponentStyle<ButtonStyleScope> {
 
 infix fun TextButtonStyle.then(other: TextButtonStyle): TextButtonStyle = when {
     other === TextButtonStyle -> this
+
     this === TextButtonStyle -> other
+
     else -> TextButtonStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
     }
 }
 
-class ButtonStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
-    AdaptiveStyleScope<ButtonStyleScope>,
+class ButtonStyleScope(
+    val theme: KotogramTheme.Values,
+    override val mediaQueryInfo: MediaQueryInfo,
+) : AdaptiveStyleScope<ButtonStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
     var minHeight: Dp = Dp.Unspecified

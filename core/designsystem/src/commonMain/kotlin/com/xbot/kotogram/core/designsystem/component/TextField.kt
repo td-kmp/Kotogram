@@ -109,10 +109,11 @@ fun TextField(
     onTextLayout: (Density.(getResult: () -> TextLayoutResult?) -> Unit)? = null,
     scrollState: ScrollState = rememberScrollState(),
     style: TextFieldStyle = TextFieldStyle,
-    interactionSource: MutableInteractionSource? = null
+    interactionSource: MutableInteractionSource? = null,
 ) {
     @Suppress("NAME_SHADOWING")
     val interactionSource = interactionSource ?: remember { MutableInteractionSource() }
+
     @Suppress("NAME_SHADOWING")
     val style = rememberStyle(::TextFieldStyleScope, TextFieldStyle.Adaptive then style)
     context(style) {
@@ -147,10 +148,10 @@ fun TextField(
                         trailingIcon = trailingIcon,
                         prefix = prefix,
                         suffix = suffix,
-                        supportingText = supportingText
+                        supportingText = supportingText,
                     )
                 },
-                scrollState = scrollState
+                scrollState = scrollState,
             )
         }
     }
@@ -177,10 +178,11 @@ fun SecureTextField(
     onKeyboardAction: KeyboardActionHandler? = null,
     onTextLayout: (Density.(getResult: () -> TextLayoutResult?) -> Unit)? = null,
     style: TextFieldStyle = TextFieldStyle,
-    interactionSource: MutableInteractionSource? = null
+    interactionSource: MutableInteractionSource? = null,
 ) {
     @Suppress("NAME_SHADOWING")
     val interactionSource = interactionSource ?: remember { MutableInteractionSource() }
+
     @Suppress("NAME_SHADOWING")
     val style = rememberStyle(::TextFieldStyleScope, TextFieldStyle.Adaptive then style)
     context(style) {
@@ -212,24 +214,23 @@ fun SecureTextField(
                         trailingIcon = trailingIcon,
                         prefix = prefix,
                         suffix = suffix,
-                        supportingText = supportingText
+                        supportingText = supportingText,
                     )
                 },
                 textObfuscationMode = textObfuscationMode,
-                textObfuscationCharacter = textObfuscationCharacter
+                textObfuscationCharacter = textObfuscationCharacter,
             )
         }
     }
 }
 
-// Material 3's colours of a field in its states, with the indicator and label colours of a style.
 @Composable
 internal fun materialTextFieldColors(
     focusedIndicatorColor: Color,
     unfocusedIndicatorColor: Color,
     disabledIndicatorColor: Color,
     errorIndicatorColor: Color,
-    labelColor: Color
+    labelColor: Color,
 ): TextFieldColors = MaterialTextFieldDefaults.colors(
     focusedIndicatorColor = focusedIndicatorColor,
     unfocusedIndicatorColor = unfocusedIndicatorColor,
@@ -237,7 +238,7 @@ internal fun materialTextFieldColors(
     errorIndicatorColor = errorIndicatorColor,
     focusedLabelColor = labelColor,
     errorLabelColor = labelColor,
-    errorTrailingIconColor = labelColor
+    errorTrailingIconColor = labelColor,
 )
 
 @Composable
@@ -247,7 +248,7 @@ private fun textFieldColors(): TextFieldColors = materialTextFieldColors(
     unfocusedIndicatorColor = style.unfocusedIndicatorColor,
     disabledIndicatorColor = style.disabledIndicatorColor,
     errorIndicatorColor = style.errorIndicatorColor,
-    labelColor = style.labelColor
+    labelColor = style.labelColor,
 )
 
 @Composable
@@ -256,7 +257,7 @@ private fun textStyleWithColor(
     colors: TextFieldColors,
     enabled: Boolean,
     isError: Boolean,
-    interactionSource: InteractionSource
+    interactionSource: InteractionSource,
 ): TextStyle {
     val color = textStyle.color.takeOrElse {
         val focused by interactionSource.collectIsFocusedAsState()
@@ -281,7 +282,7 @@ private fun TextFieldDecoration(
     trailingIcon: @Composable (() -> Unit)?,
     prefix: @Composable (() -> Unit)?,
     suffix: @Composable (() -> Unit)?,
-    supportingText: @Composable (() -> Unit)?
+    supportingText: @Composable (() -> Unit)?,
 ) {
     val focused by interactionSource.collectIsFocusedAsState()
     val colorSpec = style.colorAnimationSpec
@@ -293,7 +294,7 @@ private fun TextFieldDecoration(
     val layoutDirection = LocalLayoutDirection.current
     val sidePadding = Modifier.padding(
         start = style.contentPadding.calculateStartPadding(layoutDirection),
-        end = style.contentPadding.calculateEndPadding(layoutDirection)
+        end = style.contentPadding.calculateEndPadding(layoutDirection),
     )
     val measurePolicy = remember(style) { TextFieldMeasurePolicy(style) }
     Layout(
@@ -305,15 +306,15 @@ private fun TextFieldDecoration(
                         shape = style.shape,
                         color = containerColor,
                         indicatorColor = indicatorColor,
-                        indicatorThickness = style.indicatorThickness
-                    )
+                        indicatorThickness = style.indicatorThickness,
+                    ),
             )
             if (title != null) {
                 Box(
                     Modifier
                         .layoutId(TextFieldSlot.Title)
                         .then(sidePadding)
-                        .padding(bottom = style.titleGap)
+                        .padding(bottom = style.titleGap),
                 ) {
                     ProvideContentColorTextStyle(titleColor, style.titleTextStyle, title)
                 }
@@ -323,7 +324,7 @@ private fun TextFieldDecoration(
                     Modifier
                         .layoutId(TextFieldSlot.Suggestion)
                         .then(sidePadding)
-                        .padding(bottom = style.titleGap)
+                        .padding(bottom = style.titleGap),
                 ) {
                     ProvideContentColorTextStyle(titleColor, style.suggestionTextStyle, suggestion)
                 }
@@ -334,11 +335,11 @@ private fun TextFieldDecoration(
                         .layoutId(TextFieldSlot.Leading)
                         .padding(start = style.iconInset)
                         .size(style.iconSize),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     CompositionLocalProvider(
                         LocalContentColor provides colors.leadingIconColor(enabled, isError, focused),
-                        content = leadingIcon
+                        content = leadingIcon,
                     )
                 }
             }
@@ -348,11 +349,11 @@ private fun TextFieldDecoration(
                         .layoutId(TextFieldSlot.Trailing)
                         .padding(end = style.iconInset)
                         .size(style.iconSize),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     CompositionLocalProvider(
                         LocalContentColor provides colors.trailingIconColor(enabled, isError, focused),
-                        content = trailingIcon
+                        content = trailingIcon,
                     )
                 }
             }
@@ -371,7 +372,7 @@ private fun TextFieldDecoration(
                     ProvideContentColorTextStyle(
                         colors.placeholderColor(enabled, isError, focused),
                         style.placeholderTextStyle,
-                        placeholder
+                        placeholder,
                     )
                 }
             }
@@ -381,9 +382,11 @@ private fun TextFieldDecoration(
             Box(Modifier.layoutId(TextFieldSlot.Supporting)) {
                 AnimatedContent(
                     targetState = supportingText,
-                    transitionSpec = { fadeIn(style.supportingFadeSpec) togetherWith fadeOut(style.supportingFadeSpec) },
+                    transitionSpec = {
+                        fadeIn(style.supportingFadeSpec) togetherWith fadeOut(style.supportingFadeSpec)
+                    },
                     contentKey = { it != null },
-                    label = "SupportingText"
+                    label = "SupportingText",
                 ) { text ->
                     if (text != null) {
                         Box(sidePadding.padding(top = style.supportingGap)) {
@@ -393,7 +396,7 @@ private fun TextFieldDecoration(
                 }
             }
         },
-        measurePolicy = measurePolicy
+        measurePolicy = measurePolicy,
     )
 }
 
@@ -401,12 +404,12 @@ private fun TextFieldDecoration(
 private fun ProvideContentColorTextStyle(
     contentColor: Color,
     textStyle: TextStyle,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     CompositionLocalProvider(
         LocalContentColor provides contentColor,
         LocalTextStyle provides LocalTextStyle.current.merge(textStyle),
-        content = content
+        content = content,
     )
 }
 
@@ -414,14 +417,14 @@ private fun Modifier.textFieldContainer(
     shape: Shape,
     color: State<Color>,
     indicatorColor: State<Color>,
-    indicatorThickness: Dp
+    indicatorThickness: Dp,
 ): Modifier = drawWithCache {
     val outline = shape.createOutline(size, layoutDirection, this)
     val thickness = indicatorThickness.toPx()
     val indicatorOutline = shape.createOutline(
         Size(size.width - thickness, size.height - thickness),
         layoutDirection,
-        this
+        this,
     )
     onDrawBehind {
         drawOutline(outline, color.value)
@@ -441,12 +444,16 @@ private enum class TextFieldSlot {
     Suffix,
     Placeholder,
     Text,
-    Supporting
+    Supporting,
 }
 
-// The container is as wide as the incoming minimum or its content; the text above and below wraps inside it.
-private class TextFieldMeasurePolicy(private val style: TextFieldStyleScope) : MeasurePolicy {
-    override fun MeasureScope.measure(measurables: List<Measurable>, constraints: Constraints): MeasureResult {
+private class TextFieldMeasurePolicy(
+    private val style: TextFieldStyleScope,
+) : MeasurePolicy {
+    override fun MeasureScope.measure(
+        measurables: List<Measurable>,
+        constraints: Constraints,
+    ): MeasureResult {
         val contentPadding = style.contentPadding
         val loose = constraints.copy(minWidth = 0, minHeight = 0)
         val leading = measurables.measure(TextFieldSlot.Leading, loose)
@@ -470,7 +477,7 @@ private class TextFieldMeasurePolicy(private val style: TextFieldStyleScope) : M
             style.minHeight.roundToPx(),
             contentHeight + vertical,
             leading.heightOrZero,
-            trailing.heightOrZero
+            trailing.heightOrZero,
         )
         val container = measurables.measure(TextFieldSlot.Container, Constraints.fixed(width, height))!!
 
@@ -491,7 +498,7 @@ private class TextFieldMeasurePolicy(private val style: TextFieldStyleScope) : M
             prefix?.placeRelative(contentStart, contentTop)
             placeholder?.placeRelative(
                 contentStart + prefix.widthOrZero,
-                contentTop + (contentHeight - placeholder.height) / 2
+                contentTop + (contentHeight - placeholder.height) / 2,
             )
             text.placeRelative(contentStart + prefix.widthOrZero, contentTop)
             suffix?.placeRelative(width - trailing.widthOrZero - end.roundToPx() - suffix.width, contentTop)
@@ -500,8 +507,10 @@ private class TextFieldMeasurePolicy(private val style: TextFieldStyleScope) : M
     }
 }
 
-private fun List<Measurable>.measure(slot: TextFieldSlot, constraints: Constraints): Placeable? =
-    firstOrNull { it.layoutId == slot }?.measure(constraints)
+private fun List<Measurable>.measure(
+    slot: TextFieldSlot,
+    constraints: Constraints,
+): Placeable? = firstOrNull { it.layoutId == slot }?.measure(constraints)
 
 private val Placeable?.widthOrZero: Int get() = this?.width ?: 0
 
@@ -523,17 +532,17 @@ private fun TextFieldPreview() {
             suggestion = { Text("Try kotogram_cat") },
             placeholder = { Text("Enter a username") },
             prefix = { Text("@") },
-            supportingText = { Text("You can use a–z, 0–9 and underscores.") }
+            supportingText = { Text("You can use a–z, 0–9 and underscores.") },
         )
         TextField(
             state = rememberTextFieldState("admin"),
             prefix = { Text("@") },
             supportingText = { Text("This username is already taken.") },
-            isError = true
+            isError = true,
         )
         SecureTextField(
             state = rememberTextFieldState("kotogram"),
-            placeholder = { Text("Your password") }
+            placeholder = { Text("Your password") },
         )
         TextField(state = rememberTextFieldState("Disabled"), enabled = false)
     }
@@ -543,9 +552,6 @@ private fun TextFieldPreview() {
 @Composable
 private fun TextFieldLaptopPreview() = TextFieldPreview()
 
-// Telegram for macOS's inputs on a laptop: 40 high, its radius and insets (Auth_Insets), no focus ring. On touch
-// screens our own: Telegram for iOS's 17-point type in a field as high as its buttons (50), with Android's and iOS's
-// focus ring.
 @Suppress("MagicNumber")
 fun interface TextFieldStyle : ComponentStyle<TextFieldStyleScope> {
     companion object : TextFieldStyle {
@@ -598,15 +604,19 @@ fun interface TextFieldStyle : ComponentStyle<TextFieldStyleScope> {
 
 infix fun TextFieldStyle.then(other: TextFieldStyle): TextFieldStyle = when {
     other === TextFieldStyle -> this
+
     this === TextFieldStyle -> other
+
     else -> TextFieldStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
     }
 }
 
-class TextFieldStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
-    AdaptiveStyleScope<TextFieldStyleScope>,
+class TextFieldStyleScope(
+    val theme: KotogramTheme.Values,
+    override val mediaQueryInfo: MediaQueryInfo,
+) : AdaptiveStyleScope<TextFieldStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
     var minWidth: Dp = Dp.Unspecified

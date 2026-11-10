@@ -3,12 +3,32 @@ naming:
     ignoreAnnotated: ['Composable']
 
 complexity:
-  LongMethod:
-    ignoreAnnotated: ['Composable']
+  CyclomaticComplexMethod:
+    ignoreSimpleWhenEntries: true
   LongParameterList:
+    ignoreAnnotated: ['Composable']
+  LongMethod:
     ignoreAnnotated: ['Composable']
 
 style:
+  MaxLineLength:
+    active: false
+  NewLineAtEndOfFile:
+    active: false
+  WildcardImport:
+    active: false
+  MagicNumber:
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreAnnotated: ['Composable', 'Preview']
+  UnusedPrivateFunction:
+    ignoreAnnotated: ['Preview']
+  ForbiddenComment:
+    comments:
+      - value: '\A'
+        reason: 'No comments: name things instead. A non-obvious hack or workaround gets one line that starts with "Hack: " or "Workaround: ".'
+    # Besides those: one-line notices of borrowed code, licence headers and language injections.
+    allowedPatterns: '^(Hack: |Workaround: |Adapted from |Copied from |language=).+$|^Copyright '
   # Everything above `data` sees TDLib's classes, but only `data` talks to TDLib.
   ForbiddenImport:
     active: true
@@ -83,5 +103,6 @@ style:
       - value: 'org.jetbrains.compose.resources.imageResource'
         reason: 'Icons and images live in core:designsystem.'
     excludes: ['**/core/designsystem/**']
-  MagicNumber:
-    ignoreAnnotated: ['Composable', 'Preview']
+
+Compose:
+  active: true

@@ -28,10 +28,9 @@ import io.xbot.tdlib.api.TextEntityTypeTextUrl
 import io.xbot.tdlib.api.TextEntityTypeUnderline
 import io.xbot.tdlib.api.TextEntityTypeUrl
 
-// TDLib counts entities in UTF-16 code units, as Kotlin's strings do, so its ranges apply as they are.
 fun FormattedText.toAnnotatedString(
     styles: FormattedTextStyles = FormattedTextStyles(),
-    onEntityClick: ((TextEntity) -> Unit)? = null
+    onEntityClick: ((TextEntity) -> Unit)? = null,
 ): AnnotatedString = buildAnnotatedString {
     append(text)
     entities.forEach { entity -> addEntity(entity, text, styles, onEntityClick) }
@@ -41,7 +40,7 @@ private fun AnnotatedString.Builder.addEntity(
     entity: TextEntity,
     text: String,
     styles: FormattedTextStyles,
-    onEntityClick: ((TextEntity) -> Unit)?
+    onEntityClick: ((TextEntity) -> Unit)?,
 ) {
     val start = entity.offset.coerceIn(0, text.length)
     val end = (entity.offset + entity.length).coerceIn(start, text.length)
@@ -51,16 +50,23 @@ private fun AnnotatedString.Builder.addEntity(
     val url = url(entity.type, content)
     when {
         style != null -> addStyle(style, start, end)
+
         url != null -> addLink(LinkAnnotation.Url(url, styles.link), start, end)
+
         !isTappable(entity.type) -> Unit
+
         onEntityClick != null -> {
             addLink(LinkAnnotation.Clickable(content, styles.link) { onEntityClick(entity) }, start, end)
         }
+
         else -> addStyle(styles.link?.style ?: SpanStyle(), start, end)
     }
 }
 
-private fun inlineStyle(type: TextEntityType, styles: FormattedTextStyles): SpanStyle? = when (type) {
+private fun inlineStyle(
+    type: TextEntityType,
+    styles: FormattedTextStyles,
+): SpanStyle? = when (type) {
     TextEntityTypeBold -> styles.bold
     TextEntityTypeItalic -> styles.italic
     TextEntityTypeUnderline -> styles.underline
@@ -71,7 +77,10 @@ private fun inlineStyle(type: TextEntityType, styles: FormattedTextStyles): Span
     else -> null
 }
 
-private fun url(type: TextEntityType, content: String): String? = when (type) {
+private fun url(
+    type: TextEntityType,
+    content: String,
+): String? = when (type) {
     is TextEntityTypeTextUrl -> type.url
     TextEntityTypeUrl -> content.withScheme()
     TextEntityTypeEmailAddress -> "mailto:$content"

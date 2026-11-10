@@ -35,7 +35,7 @@ internal val ColorsPage = CatalogPage(
                 "primaryContainer" to colors.primaryContainer,
                 "secondary" to colors.secondary,
                 "tertiary" to colors.tertiary,
-                "inversePrimary" to colors.inversePrimary
+                "inversePrimary" to colors.inversePrimary,
             )
         },
         CatalogExample("Surfaces") {
@@ -49,7 +49,7 @@ internal val ColorsPage = CatalogPage(
                 "surfaceContainer" to colors.surfaceContainer,
                 "surfaceContainerHigh" to colors.surfaceContainerHigh,
                 "surfaceContainerHighest" to colors.surfaceContainerHighest,
-                "inverseSurface" to colors.inverseSurface
+                "inverseSurface" to colors.inverseSurface,
             )
         },
         CatalogExample("Content") {
@@ -59,7 +59,7 @@ internal val ColorsPage = CatalogPage(
                 "onSurfaceVariant" to colors.onSurfaceVariant,
                 "outline" to colors.outline,
                 "outlineVariant" to colors.outlineVariant,
-                "inverseOnSurface" to colors.inverseOnSurface
+                "inverseOnSurface" to colors.inverseOnSurface,
             )
         },
         CatalogExample("Error") {
@@ -68,10 +68,10 @@ internal val ColorsPage = CatalogPage(
                 "error" to colors.error,
                 "onError" to colors.onError,
                 "errorContainer" to colors.errorContainer,
-                "onErrorContainer" to colors.onErrorContainer
+                "onErrorContainer" to colors.onErrorContainer,
             )
-        }
-    )
+        },
+    ),
 )
 
 @Composable
@@ -79,31 +79,34 @@ private fun ColorRoles(vararg roles: Pair<String, Color>) {
     val spacing = KotogramTheme.spacing
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(spacing.large),
-        verticalArrangement = Arrangement.spacedBy(spacing.large)
+        verticalArrangement = Arrangement.spacedBy(spacing.large),
     ) {
         roles.forEach { (name, color) -> ColorSwatch(name, color) }
     }
 }
 
 @Composable
-private fun ColorSwatch(name: String, color: Color) {
+private fun ColorSwatch(
+    name: String,
+    color: Color,
+) {
     val shape = KotogramTheme.shapes.medium
     Column(
         modifier = Modifier.width(SwatchWidth),
-        verticalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.extraSmall)
+        verticalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.extraSmall),
     ) {
         Box(
             Modifier
                 .fillMaxWidth()
                 .height(SwatchHeight)
                 .background(color, shape)
-                .border(1.dp, KotogramTheme.colors.outlineVariant, shape)
+                .border(1.dp, KotogramTheme.colors.outlineVariant, shape),
         )
         Text(name, style = KotogramTheme.typography.bodyMedium)
         Text(
             text = hex(color),
             style = KotogramTheme.typography.bodySmall,
-            color = KotogramTheme.colors.onSurfaceVariant
+            color = KotogramTheme.colors.onSurfaceVariant,
         )
     }
 }

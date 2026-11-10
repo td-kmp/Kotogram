@@ -24,7 +24,10 @@ suspend fun Localization.getString(res: StringResource): String = when (res) {
 internal fun Localization.text(resource: ComposeStringResource): String? =
     (packString(resource.key) as? LanguagePackStringValueOrdinary)?.value
 
-internal fun Localization.plural(resource: PluralStringResource, quantity: Int): String? {
+internal fun Localization.plural(
+    resource: PluralStringResource,
+    quantity: Int,
+): String? {
     val value = packString(resource.key) as? LanguagePackStringValuePluralized
     val pack = language
     return if (value != null && pack != null) pluralForm(value, pack.pluralCode.ifEmpty { pack.id }, quantity) else null
@@ -36,5 +39,7 @@ private fun Localization.packString(resourceKey: String): LanguagePackStringValu
 private suspend fun Localization.template(resource: ComposeStringResource): String =
     text(resource) ?: getBundledString(bundledStringEnvironment, resource)
 
-private suspend fun Localization.template(resource: PluralStringResource, quantity: Int): String =
-    plural(resource, quantity) ?: getBundledPluralString(bundledStringEnvironment, resource, quantity)
+private suspend fun Localization.template(
+    resource: PluralStringResource,
+    quantity: Int,
+): String = plural(resource, quantity) ?: getBundledPluralString(bundledStringEnvironment, resource, quantity)

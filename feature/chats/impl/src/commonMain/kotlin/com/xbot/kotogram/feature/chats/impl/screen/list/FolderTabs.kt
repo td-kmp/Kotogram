@@ -31,7 +31,6 @@ import com.xbot.kotogram.feature.chats.impl.extensions.customEmojiIds
 import io.xbot.tdlib.api.ChatList
 import io.xbot.tdlib.api.Sticker
 
-// The folders as Telegram for iOS 26 shows them: a capsule of tabs, sharing its width while they fit.
 @Composable
 context(style: ChatListScreenStyleScope)
 internal fun FolderTabs(
@@ -39,7 +38,7 @@ internal fun FolderTabs(
     selected: ChatList,
     customEmoji: Map<Long, Sticker>,
     onSelect: (ChatList) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val fill = tabs.size <= TABS_SHARING_WIDTH
     Row(
@@ -49,7 +48,7 @@ internal fun FolderTabs(
             .background(style.tabsColor, CircleShape)
             .padding(style.tabsInnerPadding)
             .then(if (fill) Modifier else Modifier.horizontalScroll(rememberScrollState())),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         tabs.forEach { tab ->
             Tab(
@@ -57,7 +56,7 @@ internal fun FolderTabs(
                 isSelected = tab.chatList == selected,
                 customEmoji = customEmoji,
                 onClick = { onSelect(tab.chatList) },
-                modifier = if (fill) Modifier.weight(1f) else Modifier
+                modifier = if (fill) Modifier.weight(1f) else Modifier,
             )
         }
     }
@@ -70,7 +69,7 @@ private fun RowScope.Tab(
     isSelected: Boolean,
     customEmoji: Map<Long, Sticker>,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier
@@ -79,7 +78,7 @@ private fun RowScope.Tab(
             .clickable(onClick = onClick)
             .padding(horizontal = style.tabContentPadding),
         horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         val name = tab.folder?.name?.text
         val emojiSize = with(LocalDensity.current) { style.emojiStatusSize.toSp() }
@@ -87,14 +86,14 @@ private fun RowScope.Tab(
             text =
                 name?.toPreviewString()
                     ?: androidx.compose.ui.text.AnnotatedString(
-                        stringResource(Res.string.chatlist_filter_all)
+                        stringResource(Res.string.chatlist_filter_all),
                     ),
             style = style.tabTextStyle,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             inlineContent = name?.let {
                 customEmojiContent(customEmoji, it.customEmojiIds().toSet(), emojiSize)
-            }.orEmpty()
+            }.orEmpty(),
         )
         if (tab.unreadCount > 0) {
             Spacer(Modifier.width(style.tabBadgeGap))
@@ -104,10 +103,10 @@ private fun RowScope.Tab(
                     .defaultMinSize(minWidth = style.tabBadgeHeight)
                     .background(
                         if (tab.hasUnmutedUnread) style.badgeColor else style.mutedBadgeColor,
-                        CircleShape
+                        CircleShape,
                     )
                     .padding(horizontal = style.badgePadding),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Text(tab.unreadCount.toString(), style = style.tabBadgeTextStyle, maxLines = 1)
             }

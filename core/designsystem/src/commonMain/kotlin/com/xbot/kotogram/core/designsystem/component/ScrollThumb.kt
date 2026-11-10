@@ -45,13 +45,12 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-// A thumb at the end that follows the list; dragged, it scrolls the list and shows the section in a bubble.
 @Composable
 fun ScrollThumb(
     state: LazyListState,
     sections: List<FastScrollerSection>,
     modifier: Modifier = Modifier,
-    style: ScrollThumbStyle = ScrollThumbStyle
+    style: ScrollThumbStyle = ScrollThumbStyle,
 ) {
     @Suppress("NAME_SHADOWING")
     val style = rememberStyle(::ScrollThumbStyleScope, ScrollThumbStyle.Default then style)
@@ -69,7 +68,7 @@ fun ScrollThumb(
             section?.let { current ->
                 Box(
                     modifier = Modifier.size(style.bubbleSize).background(style.bubbleColor, style.bubbleShape),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(current.title, style = style.bubbleTextStyle)
                 }
@@ -102,7 +101,7 @@ fun ScrollThumb(
                     dragging = false
                     section = null
                 }
-            }
+            },
     ) { measurables, constraints ->
         val thumbWidth = (if (dragging) style.activeThumbWidth else style.thumbWidth).roundToPx()
         val thumbHeight = (if (dragging) style.activeThumbHeight else style.thumbHeight).roundToPx()
@@ -116,16 +115,17 @@ fun ScrollThumb(
             thumb.place(thumbStart, thumbTop)
             bubble?.place(
                 thumbStart - style.bubbleGap.roundToPx() - bubble.width,
-                thumbTop + thumbHeight / 2 - bubble.height
+                thumbTop + thumbHeight / 2 - bubble.height,
             )
         }
     }
 }
 
-// The first visible item's position among the items that can scroll by, with the pinned header left out.
 private fun scrollProgress(state: LazyListState): Float = when {
     !state.canScrollBackward -> 0f
+
     !state.canScrollForward -> 1f
+
     else -> {
         val info = state.layoutInfo
         val first = info.visibleItemsInfo.firstOrNull { it.index == state.firstVisibleItemIndex }
@@ -135,8 +135,6 @@ private fun scrollProgress(state: LazyListState): Float = when {
     }
 }
 
-// Our own, after the fast scroll of Android's contacts: a pill that widens under the finger and a bubble
-// pointing at it.
 @Suppress("MagicNumber")
 fun interface ScrollThumbStyle : ComponentStyle<ScrollThumbStyleScope> {
     companion object : ScrollThumbStyle {
@@ -159,8 +157,8 @@ fun interface ScrollThumbStyle : ComponentStyle<ScrollThumbStyleScope> {
                 theme.typography.headlineSmall.merge(
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Medium,
-                    color = theme.colors.onPrimary
-                )
+                    color = theme.colors.onPrimary,
+                ),
             )
             bubbleGap(8.dp)
         }
@@ -169,7 +167,9 @@ fun interface ScrollThumbStyle : ComponentStyle<ScrollThumbStyleScope> {
 
 infix fun ScrollThumbStyle.then(other: ScrollThumbStyle): ScrollThumbStyle = when {
     other === ScrollThumbStyle -> this
+
     this === ScrollThumbStyle -> other
+
     else -> ScrollThumbStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
@@ -177,8 +177,10 @@ infix fun ScrollThumbStyle.then(other: ScrollThumbStyle): ScrollThumbStyle = whe
 }
 
 @Suppress("TooManyFunctions")
-class ScrollThumbStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
-    AdaptiveStyleScope<ScrollThumbStyleScope>,
+class ScrollThumbStyleScope(
+    val theme: KotogramTheme.Values,
+    override val mediaQueryInfo: MediaQueryInfo,
+) : AdaptiveStyleScope<ScrollThumbStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
     var touchWidth: Dp = Dp.Unspecified

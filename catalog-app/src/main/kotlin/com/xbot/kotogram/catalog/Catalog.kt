@@ -28,7 +28,7 @@ fun Catalog(
     laptop: Boolean,
     onLaptopChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    startPage: String? = null
+    startPage: String? = null,
 ) {
     val backStack = remember {
         mutableStateListOf<CatalogKey>(CatalogKey.Home).apply {
@@ -37,7 +37,6 @@ fun Catalog(
     }
     val current = backStack.last()
     val onBack: () -> Unit = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) }
-    // The window's title bar is the background colour; so is everything under it.
     Surface(modifier.fillMaxSize(), color = KotogramTheme.colors.background) {
         Column {
             CatalogTopBar(
@@ -49,7 +48,7 @@ fun Catalog(
                 darkTheme = darkTheme,
                 onDarkThemeChange = onDarkThemeChange,
                 laptop = laptop,
-                onLaptopChange = onLaptopChange
+                onLaptopChange = onLaptopChange,
             )
             ProvideFormFactor(laptop) {
                 val transitions = rememberNavTransitions<Scene<CatalogKey>>()
@@ -64,7 +63,7 @@ fun Catalog(
                             CatalogHome(
                                 pages = CatalogPages,
                                 onPageClick = { backStack.add(CatalogKey.Page(it.id)) },
-                                modifier = Modifier.background(KotogramTheme.colors.background)
+                                modifier = Modifier.background(KotogramTheme.colors.background),
                             )
                         }
                         entry<CatalogKey.Page> { key ->
@@ -73,10 +72,10 @@ fun Catalog(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .background(KotogramTheme.colors.background)
-                                    .verticalScroll(rememberScrollState())
+                                    .verticalScroll(rememberScrollState()),
                             )
                         }
-                    }
+                    },
                 )
             }
         }
@@ -86,7 +85,9 @@ fun Catalog(
 private sealed interface CatalogKey {
     data object Home : CatalogKey
 
-    data class Page(val id: String) : CatalogKey {
+    data class Page(
+        val id: String,
+    ) : CatalogKey {
         val page = CatalogPages.first { it.id == id }
     }
 }

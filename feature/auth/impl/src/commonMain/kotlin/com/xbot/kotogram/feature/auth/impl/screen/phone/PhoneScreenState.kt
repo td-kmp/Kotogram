@@ -12,7 +12,7 @@ internal data class PhoneScreenState(
     val isAcceptingNumber: Boolean = false,
     val isCountryPickerVisible: Boolean = false,
     val isSubmitting: Boolean = false,
-    val error: AuthError? = null
+    val error: AuthError? = null,
 ) {
     val canSubmit: Boolean
         get() = isAcceptingNumber && !isSubmitting && callingCode.isNotEmpty() && number.length >= MIN_NUMBER_LENGTH

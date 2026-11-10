@@ -1,7 +1,7 @@
-import javax.xml.parsers.DocumentBuilderFactory
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.w3c.dom.Element
+import javax.xml.parsers.DocumentBuilderFactory
 
 plugins {
     alias(libs.plugins.android.multiplatform.library)
@@ -94,7 +94,7 @@ abstract class GenerateLanguagePackKeys : DefaultTask() {
                     appendLine("internal fun MutableMap<String, String>.putLanguagePackKeys$index() {")
                     chunk.forEach { (name, key) -> appendLine("    put(\"$name\", \"$key\")") }
                     appendLine("}")
-                }
+                },
             )
         }
         sources.resolve("LanguagePackKeys.kt").writeText(
@@ -104,7 +104,7 @@ abstract class GenerateLanguagePackKeys : DefaultTask() {
                 chunks.indices.forEach { appendLine("        putLanguagePackKeys$it()") }
                 appendLine("    }")
                 appendLine("}")
-            }
+            },
         )
     }
 

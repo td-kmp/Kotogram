@@ -8,6 +8,5 @@ import io.xbot.tdlib.api.TdFunction
 import io.xbot.tdlib.api.TdObject
 import io.xbot.tdlib.client.TdClient
 
-internal suspend fun <R : TdObject> TdClient.request(
-    function: TdFunction<R>
-): Either<AuthError, R> = sendCatching(function).mapLeft(Error::toAuthError)
+internal suspend fun <R : TdObject> TdClient.request(function: TdFunction<R>): Either<AuthError, R> =
+    sendCatching(function).mapLeft(Error::toAuthError)

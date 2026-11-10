@@ -1,7 +1,5 @@
 package com.xbot.kotogram.core.designsystem.component.platform
 
-import kotlin.math.max
-import kotlin.math.roundToInt
 import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.FilterMipmap
 import org.jetbrains.skia.FilterMode
@@ -9,6 +7,8 @@ import org.jetbrains.skia.Image
 import org.jetbrains.skia.MipmapMode
 import org.jetbrains.skia.Rect
 import org.jetbrains.skia.Surface
+import kotlin.math.max
+import kotlin.math.roundToInt
 
 internal fun ByteArray.toJpeg(): ByteArray? {
     val image = runCatching { Image.makeFromEncoded(this) }.getOrNull() ?: return null
@@ -22,10 +22,10 @@ internal fun ByteArray.toJpeg(): ByteArray? {
         Rect.makeWH(width.toFloat(), height.toFloat()),
         FilterMipmap(FilterMode.LINEAR, MipmapMode.LINEAR),
         null,
-        true
+        true,
     )
     return surface.makeImageSnapshot().encodeToData(
         EncodedImageFormat.JPEG,
-        PHOTO_JPEG_QUALITY
+        PHOTO_JPEG_QUALITY,
     )?.bytes
 }

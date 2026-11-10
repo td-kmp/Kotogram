@@ -11,7 +11,7 @@ data class KotogramSpacing(
     val small: Dp = 10.dp,
     val medium: Dp = 15.dp,
     val large: Dp = 20.dp,
-    val extraLarge: Dp = 40.dp
+    val extraLarge: Dp = 40.dp,
 )
 
 internal val LocalKotogramSpacing = staticCompositionLocalOf { KotogramSpacing() }

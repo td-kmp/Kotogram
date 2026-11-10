@@ -16,8 +16,8 @@ class LocalizationTest {
         strings = mapOf("A" to LanguagePackStringValueOrdinary("своё")),
         baseStrings = mapOf(
             "A" to LanguagePackStringValueOrdinary("базовое"),
-            "B" to LanguagePackStringValueOrdinary("из базы")
-        )
+            "B" to LanguagePackStringValueOrdinary("из базы"),
+        ),
     )
 
     @Test

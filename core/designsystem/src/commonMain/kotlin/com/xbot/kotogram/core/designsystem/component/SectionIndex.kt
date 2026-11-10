@@ -30,13 +30,12 @@ import com.xbot.kotogram.core.designsystem.style.StyleResolver
 import com.xbot.kotogram.core.designsystem.style.rememberStyle
 import kotlinx.coroutines.launch
 
-// UIKit's table index, drawn by Compose: UIKit has no index outside UITableView and UICollectionView.
 @Composable
 fun SectionIndex(
     state: LazyListState,
     sections: List<FastScrollerSection>,
     modifier: Modifier = Modifier,
-    style: SectionIndexStyle = SectionIndexStyle
+    style: SectionIndexStyle = SectionIndexStyle,
 ) {
     @Suppress("NAME_SHADOWING")
     val style = rememberStyle(::SectionIndexStyleScope, SectionIndexStyle.Default then style)
@@ -69,14 +68,13 @@ fun SectionIndex(
                         selected = -1
                     }
                 },
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             sections.forEach { section -> Text(section.title, style = style.textStyle) }
         }
     }
 }
 
-// UITableView's index: 11 semibold in the tint colour, 14 a line.
 @Suppress("MagicNumber")
 fun interface SectionIndexStyle : ComponentStyle<SectionIndexStyleScope> {
     companion object : SectionIndexStyle {
@@ -89,8 +87,8 @@ fun interface SectionIndexStyle : ComponentStyle<SectionIndexStyleScope> {
                     fontSize = 11.sp,
                     lineHeight = 14.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = theme.colors.primary
-                )
+                    color = theme.colors.primary,
+                ),
             )
         }
     }
@@ -98,15 +96,19 @@ fun interface SectionIndexStyle : ComponentStyle<SectionIndexStyleScope> {
 
 infix fun SectionIndexStyle.then(other: SectionIndexStyle): SectionIndexStyle = when {
     other === SectionIndexStyle -> this
+
     this === SectionIndexStyle -> other
+
     else -> SectionIndexStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
     }
 }
 
-class SectionIndexStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
-    AdaptiveStyleScope<SectionIndexStyleScope>,
+class SectionIndexStyleScope(
+    val theme: KotogramTheme.Values,
+    override val mediaQueryInfo: MediaQueryInfo,
+) : AdaptiveStyleScope<SectionIndexStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
     var width: Dp = Dp.Unspecified

@@ -45,8 +45,8 @@ internal val FastScrollerPage = CatalogPage(
             Countries { state, sections ->
                 ScrollThumb(state, sections, Modifier.align(Alignment.CenterEnd).fillMaxHeight())
             }
-        }
-    )
+        },
+    ),
 )
 
 @Composable
@@ -56,7 +56,7 @@ private fun Countries(scroller: @Composable BoxScope.(LazyListState, List<FastSc
         LazyColumn(
             state = state,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(end = ScrollerGap)
+            contentPadding = PaddingValues(end = ScrollerGap),
         ) {
             CountryGroups.forEach { group ->
                 stickyHeader(key = group.letter) { SectionHeader(group.letter) }
@@ -66,7 +66,7 @@ private fun Countries(scroller: @Composable BoxScope.(LazyListState, List<FastSc
                         leadingContent = { Text(country.flag) },
                         trailingContent = { Text(country.code) },
                         onClick = {},
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
             }
@@ -84,16 +84,18 @@ private fun SectionHeader(letter: String) {
             .background(KotogramTheme.colors.surface)
             .padding(horizontal = KotogramTheme.spacing.medium, vertical = KotogramTheme.spacing.extraSmall),
         style = KotogramTheme.typography.labelLarge,
-        color = KotogramTheme.colors.primary
+        color = KotogramTheme.colors.primary,
     )
 }
 
-private class CountryGroup(val letter: String, val countries: List<SampleCountry>)
+private class CountryGroup(
+    val letter: String,
+    val countries: List<SampleCountry>,
+)
 
 private val CountryGroups: List<CountryGroup> =
     SampleCountries.groupBy { it.name.take(1) }.map { entry -> CountryGroup(entry.key, entry.value) }
 
-// Each section starts at its sticky header, which takes an item of its own.
 private val CountrySections: List<FastScrollerSection> = CountryGroups
     .runningFold(0) { index, group -> index + 1 + group.countries.size }
     .zip(CountryGroups) { index, group -> FastScrollerSection(group.letter, index) }

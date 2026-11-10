@@ -7,8 +7,9 @@ import io.xbot.tdlib.api.AuthorizationStateWaitPhoneNumber
 import org.orbitmvi.orbit.OrbitContainerHost
 import org.orbitmvi.orbit.viewmodel.orbitContainer
 
-internal class QrViewModel(private val authRepository: AuthRepository) :
-    ViewModel(),
+internal class QrViewModel(
+    private val authRepository: AuthRepository,
+) : ViewModel(),
     OrbitContainerHost<QrScreenState, QrScreenState, Nothing> {
 
     override val container = orbitContainer<QrScreenState, Nothing>(QrScreenState()) {
@@ -17,7 +18,7 @@ internal class QrViewModel(private val authRepository: AuthRepository) :
                 state.copy(
                     link = (authorizationState as? AuthorizationStateWaitOtherDeviceConfirmation)
                         ?.link,
-                    needsQrCode = authorizationState == AuthorizationStateWaitPhoneNumber
+                    needsQrCode = authorizationState == AuthorizationStateWaitPhoneNumber,
                 )
             }
         }

@@ -19,14 +19,14 @@ internal fun <S> iosNavTransitions(): NavTransitions<S> = NavTransitions(
                 SlideDirection.Start,
                 tween(
                     DURATION,
-                    easing = IosEasing
+                    easing = IosEasing,
                 ),
                 targetOffset = {
                     it /
                         4
-                }
+                },
             ) +
-                veilOut(tween(DURATION, easing = IosEasing))
+                veilOut(tween(DURATION, easing = IosEasing)),
         )
     },
     pop = {
@@ -35,15 +35,15 @@ internal fun <S> iosNavTransitions(): NavTransitions<S> = NavTransitions(
                 SlideDirection.End,
                 tween(
                     DURATION,
-                    easing = IosEasing
+                    easing = IosEasing,
                 ),
                 initialOffset = {
                     it /
                         4
-                }
+                },
             ) +
                 unveilIn(tween(DURATION, easing = IosEasing)),
-            slideOutOfContainer(SlideDirection.End, tween(DURATION, easing = IosEasing))
+            slideOutOfContainer(SlideDirection.End, tween(DURATION, easing = IosEasing)),
         )
     },
     predictivePop = { edge ->
@@ -54,9 +54,9 @@ internal fun <S> iosNavTransitions(): NavTransitions<S> = NavTransitions(
                     4
             }) +
                 unveilIn(tween(DURATION, easing = LinearEasing)),
-            slideOutOfContainer(towards, tween(DURATION, easing = LinearEasing))
+            slideOutOfContainer(towards, tween(DURATION, easing = LinearEasing)),
         )
-    }
+    },
 )
 
 private const val DURATION = 500

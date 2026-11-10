@@ -28,7 +28,7 @@ internal val ProgressIndicatorPage = CatalogPage(
         CatalogExample("Sizes") {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.large),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 ProgressIndicator()
                 ProgressIndicator(Modifier.size(40.dp))
@@ -39,10 +39,10 @@ internal val ProgressIndicatorPage = CatalogPage(
             Box(
                 Modifier
                     .background(KotogramTheme.colors.primary, KotogramTheme.shapes.medium)
-                    .padding(KotogramTheme.spacing.medium)
+                    .padding(KotogramTheme.spacing.medium),
             ) {
                 ProgressIndicator(style = ProgressIndicatorStyle { color(theme.colors.onPrimary) })
             }
-        }
-    )
+        },
+    ),
 )

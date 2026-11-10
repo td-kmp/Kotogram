@@ -10,14 +10,14 @@ import io.xbot.tdlib.api.AuthorizationStateWaitCode
 import io.xbot.tdlib.api.AuthorizationStateWaitOtherDeviceConfirmation
 import io.xbot.tdlib.api.AuthorizationStateWaitPassword
 import io.xbot.tdlib.api.AuthorizationStateWaitPhoneNumber
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.orbitmvi.orbit.test.testWithInternalState
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class AuthViewModelTest {
     private val repository = FakeAuthRepository()
@@ -32,7 +32,7 @@ class AuthViewModelTest {
         repository.authorizationState.value = waitCode
         assertEquals(
             listOf(AuthStep.PhoneNumber, AuthStep.Code),
-            backStack(LoginFlow.QrCodeFirst)
+            backStack(LoginFlow.QrCodeFirst),
         )
     }
 
@@ -41,7 +41,7 @@ class AuthViewModelTest {
         repository.authorizationState.value = waitCode
         assertEquals(
             listOf(AuthStep.PhoneNumber),
-            backStack(LoginFlow.PhoneNumberOnly, AuthScreenAction.OnBack)
+            backStack(LoginFlow.PhoneNumberOnly, AuthScreenAction.OnBack),
         )
     }
 
@@ -52,7 +52,7 @@ class AuthViewModelTest {
             listOf(AuthStep.PhoneNumber, AuthStep.Password),
             backStack(LoginFlow.PhoneNumberOnly, AuthScreenAction.OnBack) {
                 repository.authorizationState.value = AuthorizationStateWaitPassword()
-            }
+            },
         )
     }
 
@@ -67,7 +67,7 @@ class AuthViewModelTest {
             AuthorizationStateWaitOtherDeviceConfirmation(link = "tg://login")
         assertEquals(
             listOf(AuthStep.PhoneNumber),
-            backStack(LoginFlow.QrCodeFirst, AuthScreenAction.OnPhoneLoginClick)
+            backStack(LoginFlow.QrCodeFirst, AuthScreenAction.OnPhoneLoginClick),
         )
         assertEquals(0, repository.restarts)
     }
@@ -77,7 +77,7 @@ class AuthViewModelTest {
         repository.authorizationState.value = waitCode
         assertEquals(
             listOf(AuthStep.QrCode),
-            backStack(LoginFlow.QrCodeFirst, AuthScreenAction.OnQrLoginClick)
+            backStack(LoginFlow.QrCodeFirst, AuthScreenAction.OnQrLoginClick),
         )
         assertEquals(1, repository.restarts)
     }
@@ -92,7 +92,7 @@ class AuthViewModelTest {
         assertTrue(
             state(LoginFlow.QrCodeFirst, AuthScreenAction.OnPhoneLoginClick) {
                 repository.authorizationState.value = AuthorizationStateWaitPhoneNumber
-            }.hasLeftFirstStep
+            }.hasLeftFirstStep,
         )
     }
 
@@ -105,13 +105,13 @@ class AuthViewModelTest {
     private suspend fun TestScope.backStack(
         flow: LoginFlow,
         action: AuthScreenAction? = null,
-        afterAction: () -> Unit = {}
+        afterAction: () -> Unit = {},
     ): List<AuthStep> = state(flow, action, afterAction).backStack
 
     private suspend fun TestScope.state(
         flow: LoginFlow,
         action: AuthScreenAction? = null,
-        afterAction: () -> Unit = {}
+        afterAction: () -> Unit = {},
     ): AuthScreenState {
         lateinit var state: AuthScreenState
         AuthViewModel(flow, LoginEntry(flow), repository).testWithInternalState(this) {
@@ -133,7 +133,7 @@ class AuthViewModelTest {
             phoneNumber = "+15550000000",
             type = AuthenticationCodeTypeSms(length = 5),
             nextType = null,
-            timeout = 0
-        )
+            timeout = 0,
+        ),
     )
 }

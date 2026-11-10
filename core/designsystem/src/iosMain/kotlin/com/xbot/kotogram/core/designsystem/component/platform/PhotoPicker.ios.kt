@@ -7,7 +7,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.uikit.LocalUIViewController
 import com.xbot.kotogram.core.designsystem.component.PhotoPickerLauncher
-import kotlin.coroutines.resume
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.useContents
@@ -33,18 +32,20 @@ import platform.UIKit.UIImage
 import platform.UniformTypeIdentifiers.UTTypeImage
 import platform.darwin.NSObject
 import platform.posix.memcpy
+import kotlin.coroutines.resume
 
 // Adapted from Calf's FilePickerLauncher.ios.kt (Mohamed Rejeb, Apache-2.0).
 @Composable
-internal actual fun platformPhotoPickerLauncher(
-    onPicked: (ByteArray) -> Unit
-): PhotoPickerLauncher? {
+internal actual fun platformPhotoPickerLauncher(onPicked: (ByteArray) -> Unit): PhotoPickerLauncher? {
     val scope = rememberCoroutineScope()
     val viewController = LocalUIViewController.current
     val currentOnPicked by rememberUpdatedState(onPicked)
     val delegate = remember {
         object : NSObject(), PHPickerViewControllerDelegateProtocol {
-            override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
+            override fun picker(
+                picker: PHPickerViewController,
+                didFinishPicking: List<*>,
+            ) {
                 picker.dismissViewControllerAnimated(true, null)
                 val provider =
                     (didFinishPicking.firstOrNull() as? PHPickerResult)?.itemProvider ?: return
@@ -69,7 +70,7 @@ internal actual fun platformPhotoPickerLauncher(
     }
 }
 
-// The file is deleted once the handler returns.
+// Workaround: the file is deleted once the handler returns, so it is read inside it.
 private suspend fun NSItemProvider.loadImageBytes(): ByteArray? = withContext(Dispatchers.IO) {
     suspendCancellableCoroutine { continuation ->
         val progress = loadFileRepresentationForTypeIdentifier(UTTypeImage.identifier) { url, _ ->

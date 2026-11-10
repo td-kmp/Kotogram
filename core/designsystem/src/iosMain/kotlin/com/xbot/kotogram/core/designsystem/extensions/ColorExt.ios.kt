@@ -10,6 +10,6 @@ internal fun Color.toUIColor(): UIColor {
         red = srgb.red.toDouble(),
         green = srgb.green.toDouble(),
         blue = srgb.blue.toDouble(),
-        alpha = srgb.alpha.toDouble()
+        alpha = srgb.alpha.toDouble(),
     )
 }

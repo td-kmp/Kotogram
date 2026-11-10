@@ -7,7 +7,7 @@ internal data class CodeScreenState(
     val info: AuthenticationCodeInfo? = null,
     val resendSecondsLeft: Int = 0,
     val isSubmitting: Boolean = false,
-    val error: AuthError? = null
+    val error: AuthError? = null,
 ) {
     val canResend: Boolean get() = info?.nextType != null && resendSecondsLeft == 0
 }

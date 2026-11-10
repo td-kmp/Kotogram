@@ -39,9 +39,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
@@ -61,14 +61,13 @@ import com.xbot.kotogram.feature.chats.impl.extensions.label
 import io.xbot.tdlib.api.Sticker
 import kotlin.math.floor
 
-// The frames of Telegram for iOS's ChatListItem and Telegram for macOS's ChatListRowView, from the style's values.
 @Composable
 context(style: ChatListScreenStyleScope)
 internal fun ChatRow(
     row: ChatListRow,
     customEmoji: Map<Long, Sticker>,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val titleStyle = textNodeStyle(style.titleTextStyle, style.titleLineSpacing)
     val dateStyle = textNodeStyle(style.dateTextStyle, style.titleLineSpacing)
@@ -90,7 +89,7 @@ internal fun ChatRow(
                 letters = row.avatar.letters,
                 colorIndex = row.avatar.colorIndex,
                 thumbnail = row.avatar.thumbnail,
-                modifier = Modifier.layoutId(Slot.Avatar).size(style.avatarSize)
+                modifier = Modifier.layoutId(Slot.Avatar).size(style.avatarSize),
             )
             TitleLine(row, customEmoji, titleStyle, Modifier.layoutId(Slot.Title))
             DateLine(row, dateStyle, Modifier.layoutId(Slot.Date))
@@ -100,7 +99,7 @@ internal fun ChatRow(
                     style = if (row.preview is ChatPreview.Draft) draftStyle else authorStyle,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.layoutId(Slot.Author)
+                    modifier = Modifier.layoutId(Slot.Author),
                 )
             }
             Preview(
@@ -108,11 +107,11 @@ internal fun ChatRow(
                 customEmoji = customEmoji,
                 textStyle = previewStyle,
                 maxLines = if (author != null) 1 else 2,
-                modifier = Modifier.layoutId(Slot.Text)
+                modifier = Modifier.layoutId(Slot.Text),
             )
             Badges(row, Modifier.layoutId(Slot.Badges))
             Box(Modifier.layoutId(Slot.Separator).background(style.separatorColor))
-        }
+        },
     ) { measurables, constraints ->
         val width = constraints.maxWidth
         val contentLeft = style.contentStart.roundToPx()
@@ -123,7 +122,7 @@ internal fun ChatRow(
         val date = measurable(Slot.Date)!!.measure(loose)
         val badges = measurable(Slot.Badges)!!.measure(loose)
         val title = measurable(Slot.Title)!!.measure(
-            Constraints(maxWidth = (contentWidth - date.width - style.titleDateGap.roundToPx()).coerceAtLeast(0))
+            Constraints(maxWidth = (contentWidth - date.width - style.titleDateGap.roundToPx()).coerceAtLeast(0)),
         )
         val textReserve = if (badges.width > 0) badges.width + style.badgeTextReserve.roundToPx() else 0
         val textConstraints = Constraints(maxWidth = (contentWidth - textReserve).coerceAtLeast(0))
@@ -139,8 +138,8 @@ internal fun ChatRow(
         val separator = measurable(Slot.Separator)!!.measure(
             Constraints.fixed(
                 (width - style.separatorStart.roundToPx() - style.separatorEnd.roundToPx()).coerceAtLeast(0),
-                hairline
-            )
+                hairline,
+            ),
         )
         layout(width, height) {
             val titleTop = style.titleTop.roundToPx()
@@ -160,9 +159,11 @@ internal fun ChatRow(
     }
 }
 
-// Telegram's TextNode lines: floor(ascent + descent) and floor of that times the spacing, the extra below each line.
 @Composable
-private fun textNodeStyle(base: TextStyle, spacing: Float): TextStyle {
+private fun textNodeStyle(
+    base: TextStyle,
+    spacing: Float,
+): TextStyle {
     if (spacing == 0f) return base
     val measurer = rememberTextMeasurer()
     val density = LocalDensity.current
@@ -173,8 +174,8 @@ private fun textNodeStyle(base: TextStyle, spacing: Float): TextStyle {
             base.merge(
                 TextStyle(
                     lineHeight = pitch.dp.toSp(),
-                    lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Top, LineHeightStyle.Trim.None)
-                )
+                    lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Top, LineHeightStyle.Trim.None),
+                ),
             )
         }
     }
@@ -188,7 +189,7 @@ private fun TitleLine(
     row: ChatListRow,
     customEmoji: Map<Long, Sticker>,
     textStyle: TextStyle,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         Text(
@@ -196,7 +197,7 @@ private fun TitleLine(
             style = textStyle,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f, fill = false)
+            modifier = Modifier.weight(1f, fill = false),
         )
         row.emojiStatusId?.let { id ->
             Spacer(Modifier.width(style.titleIconGap))
@@ -209,7 +210,7 @@ private fun TitleLine(
                 imageVector = KotogramIcons.BellOff,
                 contentDescription = null,
                 tint = style.iconColor,
-                modifier = Modifier.offset(x = if (gap < Dp(0f)) gap else Dp(0f)).size(style.mutedIconSize)
+                modifier = Modifier.offset(x = if (gap < Dp(0f)) gap else Dp(0f)).size(style.mutedIconSize),
             )
         }
     }
@@ -217,13 +218,17 @@ private fun TitleLine(
 
 @Composable
 context(style: ChatListScreenStyleScope)
-private fun DateLine(row: ChatListRow, textStyle: TextStyle, modifier: Modifier = Modifier) {
+private fun DateLine(
+    row: ChatListRow,
+    textStyle: TextStyle,
+    modifier: Modifier = Modifier,
+) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         row.outgoing?.let { status ->
             StatusChecks(
                 read = status == OutgoingStatus.Read,
                 color = style.checkColor,
-                modifier = Modifier.size(style.statusIconSize)
+                modifier = Modifier.size(style.statusIconSize),
             )
             Spacer(Modifier.width(style.statusGap))
         }
@@ -238,7 +243,7 @@ private fun Preview(
     customEmoji: Map<Long, Sticker>,
     textStyle: TextStyle,
     maxLines: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val preview = row.preview
     val thumbnail = (preview as? ChatPreview.Media)?.thumbnail
@@ -260,11 +265,10 @@ private fun Preview(
         maxLines = maxLines,
         overflow = TextOverflow.Ellipsis,
         inlineContent = inline,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
-// The image and the gap after it, as the text's top-left cutout leaves room for them.
 @Composable
 context(style: ChatListScreenStyleScope)
 private fun thumbnailContent(thumbnail: Any?): Map<String, InlineTextContent> {
@@ -278,26 +282,31 @@ private fun thumbnailContent(thumbnail: Any?): Map<String, InlineTextContent> {
                 NetworkImage(
                     model = thumbnail,
                     contentDescription = null,
-                    modifier = Modifier.size(style.thumbnailSize).clip(RoundedCornerShape(style.thumbnailCorner))
+                    modifier = Modifier.size(style.thumbnailSize).clip(RoundedCornerShape(style.thumbnailCorner)),
                 )
             }
-        }
+        },
     )
 }
 
 @Composable
 context(style: ChatListScreenStyleScope)
-private fun Badges(row: ChatListRow, modifier: Modifier = Modifier) {
+private fun Badges(
+    row: ChatListRow,
+    modifier: Modifier = Modifier,
+) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(style.badgeGap),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         if (row.hasUnreadMention) Badge("@", style.badgeColor)
         when {
             row.unreadCount > 0 ->
                 Badge(compactCount(row.unreadCount), if (row.isMuted) style.mutedBadgeColor else style.badgeColor)
+
             row.isMarkedAsUnread -> Badge("", if (row.isMuted) style.mutedBadgeColor else style.badgeColor)
+
             row.isPinned -> Icon(KotogramIcons.Pin, null, Modifier.size(style.pinnedIconSize), tint = style.iconColor)
         }
     }
@@ -305,25 +314,30 @@ private fun Badges(row: ChatListRow, modifier: Modifier = Modifier) {
 
 @Composable
 context(style: ChatListScreenStyleScope)
-private fun Badge(text: String, color: Color) {
+private fun Badge(
+    text: String,
+    color: Color,
+) {
     Box(
         modifier = Modifier
             .height(style.badgeHeight)
             .defaultMinSize(minWidth = style.badgeHeight)
             .background(color, CircleShape)
             .padding(horizontal = style.badgePadding),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Text(text, style = style.badgeTextStyle, maxLines = 1)
     }
 }
 
-// ChatListStatusChecksNode's checks at rest, in its 24-point box: one when sent, two when read.
 @Composable
-private fun StatusChecks(read: Boolean, color: Color, modifier: Modifier = Modifier) {
+private fun StatusChecks(
+    read: Boolean,
+    color: Color,
+    modifier: Modifier = Modifier,
+) {
     Canvas(modifier) {
         val unit = size.width / CHECK_BOX
-        // A line of a point and a pixel, as iOS strokes it.
         val stroke = Stroke(width = (1.dp.toPx() + 1f) / unit, cap = StrokeCap.Round, join = StrokeJoin.Round)
         scale(unit, unit, pivot = Offset.Zero) {
             drawPath(
@@ -333,7 +347,7 @@ private fun StatusChecks(read: Boolean, color: Color, modifier: Modifier = Modif
                     if (!read) lineTo(9f, 13f)
                 },
                 color,
-                style = stroke
+                style = stroke,
             )
             if (read) {
                 drawPath(
@@ -343,21 +357,23 @@ private fun StatusChecks(read: Boolean, color: Color, modifier: Modifier = Modif
                         lineTo(5f, 13f)
                     },
                     color,
-                    style = stroke
+                    style = stroke,
                 )
             }
         }
     }
 }
 
-// Telegram's compact counts: 537, 6.3K, 189.7K.
 private fun compactCount(count: Int): String = when {
     count < THOUSAND -> count.toString()
     count < MILLION -> tenths(count, THOUSAND) + "K"
     else -> tenths(count, MILLION) + "M"
 }
 
-private fun tenths(count: Int, unit: Int): String {
+private fun tenths(
+    count: Int,
+    unit: Int,
+): String {
     val tenths = count / (unit / TEN)
     return if (tenths % TEN == 0) "${tenths / TEN}" else "${tenths / TEN}.${tenths % TEN}"
 }
@@ -368,6 +384,5 @@ private const val MILLION = 1_000_000
 private const val TEN = 10
 private const val CHECK_BOX = 24f
 
-// ChatListItem's height: the title's line and three more, less 8.
 private const val IOS_ROW_LINES = 4
 private val IOS_ROW_INSET = Dp(8f)

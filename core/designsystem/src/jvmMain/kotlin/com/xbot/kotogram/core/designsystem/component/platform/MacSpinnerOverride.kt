@@ -22,23 +22,21 @@ internal object MacSpinnerOverride : ProgressIndicatorOverride {
         val indicator = remember { MacProgressIndicator() }
         val density = LocalDensity.current
         var large by remember { mutableStateOf(false) }
-        val inFront = isSettledInFront()
         val background = KotogramTheme.colors.background
         NativeView(
             factory = {
                 nucleusNsPlatformView(
                     handle = { Pointer.nativeValue(indicator.handle) },
-                    onDispose = indicator::release
+                    onDispose = indicator::release,
                 )
             },
             modifier = modifier.onSizeChanged { large = with(density) { it.height.toDp() } >= LargeSize },
             update = {
                 indicator.setColor(style.color, background)
                 indicator.setLarge(large)
-                indicator.setVisible(inFront)
                 indicator.setAnimating(true)
             },
-            placedAsOverlay = true
+            placedAsOverlay = true,
         )
     }
 }

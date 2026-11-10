@@ -34,7 +34,7 @@ subprojects {
             "-Xcontext-sensitive-resolution",
             "-Xexplicit-context-arguments",
             "-Xname-based-destructuring=only-syntax",
-            "-Xreturn-value-checker=check"
+            "-Xreturn-value-checker=check",
         )
     }
 }
@@ -42,6 +42,10 @@ subprojects {
 fun sourceTree(pattern: String) = fileTree(projectDir) {
     include(pattern)
     exclude("**/build/**", "**/.gradle/**", "**/.kotlin/**")
+}
+
+dependencies {
+    detektPlugins(libs.detekt.rules.compose)
 }
 
 detekt {
@@ -54,6 +58,6 @@ detekt {
         fileTree(projectDir) {
             include("**/src/**/*.kt")
             exclude("**/build/**")
-        }
+        },
     )
 }

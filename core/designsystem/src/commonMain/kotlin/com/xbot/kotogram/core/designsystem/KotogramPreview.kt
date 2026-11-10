@@ -18,8 +18,7 @@ import com.xbot.kotogram.core.designsystem.style.ProvideFormFactor
 @PreviewWrapper(KotogramPreviewWrapper::class)
 annotation class KotogramPreview
 
-// Studio wraps every preview of a function in the first PreviewWrapper it finds, so a laptop preview is a function of
-// its own.
+// Workaround: Studio wraps a function's every preview in its first PreviewWrapper, so the laptop one is its own.
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.FUNCTION)
 @Preview(name = "Laptop", device = LAPTOP_DEVICE)
@@ -42,11 +41,13 @@ internal class KotogramLaptopPreviewWrapper : PreviewWrapperProvider {
 }
 
 @Composable
-private fun KotogramPreviewTheme(laptop: Boolean, content: @Composable () -> Unit) {
+private fun KotogramPreviewTheme(
+    laptop: Boolean,
+    content: @Composable () -> Unit,
+) {
     KotogramTheme(dynamicColor = false) {
         ProvideFormFactor(laptop) { Surface(Modifier.fillMaxSize(), content = content) }
     }
 }
 
-// Kotogram's desktop window as it opens.
 private const val LAPTOP_DEVICE = "spec:width=700dp,height=550dp,dpi=160"

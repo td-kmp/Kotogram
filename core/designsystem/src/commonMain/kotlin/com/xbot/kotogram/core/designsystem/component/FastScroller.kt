@@ -6,12 +6,17 @@ import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 
-// A section starts at the lazy list's item `index`, its header.
-data class FastScrollerSection(val title: String, val index: Int)
+data class FastScrollerSection(
+    val title: String,
+    val index: Int,
+)
 
-// UIKit's section index on iOS, a thumb with the section's title elsewhere. As high as its modifier makes it.
 @Composable
-fun FastScroller(state: LazyListState, sections: List<FastScrollerSection>, modifier: Modifier = Modifier) {
+fun FastScroller(
+    state: LazyListState,
+    sections: List<FastScrollerSection>,
+    modifier: Modifier = Modifier,
+) {
     with(LocalFastScrollerOverride.current) {
         FastScrollerOverrideScope(state, sections, modifier).FastScroller()
     }
@@ -25,7 +30,7 @@ internal interface FastScrollerOverride {
 internal class FastScrollerOverrideScope(
     val state: LazyListState,
     val sections: List<FastScrollerSection>,
-    val modifier: Modifier
+    val modifier: Modifier,
 )
 
 internal object ThumbFastScrollerOverride : FastScrollerOverride {

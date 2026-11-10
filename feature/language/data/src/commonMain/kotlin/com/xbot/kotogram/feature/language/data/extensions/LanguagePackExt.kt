@@ -12,7 +12,6 @@ internal fun LanguagePack.withChanges(update: UpdateLanguagePackStrings): Langua
     else -> this
 }
 
-private fun Map<String, LanguagePackStringValue>.withChanges(changes: List<LanguagePackString>) =
-    toMutableMap().apply {
-        changes.forEach { if (it.value is LanguagePackStringValueDeleted) remove(it.key) else put(it.key, it.value) }
-    }
+private fun Map<String, LanguagePackStringValue>.withChanges(changes: List<LanguagePackString>) = toMutableMap().apply {
+    changes.forEach { if (it.value is LanguagePackStringValueDeleted) remove(it.key) else put(it.key, it.value) }
+}

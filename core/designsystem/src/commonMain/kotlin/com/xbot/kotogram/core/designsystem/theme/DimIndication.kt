@@ -45,8 +45,9 @@ internal object DimIndication : IndicationNodeFactory {
 
 private class PressNode(
     private val interactionSource: InteractionSource,
-    private val drawPressed: ContentDrawScope.(Float) -> Unit
-) : Modifier.Node(), DrawModifierNode {
+    private val drawPressed: ContentDrawScope.(Float) -> Unit,
+) : Modifier.Node(),
+    DrawModifierNode {
     private val progress = Animatable(0f)
     private var pressedAt = TimeSource.Monotonic.markNow()
 
@@ -63,14 +64,19 @@ private class PressNode(
                             invalidateDraw()
                         }
                     }
+
                     is PressInteraction.Release -> release(presses, interaction.press)
+
                     is PressInteraction.Cancel -> release(presses, interaction.press)
                 }
             }
         }
     }
 
-    private fun CoroutineScope.release(presses: MutableList<PressInteraction.Press>, press: PressInteraction.Press) {
+    private fun CoroutineScope.release(
+        presses: MutableList<PressInteraction.Press>,
+        press: PressInteraction.Press,
+    ) {
         presses -= press
         if (presses.isNotEmpty()) return
         launch {

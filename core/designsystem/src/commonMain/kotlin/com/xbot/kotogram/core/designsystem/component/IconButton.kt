@@ -39,7 +39,7 @@ fun IconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    style: IconButtonStyle = IconButtonStyle
+    style: IconButtonStyle = IconButtonStyle,
 ) {
     context(rememberStyle(::IconButtonStyleScope, IconButtonStyle.Adaptive then style)) {
         StyledIconButton(icon, contentDescription, onClick, modifier, enabled)
@@ -53,7 +53,7 @@ internal fun StyledIconButton(
     contentDescription: String?,
     onClick: () -> Unit,
     modifier: Modifier,
-    enabled: Boolean
+    enabled: Boolean,
 ) {
     Box(
         modifier = modifier
@@ -66,15 +66,15 @@ internal fun StyledIconButton(
                 indication = KotogramTheme.indication,
                 enabled = enabled,
                 role = Role.Button,
-                onClick = onClick
+                onClick = onClick,
             ),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Icon(
             imageVector = icon,
             contentDescription = contentDescription,
             modifier = Modifier.size(style.iconSize),
-            tint = if (enabled) style.contentColor else style.disabledContentColor
+            tint = if (enabled) style.contentColor else style.disabledContentColor,
         )
     }
 }
@@ -84,7 +84,7 @@ internal fun StyledIconButton(
 private fun IconButtonPreview() {
     Row(
         modifier = Modifier.padding(KotogramTheme.spacing.large),
-        horizontalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.small)
+        horizontalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.small),
     ) {
         IconButton(KotogramIcons.Close, contentDescription = null, onClick = {})
         IconButton(KotogramIcons.Search, contentDescription = null, onClick = {})
@@ -96,7 +96,6 @@ private fun IconButtonPreview() {
 @Composable
 private fun IconButtonLaptopPreview() = IconButtonPreview()
 
-// UIKit's 44-point bar buttons on touch screens, a 32 square on a laptop; no container until a style adds one.
 @Suppress("MagicNumber")
 fun interface IconButtonStyle : ComponentStyle<IconButtonStyleScope> {
     companion object : IconButtonStyle {
@@ -121,15 +120,19 @@ fun interface IconButtonStyle : ComponentStyle<IconButtonStyleScope> {
 
 infix fun IconButtonStyle.then(other: IconButtonStyle): IconButtonStyle = when {
     other === IconButtonStyle -> this
+
     this === IconButtonStyle -> other
+
     else -> IconButtonStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
     }
 }
 
-class IconButtonStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
-    AdaptiveStyleScope<IconButtonStyleScope>,
+class IconButtonStyleScope(
+    val theme: KotogramTheme.Values,
+    override val mediaQueryInfo: MediaQueryInfo,
+) : AdaptiveStyleScope<IconButtonStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
     var size: Dp = Dp.Unspecified

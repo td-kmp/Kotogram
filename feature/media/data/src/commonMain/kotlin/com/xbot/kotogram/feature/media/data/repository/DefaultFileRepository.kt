@@ -23,11 +23,12 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
-internal class DefaultFileRepository(private val client: TdClient) : FileRepository {
+internal class DefaultFileRepository(
+    private val client: TdClient,
+) : FileRepository {
     private val waiters = Mutex()
     private val waitingFor = mutableMapOf<Int, Int>()
 
-    // The last view to leave a download it started stops it, as Telegram X's ImageLoader does.
     override suspend fun download(file: File): Either<MediaError, File> {
         if (file.local.isDownloadingCompleted) return file.right()
         waiters.withLock { waitingFor[file.id] = (waitingFor[file.id] ?: 0) + 1 }
@@ -56,7 +57,7 @@ internal class DefaultFileRepository(private val client: TdClient) : FileReposit
             .map { it.data }
 
     private suspend fun awaitDownload(file: File): Either<MediaError, File> = coroutineScope {
-        // Updates have no replay, so the wait subscribes before the request.
+        // Workaround: updates have no replay, so the wait subscribes before the request.
         val settled = async(start = CoroutineStart.UNDISPATCHED) {
             client.updatesOf<UpdateFile>()
                 .map { it.file }
@@ -77,7 +78,6 @@ internal class DefaultFileRepository(private val client: TdClient) : FileReposit
     }
 }
 
-// Telegram X's TdlibFilesManager.PRIORITY_IMAGE, below a download the user asks for.
 private const val PRIORITY_IMAGE = 15
 
 private val File.isSettled: Boolean

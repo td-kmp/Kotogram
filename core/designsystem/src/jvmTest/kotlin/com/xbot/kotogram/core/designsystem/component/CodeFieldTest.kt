@@ -58,7 +58,6 @@ class CodeFieldTest {
 
     @Test
     fun cellsGrowWithTheFontScale() = withCodeField(length = 5, fontScale = 2f) { _, field ->
-        // 24 sp at twice the scale is 48 dp, and a cell is 40 / 24 of its digit, as on macOS.
         field.assertHeightIsEqualTo(80.dp)
     }
 
@@ -73,7 +72,7 @@ class CodeFieldTest {
         text: String = "",
         fontScale: Float = 1f,
         width: Dp = Dp.Unspecified,
-        block: ComposeUiTest.(TextFieldState, SemanticsNodeInteraction) -> Unit
+        block: ComposeUiTest.(TextFieldState, SemanticsNodeInteraction) -> Unit,
     ) = runComposeUiTest {
         val state = TextFieldState(text)
         setContent {

@@ -6,7 +6,10 @@ import io.xbot.tdlib.api.UpdateUser
 import io.xbot.tdlib.api.UpdateUserStatus
 
 internal object UserReducer : Reducer {
-    override fun reduce(state: ChatsState, update: Update): ChatsState = when (update) {
+    override fun reduce(
+        state: ChatsState,
+        update: Update,
+    ): ChatsState = when (update) {
         is UpdateUser -> state.copy(users = state.users.putting(update.user.id, update.user))
 
         is UpdateUserStatus -> state.users[update.userId]?.let { user ->

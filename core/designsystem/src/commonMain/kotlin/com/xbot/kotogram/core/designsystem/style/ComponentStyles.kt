@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-// Material 3's stand-in for the Style API (material3's ComponentStyles.kt of androidx-main), as CMP 1.12.1's Style API
-// has no properties of a component's own.
+// Adapted from material3's ComponentStyles.kt of androidx-main, the stand-in for the Style API's own properties.
 package com.xbot.kotogram.core.designsystem.style
 
 import androidx.compose.runtime.Composable
@@ -45,7 +44,11 @@ class DefaultStyleResolver : StyleResolver {
     }
 }
 
-class MediaQueryInfo(val isLaptop: Boolean, val isTv: Boolean, val isAuto: Boolean)
+class MediaQueryInfo(
+    val isLaptop: Boolean,
+    val isTv: Boolean,
+    val isAuto: Boolean,
+)
 
 val LocalMediaQueryInfo = staticCompositionLocalOf { MediaQueryInfo(isLaptop = false, isTv = false, isAuto = false) }
 
@@ -53,7 +56,7 @@ val LocalMediaQueryInfo = staticCompositionLocalOf { MediaQueryInfo(isLaptop = f
 @ReadOnlyComposable
 fun mediaQueryInfo(): MediaQueryInfo = LocalMediaQueryInfo.current
 
-@Suppress("UNCHECKED_CAST") // Guaranteed by implementation
+@Suppress("UNCHECKED_CAST")
 interface AdaptiveStyleScope<T : AdaptiveStyleScope<T>> {
     val mediaQueryInfo: MediaQueryInfo
 
@@ -88,7 +91,7 @@ fun interface ComponentStyle<T : StyleResolver> {
 @Composable
 fun <T : StyleResolver> rememberStyle(
     scope: (theme: KotogramTheme.Values, mediaQueryInfo: MediaQueryInfo) -> T,
-    style: ComponentStyle<T>
+    style: ComponentStyle<T>,
 ): T {
     val theme = KotogramTheme.values
     val mediaQueryInfo = mediaQueryInfo()

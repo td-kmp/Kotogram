@@ -6,5 +6,5 @@ internal data class RegistrationScreenState(
     val termsOfService: String = "",
     val isTermsVisible: Boolean = false,
     val isSubmitting: Boolean = false,
-    val error: AuthError? = null
+    val error: AuthError? = null,
 )

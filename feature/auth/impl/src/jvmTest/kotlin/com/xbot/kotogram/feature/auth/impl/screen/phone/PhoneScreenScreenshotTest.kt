@@ -26,33 +26,36 @@ import com.xbot.kotogram.core.designsystem.media.UiMediaScope.WindowPosture
 import com.xbot.kotogram.core.designsystem.style.LocalMediaQueryInfo
 import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 import io.xbot.tdlib.api.CountryInfo
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import java.io.File
 import javax.imageio.ImageIO
 import kotlin.test.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 
 @RunWith(Parameterized::class)
-class PhoneScreenScreenshotTest(private val device: Device, private val darkTheme: Boolean) {
+class PhoneScreenScreenshotTest(
+    private val device: Device,
+    private val darkTheme: Boolean,
+) {
     @OptIn(ExperimentalTestApi::class)
     @Test
     fun screenshot() = runDesktopComposeUiTest(
         width = (device.width.value * device.scale).toInt(),
-        height = (device.height.value * device.scale).toInt()
+        height = (device.height.value * device.scale).toInt(),
     ) {
         setContent {
             CompositionLocalProvider(LocalDensity provides Density(device.scale)) {
                 KotogramTheme(darkTheme = darkTheme, dynamicColor = false) {
                     CompositionLocalProvider(
                         LocalUiMediaScope provides device.mediaScope,
-                        LocalMediaQueryInfo provides device.mediaQueryInfo
+                        LocalMediaQueryInfo provides device.mediaQueryInfo,
                     ) {
                         PhoneScreenContent(
                             state = entered,
                             phoneNumber = TextFieldState(entered.callingCode + entered.number),
                             canUseQr = device.laptop,
                             onAction = {},
-                            onQrLoginClick = {}
+                            onQrLoginClick = {},
                         )
                     }
                 }
@@ -78,7 +81,7 @@ enum class Device(
     val height: Dp,
     val scale: Float,
     val laptop: Boolean,
-    val posture: WindowPosture = WindowPosture(emptyList())
+    val posture: WindowPosture = WindowPosture(emptyList()),
 ) {
     IPhoneAir("iphone-air", 420.dp, 912.dp, 3f, laptop = false),
     IPhoneAirLandscape("iphone-air-landscape", 912.dp, 420.dp, 2f, laptop = false),
@@ -86,7 +89,8 @@ enum class Device(
     FoldableUnfolded("foldable-unfolded", 673.dp, 841.dp, 2f, laptop = false),
     FoldableTabletop("foldable-tabletop", 841.dp, 673.dp, 2f, laptop = false, posture = halfOpened(Horizontal)),
     FoldableBook("foldable-book", 841.dp, 673.dp, 2f, laptop = false, posture = halfOpened(Vertical)),
-    Desktop("desktop", 700.dp, 550.dp, 2f, laptop = true);
+    Desktop("desktop", 700.dp, 550.dp, 2f, laptop = true),
+    ;
 
     val mediaScope: UiMediaScope = object : UiMediaScope {
         override val windowPosture = posture
@@ -111,7 +115,7 @@ private val uzbekistan = CountryInfo(
     englishName = "Uzbekistan",
     flagEmoji = "🇺🇿",
     isHidden = false,
-    callingCodes = listOf("998")
+    callingCodes = listOf("998"),
 )
 
 private val entered = PhoneScreenState(
@@ -120,5 +124,5 @@ private val entered = PhoneScreenState(
     callingCode = "998",
     number = "933988",
     numberPattern = "93 398 8- --",
-    isAcceptingNumber = true
+    isAcceptingNumber = true,
 )

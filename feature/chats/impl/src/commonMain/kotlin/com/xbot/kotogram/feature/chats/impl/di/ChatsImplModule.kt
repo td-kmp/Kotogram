@@ -36,7 +36,7 @@ val chatsImplModule = module {
             viewModel = koinViewModel(),
             onChatClick = { chatId ->
                 lifecycleOwner.dropUnlessResumed { navigator.navigateToChat(chatId) }.invoke()
-            }
+            },
         )
     }
 
@@ -45,7 +45,7 @@ val chatsImplModule = module {
         val lifecycleOwner = LocalLifecycleOwner.current
         ChatScreen(
             viewModel = koinViewModel { parametersOf(route.chatId) },
-            onBackClick = lifecycleOwner.dropUnlessResumed { navigator.navigateBack() }
+            onBackClick = lifecycleOwner.dropUnlessResumed { navigator.navigateBack() },
         )
     }
 

@@ -36,7 +36,7 @@ internal object IosSwitchOverride : SwitchOverride {
                         currentOnCheckedChange?.invoke(switch.on)
                         toggles++
                     },
-                    forControlEvents = UIControlEventValueChanged
+                    forControlEvents = UIControlEventValueChanged,
                 )
             }
         }
@@ -55,9 +55,9 @@ internal object IosSwitchOverride : SwitchOverride {
                 it.overrideUserInterfaceStyle = interfaceStyle(dark)
                 it.hidden = !inFront
             },
-            properties = GlassProperties
+            properties = GlassProperties,
         )
-        // Every toggle recomposes this, so a change the caller doesn't take goes back.
+        // Hack: every toggle recomposes this, so a change the caller doesn't take goes back.
         LaunchedEffect(checked, toggles) {
             if (switch.on != checked) switch.setOn(checked, animated = true)
         }

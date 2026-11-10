@@ -11,5 +11,5 @@ interface AppStorage {
 
 internal class DefaultAppStorage(
     override val tdlibDirectory: String,
-    override val preferences: DataStore<Preferences>
+    override val preferences: DataStore<Preferences>,
 ) : AppStorage

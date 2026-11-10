@@ -36,8 +36,8 @@ internal val PhotoPickerPage = CatalogPage(
         "a side: the Photo Picker on Android, PHPicker on iOS, NSOpenPanel on macOS and " +
         "the browser's file dialog on the web. Other desktops have none.",
     examples = listOf(
-        CatalogExample("Pick a photo") { PickedPhoto() }
-    )
+        CatalogExample("Pick a photo") { PickedPhoto() },
+    ),
 )
 
 @Composable
@@ -48,13 +48,13 @@ private fun PickedPhoto() {
     }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.medium)
+        verticalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.medium),
     ) {
         Box(
             Modifier
                 .size(110.dp)
                 .clip(CircleShape)
-                .background(KotogramTheme.colors.surfaceVariant)
+                .background(KotogramTheme.colors.surfaceVariant),
         ) {
             photo?.let { Image(it, contentDescription = null, contentScale = ContentScale.Crop) }
         }

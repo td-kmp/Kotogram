@@ -22,7 +22,7 @@ import org.orbitmvi.orbit.viewmodel.orbitContainer
 
 internal class RegistrationViewModel(
     savedStateHandle: SavedStateHandle,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
 ) : ViewModel(),
     OrbitContainerHost<RegistrationScreenState, RegistrationScreenState, Nothing> {
 
@@ -50,14 +50,14 @@ internal class RegistrationViewModel(
     private suspend fun Syntax<RegistrationScreenState, Nothing>.followInput() {
         merge(
             snapshotFlow { firstName.text.toString() }.drop(1),
-            snapshotFlow { lastName.text.toString() }.drop(1)
+            snapshotFlow { lastName.text.toString() }.drop(1),
         ).collect { reduce { state.copy(error = null) } }
     }
 
     fun onAction(action: RegistrationScreenAction) {
         when (action) {
             is RegistrationScreenAction.OnTermsVisibilityChange -> onTermsVisibilityChange(
-                action.visible
+                action.visible,
             )
 
             is RegistrationScreenAction.OnPhotoPicked -> photo = action.jpeg
@@ -77,7 +77,7 @@ internal class RegistrationViewModel(
         val error = authRepository.registerUser(
             first,
             lastName.text.toString().trim(),
-            photo
+            photo,
         ).leftOrNull()
         reduce { state.copy(isSubmitting = false, error = error) }
     }

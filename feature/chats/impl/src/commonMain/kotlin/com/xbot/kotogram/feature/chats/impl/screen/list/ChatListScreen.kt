@@ -41,14 +41,14 @@ private const val END_THRESHOLD = 10
 internal fun ChatListScreen(
     viewModel: ChatListViewModel,
     onChatClick: (Long) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val state by viewModel.collectAsState()
     ChatListScreenContent(
         state = state,
         onAction = viewModel::onAction,
         onChatClick = onChatClick,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -57,7 +57,7 @@ internal fun ChatListScreenContent(
     state: ChatListScreenState,
     onAction: (ChatListScreenAction) -> Unit,
     onChatClick: (Long) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val style = rememberStyle(::ChatListScreenStyleScope, ChatListScreenStyle.Adaptive)
     val listState = rememberLazyListState()
@@ -75,7 +75,7 @@ internal fun ChatListScreenContent(
         Scaffold(
             modifier = modifier,
             containerColor = KotogramTheme.colors.background,
-            topBar = { TopBar(title = { Text(stringResource(Res.string.peerlist_title_chats)) }) }
+            topBar = { TopBar(title = { Text(stringResource(Res.string.peerlist_title_chats)) }) },
         ) { innerPadding ->
             Column(Modifier.fillMaxSize().padding(innerPadding)) {
                 if (state.tabs.size > 1) {
@@ -83,7 +83,7 @@ internal fun ChatListScreenContent(
                         tabs = state.tabs,
                         selected = state.selected,
                         customEmoji = state.customEmoji,
-                        onSelect = { onAction(ChatListScreenAction.OnFolderSelect(it)) }
+                        onSelect = { onAction(ChatListScreenAction.OnFolderSelect(it)) },
                     )
                 }
                 Box(Modifier.weight(1f).fillMaxWidth()) {
@@ -103,7 +103,7 @@ internal fun ChatListScreenContent(
 
                                 state.isComplete -> Text(
                                     text = annotatedStringResource(Res.string.chatlist_emptytext),
-                                    textAlign = TextAlign.Center
+                                    textAlign = TextAlign.Center,
                                 )
                             }
                         }
@@ -116,9 +116,7 @@ internal fun ChatListScreenContent(
 
 @KotogramPreview
 @Composable
-private fun ChatListScreenPreview(
-    @PreviewParameter(ChatListScreenStateProvider::class) state: ChatListScreenState
-) {
+private fun ChatListScreenPreview(@PreviewParameter(ChatListScreenStateProvider::class) state: ChatListScreenState) {
     ChatListScreenContent(state = state, onAction = {}, onChatClick = {})
 }
 
@@ -127,7 +125,7 @@ private class ChatListScreenStateProvider : PreviewParameterProvider<ChatListScr
         ChatListScreenState(rows = SampleRows),
         ChatListScreenState(isLoading = true),
         ChatListScreenState(isComplete = true),
-        ChatListScreenState(loadFailed = true)
+        ChatListScreenState(loadFailed = true),
     )
 }
 
@@ -140,7 +138,7 @@ internal val SampleRows = listOf(
         time = "Sun",
         muted = true,
         pinned = true,
-        color = 2
+        color = 2,
     ),
     sampleRow(
         3,
@@ -149,7 +147,7 @@ internal val SampleRows = listOf(
         time = "14/10",
         pinned = true,
         color = 3,
-        outgoing = OutgoingStatus.Read
+        outgoing = OutgoingStatus.Read,
     ),
     sampleRow(
         4,
@@ -159,7 +157,7 @@ internal val SampleRows = listOf(
         unread = 537,
         muted = true,
         color = 0,
-        media = MediaKind.Photo
+        media = MediaKind.Photo,
     ),
     sampleRow(
         5,
@@ -169,7 +167,7 @@ internal val SampleRows = listOf(
         unread = 37,
         muted = true,
         color = 3,
-        media = MediaKind.Photo
+        media = MediaKind.Photo,
     ),
     sampleRow(
         6,
@@ -179,7 +177,7 @@ internal val SampleRows = listOf(
         unread = 189_700,
         muted = true,
         color = 1,
-        sender = "King Crimson"
+        sender = "King Crimson",
     ),
     sampleRow(
         7,
@@ -188,8 +186,8 @@ internal val SampleRows = listOf(
         time = "01:00",
         unread = 6_300,
         muted = true,
-        color = 5
-    )
+        color = 5,
+    ),
 )
 
 private fun sampleRow(
@@ -203,7 +201,7 @@ private fun sampleRow(
     pinned: Boolean = false,
     outgoing: OutgoingStatus? = null,
     media: MediaKind? = null,
-    sender: String? = null
+    sender: String? = null,
 ) = ChatListRow(
     chatId = id,
     title = title,
@@ -211,7 +209,7 @@ private fun sampleRow(
         photo = null,
         thumbnail = null,
         letters = title.take(1),
-        colorIndex = color
+        colorIndex = color,
     ),
     emojiStatusId = null,
     isMuted = muted,
@@ -226,5 +224,5 @@ private fun sampleRow(
         ChatPreview.Media(media, FormattedText(text = text), thumbnail = null)
     } else {
         ChatPreview.Text(FormattedText(text = text))
-    }
+    },
 )

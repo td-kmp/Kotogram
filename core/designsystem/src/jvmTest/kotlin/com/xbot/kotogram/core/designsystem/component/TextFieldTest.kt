@@ -36,7 +36,10 @@ class TextFieldTest {
         }
     }
 
-    private fun measure(fontScale: Float, laptop: Boolean): MeasuredField {
+    private fun measure(
+        fontScale: Float,
+        laptop: Boolean,
+    ): MeasuredField {
         var minHeight = Dp.Unspecified
         var height = Dp.Unspecified
         runComposeUiTest {
@@ -56,5 +59,8 @@ class TextFieldTest {
         return MeasuredField(height, minHeight)
     }
 
-    private class MeasuredField(val height: Dp, val minHeight: Dp)
+    private class MeasuredField(
+        val height: Dp,
+        val minHeight: Dp,
+    )
 }

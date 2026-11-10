@@ -11,17 +11,17 @@ import io.xbot.tdlib.api.LanguagePackString
 import io.xbot.tdlib.api.LanguagePackStringValueDeleted
 import io.xbot.tdlib.api.LanguagePackStringValueOrdinary
 import io.xbot.tdlib.api.UpdateLanguagePackStrings
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertIs
-import kotlin.test.assertNull
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNull
+import kotlin.time.Duration.Companion.seconds
 
 class DefaultLanguageRepositoryTest {
     private val russian = LanguagePackInfo(id = "ru", pluralCode = "ru")
@@ -30,8 +30,8 @@ class DefaultLanguageRepositoryTest {
         infos = mapOf("ru" to russian, "x-ru" to custom),
         packs = mapOf(
             "ru" to listOf(ordinary("A", "а"), ordinary("B", "б"), deleted("C")),
-            "x-ru" to listOf(ordinary("A", "своё а"))
-        )
+            "x-ru" to listOf(ordinary("A", "своё а")),
+        ),
     )
     private val store = InMemoryChosenLanguageStore()
 
@@ -124,7 +124,7 @@ class DefaultLanguageRepositoryTest {
         val requests = client.requests.size
 
         repository.onStringsChanged(
-            update("ru", ordinary("A", "новое а"), deleted("B"))
+            update("ru", ordinary("A", "новое а"), deleted("B")),
         )
 
         assertEquals(mapOf("A" to "новое а"), loaded(repository).texts())
@@ -162,14 +162,20 @@ class DefaultLanguageRepositoryTest {
 
     private fun LanguagePack.texts() = strings.mapValues { (it.value as LanguagePackStringValueOrdinary).value }
 
-    private fun ordinary(key: String, value: String) = LanguagePackString(key, LanguagePackStringValueOrdinary(value))
+    private fun ordinary(
+        key: String,
+        value: String,
+    ) = LanguagePackString(key, LanguagePackStringValueOrdinary(value))
 
     private fun deleted(key: String) = LanguagePackString(key, LanguagePackStringValueDeleted)
 
-    private fun update(languagePackId: String, vararg strings: LanguagePackString) = UpdateLanguagePackStrings(
+    private fun update(
+        languagePackId: String,
+        vararg strings: LanguagePackString,
+    ) = UpdateLanguagePackStrings(
         localizationTarget = "macos",
         languagePackId = languagePackId,
-        strings = strings.toList()
+        strings = strings.toList(),
     )
 }
 

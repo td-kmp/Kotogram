@@ -25,31 +25,31 @@ fun main(args: Array<String>) {
         val systemDarkTheme = isSystemInDarkTheme()
         var darkTheme by remember {
             mutableStateOf(
-                System.getProperty("catalog.dark")?.toBooleanStrictOrNull() ?: systemDarkTheme
+                System.getProperty("catalog.dark")?.toBooleanStrictOrNull() ?: systemDarkTheme,
             )
         }
         var laptop by remember {
             mutableStateOf(
-                System.getProperty("catalog.mobile")?.toBooleanStrictOrNull()?.not() ?: true
+                System.getProperty("catalog.mobile")?.toBooleanStrictOrNull()?.not() ?: true,
             )
         }
         KotogramWindow(
             onCloseRequest = ::exitApplication,
             state = rememberWindowState(
                 position = WindowPosition(Alignment.Center),
-                size = InitialWindowSize
+                size = InitialWindowSize,
             ),
             title = TITLE,
             minimumSize = MinimumWindowSize,
             darkTheme = darkTheme,
-            dynamicColor = false
+            dynamicColor = false,
         ) {
             MaterialTitleBar {
                 Text(
                     text = TITLE,
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
-                        .padding(horizontal = 12.dp)
+                        .padding(horizontal = 12.dp),
                 )
             }
             Catalog(
@@ -57,7 +57,7 @@ fun main(args: Array<String>) {
                 onDarkThemeChange = { darkTheme = it },
                 laptop = laptop,
                 onLaptopChange = { laptop = it },
-                startPage = System.getProperty("catalog.page")
+                startPage = System.getProperty("catalog.page"),
             )
         }
     }

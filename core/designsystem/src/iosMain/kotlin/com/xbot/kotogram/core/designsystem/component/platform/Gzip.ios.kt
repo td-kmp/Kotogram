@@ -26,15 +26,15 @@ import platform.zlib.z_stream
 internal actual suspend fun gunzip(bytes: ByteArray): ByteArray = withContext(Dispatchers.IO) {
     memScoped {
         val stream = alloc<z_stream>()
-        // inflateInit2 is a macro; 16 over the window bits reads a gzip header.
+        // Workaround: inflateInit2 is a macro; 16 over the window bits reads a gzip header.
         check(
             inflateInit2_(
                 stream.ptr,
                 GZIP_HEADER + MAX_WBITS,
                 ZLIB_VERSION,
-                sizeOf<z_stream>().toInt()
+                sizeOf<z_stream>().toInt(),
             ) ==
-                Z_OK
+                Z_OK,
         )
         val parts = mutableListOf<ByteArray>()
         val chunk = ByteArray(CHUNK)

@@ -12,13 +12,13 @@ import io.xbot.tdlib.client.TdClient
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-internal class DefaultCustomEmojiRepository(private val client: TdClient) : CustomEmojiRepository {
+internal class DefaultCustomEmojiRepository(
+    private val client: TdClient,
+) : CustomEmojiRepository {
     private val mutex = Mutex()
     private val cache = mutableMapOf<Long, Sticker>()
 
-    override suspend fun stickers(
-        customEmojiIds: Set<Long>
-    ): Either<MediaError, Map<Long, Sticker>> = either {
+    override suspend fun stickers(customEmojiIds: Set<Long>): Either<MediaError, Map<Long, Sticker>> = either {
         val missing = mutex.withLock { customEmojiIds - cache.keys }
         missing.chunked(MAX_IDS_PER_REQUEST).forEach { ids ->
             val stickers = client.sendCatching(GetCustomEmojiStickers(customEmojiIds = ids))
@@ -37,5 +37,4 @@ internal class DefaultCustomEmojiRepository(private val client: TdClient) : Cust
     }
 }
 
-// getCustomEmojiStickers takes up to 200 identifiers.
 private const val MAX_IDS_PER_REQUEST = 200

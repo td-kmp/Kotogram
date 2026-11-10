@@ -14,11 +14,11 @@ import io.xbot.tdlib.api.Update
 
 internal fun ChatsState.reduce(update: Update): ChatsState = ChatsReducer.reduce(this, update)
 
-// By identity: unchanged entities stay one instance.
-internal fun ChatsState.hasSameEntriesAs(other: ChatsState, list: ChatList): Boolean =
-    chatLists[list] === other.chatLists[list] && chats === other.chats && users === other.users
+internal fun ChatsState.hasSameEntriesAs(
+    other: ChatsState,
+    list: ChatList,
+): Boolean = chatLists[list] === other.chatLists[list] && chats === other.chats && users === other.users
 
-// Folders as TDLib orders them, with the main list at its position among them.
 internal fun ChatsState.folderTabs(): List<ChatFolderTab> {
     val update = folders ?: return emptyList()
     val tabs = update.chatFolders.map { folder ->
@@ -28,13 +28,16 @@ internal fun ChatsState.folderTabs(): List<ChatFolderTab> {
     return tabs.toMutableList().apply { add(update.mainChatListPosition.coerceIn(0, size), main) }
 }
 
-private fun ChatsState.tab(list: ChatList, folder: ChatFolderInfo?): ChatFolderTab {
+private fun ChatsState.tab(
+    list: ChatList,
+    folder: ChatFolderInfo?,
+): ChatFolderTab {
     val counts = unreadChatCounts[list]
     return ChatFolderTab(
         chatList = list,
         folder = folder,
         unreadCount = counts?.unreadCount ?: 0,
-        hasUnmutedUnread = (counts?.unreadUnmutedCount ?: 0) > 0
+        hasUnmutedUnread = (counts?.unreadUnmutedCount ?: 0) > 0,
     )
 }
 
@@ -46,6 +49,6 @@ internal fun ChatsState.chatListEntries(list: ChatList): List<ChatListEntry> =
             chat = chat,
             position = chat.positions.firstOrNull { it.list == list },
             senderUser = (sender as? MessageSenderUser)?.let { users[it.userId] },
-            senderChat = (sender as? MessageSenderChat)?.let { chats[it.chatId] }
+            senderChat = (sender as? MessageSenderChat)?.let { chats[it.chatId] },
         )
     }

@@ -12,14 +12,14 @@ import com.xbot.kotogram.feature.auth.impl.FakeAuthRepository
 import com.xbot.kotogram.feature.auth.impl.FakeCountryRepository
 import io.xbot.tdlib.api.AuthorizationStateWaitOtherDeviceConfirmation
 import io.xbot.tdlib.api.CountryInfo
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.orbitmvi.orbit.test.testWithInternalState
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class PhoneViewModelTest {
     private val russia = country(code = "RU", name = "Russia", callingCode = "7")
@@ -30,7 +30,7 @@ class PhoneViewModelTest {
     private val entered = EnteredPhoneNumber(
         country = uzbekistan,
         callingCode = "998",
-        number = "901234567"
+        number = "901234567",
     )
 
     @Test
@@ -39,7 +39,7 @@ class PhoneViewModelTest {
             AuthorizationStateWaitOtherDeviceConfirmation(link = "tg://login")
         phoneScreen(
             { phoneNumber.setTextAndPlaceCursorAtEnd(entered.callingCode + entered.number) },
-            { onAction(PhoneScreenAction.OnSubmit) }
+            { onAction(PhoneScreenAction.OnSubmit) },
         )
         assertEquals(1, repository.restarts)
         assertEquals(entered, loginEntry.pendingPhoneNumber.value)
@@ -89,7 +89,7 @@ class PhoneViewModelTest {
     fun aChosenCountryReplacesTheCallingCodeAndKeepsTheNumber() = runTest {
         val state = phoneScreen(
             { phoneNumber.setTextAndPlaceCursorAtEnd("998901234") },
-            { onAction(PhoneScreenAction.OnCountrySelect(russia)) }
+            { onAction(PhoneScreenAction.OnCountrySelect(russia)) },
         )
         assertEquals("7901234", phoneNumber(state))
         assertEquals(russia, state.country)
@@ -103,14 +103,14 @@ class PhoneViewModelTest {
             SavedStateHandle(),
             loginEntry,
             FakeCountryRepository(listOf(russia, uzbekistan)),
-            repository
+            repository,
         )
         viewModel.testWithInternalState(this) {
             val onCreate = runOnCreate()
             runCurrent()
             steps.forEach { step ->
                 containerHost.step()
-                // No Compose frame here to send the edits to snapshotFlow.
+                // Workaround: no Compose frame here to send the edits to snapshotFlow.
                 Snapshot.sendApplyNotifications()
                 runCurrent()
                 Snapshot.sendApplyNotifications()
@@ -123,12 +123,16 @@ class PhoneViewModelTest {
         return state
     }
 
-    private fun country(code: String, name: String, callingCode: String) = CountryInfo(
+    private fun country(
+        code: String,
+        name: String,
+        callingCode: String,
+    ) = CountryInfo(
         countryCode = code,
         name = name,
         englishName = name,
         flagEmoji = "",
         isHidden = false,
-        callingCodes = listOf(callingCode)
+        callingCodes = listOf(callingCode),
     )
 }

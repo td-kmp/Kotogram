@@ -8,5 +8,5 @@ internal data class PasswordScreenState(
     val recoveryEmailPattern: String = "",
     val isRecovering: Boolean = false,
     val isSubmitting: Boolean = false,
-    val error: AuthError? = null
+    val error: AuthError? = null,
 )

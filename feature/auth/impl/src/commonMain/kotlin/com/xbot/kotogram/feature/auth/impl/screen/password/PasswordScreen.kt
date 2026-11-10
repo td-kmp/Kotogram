@@ -61,7 +61,10 @@ import com.xbot.kotogram.feature.auth.impl.extensions.localizedMessage
 import org.orbitmvi.orbit.compose.collectAsState
 
 @Composable
-internal fun PasswordScreen(viewModel: PasswordViewModel, modifier: Modifier = Modifier) {
+internal fun PasswordScreen(
+    viewModel: PasswordViewModel,
+    modifier: Modifier = Modifier,
+) {
     val state by viewModel.collectAsState()
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(focusRequester, state.isRecovering) { focusRequester.requestFocus() }
@@ -71,7 +74,7 @@ internal fun PasswordScreen(viewModel: PasswordViewModel, modifier: Modifier = M
         recoveryCode = viewModel.recoveryCode,
         onAction = viewModel::onAction,
         modifier = modifier,
-        focusRequester = focusRequester
+        focusRequester = focusRequester,
     )
 }
 
@@ -82,7 +85,7 @@ internal fun PasswordScreenContent(
     recoveryCode: TextFieldState,
     onAction: (PasswordScreenAction) -> Unit,
     modifier: Modifier = Modifier,
-    focusRequester: FocusRequester = remember { FocusRequester() }
+    focusRequester: FocusRequester = remember { FocusRequester() },
 ) {
     val style = rememberStyle(::PasswordScreenStyleScope, PasswordScreenStyle.Adaptive)
     val posture = mediaQuery { windowPosture }
@@ -91,13 +94,13 @@ internal fun PasswordScreenContent(
     context(style) {
         Scaffold(
             modifier = modifier,
-            contentWindowInsets = WindowInsets.safeDrawing
+            contentWindowInsets = WindowInsets.safeDrawing,
         ) { innerPadding ->
             Column(
                 Modifier
                     .fillMaxHeight()
                     .fillMaxWidth(if (posture.isBook) 0.5f else 1f)
-                    .padding(innerPadding)
+                    .padding(innerPadding),
             ) {
                 BoxWithConstraints(Modifier.weight(1f)) {
                     Column(
@@ -107,7 +110,7 @@ internal fun PasswordScreenContent(
                             .heightIn(min = maxHeight)
                             .padding(horizontal = style.horizontalPadding),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        verticalArrangement = Arrangement.Center,
                     ) {
                         if (!landscape && !posture.isTabletop) {
                             LottieImage(STICKER, Modifier.size(style.animationSize))
@@ -124,13 +127,13 @@ internal fun PasswordScreenContent(
                             text = if (state.isRecovering) {
                                 stringResource(
                                     Res.string.twostepauth_recoverysent,
-                                    state.recoveryEmailPattern
+                                    state.recoveryEmailPattern,
                                 )
                             } else {
                                 stringResource(Res.string.login_new_password_info)
                             },
                             style = style.infoTextStyle,
-                            modifier = Modifier.widthIn(max = style.infoWidth)
+                            modifier = Modifier.widthIn(max = style.infoWidth),
                         )
                         Spacer(Modifier.height(style.beforeField))
                         if (state.isRecovering) {
@@ -139,14 +142,14 @@ internal fun PasswordScreenContent(
                                 length = PasswordViewModel.RECOVERY_CODE_LENGTH,
                                 modifier = Modifier.focusRequester(focusRequester),
                                 isError = state.error != null,
-                                onKeyboardAction = { onAction(PasswordScreenAction.OnSubmit) }
+                                onKeyboardAction = { onAction(PasswordScreenAction.OnSubmit) },
                             )
                         } else {
                             PasswordField(
                                 state,
                                 password,
                                 onAction,
-                                Modifier.focusRequester(focusRequester)
+                                Modifier.focusRequester(focusRequester),
                             )
                         }
                         Crossfade(
@@ -154,12 +157,12 @@ internal fun PasswordScreenContent(
                             animationSpec = style.errorFadeSpec,
                             modifier = Modifier
                                 .height(style.afterField)
-                                .padding(top = style.beforeError)
+                                .padding(top = style.beforeError),
                         ) { error ->
                             if (error != null) {
                                 Text(
                                     text = stringResource(error.localizedMessage()),
-                                    style = style.errorTextStyle
+                                    style = style.errorTextStyle,
                                 )
                             }
                         }
@@ -183,7 +186,7 @@ internal fun PasswordScreenContent(
                         onAction = onAction,
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
-                            .padding(style.bottomActionInset)
+                            .padding(style.bottomActionInset),
                     )
                 }
             }
@@ -197,7 +200,7 @@ private fun PasswordField(
     state: PasswordScreenState,
     password: TextFieldState,
     onAction: (PasswordScreenAction) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var revealed by remember { mutableStateOf(false) }
     SecureTextField(
@@ -210,7 +213,7 @@ private fun PasswordField(
             IconButton(
                 icon = if (revealed) KotogramIcons.EyeOff else KotogramIcons.Eye,
                 contentDescription = null,
-                onClick = { revealed = !revealed }
+                onClick = { revealed = !revealed },
             )
         },
         isError = state.error != null,
@@ -219,7 +222,7 @@ private fun PasswordField(
         } else {
             TextObfuscationMode.RevealLastTyped
         },
-        onKeyboardAction = { onAction(PasswordScreenAction.OnSubmit) }
+        onKeyboardAction = { onAction(PasswordScreenAction.OnSubmit) },
     )
 }
 
@@ -228,13 +231,13 @@ context(style: PasswordScreenStyleScope)
 private fun PasswordAction(
     state: PasswordScreenState,
     onAction: (PasswordScreenAction) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     ProminentButton(
         text = stringResource(Res.string.login_next),
         onClick = { onAction(PasswordScreenAction.OnSubmit) },
         state = ButtonState.of(enabled = true, loading = state.isSubmitting),
-        modifier = modifier.contentWidth()
+        modifier = modifier.contentWidth(),
     )
 }
 
@@ -246,33 +249,31 @@ private fun Modifier.contentWidth(): Modifier {
 
 @KotogramPreview
 @Composable
-private fun PasswordScreenPreview(
-    @PreviewParameter(PasswordScreenStateProvider::class) state: PasswordScreenState
-) {
+private fun PasswordScreenPreview(@PreviewParameter(PasswordScreenStateProvider::class) state: PasswordScreenState) {
     PasswordScreenContent(
         state = state,
         password = TextFieldState("password"),
         recoveryCode = TextFieldState("123"),
-        onAction = {}
+        onAction = {},
     )
 }
 
 @KotogramLaptopPreview
 @Composable
 private fun PasswordScreenLaptopPreview(
-    @PreviewParameter(PasswordScreenStateProvider::class) state: PasswordScreenState
+    @PreviewParameter(PasswordScreenStateProvider::class) state: PasswordScreenState,
 ) = PasswordScreenPreview(state)
 
 private class PasswordScreenStateProvider : PreviewParameterProvider<PasswordScreenState> {
     private val protected = PasswordScreenState(
         hint = "first pet",
         hasRecoveryEmail = true,
-        recoveryEmailPattern = "j*****@g****.com"
+        recoveryEmailPattern = "j*****@g****.com",
     )
     override val values = sequenceOf(
         protected,
         protected.copy(error = AuthError.InvalidPassword),
-        protected.copy(isRecovering = true)
+        protected.copy(isRecovering = true),
     )
 }
 

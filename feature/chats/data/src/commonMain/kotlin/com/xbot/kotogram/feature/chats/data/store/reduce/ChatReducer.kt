@@ -21,7 +21,10 @@ import io.xbot.tdlib.api.UpdateMessageUnreadReactions
 import io.xbot.tdlib.api.UpdateNewChat
 
 internal object ChatReducer : Reducer {
-    override fun reduce(state: ChatsState, update: Update): ChatsState = when (update) {
+    override fun reduce(
+        state: ChatsState,
+        update: Update,
+    ): ChatsState = when (update) {
         is UpdateNewChat -> state.copy(chats = state.chats.putting(update.chat.id, update.chat))
 
         is UpdateChatPosition -> state.changeChat(update.chatId) { chat ->
@@ -61,7 +64,7 @@ internal object ChatReducer : Reducer {
         is UpdateChatReadInbox -> changeChat(update.chatId) {
             it.copy(
                 lastReadInboxMessageId = update.lastReadInboxMessageId,
-                unreadCount = update.unreadCount
+                unreadCount = update.unreadCount,
             )
         }
 
@@ -92,8 +95,10 @@ internal object ChatReducer : Reducer {
         else -> this
     }
 
-    // TDLib guarantees updateNewChat comes first, so an unknown chat means a bug or an undecodable update.
-    private inline fun ChatsState.changeChat(chatId: Long, change: (Chat) -> Chat): ChatsState {
+    private inline fun ChatsState.changeChat(
+        chatId: Long,
+        change: (Chat) -> Chat,
+    ): ChatsState {
         val chat = chats[chatId] ?: return this
         return copy(chats = chats.putting(chatId, change(chat)))
     }

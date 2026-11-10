@@ -34,7 +34,12 @@ internal fun copyIcon() = icon("Copy") {
     stroke(width = LINE) { roundRect(3.5f, 8.5f, 15.5f, 20.5f, 2.5f) }
     val canvas = listOf(Offset(0f, 0f), Offset(CANVAS, 0f), Offset(CANVAS, CANVAS), Offset(0f, CANVAS))
     val front = listOf(Offset(2f, 7f), Offset(2f, 22f), Offset(17f, 22f), Offset(17f, 7f))
-    group(clipPathData = clip { polygon(canvas); polygon(front) }) {
+    group(
+        clipPathData = clip {
+            polygon(canvas)
+            polygon(front)
+        },
+    ) {
         stroke(width = LINE) { roundRect(8.5f, 3.5f, 20.5f, 15.5f, 2.5f) }
     }
 }

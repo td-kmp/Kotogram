@@ -37,7 +37,7 @@ internal actual fun platformComponentOverrides(): Array<ProvidedValue<*>> = list
     LocalSwitchOverride provides IosSwitchOverride,
     if (hasLiquidGlass) LocalProminentButtonOverride provides GlassProminentButtonOverride else null,
     if (hasLiquidGlass) LocalGlassIconButtonOverride provides IosGlassIconButtonOverride else null,
-    if (hasLiquidGlass) LocalSearchFieldOverride provides GlassSearchFieldOverride else null
+    if (hasLiquidGlass) LocalSearchFieldOverride provides GlassSearchFieldOverride else null,
 ).toTypedArray()
 
 @Composable
@@ -54,7 +54,6 @@ internal actual fun platformUiMediaScope(): UiMediaScope {
 @Composable
 internal actual fun platformMediaQueryInfo(): MediaQueryInfo = IosMediaQueryInfo
 
-// An iPad app on a Mac is Android's FEATURE_PC.
 private val IosMediaQueryInfo =
     MediaQueryInfo(isLaptop = NSProcessInfo.processInfo.iOSAppOnMac, isTv = false, isAuto = false)
 

@@ -18,8 +18,6 @@ import io.xbot.tdlib.api.Error
 import io.xbot.tdlib.api.GetLanguagePackInfo
 import io.xbot.tdlib.api.LanguagePackInfo
 import io.xbot.tdlib.api.UpdateLanguagePackStrings
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.measureTimedValue
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
@@ -35,11 +33,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.measureTimedValue
 
 internal class DefaultLanguageRepository(
     private val appScope: CoroutineScope,
     private val client: AppClient,
-    private val store: ChosenLanguageStore
+    private val store: ChosenLanguageStore,
 ) : LanguageRepository {
     private val logger = Logger.withTag("LanguageRepository")
     private val mutex = Mutex()
@@ -59,11 +59,9 @@ internal class DefaultLanguageRepository(
         appScope.launch { mutex.withLock { restore() } }
     }
 
-    // In appScope: a switch goes on when the screen that asked for it is gone.
     override suspend fun apply(languagePackId: String): Either<LanguageError, Unit> =
         appScope.async { mutex.withLock { switchTo(languagePackId) } }.await()
 
-    // No strings means all of them, as after TDLib downloaded the whole pack itself.
     suspend fun onStringsChanged(update: UpdateLanguagePackStrings) {
         mutex.withLock {
             val info = chosen.value?.takeIf { update.isFor(it) } ?: return
@@ -85,7 +83,6 @@ internal class DefaultLanguageRepository(
             mutableState.value = LanguageState.Bundled
             return
         }
-        // English rather than a blank window while TDLib starts, then the pack.
         val fallback = appScope.launch {
             delay(RESTORE_TIMEOUT)
             mutableState.compareAndSet(LanguageState.Loading, LanguageState.Bundled)
@@ -103,7 +100,10 @@ internal class DefaultLanguageRepository(
         }
     }.mapLeft { it.toLanguageError() }
 
-    private suspend fun choose(info: LanguagePackInfo?, next: LanguageState) {
+    private suspend fun choose(
+        info: LanguagePackInfo?,
+        next: LanguageState,
+    ) {
         store.save(info)
         chosen.value = info
         mutableState.value = next
@@ -113,7 +113,7 @@ internal class DefaultLanguageRepository(
         val (pack, time) = measureTimedValue { client.languagePack(info) }
         pack.fold(
             ifLeft = { logger.e { "Can't get language pack ${info.id}: ${it.message}" } },
-            ifRight = { logger.d { "Language pack ${info.id}: ${it.strings.size} strings in $time" } }
+            ifRight = { logger.d { "Language pack ${info.id}: ${it.strings.size} strings in $time" } },
         )
         return pack
     }

@@ -15,7 +15,6 @@ import org.jetbrains.compose.resources.Font
 
 @Composable
 internal fun rememberKotogramTypography(): Typography {
-    // Apple's SF Pro can't be bundled; Compose's default family is the system's .AppleSystemUIFont on Apple platforms.
     val fontFamily = if (currentPlatform.isApple) FontFamily.Default else interFontFamily()
     return remember(fontFamily) { kotogramTypography(fontFamily) }
 }
@@ -24,7 +23,7 @@ internal fun rememberKotogramTypography(): Typography {
 private fun interFontFamily(): FontFamily = FontFamily(
     Font(Res.font.inter_regular, FontWeight.Normal),
     Font(Res.font.inter_medium, FontWeight.Medium),
-    Font(Res.font.inter_semibold, FontWeight.SemiBold)
+    Font(Res.font.inter_semibold, FontWeight.SemiBold),
 )
 
 @Suppress("MagicNumber")
@@ -45,9 +44,12 @@ private fun kotogramTypography(fontFamily: FontFamily): Typography {
         bodySmall = textStyle(fontFamily, 12),
         labelLarge = textStyle(fontFamily, 14, FontWeight.Medium),
         labelMedium = textStyle(fontFamily, 12, FontWeight.Medium),
-        labelSmall = textStyle(fontFamily, 11, FontWeight.Medium)
+        labelSmall = textStyle(fontFamily, 11, FontWeight.Medium),
     )
 }
 
-private fun textStyle(fontFamily: FontFamily, size: Int, weight: FontWeight = FontWeight.Normal): TextStyle =
-    TextStyle(fontFamily = fontFamily, fontWeight = weight, fontSize = size.sp)
+private fun textStyle(
+    fontFamily: FontFamily,
+    size: Int,
+    weight: FontWeight = FontWeight.Normal,
+): TextStyle = TextStyle(fontFamily = fontFamily, fontWeight = weight, fontSize = size.sp)

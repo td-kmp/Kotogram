@@ -9,14 +9,14 @@ import io.xbot.tdlib.api.InputFileGenerated
 import io.xbot.tdlib.api.UpdateFileGenerationStart
 import io.xbot.tdlib.api.WriteGeneratedFilePart
 import io.xbot.tdlib.client.TdClient
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 internal class GeneratedPhotos : AccountUpdates {
     private val pending = MutableStateFlow(emptyMap<String, ByteArray>())
@@ -28,11 +28,14 @@ internal class GeneratedPhotos : AccountUpdates {
         return InputFileGenerated(
             originalPath = "photo.jpg",
             conversion = conversion,
-            expectedSize = jpeg.size.toLong()
+            expectedSize = jpeg.size.toLong(),
         )
     }
 
-    override fun start(scope: CoroutineScope, client: TdClient) {
+    override fun start(
+        scope: CoroutineScope,
+        client: TdClient,
+    ) {
         scope.launch(start = CoroutineStart.UNDISPATCHED) {
             client.updatesOf<UpdateFileGenerationStart>()
                 .filter { it.conversion.startsWith(CONVERSION_PREFIX) }
@@ -40,14 +43,16 @@ internal class GeneratedPhotos : AccountUpdates {
         }
     }
 
-    private suspend fun generate(client: TdClient, update: UpdateFileGenerationStart) {
-        // After a restart TDLib asks for a photo no longer in memory.
+    private suspend fun generate(
+        client: TdClient,
+        update: UpdateFileGenerationStart,
+    ) {
         val jpeg = pending.value[update.conversion]
         val error = if (jpeg == null) {
             Error(code = GONE, message = "The photo is no longer in memory")
         } else {
             client.sendCatching(
-                WriteGeneratedFilePart(generationId = update.generationId, data = jpeg)
+                WriteGeneratedFilePart(generationId = update.generationId, data = jpeg),
             ).leftOrNull()
         }
         client.sendCatching(FinishFileGeneration(generationId = update.generationId, error = error))

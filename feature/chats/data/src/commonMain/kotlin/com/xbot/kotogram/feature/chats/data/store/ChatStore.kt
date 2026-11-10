@@ -12,19 +12,20 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-// One collector, because TDLib requires in-order processing.
 internal class ChatStore : AccountUpdates {
     private val mutableState = MutableStateFlow(ChatsState.Empty)
     val state: StateFlow<ChatsState> = mutableState.asStateFlow()
 
-    override fun start(scope: CoroutineScope, client: TdClient) {
+    override fun start(
+        scope: CoroutineScope,
+        client: TdClient,
+    ) {
         scope.launch(start = CoroutineStart.UNDISPATCHED) {
             client.updates.collect { onUpdate(it) }
         }
     }
 
     private fun onUpdate(update: Update) {
-        // A reducer bug must not take the account down.
         runCatching { mutableState.value.reduce(update) }
             .onSuccess { mutableState.value = it }
             .onFailure { Logger.e(it) { "Can't apply ${update::class.simpleName}" } }

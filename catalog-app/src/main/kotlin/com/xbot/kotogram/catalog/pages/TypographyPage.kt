@@ -35,7 +35,7 @@ internal val TypographyPage = CatalogPage(
                 "bodySmall" to typography.bodySmall,
                 "labelLarge" to typography.labelLarge,
                 "labelMedium" to typography.labelMedium,
-                "labelSmall" to typography.labelSmall
+                "labelSmall" to typography.labelSmall,
             )
         },
         CatalogExample("Weights") {
@@ -44,7 +44,7 @@ internal val TypographyPage = CatalogPage(
                     Text(
                         text = "${weightName(weight)} ${weight.weight} · $SAMPLE",
                         style = KotogramTheme.typography.bodyLarge,
-                        fontWeight = weight
+                        fontWeight = weight,
                     )
                 }
             }
@@ -52,7 +52,7 @@ internal val TypographyPage = CatalogPage(
         CatalogExample("Scripts") {
             Text(
                 text = "Telegram · Телеграм · 0123456789 · «Hello» — ¿Qué tal?",
-                style = KotogramTheme.typography.bodyLarge
+                style = KotogramTheme.typography.bodyLarge,
             )
         },
         CatalogExample("Material 3's large roles, not used by macOS") {
@@ -63,14 +63,17 @@ internal val TypographyPage = CatalogPage(
                 "displaySmall" to typography.displaySmall,
                 "headlineLarge" to typography.headlineLarge,
                 "headlineMedium" to typography.headlineMedium,
-                sample = "Telegram"
+                sample = "Telegram",
             )
-        }
-    )
+        },
+    ),
 )
 
 @Composable
-private fun TypeScale(vararg roles: Pair<String, TextStyle>, sample: String = SAMPLE) {
+private fun TypeScale(
+    vararg roles: Pair<String, TextStyle>,
+    sample: String = SAMPLE,
+) {
     val spacing = KotogramTheme.spacing
     Column(verticalArrangement = Arrangement.spacedBy(spacing.small)) {
         roles.forEach { (name, style) ->
@@ -79,7 +82,7 @@ private fun TypeScale(vararg roles: Pair<String, TextStyle>, sample: String = SA
                     text = "$name · ${style.fontSize.value.toInt()} ${weightName(style.fontWeight)}",
                     style = KotogramTheme.typography.bodySmall,
                     color = KotogramTheme.colors.onSurfaceVariant,
-                    modifier = Modifier.width(LabelWidth)
+                    modifier = Modifier.width(LabelWidth),
                 )
                 Text(sample, style = style)
             }

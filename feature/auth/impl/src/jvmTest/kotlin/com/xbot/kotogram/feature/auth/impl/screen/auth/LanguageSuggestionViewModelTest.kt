@@ -4,15 +4,15 @@ import com.xbot.kotogram.feature.auth.impl.FakeAuthRepository
 import com.xbot.kotogram.feature.auth.impl.FakeLanguageRepository
 import com.xbot.kotogram.feature.auth.impl.FakeLanguageSuggestionRepository
 import com.xbot.kotogram.feature.language.domain.model.LanguageSuggestion
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.orbitmvi.orbit.test.testWithInternalState
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class LanguageSuggestionViewModelTest {
     private val auth = FakeAuthRepository()

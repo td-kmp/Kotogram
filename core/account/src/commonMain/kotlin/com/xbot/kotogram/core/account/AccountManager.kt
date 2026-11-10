@@ -14,8 +14,6 @@ import io.xbot.tdlib.api.OptionValue
 import io.xbot.tdlib.api.SetOption
 import io.xbot.tdlib.api.UpdateAuthorizationState
 import io.xbot.tdlib.client.TdClient
-import kotlin.coroutines.cancellation.CancellationException
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -36,10 +34,14 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
 import org.koin.core.Koin
+import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration.Companion.seconds
 
-data class ShownAccounts(val active: AccountSession? = null, val adding: AccountSession? = null)
+data class ShownAccounts(
+    val active: AccountSession? = null,
+    val adding: AccountSession? = null,
+)
 
-// Every step changes the sessions and the registry under one mutex, so they stay in one class.
 @Suppress("TooManyFunctions")
 class AccountManager(
     private val appScope: CoroutineScope,
@@ -49,12 +51,11 @@ class AccountManager(
     private val storage: AccountStorage,
     private val keys: DatabaseKeys,
     private val koin: Koin,
-    private val maxAccounts: Int = MAX_ACCOUNTS
+    private val maxAccounts: Int = MAX_ACCOUNTS,
 ) {
     private val logger = Logger.withTag("AccountManager")
     private val mutex = Mutex()
 
-    // Guarded by mutex.
     private var sessions = emptyMap<AccountId, AccountSession>()
     private var addingId: AccountId? = null
 
@@ -106,7 +107,7 @@ class AccountManager(
         }
     }
 
-    // TDLib leaves QR login only through a log out, which ends the client: sign-in goes on in a new account.
+    // Workaround: TDLib leaves QR login only through a log out, so sign-in goes on in a new account.
     fun restartSignIn(id: AccountId) {
         appScope.launch { endSignIn(id, restart = true) }
     }
@@ -118,12 +119,11 @@ class AccountManager(
         }
     }
 
-    // Removal follows on AuthorizationStateClosed, as for a logout from another device.
     suspend fun logOut(id: AccountId) {
         mutex.withLock { sessions[id] }?.logOut()
     }
 
-    // TDLib crashes the JVM if it exits during td_receive.
+    // Workaround: TDLib crashes the JVM if it exits during td_receive.
     suspend fun closeAll() {
         val open = mutex.withLock { sessions.values.toList() }
         open.forEach { it.closingByApp = true }
@@ -132,8 +132,10 @@ class AccountManager(
         }
     }
 
-    // Runs in appScope: the screens that asked for this are cleared along the way.
-    private suspend fun endSignIn(id: AccountId, restart: Boolean) {
+    private suspend fun endSignIn(
+        id: AccountId,
+        restart: Boolean,
+    ) {
         val session = mutex.withLock {
             val session = sessions[id]?.takeUnless { it.closingByApp } ?: return
             session.closingByApp = true
@@ -143,39 +145,34 @@ class AccountManager(
             }
             session
         }
-        // Before authorization a log out only erases the local data, and needs no network.
         session.logOut()
         session.authorizationState.first { it is AuthorizationStateClosed }
         remove(id, restart)
     }
 
-    // With the mutex held.
     private suspend fun open(id: AccountId): AccountSession {
         val client = TdClient.create(tdLib)
         val coroutines = CoroutineScope(
             appScope.coroutineContext +
                 SupervisorJob(appScope.coroutineContext[Job]) +
-                CoroutineName("account-${id.value}")
+                CoroutineName("account-${id.value}"),
         )
         val koinScope = koin.createScope("account-${id.value}", AccountScope)
         koinScope.declare(client)
         koinScope.declare(AccountContext(id, client, coroutines))
         val session = AccountSession(id, koinScope, client, coroutines)
 
-        // Creates every follower now: updates have no replay, so they subscribe before the first request.
         koinScope.getAll<AccountUpdates>().forEach { it.start(coroutines, client) }
         coroutines.launch(start = CoroutineStart.UNDISPATCHED) { setUp(session) }
         coroutines.launch(start = CoroutineStart.UNDISPATCHED) { follow(session) }
 
         sessions = sessions + (id to session)
-        // TDLib starts an instance on its first request.
         client.sendCatching(GetOption(name = "version")).onLeft {
             logger.e { "Account ${id.value} didn't start: ${it.message}" }
         }
         return session
     }
 
-    // Stays with the account to send its options' changes.
     private suspend fun setUp(session: AccountSession) {
         session.authorizationState.first { it is AuthorizationStateWaitTdlibParameters }
         val key = keys.getOrCreate(session.id)
@@ -196,7 +193,7 @@ class AccountManager(
     private suspend fun sendOptions(
         client: TdClient,
         owners: List<TdlibOptions>,
-        firstSent: CompletableDeferred<Unit>
+        firstSent: CompletableDeferred<Unit>,
     ) {
         if (owners.isEmpty()) {
             firstSent.complete(Unit)
@@ -206,7 +203,7 @@ class AccountManager(
             var sent = emptyMap<String, OptionValue>()
             combine(owners.map { it.options }) { it.reduce(Map<String, OptionValue>::plus) }.collect { options ->
                 options.filter { (name, value) -> sent[name] != value }.forEach { (name, value) ->
-                    // Not awaited: TDLib answers it after setTdlibParameters, and TdClient.send keeps the call order.
+                    // Workaround: awaiting hangs, TDLib answers after setTdlibParameters; send keeps the order.
                     launch(start = CoroutineStart.UNDISPATCHED) {
                         client.sendCatching(SetOption(name = name, value = value)).onLeft {
                             logger.e { "Option $name wasn't set: ${it.message}" }
@@ -219,7 +216,7 @@ class AccountManager(
         }
     }
 
-    // The database can't be opened anymore; only a signed-in account starts over, or a broken Keystore would loop.
+    // Workaround: only a signed-in account starts over, or a broken Keystore would loop.
     private suspend fun onDatabaseKeyLost(session: AccountSession) {
         logger.e { "Account ${session.id.value} lost its database key" }
         if (registry.value.entry(session.id)?.userId == null) return
@@ -230,7 +227,7 @@ class AccountManager(
         }
     }
 
-    // From updates and not authorizationState: a StateFlow could drop LoggingOut on its way to Closed.
+    // Workaround: read from updates, a StateFlow could drop LoggingOut on its way to Closed.
     private suspend fun follow(session: AccountSession) {
         var isLoggingOut = false
         session.client.updatesOf<UpdateAuthorizationState>()
@@ -249,14 +246,13 @@ class AccountManager(
             }
     }
 
-    private fun onClosed(session: AccountSession, isLoggingOut: Boolean) {
+    private fun onClosed(
+        session: AccountSession,
+        isLoggingOut: Boolean,
+    ) {
         when {
             session.closingByApp -> Unit
-
-            // In appScope: removal cancels the session's scope, which this collector runs in.
             isLoggingOut -> appScope.launch { remove(session.id) }
-
-            // A failed web worker closes every client: the account keeps its data for the next start.
             else -> logger.e { "Account ${session.id.value} closed without a log out" }
         }
     }
@@ -267,7 +263,7 @@ class AccountManager(
                 logger.e { "getMe failed for ${session.id.value}: ${it.message}" }
                 return
             },
-            ifRight = { it }
+            ifRight = { it },
         )
         val isDuplicate = mutex.withLock {
             if (sessions[session.id] !== session) return
@@ -283,16 +279,18 @@ class AccountManager(
                     existing != null -> current.copy(active = existing.id)
                     wasAdding -> signedIn.copy(active = session.id)
                     else -> signedIn
-                }
+                },
             )
             publish()
             existing != null
         }
-        // This user is already on the device: revoke the new authorization, and Closed removes it.
         if (isDuplicate) session.logOut()
     }
 
-    private suspend fun remove(id: AccountId, restart: Boolean = false) {
+    private suspend fun remove(
+        id: AccountId,
+        restart: Boolean = false,
+    ) {
         var replacement: AccountSession? = null
         val session = mutex.withLock {
             val session = sessions[id]
@@ -300,7 +298,6 @@ class AccountManager(
             val wasAdding = addingId == id
             if (wasAdding) addingId = null
             val rest = registry.value.without(id)
-            // No account left on screen: show sign-in.
             if (rest.active == null || restart) {
                 val next = rest.withNewAccount()
                 val isAboveActive = restart && wasAdding && rest.active != null
@@ -321,7 +318,6 @@ class AccountManager(
         deleteData(id)
     }
 
-    // The account being replaced stays on screen meanwhile, so a restarted sign-in doesn't flash.
     private suspend fun awaitFirstScreen(session: AccountSession) {
         withTimeoutOrNull(REPLACE_TIMEOUT) {
             session.authorizationState.first { it.isLoginStep || it == AuthorizationStateReady }
@@ -330,7 +326,7 @@ class AccountManager(
 
     private fun retire(session: AccountSession) {
         session.cancelWork()
-        // A screen still on display reads the scope until its next frame, and a closed one throws there.
+        // Workaround: a screen still on display reads the scope until its next frame, and a closed one throws.
         appScope.launch {
             delay(SCOPE_CLOSE_DELAY)
             session.koinScope.close()
@@ -366,7 +362,7 @@ class AccountManager(
         val current = registry.value
         mutableShown.value = ShownAccounts(
             active = current.active?.let { sessions[it] },
-            adding = addingId?.let { sessions[it] }
+            adding = addingId?.let { sessions[it] },
         )
         mutableAccounts.value = current.signedIn.mapNotNull { sessions[it.id] }
     }

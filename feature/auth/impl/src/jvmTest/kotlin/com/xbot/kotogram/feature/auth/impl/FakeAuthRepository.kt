@@ -26,9 +26,7 @@ internal class FakeAuthRepository : AuthRepository {
         authorizationState.value = AuthorizationStateWaitPhoneNumber
     }
 
-    override suspend fun setAuthenticationPhoneNumber(
-        phoneNumber: String
-    ): Either<AuthError, Unit> {
+    override suspend fun setAuthenticationPhoneNumber(phoneNumber: String): Either<AuthError, Unit> {
         phoneNumbers += phoneNumber
         return phoneNumberResult
     }
@@ -49,7 +47,11 @@ internal class FakeAuthRepository : AuthRepository {
 
     override suspend fun recoverAuthenticationPassword(recoveryCode: String) = ok()
 
-    override suspend fun registerUser(firstName: String, lastName: String, photo: ByteArray?) = ok()
+    override suspend fun registerUser(
+        firstName: String,
+        lastName: String,
+        photo: ByteArray?,
+    ) = ok()
 
     private fun ok(): Either<AuthError, Unit> = Unit.right()
 }

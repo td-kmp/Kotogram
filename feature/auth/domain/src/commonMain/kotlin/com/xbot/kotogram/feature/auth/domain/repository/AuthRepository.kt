@@ -8,14 +8,12 @@ import kotlinx.coroutines.flow.Flow
 interface AuthRepository {
     val authorizationState: Flow<AuthorizationState>
 
-    // No account is signed in on the device yet.
     val isFirstSignIn: Flow<Boolean>
 
     suspend fun setAuthenticationPhoneNumber(phoneNumber: String): Either<AuthError, Unit>
 
     suspend fun requestQrCodeAuthentication(): Either<AuthError, Unit>
 
-    // Starts over in a new account: TDLib takes no phone number during QR confirmation, nor a QR code past a step.
     fun restartSignIn()
 
     suspend fun checkAuthenticationCode(code: String): Either<AuthError, Unit>
@@ -35,6 +33,6 @@ interface AuthRepository {
     suspend fun registerUser(
         firstName: String,
         lastName: String,
-        photo: ByteArray?
+        photo: ByteArray?,
     ): Either<AuthError, Unit>
 }

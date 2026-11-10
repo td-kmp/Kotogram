@@ -10,10 +10,10 @@ import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramTheme
-import com.xbot.kotogram.core.designsystem.media.UiMediaScope.KeyboardKind
 import com.xbot.kotogram.core.designsystem.media.LocalUiMediaScope
-import com.xbot.kotogram.core.designsystem.media.UiMediaScope.PointerPrecision
 import com.xbot.kotogram.core.designsystem.media.UiMediaScope
+import com.xbot.kotogram.core.designsystem.media.UiMediaScope.KeyboardKind
+import com.xbot.kotogram.core.designsystem.media.UiMediaScope.PointerPrecision
 import com.xbot.kotogram.core.designsystem.media.UiMediaScope.ViewingDistance
 import com.xbot.kotogram.core.designsystem.media.UiMediaScope.WindowPosture
 import com.xbot.kotogram.core.designsystem.style.LocalMediaQueryInfo
@@ -25,13 +25,13 @@ import io.xbot.tdlib.api.ChatFolderName
 import io.xbot.tdlib.api.ChatListFolder
 import io.xbot.tdlib.api.ChatListMain
 import io.xbot.tdlib.api.FormattedText
-import java.io.File
-import javax.imageio.ImageIO
-import kotlin.test.Test
 import org.jetbrains.skia.Color
 import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Paint
 import org.jetbrains.skia.Surface
+import java.io.File
+import javax.imageio.ImageIO
+import kotlin.test.Test
 
 class ChatListScreenScreenshotTest {
     @Test
@@ -41,23 +41,27 @@ class ChatListScreenScreenshotTest {
     fun laptopDark() = render("laptop_dark", Laptop, laptop = true, scale = 2)
 
     @OptIn(ExperimentalTestApi::class)
-    private fun render(name: String, media: UiMediaScope, laptop: Boolean, scale: Int) = runDesktopComposeUiTest(
+    private fun render(
+        name: String,
+        media: UiMediaScope,
+        laptop: Boolean,
+        scale: Int,
+    ) = runDesktopComposeUiTest(
         width = (media.windowWidth.value * scale).toInt(),
-        height = (media.windowHeight.value * scale).toInt()
+        height = (media.windowHeight.value * scale).toInt(),
     ) {
         setContent {
             CompositionLocalProvider(LocalDensity provides Density(scale.toFloat())) {
                 KotogramTheme(darkTheme = true, dynamicColor = false) {
                     CompositionLocalProvider(
                         LocalUiMediaScope provides media,
-                        LocalMediaQueryInfo provides MediaQueryInfo(isLaptop = laptop, isTv = false, isAuto = false)
+                        LocalMediaQueryInfo provides MediaQueryInfo(isLaptop = laptop, isTv = false, isAuto = false),
                     ) {
                         ChatListScreenContent(state = sampleState(), onAction = {}, onChatClick = {})
                     }
                 }
             }
         }
-        // Coil decodes off the UI thread.
         Thread.sleep(IMAGE_WAIT_MILLIS)
         mainClock.advanceTimeBy(IMAGE_WAIT_MILLIS)
         waitForIdle()
@@ -71,18 +75,18 @@ private fun sampleState(): ChatListScreenState {
     val personal = ChatFolderInfo(
         id = 1,
         name = ChatFolderName(text = FormattedText(text = "Personal")),
-        icon = ChatFolderIcon(name = "Private")
+        icon = ChatFolderIcon(name = "Private"),
     )
     val photos = listOf(0xFF6D4C41, 0xFF1E88E5, 0xFF37474F, 0xFFC62828, 0xFF2E7D32, 0xFFF9A825, 0xFF455A64)
     return ChatListScreenState(
         tabs = listOf(
             ChatFolderTab(ChatListMain, folder = null, unreadCount = 0, hasUnmutedUnread = false),
-            ChatFolderTab(ChatListFolder(chatFolderId = 1), personal, unreadCount = 8, hasUnmutedUnread = true)
+            ChatFolderTab(ChatListFolder(chatFolderId = 1), personal, unreadCount = 8, hasUnmutedUnread = true),
         ),
         rows = SampleRows.mapIndexed { index, row ->
             row.withPhoto(if (index == 6) null else photo(photos[index]))
                 .withThumbnail(if (index == 3 || index == 4) photo(0xFF90A4AE) else null)
-        }
+        },
     )
 }
 
@@ -90,12 +94,15 @@ private fun ChatListRow.withPhoto(photo: ByteArray?) =
     copy(avatar = AvatarModel(null, photo, avatar.letters, avatar.colorIndex))
 
 private fun ChatListRow.withThumbnail(thumbnail: ByteArray?) = copy(
-    preview = (preview as? ChatPreview.Media)?.let { ChatPreview.Media(it.kind, it.text, thumbnail) } ?: preview
+    preview = (preview as? ChatPreview.Media)?.let { ChatPreview.Media(it.kind, it.text, thumbnail) } ?: preview,
 )
 
-private fun ChatListRow.copy(avatar: AvatarModel = this.avatar, preview: ChatPreview = this.preview) = ChatListRow(
+private fun ChatListRow.copy(
+    avatar: AvatarModel = this.avatar,
+    preview: ChatPreview = this.preview,
+) = ChatListRow(
     chatId, title, avatar, emojiStatusId, isMuted, isPinned, time, outgoing, unreadCount, hasUnreadMention,
-    isMarkedAsUnread, senderName, preview
+    isMarkedAsUnread, senderName, preview,
 )
 
 private fun photo(argb: Long): ByteArray {
@@ -111,7 +118,11 @@ private val Phone = media(PHONE_WIDTH, PHONE_HEIGHT, laptop = false)
 
 private val Laptop = media(LAPTOP_WIDTH, LAPTOP_HEIGHT, laptop = true)
 
-private fun media(width: Int, height: Int, laptop: Boolean) = object : UiMediaScope {
+private fun media(
+    width: Int,
+    height: Int,
+    laptop: Boolean,
+) = object : UiMediaScope {
     override val windowPosture = WindowPosture(emptyList())
     override val windowWidth = width.dp
     override val windowHeight = height.dp

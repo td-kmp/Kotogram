@@ -33,7 +33,7 @@ internal val CheckboxPage = CatalogPage(
         CatalogExample("Press to toggle") {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.large),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Toggle(initial = false)
                 Toggle(initial = true)
@@ -46,7 +46,7 @@ internal val CheckboxPage = CatalogPage(
         CatalogExample("Disabled") {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.large),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Checkbox(checked = false, onCheckedChange = {}, enabled = false)
                 Checkbox(checked = true, onCheckedChange = {}, enabled = false)
@@ -60,15 +60,14 @@ internal val CheckboxPage = CatalogPage(
                         headlineContent = { Text(name) },
                         leadingContent = { Checkbox(checked = checked, onCheckedChange = null) },
                         onClick = { checked = !checked },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
             }
-        }
-    )
+        },
+    ),
 )
 
-// What a touch screen gets off Apple's platforms, for a look at it on a Mac.
 private val MaterialCheckbox = CheckboxStyle {
     size(18.dp)
     shape(RoundedCornerShape(2.dp))

@@ -17,5 +17,5 @@ data class FormattedTextStyles(
     val spoiler: SpanStyle = SpanStyle(),
     val code: SpanStyle = SpanStyle(fontFamily = FontFamily.Monospace),
     val quote: SpanStyle = SpanStyle(fontStyle = FontStyle.Italic),
-    val link: TextLinkStyles? = null
+    val link: TextLinkStyles? = null,
 )

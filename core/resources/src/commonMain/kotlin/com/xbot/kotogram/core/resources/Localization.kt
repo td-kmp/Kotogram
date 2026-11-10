@@ -11,7 +11,6 @@ import io.xbot.tdlib.api.LanguagePackStringValue
 
 @Immutable
 interface Localization {
-    // Null for the bundled English.
     val language: LanguagePackInfo?
 
     fun string(key: String): LanguagePackStringValue?
@@ -26,12 +25,15 @@ object BundledLocalization : Localization {
 val LocalLocalization = staticCompositionLocalOf<Localization> { BundledLocalization }
 
 @Composable
-fun ProvideLocalization(localization: Localization, content: @Composable () -> Unit) {
+fun ProvideLocalization(
+    localization: Localization,
+    content: @Composable () -> Unit,
+) {
     val layoutDirection = if (localization.language?.isRtl == true) LayoutDirection.Rtl else LayoutDirection.Ltr
     CompositionLocalProvider(
         LocalLocalization provides localization,
         LocalLayoutDirection provides layoutDirection,
         bundledComposeEnvironment(),
-        content = content
+        content = content,
     )
 }

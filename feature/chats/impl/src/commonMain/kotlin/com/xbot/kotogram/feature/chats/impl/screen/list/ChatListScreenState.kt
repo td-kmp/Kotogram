@@ -12,5 +12,5 @@ internal data class ChatListScreenState(
     val customEmoji: Map<Long, Sticker> = emptyMap(),
     val isLoading: Boolean = false,
     val isComplete: Boolean = false,
-    val loadFailed: Boolean = false
+    val loadFailed: Boolean = false,
 )

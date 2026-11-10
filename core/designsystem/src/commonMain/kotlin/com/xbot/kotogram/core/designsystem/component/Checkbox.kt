@@ -44,14 +44,13 @@ import com.xbot.kotogram.core.designsystem.style.StyleResolver
 import com.xbot.kotogram.core.designsystem.style.rememberStyle
 import com.xbot.kotogram.core.designsystem.theme.currentPlatform
 
-// AppKit's checkbox on macOS; drawn by Compose elsewhere, iOS included, since UIKit has no checkbox outside Catalyst.
 @Composable
 fun Checkbox(
     checked: Boolean,
     onCheckedChange: ((Boolean) -> Unit)?,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    style: CheckboxStyle = CheckboxStyle
+    style: CheckboxStyle = CheckboxStyle,
 ) {
     val checkboxStyle = rememberStyle(::CheckboxStyleScope, CheckboxStyle.Adaptive then style)
     with(LocalCheckboxOverride.current) {
@@ -69,7 +68,7 @@ internal class CheckboxOverrideScope(
     val onCheckedChange: ((Boolean) -> Unit)?,
     val modifier: Modifier,
     val enabled: Boolean,
-    val style: CheckboxStyleScope
+    val style: CheckboxStyleScope,
 )
 
 internal object DefaultCheckboxOverride : CheckboxOverride {
@@ -85,7 +84,7 @@ internal object DefaultCheckboxOverride : CheckboxOverride {
                     indication = null,
                     enabled = enabled,
                     role = Role.Checkbox,
-                    onValueChange = onChange
+                    onValueChange = onChange,
                 )
         } ?: Modifier
         Spacer(
@@ -99,7 +98,7 @@ internal object DefaultCheckboxOverride : CheckboxOverride {
                     val outline = style.shape.createOutline(
                         Size(size.width - border, size.height - border),
                         layoutDirection,
-                        this
+                        this,
                     )
                     val check = PathMeasure().apply {
                         setPath(
@@ -108,7 +107,7 @@ internal object DefaultCheckboxOverride : CheckboxOverride {
                                 lineTo(size.width * CHECK_CORNER_X, size.height * CHECK_CORNER_Y)
                                 lineTo(size.width * CHECK_END_X, size.height * CHECK_END_Y)
                             },
-                            false
+                            false,
                         )
                     }
                     val drawn = Path()
@@ -127,7 +126,7 @@ internal object DefaultCheckboxOverride : CheckboxOverride {
                             drawPath(drawn, style.checkmarkColor, style = checkStroke)
                         }
                     }
-                }
+                },
         )
     }
 }
@@ -140,7 +139,7 @@ internal val LocalCheckboxOverride: ProvidableCompositionLocal<CheckboxOverride>
 private fun CheckboxPreview() {
     Row(
         modifier = Modifier.padding(KotogramTheme.spacing.large),
-        horizontalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.large)
+        horizontalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.large),
     ) {
         Checkbox(checked = false, onCheckedChange = {})
         Checkbox(checked = true, onCheckedChange = {})
@@ -159,8 +158,6 @@ private const val CHECK_CORNER_Y = 0.68f
 private const val CHECK_END_X = 0.74f
 private const val CHECK_END_Y = 0.36f
 
-// On touch screens Material 3's 18 rounded square, and iOS's 22 circle of a selected row on Apple's platforms; our
-// own 14 square on a laptop.
 @Suppress("MagicNumber")
 fun interface CheckboxStyle : ComponentStyle<CheckboxStyleScope> {
     companion object : CheckboxStyle {
@@ -192,7 +189,9 @@ fun interface CheckboxStyle : ComponentStyle<CheckboxStyleScope> {
 
 infix fun CheckboxStyle.then(other: CheckboxStyle): CheckboxStyle = when {
     other === CheckboxStyle -> this
+
     this === CheckboxStyle -> other
+
     else -> CheckboxStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
@@ -200,8 +199,10 @@ infix fun CheckboxStyle.then(other: CheckboxStyle): CheckboxStyle = when {
 }
 
 @Suppress("TooManyFunctions")
-class CheckboxStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
-    AdaptiveStyleScope<CheckboxStyleScope>,
+class CheckboxStyleScope(
+    val theme: KotogramTheme.Values,
+    override val mediaQueryInfo: MediaQueryInfo,
+) : AdaptiveStyleScope<CheckboxStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
     var size: Dp = Dp.Unspecified

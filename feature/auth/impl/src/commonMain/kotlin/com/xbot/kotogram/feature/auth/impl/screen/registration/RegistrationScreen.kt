@@ -78,7 +78,10 @@ import org.jetbrains.compose.resources.decodeToImageBitmap
 import org.orbitmvi.orbit.compose.collectAsState
 
 @Composable
-internal fun RegistrationScreen(viewModel: RegistrationViewModel, modifier: Modifier = Modifier) {
+internal fun RegistrationScreen(
+    viewModel: RegistrationViewModel,
+    modifier: Modifier = Modifier,
+) {
     val state by viewModel.collectAsState()
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(focusRequester) { focusRequester.requestFocus() }
@@ -89,7 +92,7 @@ internal fun RegistrationScreen(viewModel: RegistrationViewModel, modifier: Modi
         photo = viewModel.photo,
         onAction = viewModel::onAction,
         modifier = modifier,
-        focusRequester = focusRequester
+        focusRequester = focusRequester,
     )
 }
 
@@ -101,7 +104,7 @@ internal fun RegistrationScreenContent(
     photo: ByteArray?,
     onAction: (RegistrationScreenAction) -> Unit,
     modifier: Modifier = Modifier,
-    focusRequester: FocusRequester = remember { FocusRequester() }
+    focusRequester: FocusRequester = remember { FocusRequester() },
 ) {
     val style = rememberStyle(::RegistrationScreenStyleScope, RegistrationScreenStyle.Adaptive)
     val posture = mediaQuery { windowPosture }
@@ -111,13 +114,13 @@ internal fun RegistrationScreenContent(
     context(style) {
         Scaffold(
             modifier = modifier,
-            contentWindowInsets = WindowInsets.safeDrawing
+            contentWindowInsets = WindowInsets.safeDrawing,
         ) { innerPadding ->
             Column(
                 Modifier
                     .fillMaxHeight()
                     .fillMaxWidth(if (posture.isBook) 0.5f else 1f)
-                    .padding(innerPadding)
+                    .padding(innerPadding),
             ) {
                 BoxWithConstraints(Modifier.weight(1f)) {
                     Column(
@@ -127,7 +130,7 @@ internal fun RegistrationScreenContent(
                             .heightIn(min = maxHeight)
                             .padding(horizontal = style.horizontalPadding),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        verticalArrangement = Arrangement.Center,
                     ) {
                         if (!landscape && !posture.isTabletop) {
                             Avatar(photo, onAction)
@@ -135,13 +138,13 @@ internal fun RegistrationScreenContent(
                         }
                         Text(
                             text = stringResource(Res.string.login_new_register_header),
-                            style = style.titleTextStyle
+                            style = style.titleTextStyle,
                         )
                         Spacer(Modifier.height(style.beforeInfo))
                         Text(
                             text = stringResource(Res.string.login_new_register_info),
                             style = style.infoTextStyle,
-                            modifier = Modifier.widthIn(max = style.infoWidth)
+                            modifier = Modifier.widthIn(max = style.infoWidth),
                         )
                         Spacer(Modifier.height(style.beforeField))
                         NameFields(firstName, lastName, state.error, onAction, focusRequester)
@@ -150,12 +153,12 @@ internal fun RegistrationScreenContent(
                             animationSpec = style.errorFadeSpec,
                             modifier = Modifier
                                 .height(style.afterField)
-                                .padding(top = style.beforeError)
+                                .padding(top = style.beforeError),
                         ) { error ->
                             if (error != null) {
                                 Text(
                                     text = stringResource(error.localizedMessage()),
-                                    style = style.errorTextStyle
+                                    style = style.errorTextStyle,
                                 )
                             }
                         }
@@ -169,9 +172,9 @@ internal fun RegistrationScreenContent(
                                 linkStyles = TextLinkStyles(SpanStyle(color = style.linkColor)),
                                 onLinkClick = {
                                     onAction(RegistrationScreenAction.OnTermsVisibilityChange(true))
-                                }
+                                },
                             ),
-                            style = style.termsTextStyle
+                            style = style.termsTextStyle,
                         )
                     }
                 }
@@ -183,7 +186,7 @@ internal fun RegistrationScreenContent(
                         onAction = onAction,
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
-                            .padding(style.bottomActionInset)
+                            .padding(style.bottomActionInset),
                     )
                 }
             }
@@ -194,7 +197,10 @@ internal fun RegistrationScreenContent(
 
 @Composable
 context(style: RegistrationScreenStyleScope)
-private fun Avatar(photo: ByteArray?, onAction: (RegistrationScreenAction) -> Unit) {
+private fun Avatar(
+    photo: ByteArray?,
+    onAction: (RegistrationScreenAction) -> Unit,
+) {
     val picker =
         rememberPhotoPickerLauncher { onAction(RegistrationScreenAction.OnPhotoPicked(it)) }
     val image by produceState<ImageBitmap?>(null, photo) {
@@ -206,7 +212,7 @@ private fun Avatar(photo: ByteArray?, onAction: (RegistrationScreenAction) -> Un
             .clip(CircleShape)
             .background(style.avatarColor)
             .then(if (picker != null) Modifier.clickable(onClick = picker::launch) else Modifier),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         val current = image
         if (current != null) {
@@ -214,7 +220,7 @@ private fun Avatar(photo: ByteArray?, onAction: (RegistrationScreenAction) -> Un
                 bitmap = current,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.matchParentSize()
+                modifier = Modifier.matchParentSize(),
             )
         } else {
             Icon(KotogramIcons.Camera, contentDescription = null, tint = style.avatarIconColor)
@@ -229,7 +235,7 @@ private fun NameFields(
     lastName: TextFieldState,
     error: AuthError?,
     onAction: (RegistrationScreenAction) -> Unit,
-    focusRequester: FocusRequester
+    focusRequester: FocusRequester,
 ) {
     val nameOptions =
         KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next)
@@ -240,7 +246,7 @@ private fun NameFields(
             placeholder = { Text(stringResource(Res.string.login_register_firstname_placeholder)) },
             isError = error != null,
             keyboardOptions = nameOptions,
-            lineLimits = TextFieldLineLimits.SingleLine
+            lineLimits = TextFieldLineLimits.SingleLine,
         )
         TextField(
             state = lastName,
@@ -248,7 +254,7 @@ private fun NameFields(
             placeholder = { Text(stringResource(Res.string.login_register_lastname_placeholder)) },
             keyboardOptions = nameOptions.copy(imeAction = ImeAction.Done),
             onKeyboardAction = { onAction(RegistrationScreenAction.OnSubmit) },
-            lineLimits = TextFieldLineLimits.SingleLine
+            lineLimits = TextFieldLineLimits.SingleLine,
         )
     }
 }
@@ -259,18 +265,21 @@ private fun RegistrationAction(
     state: RegistrationScreenState,
     canSubmit: Boolean,
     onAction: (RegistrationScreenAction) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     ProminentButton(
         text = stringResource(Res.string.login_new_register_next),
         onClick = { onAction(RegistrationScreenAction.OnSubmit) },
         state = ButtonState.of(enabled = canSubmit, loading = state.isSubmitting),
-        modifier = modifier.contentWidth()
+        modifier = modifier.contentWidth(),
     )
 }
 
 @Composable
-private fun TermsDialog(terms: String, onAction: (RegistrationScreenAction) -> Unit) {
+private fun TermsDialog(
+    terms: String,
+    onAction: (RegistrationScreenAction) -> Unit,
+) {
     val dismiss = { onAction(RegistrationScreenAction.OnTermsVisibilityChange(false)) }
     AlertDialog(
         onDismissRequest = dismiss,
@@ -278,7 +287,7 @@ private fun TermsDialog(terms: String, onAction: (RegistrationScreenAction) -> U
         text = { Text(terms, Modifier.verticalScroll(rememberScrollState())) },
         confirmButton = {
             TextButton(onClick = dismiss) { Text(stringResource(Res.string.navigation_back)) }
-        }
+        },
     )
 }
 
@@ -291,26 +300,26 @@ private fun Modifier.contentWidth(): Modifier {
 @KotogramPreview
 @Composable
 private fun RegistrationScreenPreview(
-    @PreviewParameter(RegistrationScreenStateProvider::class) state: RegistrationScreenState
+    @PreviewParameter(RegistrationScreenStateProvider::class) state: RegistrationScreenState,
 ) {
     RegistrationScreenContent(
         state = state,
         firstName = TextFieldState("Pavel"),
         lastName = TextFieldState(),
         photo = null,
-        onAction = {}
+        onAction = {},
     )
 }
 
 @KotogramLaptopPreview
 @Composable
 private fun RegistrationScreenLaptopPreview(
-    @PreviewParameter(RegistrationScreenStateProvider::class) state: RegistrationScreenState
+    @PreviewParameter(RegistrationScreenStateProvider::class) state: RegistrationScreenState,
 ) = RegistrationScreenPreview(state)
 
 private class RegistrationScreenStateProvider : PreviewParameterProvider<RegistrationScreenState> {
     override val values = sequenceOf(
         RegistrationScreenState(),
-        RegistrationScreenState(error = AuthError.InvalidName)
+        RegistrationScreenState(error = AuthError.InvalidName),
     )
 }

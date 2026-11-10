@@ -29,7 +29,7 @@ internal class PhoneViewModel(
     savedStateHandle: SavedStateHandle,
     private val loginEntry: LoginEntry,
     private val countryRepository: CountryRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
 ) : ViewModel(),
     OrbitContainerHost<PhoneScreenState, PhoneScreenState, PhoneScreenSideEffect> {
 
@@ -45,8 +45,8 @@ internal class PhoneViewModel(
             country = pending?.country,
             callingCode = pending?.callingCode.orEmpty(),
             number = pending?.number.orEmpty(),
-            isSubmitting = pending != null
-        )
+            isSubmitting = pending != null,
+        ),
     ) {
         coroutineScope {
             launch { loadCountries() }
@@ -95,7 +95,7 @@ internal class PhoneViewModel(
                 country = chosen ?: info?.country,
                 callingCode = callingCode,
                 number = number,
-                numberPattern = info?.formattedPhoneNumber.orEmpty()
+                numberPattern = info?.formattedPhoneNumber.orEmpty(),
             )
         }
     }
@@ -103,9 +103,7 @@ internal class PhoneViewModel(
     fun onAction(action: PhoneScreenAction) {
         when (action) {
             is PhoneScreenAction.OnCountryPickerVisibilityChange -> onCountryPickerVisibilityChange(action.visible)
-
             is PhoneScreenAction.OnCountrySelect -> onCountrySelect(action.country)
-
             PhoneScreenAction.OnSubmit -> onSubmit()
         }
     }
@@ -119,7 +117,10 @@ internal class PhoneViewModel(
         selectCountry(country, state.number)
     }
 
-    private fun selectCountry(country: CountryInfo, number: String = "") {
+    private fun selectCountry(
+        country: CountryInfo,
+        number: String = "",
+    ) {
         phoneNumber.setTextAndPlaceCursorAtEnd(country.callingCodes.firstOrNull().orEmpty() + number)
     }
 
@@ -136,16 +137,14 @@ internal class PhoneViewModel(
         }
     }
 
-    private suspend fun Syntax<PhoneScreenState, PhoneScreenSideEffect>.submit(
-        phoneNumber: EnteredPhoneNumber
-    ) {
+    private suspend fun Syntax<PhoneScreenState, PhoneScreenSideEffect>.submit(phoneNumber: EnteredPhoneNumber) {
         reduce { state.copy(isSubmitting = true, error = null) }
         authRepository.setAuthenticationPhoneNumber(phoneNumber.international).fold(
             ifLeft = { error -> reduce { state.copy(isSubmitting = false, error = error) } },
             ifRight = {
                 reduce { state.copy(isSubmitting = false) }
                 postSideEffect(PhoneScreenSideEffect.Submitted)
-            }
+            },
         )
     }
 }

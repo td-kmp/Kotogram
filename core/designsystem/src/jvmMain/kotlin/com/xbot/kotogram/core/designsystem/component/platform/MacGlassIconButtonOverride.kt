@@ -22,17 +22,16 @@ internal object MacGlassIconButtonOverride : GlassIconButtonOverride {
         val currentOnClick by rememberUpdatedState(onClick)
         val currentEnabled by rememberUpdatedState(enabled)
         val button = remember { MacGlassIconButton { if (currentEnabled) currentOnClick() } }
-        // AppKit tints template images only on borderless buttons, so the icon comes in its colour.
+        // Workaround: AppKit tints template images only on borderless buttons, so the icon comes in its colour.
         val bitmap = rememberIconBitmap(icon, style.iconSize, iconColor)
         val png = remember(bitmap) { bitmap.toPng() }
         val points = style.iconSize.value.toDouble()
         val dark = KotogramTheme.colors.background.isDark()
-        val inFront = isSettledInFront()
         NativeView(
             factory = {
                 nucleusNsPlatformView(
                     handle = { Pointer.nativeValue(button.handle) },
-                    onDispose = button::release
+                    onDispose = button::release,
                 )
             },
             modifier = modifier.minimumInteractiveComponentSize().size(style.size),
@@ -41,9 +40,8 @@ internal object MacGlassIconButtonOverride : GlassIconButtonOverride {
                 button.setAccessibilityLabel(contentDescription)
                 button.setDark(dark)
                 button.setEnabled(enabled)
-                button.setVisible(inFront)
             },
-            placedAsOverlay = true
+            placedAsOverlay = true,
         )
     }
 }

@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-// androidx.compose.ui.platform.MediaScope.ios of CMP's jb-main (1.13.0-beta01), without the type of the last touch,
-// which only its ComposeSceneMediator sees.
+// Adapted from androidx.compose.ui.platform.MediaScope.ios of CMP's jb-main (1.13.0-beta01), without the touch type.
 package com.xbot.kotogram.core.designsystem.media
 
 import androidx.compose.runtime.getValue
@@ -36,11 +35,13 @@ import platform.UIKit.UIKeyboardWillHideNotification
 import platform.UIKit.UIKeyboardWillShowNotification
 import platform.darwin.NSObjectProtocol
 
-internal class IosUiMediaScope(val windowInfo: WindowInfo) : UiMediaScope {
+internal class IosUiMediaScope(
+    val windowInfo: WindowInfo,
+) : UiMediaScope {
     private var isImeShowing by mutableStateOf(false)
     private var keyboardObservers = emptyList<NSObjectProtocol>()
 
-    // iOS 27.1's UIHingeInteraction isn't in Kotlin 2.4.20's UIKit, which is built from the iOS 26.4 SDK.
+    // Workaround: iOS 27.1's UIHingeInteraction isn't in Kotlin 2.4.20's UIKit, built from the iOS 26.4 SDK.
     override val windowPosture: UiMediaScope.WindowPosture = UiMediaScope.WindowPosture(emptyList())
 
     override val windowWidth: Dp
@@ -58,7 +59,7 @@ internal class IosUiMediaScope(val windowInfo: WindowInfo) : UiMediaScope {
             else -> UiMediaScope.KeyboardKind.None
         }
 
-    // CMP asks AVCaptureDevice, which would have the app link AVFoundation: the framework is static.
+    // Workaround: CMP asks AVCaptureDevice, which would have the app link AVFoundation: the framework is static.
     override val hasMicrophone: Boolean
         get() = true
 
@@ -72,7 +73,7 @@ internal class IosUiMediaScope(val windowInfo: WindowInfo) : UiMediaScope {
         keyboardObservers = listOf(
             observe(UIKeyboardWillShowNotification) { isImeShowing = it.keyboardHeight > 0 },
             observe(UIKeyboardWillChangeFrameNotification) { isImeShowing = it.keyboardHeight > 0 },
-            observe(UIKeyboardWillHideNotification) { isImeShowing = false }
+            observe(UIKeyboardWillHideNotification) { isImeShowing = false },
         )
     }
 
@@ -82,7 +83,10 @@ internal class IosUiMediaScope(val windowInfo: WindowInfo) : UiMediaScope {
     }
 }
 
-private fun observe(name: String?, block: (NSNotification?) -> Unit): NSObjectProtocol =
+private fun observe(
+    name: String?,
+    block: (NSNotification?) -> Unit,
+): NSObjectProtocol =
     NSNotificationCenter.defaultCenter.addObserverForName(name, null, NSOperationQueue.mainQueue, block)
 
 @OptIn(ExperimentalForeignApi::class)

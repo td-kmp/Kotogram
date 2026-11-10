@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-// androidx.compose.ui.MediaQuery of androidx-main (Compose UI 1.13), which CMP 1.12.1 provides only on Android, without
-// computedMediaQuery: its computedStateOf is 1.13's runtime. Moving to the official one is a change of imports.
+// Adapted from androidx.compose.ui.MediaQuery of androidx-main (Compose UI 1.13), without computedMediaQuery.
 package com.xbot.kotogram.core.designsystem.media
 
 import androidx.compose.runtime.Composable
@@ -54,7 +53,10 @@ interface UiMediaScope {
     val viewingDistance: ViewingDistance
 
     @Immutable
-    class WindowFold(val state: FoldState, val orientation: FoldOrientation) {
+    class WindowFold(
+        val state: FoldState,
+        val orientation: FoldOrientation,
+    ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other !is WindowFold) return false
@@ -67,7 +69,9 @@ interface UiMediaScope {
     }
 
     @Immutable
-    class WindowPosture(val folds: List<WindowFold>) {
+    class WindowPosture(
+        val folds: List<WindowFold>,
+    ) {
         val isFlat: Boolean
             get() = folds.none { it.state == FoldState.HalfOpened }
 
@@ -86,7 +90,9 @@ interface UiMediaScope {
     }
 
     @JvmInline
-    value class FoldState internal constructor(internal val value: Int) {
+    value class FoldState internal constructor(
+        internal val value: Int,
+    ) {
         override fun toString(): String = when (this) {
             Flat -> "Flat"
             HalfOpened -> "HalfOpened"
@@ -100,7 +106,9 @@ interface UiMediaScope {
     }
 
     @JvmInline
-    value class FoldOrientation internal constructor(internal val value: Int) {
+    value class FoldOrientation internal constructor(
+        internal val value: Int,
+    ) {
         override fun toString(): String = when (this) {
             Horizontal -> "Horizontal"
             Vertical -> "Vertical"
@@ -114,7 +122,9 @@ interface UiMediaScope {
     }
 
     @JvmInline
-    value class PointerPrecision private constructor(private val value: Int) {
+    value class PointerPrecision private constructor(
+        private val value: Int,
+    ) {
         override fun toString(): String = when (this) {
             Fine -> "Fine"
             Coarse -> "Coarse"
@@ -132,7 +142,9 @@ interface UiMediaScope {
     }
 
     @JvmInline
-    value class KeyboardKind private constructor(private val value: Int) {
+    value class KeyboardKind private constructor(
+        private val value: Int,
+    ) {
         override fun toString(): String = when (this) {
             Physical -> "Physical"
             Virtual -> "Virtual"
@@ -148,7 +160,9 @@ interface UiMediaScope {
     }
 
     @JvmInline
-    value class ViewingDistance private constructor(private val value: Int) {
+    value class ViewingDistance private constructor(
+        private val value: Int,
+    ) {
         override fun toString(): String = when (this) {
             Near -> "Near"
             Medium -> "Medium"

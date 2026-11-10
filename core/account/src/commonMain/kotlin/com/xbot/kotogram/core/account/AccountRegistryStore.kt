@@ -15,8 +15,9 @@ interface AccountRegistryStore {
     suspend fun save(registry: AccountRegistry)
 }
 
-internal class DataStoreAccountRegistryStore(private val preferences: DataStore<Preferences>) :
-    AccountRegistryStore {
+internal class DataStoreAccountRegistryStore(
+    private val preferences: DataStore<Preferences>,
+) : AccountRegistryStore {
     private val json = Json { ignoreUnknownKeys = true }
 
     override suspend fun load(): AccountRegistry {

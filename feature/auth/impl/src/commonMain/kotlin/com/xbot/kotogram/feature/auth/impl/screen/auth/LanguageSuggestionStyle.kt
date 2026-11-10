@@ -23,7 +23,9 @@ internal fun interface LanguageSuggestionStyle : ComponentStyle<LanguageSuggesti
 
 internal infix fun LanguageSuggestionStyle.then(other: LanguageSuggestionStyle): LanguageSuggestionStyle = when {
     other === LanguageSuggestionStyle -> this
+
     this === LanguageSuggestionStyle -> other
+
     else -> LanguageSuggestionStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
@@ -32,7 +34,7 @@ internal infix fun LanguageSuggestionStyle.then(other: LanguageSuggestionStyle):
 
 internal class LanguageSuggestionStyleScope(
     val theme: KotogramTheme.Values,
-    override val mediaQueryInfo: MediaQueryInfo
+    override val mediaQueryInfo: MediaQueryInfo,
 ) : AdaptiveStyleScope<LanguageSuggestionStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 

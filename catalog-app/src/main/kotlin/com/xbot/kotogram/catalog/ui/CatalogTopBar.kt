@@ -23,7 +23,7 @@ fun CatalogTopBar(
     onDarkThemeChange: (Boolean) -> Unit,
     laptop: Boolean,
     onLaptopChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     TopBar(
         title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
@@ -37,22 +37,25 @@ fun CatalogTopBar(
             LabeledSwitch("Mobile", checked = !laptop, onCheckedChange = { onLaptopChange(!it) })
             LabeledSwitch("Dark theme", checked = darkTheme, onCheckedChange = onDarkThemeChange)
         },
-        style = CatalogTopBarStyle
+        style = CatalogTopBarStyle,
     )
 }
 
 @Composable
-private fun LabeledSwitch(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+private fun LabeledSwitch(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.small),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(label, style = KotogramTheme.typography.bodyLarge)
         Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
 
-// A window's bar on every platform: the title at the start, in line with the home's grid, away from the switches.
 private val CatalogTopBarStyle = TopBarStyle {
     centeredTitle(false)
     horizontalPadding(theme.spacing.large)

@@ -1,6 +1,5 @@
 package com.xbot.kotogram.feature.auth.api
 
-// Not saved: the flow's stack follows TDLib's state.
 sealed interface AuthStep {
     data object QrCode : AuthStep
 

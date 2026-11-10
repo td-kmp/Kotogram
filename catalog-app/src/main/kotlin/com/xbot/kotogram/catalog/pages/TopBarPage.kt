@@ -26,7 +26,7 @@ internal val TopBarPage = CatalogPage(
             TopBar(
                 title = { Text("Country") },
                 modifier = Modifier.fillMaxWidth(),
-                navigation = { GlassIconButton(KotogramIcons.Cross, contentDescription = "Close", onClick = {}) }
+                navigation = { GlassIconButton(KotogramIcons.Cross, contentDescription = "Close", onClick = {}) },
             )
         },
         CatalogExample("Screen: back, title and actions") {
@@ -37,7 +37,7 @@ internal val TopBarPage = CatalogPage(
                 actions = {
                     IconButton(KotogramIcons.Search, contentDescription = "Search", onClick = {})
                     IconButton(KotogramIcons.More, contentDescription = "More", onClick = {})
-                }
+                },
             )
         },
         CatalogExample("Title at the start, as on Android") {
@@ -46,7 +46,7 @@ internal val TopBarPage = CatalogPage(
                 modifier = Modifier.fillMaxWidth(),
                 navigation = { IconButton(KotogramIcons.Back, contentDescription = "Back", onClick = {}) },
                 actions = { IconButton(KotogramIcons.Search, contentDescription = "Search", onClick = {}) },
-                style = TopBarStyle { centeredTitle(false) }
+                style = TopBarStyle { centeredTitle(false) },
             )
         },
         CatalogExample("A long title") {
@@ -55,13 +55,13 @@ internal val TopBarPage = CatalogPage(
                     Text(
                         text = "A title long enough to be cut short before the actions",
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
                 navigation = { IconButton(KotogramIcons.Back, contentDescription = "Back", onClick = {}) },
-                actions = { IconButton(KotogramIcons.More, contentDescription = "More", onClick = {}) }
+                actions = { IconButton(KotogramIcons.More, contentDescription = "More", onClick = {}) },
             )
-        }
-    )
+        },
+    ),
 )

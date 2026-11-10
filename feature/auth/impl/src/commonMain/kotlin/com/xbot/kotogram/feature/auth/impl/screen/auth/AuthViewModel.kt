@@ -16,7 +16,7 @@ import org.orbitmvi.orbit.viewmodel.orbitContainer
 internal class AuthViewModel(
     private val flow: LoginFlow,
     private val loginEntry: LoginEntry,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
 ) : ViewModel(),
     OrbitContainerHost<AuthScreenState, AuthScreenState, Nothing> {
 
@@ -35,7 +35,7 @@ internal class AuthViewModel(
                     reduce {
                         state.copy(
                             backStack = backStack,
-                            hasLeftFirstStep = state.hasLeftFirstStep || backStack.last() != first
+                            hasLeftFirstStep = state.hasLeftFirstStep || backStack.last() != first,
                         )
                     }
                 }
@@ -57,7 +57,7 @@ internal class AuthViewModel(
     private fun onQrLoginClick() = intent {
         if (flow != LoginFlow.QrCodeFirst) return@intent
         loginEntry.method.value = LoginMethod.QrCode
-        // As Unigram does: past a step the sign-in starts over, or the server answers AUTH_TOKEN_ALREADY_ACCEPTED.
+        // Workaround: past a step the server answers AUTH_TOKEN_ALREADY_ACCEPTED, so sign-in starts over as in Unigram.
         if (authRepository.authorizationState.first().toAuthStep() != null) {
             authRepository.restartSignIn()
         }
@@ -66,9 +66,8 @@ internal class AuthViewModel(
     private fun backStack(
         method: LoginMethod,
         step: AuthStep?,
-        dismissed: AuthStep?
+        dismissed: AuthStep?,
     ): List<AuthStep> {
-        // TDLib shows a QR code only before the first step, so past it the entry is the phone.
         val entry = if (method == LoginMethod.QrCode && step == null) {
             AuthStep.QrCode
         } else {

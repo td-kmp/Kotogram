@@ -24,7 +24,12 @@ internal fun eyeOffIcon() = icon("EyeOff") {
     val gap = 1.45f
     val belowSlash = halfPlane(start, end, gap, CANVAS)
     val aboveSlash = halfPlane(end, start, gap, CANVAS)
-    group(clipPathData = clip { polygon(belowSlash); polygon(aboveSlash) }) {
+    group(
+        clipPathData = clip {
+            polygon(belowSlash)
+            polygon(aboveSlash)
+        },
+    ) {
         stroke(width = LINE) { ellipse(Center, EYE_RADIUS_X, EYE_RADIUS_Y) }
     }
     group(clipPathData = clip { polygon(belowSlash) }) {

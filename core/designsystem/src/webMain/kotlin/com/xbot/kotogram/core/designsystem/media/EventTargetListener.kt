@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-// androidx.compose.ui.events.EventTargetListener of CMP's jb-main, internal there.
+// Adapted from androidx.compose.ui.events.EventTargetListener of CMP's jb-main, internal there.
 @file:OptIn(ExperimentalWasmJsInterop::class)
 
 package com.xbot.kotogram.core.designsystem.media
 
-import kotlin.js.ExperimentalWasmJsInterop
-import kotlin.js.js
 import org.w3c.dom.AddEventListenerOptions
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.EventTarget
+import kotlin.js.ExperimentalWasmJsInterop
+import kotlin.js.js
 
 private external interface AbortSignal
 
@@ -34,10 +34,15 @@ private external class AbortController {
 
 private fun withSignal(signal: AbortSignal): AddEventListenerOptions = js("({signal: signal})")
 
-internal class EventTargetListener(private val eventTarget: EventTarget) {
+internal class EventTargetListener(
+    private val eventTarget: EventTarget,
+) {
     private val abortController = AbortController()
 
-    fun addDisposableEvent(eventName: String, handler: (Event) -> Unit) {
+    fun addDisposableEvent(
+        eventName: String,
+        handler: (Event) -> Unit,
+    ) {
         eventTarget.addEventListener(eventName, handler, withSignal(abortController.signal))
     }
 

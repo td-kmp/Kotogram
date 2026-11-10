@@ -56,8 +56,12 @@ class FormattedTextTest {
         assertTrue(text.spanStyles.single().end == 2)
     }
 
-    private fun formatted(text: String, offset: Int, length: Int, type: TextEntityType) =
-        FormattedText(text, listOf(TextEntity(offset, length, type)))
+    private fun formatted(
+        text: String,
+        offset: Int,
+        length: Int,
+        type: TextEntityType,
+    ) = FormattedText(text, listOf(TextEntity(offset, length, type)))
 
     private fun androidx.compose.ui.text.AnnotatedString.url() =
         (getLinkAnnotations(0, length).single().item as LinkAnnotation.Url).url

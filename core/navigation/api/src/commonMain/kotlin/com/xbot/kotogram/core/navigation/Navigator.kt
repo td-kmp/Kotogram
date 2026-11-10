@@ -10,7 +10,6 @@ interface Navigator {
 
     fun navigateBack()
 
-    // A stack that already starts at the key is kept, so a restored back stack survives.
     fun setRoot(key: NavKey)
 }
 

@@ -6,5 +6,5 @@ internal data class EmailCodeScreenState(
     val emailPattern: String = "",
     val codeLength: Int = 0,
     val isSubmitting: Boolean = false,
-    val error: AuthError? = null
+    val error: AuthError? = null,
 )

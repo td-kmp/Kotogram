@@ -16,41 +16,64 @@ internal object ObjC {
 
     fun sel(name: String): Pointer = runtime.getFunction("sel_registerName").invokePointer(arrayOf(cString(name)))
 
-    fun send(receiver: Pointer, selector: String, vararg args: Any?): Pointer? =
-        msgSend.invokePointer(arrayOf(receiver, sel(selector), *args))
+    fun send(
+        receiver: Pointer,
+        selector: String,
+        vararg args: Any?,
+    ): Pointer? = msgSend.invokePointer(arrayOf(receiver, sel(selector), *args))
 
-    fun sendVoid(receiver: Pointer, selector: String, vararg args: Any?) {
+    fun sendVoid(
+        receiver: Pointer,
+        selector: String,
+        vararg args: Any?,
+    ) {
         msgSend.invokeVoid(arrayOf(receiver, sel(selector), *args))
     }
 
-    fun sendBoolean(receiver: Pointer, selector: String, vararg args: Any?): Boolean =
-        msgSend.invokeInt(arrayOf(receiver, sel(selector), *args)).toByte() != 0.toByte()
+    fun sendBoolean(
+        receiver: Pointer,
+        selector: String,
+        vararg args: Any?,
+    ): Boolean = msgSend.invokeInt(arrayOf(receiver, sel(selector), *args)).toByte() != 0.toByte()
 
     fun appearance(dark: Boolean): Pointer = requireNotNull(
         send(
             requireNotNull(cls("NSAppearance")),
             "appearanceNamed:",
-            string(if (dark) "NSAppearanceNameDarkAqua" else "NSAppearanceNameAqua")
-        )
+            string(if (dark) "NSAppearanceNameDarkAqua" else "NSAppearanceNameAqua"),
+        ),
     )
 
-    fun sendLong(receiver: Pointer, selector: String, vararg args: Any?): Long =
-        msgSend.invokeLong(arrayOf(receiver, sel(selector), *args))
+    fun sendLong(
+        receiver: Pointer,
+        selector: String,
+        vararg args: Any?,
+    ): Long = msgSend.invokeLong(arrayOf(receiver, sel(selector), *args))
 
-    fun sendPoint(receiver: Pointer, selector: String, vararg args: Any?): NSPoint =
-        msgSend.invoke(NSPoint::class.java, arrayOf(receiver, sel(selector), *args)) as NSPoint
+    fun sendPoint(
+        receiver: Pointer,
+        selector: String,
+        vararg args: Any?,
+    ): NSPoint = msgSend.invoke(NSPoint::class.java, arrayOf(receiver, sel(selector), *args)) as NSPoint
 
-    fun sendSize(receiver: Pointer, selector: String, vararg args: Any?): NSSize =
-        msgSend.invoke(NSSize::class.java, arrayOf(receiver, sel(selector), *args)) as NSSize
+    fun sendSize(
+        receiver: Pointer,
+        selector: String,
+        vararg args: Any?,
+    ): NSSize = msgSend.invoke(NSSize::class.java, arrayOf(receiver, sel(selector), *args)) as NSSize
 
     fun string(text: String): Pointer =
         requireNotNull(send(requireNotNull(cls("NSString")), "stringWithUTF8String:", cString(text)))
 
-    fun actionClass(name: String, selector: String, imp: ActionImp): Pointer {
+    fun actionClass(
+        name: String,
+        selector: String,
+        imp: ActionImp,
+    ): Pointer {
         cls(name)?.let { return it }
         val superclass = requireNotNull(cls("NSObject"))
         val created = requireNotNull(
-            runtime.getFunction("objc_allocateClassPair").invokePointer(arrayOf(superclass, cString(name), 0L))
+            runtime.getFunction("objc_allocateClassPair").invokePointer(arrayOf(superclass, cString(name), 0L)),
         )
         runtime.getFunction("class_addMethod").invokeInt(arrayOf(created, sel(selector), imp, cString("v@:@")))
         runtime.getFunction("objc_registerClassPair").invokeVoid(arrayOf(created))
@@ -58,7 +81,11 @@ internal object ObjC {
     }
 
     fun interface ActionImp : Callback {
-        fun invoke(self: Pointer, cmd: Pointer, sender: Pointer)
+        fun invoke(
+            self: Pointer,
+            cmd: Pointer,
+            sender: Pointer,
+        )
     }
 
     private fun cString(text: String): Memory {
@@ -70,10 +97,16 @@ internal object ObjC {
     }
 
     @Structure.FieldOrder("x", "y")
-    class NSPoint(@JvmField var x: Double = 0.0, @JvmField var y: Double = 0.0) : Structure(), Structure.ByValue
+    class NSPoint(
+        @JvmField var x: Double = 0.0,
+        @JvmField var y: Double = 0.0,
+    ) : Structure(),
+        Structure.ByValue
 
     @Structure.FieldOrder("width", "height")
-    class NSSize(@JvmField var width: Double = 0.0, @JvmField var height: Double = 0.0) :
-        Structure(),
+    class NSSize(
+        @JvmField var width: Double = 0.0,
+        @JvmField var height: Double = 0.0,
+    ) : Structure(),
         Structure.ByValue
 }

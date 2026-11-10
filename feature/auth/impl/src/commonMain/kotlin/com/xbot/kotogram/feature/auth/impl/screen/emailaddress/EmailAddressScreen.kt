@@ -55,7 +55,10 @@ import com.xbot.kotogram.feature.auth.impl.extensions.localizedMessage
 import org.orbitmvi.orbit.compose.collectAsState
 
 @Composable
-internal fun EmailAddressScreen(viewModel: EmailAddressViewModel, modifier: Modifier = Modifier) {
+internal fun EmailAddressScreen(
+    viewModel: EmailAddressViewModel,
+    modifier: Modifier = Modifier,
+) {
     val state by viewModel.collectAsState()
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(focusRequester) { focusRequester.requestFocus() }
@@ -64,7 +67,7 @@ internal fun EmailAddressScreen(viewModel: EmailAddressViewModel, modifier: Modi
         email = viewModel.email,
         onAction = viewModel::onAction,
         modifier = modifier,
-        focusRequester = focusRequester
+        focusRequester = focusRequester,
     )
 }
 
@@ -74,7 +77,7 @@ internal fun EmailAddressScreenContent(
     email: TextFieldState,
     onAction: (EmailAddressScreenAction) -> Unit,
     modifier: Modifier = Modifier,
-    focusRequester: FocusRequester = remember { FocusRequester() }
+    focusRequester: FocusRequester = remember { FocusRequester() },
 ) {
     val style = rememberStyle(::EmailAddressScreenStyleScope, EmailAddressScreenStyle.Adaptive)
     val posture = mediaQuery { windowPosture }
@@ -83,13 +86,13 @@ internal fun EmailAddressScreenContent(
     context(style) {
         Scaffold(
             modifier = modifier,
-            contentWindowInsets = WindowInsets.safeDrawing
+            contentWindowInsets = WindowInsets.safeDrawing,
         ) { innerPadding ->
             Column(
                 Modifier
                     .fillMaxHeight()
                     .fillMaxWidth(if (posture.isBook) 0.5f else 1f)
-                    .padding(innerPadding)
+                    .padding(innerPadding),
             ) {
                 BoxWithConstraints(Modifier.weight(1f)) {
                     Column(
@@ -99,7 +102,7 @@ internal fun EmailAddressScreenContent(
                             .heightIn(min = maxHeight)
                             .padding(horizontal = style.horizontalPadding),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        verticalArrangement = Arrangement.Center,
                     ) {
                         if (!landscape && !posture.isTabletop) {
                             LottieImage(STICKER, Modifier.size(style.animationSize))
@@ -107,13 +110,13 @@ internal fun EmailAddressScreenContent(
                         }
                         Text(
                             text = stringResource(Res.string.authemailsetup_title),
-                            style = style.titleTextStyle
+                            style = style.titleTextStyle,
                         )
                         Spacer(Modifier.height(style.beforeInfo))
                         Text(
                             text = stringResource(Res.string.authemailsetup_description),
                             style = style.infoTextStyle,
-                            modifier = Modifier.widthIn(max = style.infoWidth)
+                            modifier = Modifier.widthIn(max = style.infoWidth),
                         )
                         Spacer(Modifier.height(style.beforeField))
                         TextField(
@@ -125,22 +128,22 @@ internal fun EmailAddressScreenContent(
                             isError = state.error != null,
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Email,
-                                imeAction = ImeAction.Done
+                                imeAction = ImeAction.Done,
                             ),
                             onKeyboardAction = { onAction(EmailAddressScreenAction.OnSubmit) },
-                            lineLimits = TextFieldLineLimits.SingleLine
+                            lineLimits = TextFieldLineLimits.SingleLine,
                         )
                         Crossfade(
                             targetState = state.error,
                             animationSpec = style.errorFadeSpec,
                             modifier = Modifier
                                 .height(style.afterField)
-                                .padding(top = style.beforeError)
+                                .padding(top = style.beforeError),
                         ) { error ->
                             if (error != null) {
                                 Text(
                                     text = stringResource(error.localizedMessage()),
-                                    style = style.errorTextStyle
+                                    style = style.errorTextStyle,
                                 )
                             }
                         }
@@ -155,7 +158,7 @@ internal fun EmailAddressScreenContent(
                         onAction = onAction,
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
-                            .padding(style.bottomActionInset)
+                            .padding(style.bottomActionInset),
                     )
                 }
             }
@@ -169,13 +172,13 @@ private fun EmailAddressAction(
     state: EmailAddressScreenState,
     email: TextFieldState,
     onAction: (EmailAddressScreenAction) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     ProminentButton(
         text = stringResource(Res.string.login_next),
         onClick = { onAction(EmailAddressScreenAction.OnSubmit) },
         state = ButtonState.of(enabled = email.text.isNotBlank(), loading = state.isSubmitting),
-        modifier = modifier.contentWidth()
+        modifier = modifier.contentWidth(),
     )
 }
 
@@ -188,7 +191,7 @@ private fun Modifier.contentWidth(): Modifier {
 @KotogramPreview
 @Composable
 private fun EmailAddressScreenPreview(
-    @PreviewParameter(EmailAddressScreenStateProvider::class) state: EmailAddressScreenState
+    @PreviewParameter(EmailAddressScreenStateProvider::class) state: EmailAddressScreenState,
 ) {
     EmailAddressScreenContent(state = state, email = TextFieldState("name@example"), onAction = {})
 }
@@ -196,13 +199,13 @@ private fun EmailAddressScreenPreview(
 @KotogramLaptopPreview
 @Composable
 private fun EmailAddressScreenLaptopPreview(
-    @PreviewParameter(EmailAddressScreenStateProvider::class) state: EmailAddressScreenState
+    @PreviewParameter(EmailAddressScreenStateProvider::class) state: EmailAddressScreenState,
 ) = EmailAddressScreenPreview(state)
 
 private class EmailAddressScreenStateProvider : PreviewParameterProvider<EmailAddressScreenState> {
     override val values = sequenceOf(
         EmailAddressScreenState(),
-        EmailAddressScreenState(error = AuthError.InvalidEmail)
+        EmailAddressScreenState(error = AuthError.InvalidEmail),
     )
 }
 

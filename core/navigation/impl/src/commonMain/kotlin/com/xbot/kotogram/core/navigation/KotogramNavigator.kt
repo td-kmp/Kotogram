@@ -10,18 +10,22 @@ import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.modules.SerializersModule
 
 @Composable
-fun rememberNavigator(startRoute: NavKey, serializersModule: SerializersModule): Navigator {
-    // Outside Android every key has to be registered, against our own NavKey as the polymorphic base.
+fun rememberNavigator(
+    startRoute: NavKey,
+    serializersModule: SerializersModule,
+): Navigator {
     val backStack = rememberSerializable(
         configuration = SavedStateConfiguration { this.serializersModule = serializersModule },
-        serializer = NavBackStackSerializer(PolymorphicSerializer(NavKey::class))
+        serializer = NavBackStackSerializer(PolymorphicSerializer(NavKey::class)),
     ) {
         NavBackStack(startRoute)
     }
     return remember(backStack) { KotogramNavigator(backStack) }
 }
 
-private class KotogramNavigator(private val stack: NavBackStack<NavKey>) : Navigator {
+private class KotogramNavigator(
+    private val stack: NavBackStack<NavKey>,
+) : Navigator {
     override val backStack: List<NavKey>
         get() = stack
 

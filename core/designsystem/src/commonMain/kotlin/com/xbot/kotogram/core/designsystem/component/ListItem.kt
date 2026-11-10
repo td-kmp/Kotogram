@@ -62,7 +62,7 @@ fun ListItem(
     enabled: Boolean = true,
     position: ListItemPosition? = null,
     style: ListItemStyle = ListItemStyle,
-    interactionSource: MutableInteractionSource? = null
+    interactionSource: MutableInteractionSource? = null,
 ) {
     @Suppress("NAME_SHADOWING")
     val style = rememberStyle(::ListItemStyleScope, ListItemStyle.Default then style)
@@ -80,14 +80,13 @@ fun ListItem(
                             interactionSource = interactionSource,
                             indication = KotogramTheme.indication,
                             enabled = enabled,
-                            onClick = onClick
+                            onClick = onClick,
                         )
                     } else {
                         Modifier
-                    }
+                    },
                 )
                 .onPlaced { rowStart = it.positionInRoot().x }
-                // Rows of a group are split under their text, as in Telegram for macOS's settings.
                 .drawBehind {
                     if (hasDivider) {
                         val y = size.height - style.dividerThickness.toPx() / 2
@@ -95,13 +94,13 @@ fun ListItem(
                             color = style.dividerColor,
                             start = Offset(textStart - rowStart, y),
                             end = Offset(size.width, y),
-                            strokeWidth = style.dividerThickness.toPx()
+                            strokeWidth = style.dividerThickness.toPx(),
                         )
                     }
                 }
                 .heightIn(min = style.minHeight)
                 .padding(style.contentPadding),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             if (leadingContent != null) {
                 Box(Modifier.padding(end = style.leadingGap), contentAlignment = Alignment.Center) {
@@ -112,7 +111,7 @@ fun ListItem(
                 modifier = Modifier
                     .weight(1f)
                     .onPlaced { textStart = it.positionInRoot().x },
-                verticalArrangement = Arrangement.spacedBy(style.lineGap)
+                verticalArrangement = Arrangement.spacedBy(style.lineGap),
             ) {
                 if (overlineContent != null) {
                     ProvideContent(style.overlineColor.of(enabled), style.overlineTextStyle, overlineContent)
@@ -142,11 +141,15 @@ context(style: ListItemStyleScope)
 private fun Color.of(enabled: Boolean): Color = if (enabled) this else style.disabledContentColor
 
 @Composable
-private fun ProvideContent(color: Color, style: TextStyle, content: @Composable () -> Unit) {
+private fun ProvideContent(
+    color: Color,
+    style: TextStyle,
+    content: @Composable () -> Unit,
+) {
     CompositionLocalProvider(
         LocalContentColor provides color,
         LocalTextStyle provides LocalTextStyle.current.merge(style),
-        content = content
+        content = content,
     )
 }
 
@@ -159,19 +162,19 @@ private fun ListItemPreview() {
             leadingContent = { MaterialIcon(KotogramIcons.Bell, contentDescription = null) },
             trailingContent = { MaterialIcon(KotogramIcons.ChevronRight, contentDescription = null) },
             onClick = {},
-            position = ListItemPosition.First
+            position = ListItemPosition.First,
         )
         ListItem(
             headlineContent = { Text("Language") },
             supportingContent = { Text("English") },
             leadingContent = { MaterialIcon(KotogramIcons.Globe, contentDescription = null) },
             onClick = {},
-            position = ListItemPosition.Middle
+            position = ListItemPosition.Middle,
         )
         ListItem(
             headlineContent = { Text("Sync contacts") },
             trailingContent = { Switch(checked = true, onCheckedChange = null) },
-            position = ListItemPosition.Last
+            position = ListItemPosition.Last,
         )
     }
 }
@@ -180,7 +183,6 @@ private fun ListItemPreview() {
 @Composable
 private fun ListItemLaptopPreview() = ListItemPreview()
 
-// Telegram for macOS's rows (GeneralRowItem: 12 and 14 inside) on every form factor, in Material 3's list colours.
 @Suppress("MagicNumber")
 fun interface ListItemStyle : ComponentStyle<ListItemStyleScope> {
     companion object : ListItemStyle {
@@ -212,15 +214,19 @@ fun interface ListItemStyle : ComponentStyle<ListItemStyleScope> {
 
 infix fun ListItemStyle.then(other: ListItemStyle): ListItemStyle = when {
     other === ListItemStyle -> this
+
     this === ListItemStyle -> other
+
     else -> ListItemStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
     }
 }
 
-class ListItemStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
-    AdaptiveStyleScope<ListItemStyleScope>,
+class ListItemStyleScope(
+    val theme: KotogramTheme.Values,
+    override val mediaQueryInfo: MediaQueryInfo,
+) : AdaptiveStyleScope<ListItemStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
     var minHeight: Dp = Dp.Unspecified
@@ -238,7 +244,6 @@ class ListItemStyleScope(val theme: KotogramTheme.Values, override val mediaQuer
     var lineGap: Dp = Dp.Unspecified
         private set
 
-    // The rounded ends of a group, from the first row to the last.
     var groupShape: CornerBasedShape = RoundedCornerShape(0.dp)
         private set
 

@@ -30,5 +30,6 @@ val AuthenticationCodeType.length: Int?
 
         is AuthenticationCodeTypeSmsWord,
         is AuthenticationCodeTypeSmsPhrase,
-        is AuthenticationCodeTypeFlashCall -> null
+        is AuthenticationCodeTypeFlashCall,
+        -> null
     }

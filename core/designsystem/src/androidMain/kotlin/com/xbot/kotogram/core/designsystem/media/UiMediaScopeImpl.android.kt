@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-// androidx.compose.ui.adaptive.MediaQuery.android of androidx-main; rememberUiMediaScope attaches the listeners that
-// AndroidComposeView attaches to it there.
+// Adapted from androidx-main's androidx.compose.ui.adaptive.MediaQuery.android: the listeners attach here.
 package com.xbot.kotogram.core.designsystem.media
 
 import android.content.BroadcastReceiver
@@ -63,7 +62,7 @@ internal class UiMediaScopeImpl(
     context: Context,
     val inputManager: InputManager,
     private val windowInfo: WindowInfo,
-    imeVisibility: Boolean
+    imeVisibility: Boolean,
 ) : UiMediaScope {
     private val packageManager = context.packageManager
     var posture by mutableStateOf(WindowPosture(emptyList()))
@@ -148,7 +147,10 @@ internal fun rememberUiMediaScope(): UiMediaScope {
     }
     DisposableEffect(scope) {
         val receiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
+            override fun onReceive(
+                context: Context?,
+                intent: Intent?,
+            ) {
                 scope.isDocked = isDocked(intent)
             }
         }
@@ -156,7 +158,7 @@ internal fun rememberUiMediaScope(): UiMediaScope {
             context,
             receiver,
             IntentFilter(Intent.ACTION_DOCK_EVENT),
-            ContextCompat.RECEIVER_EXPORTED
+            ContextCompat.RECEIVER_EXPORTED,
         )
         scope.isDocked = isDocked(stickyIntent)
         onDispose { context.unregisterReceiver(receiver) }
@@ -225,7 +227,7 @@ internal fun resolvePointerPrecision(inputManager: InputManager?): PointerPrecis
             pointerPrecision = PointerPrecision.Blunt
         }
 
-        // Emulators report their pointers this way; kept apart so a real device's source wins.
+        // Workaround: emulators report their pointers this way; kept apart so a real device's source wins.
         if (device.hasFallbackFinePointer()) {
             fallbackPrecision = PointerPrecision.Fine
         } else if (fallbackPrecision != PointerPrecision.Fine && device.hasFallbackCoarsePointer()) {
@@ -238,8 +240,10 @@ internal fun resolvePointerPrecision(inputManager: InputManager?): PointerPrecis
     return fallbackPrecision
 }
 
-private fun InputDevice.hasValidPointerSource(source: Int, axis: Int = MotionEvent.AXIS_X): Boolean =
-    (sources and source == source) && getMotionRange(axis, source) != null
+private fun InputDevice.hasValidPointerSource(
+    source: Int,
+    axis: Int = MotionEvent.AXIS_X,
+): Boolean = (sources and source == source) && getMotionRange(axis, source) != null
 
 private fun InputDevice.hasFallbackFinePointer(): Boolean =
     getMotionRange(MotionEvent.AXIS_X)?.isFromSource(InputDevice.SOURCE_MOUSE) == true &&

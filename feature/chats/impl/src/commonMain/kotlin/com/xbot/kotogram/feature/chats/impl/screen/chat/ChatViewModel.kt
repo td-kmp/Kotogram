@@ -5,8 +5,10 @@ import com.xbot.kotogram.feature.chats.domain.repository.ChatRepository
 import org.orbitmvi.orbit.OrbitContainerHost
 import org.orbitmvi.orbit.viewmodel.orbitContainer
 
-internal class ChatViewModel(chatId: Long, repository: ChatRepository) :
-    ViewModel(),
+internal class ChatViewModel(
+    chatId: Long,
+    repository: ChatRepository,
+) : ViewModel(),
     OrbitContainerHost<ChatScreenState, ChatScreenState, Nothing> {
 
     override val container = orbitContainer<ChatScreenState, Nothing>(ChatScreenState()) {

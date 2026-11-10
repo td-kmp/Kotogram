@@ -16,8 +16,6 @@ import com.xbot.kotogram.core.designsystem.style.DefaultStyleResolver
 import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 import com.xbot.kotogram.core.designsystem.style.StyleResolver
 
-// Telegram for iOS's phone screen (AuthorizationSequencePhoneEntryControllerNode) on touch screens, and Telegram for
-// macOS's (Auth_PhoneNumber, Auth_Insets) on a laptop, in their points.
 @Suppress("MagicNumber")
 internal fun interface PhoneScreenStyle : ComponentStyle<PhoneScreenStyleScope> {
     companion object : PhoneScreenStyle {
@@ -38,27 +36,26 @@ internal fun interface PhoneScreenStyle : ComponentStyle<PhoneScreenStyleScope> 
                 theme.typography.bodyLarge.merge(
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    color = theme.colors.onSurface
-                )
+                    color = theme.colors.onSurface,
+                ),
             )
             infoTextStyle(
                 theme.typography.bodyLarge.merge(
                     fontSize = 17.sp,
                     color = theme.colors.onSurface,
-                    textAlign = TextAlign.Center
-                )
+                    textAlign = TextAlign.Center,
+                ),
             )
             errorTextStyle(
                 theme.typography.bodyMedium.merge(
                     color = theme.colors.error,
-                    textAlign = TextAlign.Center
-                )
+                    textAlign = TextAlign.Center,
+                ),
             )
             qrLoginTextStyle(
-                theme.typography.bodyLarge.merge(fontSize = 15.sp, fontWeight = FontWeight.Medium)
+                theme.typography.bodyLarge.merge(fontSize = 15.sp, fontWeight = FontWeight.Medium),
             )
             errorFadeSpec(tween(200))
-            // WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND.
             landscapeHeight(480.dp)
         }
 
@@ -73,22 +70,22 @@ internal fun interface PhoneScreenStyle : ComponentStyle<PhoneScreenStyleScope> 
                 qrLoginTextStyle(
                     theme.typography.bodyLarge.merge(
                         fontSize = 13.5.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                        fontWeight = FontWeight.Medium,
+                    ),
                 )
                 titleTextStyle(
                     theme.typography.bodyLarge.merge(
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Medium,
-                        color = theme.colors.onSurface
-                    )
+                        color = theme.colors.onSurface,
+                    ),
                 )
                 infoTextStyle(
                     theme.typography.bodyLarge.merge(
                         fontSize = 13.5.sp,
                         color = theme.colors.onSurfaceVariant,
-                        textAlign = TextAlign.Center
-                    )
+                        textAlign = TextAlign.Center,
+                    ),
                 )
             }
         }
@@ -109,14 +106,13 @@ internal infix fun PhoneScreenStyle.then(other: PhoneScreenStyle): PhoneScreenSt
 @Suppress("TooManyFunctions")
 internal class PhoneScreenStyleScope(
     val theme: KotogramTheme.Values,
-    override val mediaQueryInfo: MediaQueryInfo
+    override val mediaQueryInfo: MediaQueryInfo,
 ) : AdaptiveStyleScope<PhoneScreenStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
     var horizontalPadding: Dp = Dp.Unspecified
         private set
 
-    // Unspecified for the content's own width.
     var contentMaxWidth: Dp = Dp.Unspecified
         private set
 

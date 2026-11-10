@@ -18,5 +18,5 @@ private val AppleWeights = listOf(
     FontWeight.SemiBold to 0.3,
     FontWeight.Bold to 0.4,
     FontWeight.ExtraBold to 0.56,
-    FontWeight.Black to 0.62
+    FontWeight.Black to 0.62,
 )

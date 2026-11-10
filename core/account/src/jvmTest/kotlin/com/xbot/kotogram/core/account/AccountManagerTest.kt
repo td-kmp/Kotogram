@@ -10,18 +10,6 @@ import io.xbot.tdlib.api.OptionValueString
 import io.xbot.tdlib.api.Update
 import io.xbot.tdlib.api.UpdateAuthorizationState
 import io.xbot.tdlib.client.TdClient
-import java.nio.file.Files
-import java.util.concurrent.CopyOnWriteArrayList
-import kotlin.io.path.createDirectories
-import kotlin.io.path.exists
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertIs
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -38,6 +26,18 @@ import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.scopedOf
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
+import java.nio.file.Files
+import java.util.concurrent.CopyOnWriteArrayList
+import kotlin.io.path.createDirectories
+import kotlin.io.path.exists
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.seconds
 
 class AccountManagerTest {
     private val ready = listOf("authorizationStateReady")
@@ -48,7 +48,7 @@ class AccountManagerTest {
 
     private fun registryOf(
         vararg accounts: AccountEntry,
-        active: AccountId? = accounts.firstOrNull()?.id
+        active: AccountId? = accounts.firstOrNull()?.id,
     ) = AccountRegistry(accounts.toList(), active, accounts.maxOfOrNull { it.id.value } ?: 0)
 
     private fun signedIn(id: Int) = AccountEntry(AccountId(id), userId = 100L + id)
@@ -61,7 +61,7 @@ class AccountManagerTest {
         assertEquals(registryOf(AccountEntry(AccountId(1))), app.store.saved)
         assertEquals(
             listOf("1 getOption", "1 setTdlibParameters"),
-            app.tdLib.requests.take(2)
+            app.tdLib.requests.take(2),
         )
     }
 
@@ -72,7 +72,7 @@ class AccountManagerTest {
         app.active { it is AuthorizationStateWaitPhoneNumber }
         assertEquals(
             listOf("1 getOption", "1 setOption a", "1 setOption b", "1 setTdlibParameters"),
-            app.tdLib.requests.take(4)
+            app.tdLib.requests.take(4),
         )
     }
 
@@ -96,7 +96,7 @@ class AccountManagerTest {
         while (updates.isEmpty()) delay(10)
         val first = updates.first()
         assertIs<AuthorizationStateWaitTdlibParameters>(
-            assertIs<UpdateAuthorizationState>(first).authorizationState
+            assertIs<UpdateAuthorizationState>(first).authorizationState,
         )
     }
 
@@ -107,7 +107,7 @@ class AccountManagerTest {
         assertEquals(77L, app.store.saved.entry(AccountId(1))?.userId)
         assertEquals(
             listOf(AccountId(1)),
-            app.manager.accounts.first { it.isNotEmpty() }.map { it.id }
+            app.manager.accounts.first { it.isNotEmpty() }.map { it.id },
         )
     }
 
@@ -177,7 +177,7 @@ class AccountManagerTest {
 
         assertEquals(
             AccountId(1),
-            app.manager.shown.first { it.active?.id != AccountId(2) }.active?.id
+            app.manager.shown.first { it.active?.id != AccountId(2) }.active?.id,
         )
         app.awaitDeleted(AccountId(2))
     }
@@ -202,14 +202,14 @@ class AccountManagerTest {
         val revoked = listOf(
             "authorizationStateLoggingOut",
             "authorizationStateClosing",
-            "authorizationStateClosed"
+            "authorizationStateClosed",
         )
         val store = InMemoryRegistryStore(registryOf(signedIn(1)))
         val app = TestApp(FakeTdLib(mapOf(1 to revoked)), store).started()
         app.awaitDeleted(AccountId(1))
         assertEquals(
             AccountId(2),
-            app.manager.shown.first { it.active?.id != AccountId(1) }.active?.id
+            app.manager.shown.first { it.active?.id != AccountId(1) }.active?.id,
         )
     }
 
@@ -248,7 +248,7 @@ class AccountManagerTest {
     @Test
     fun aSignInTheAppDidNotLiveToFinishIsDroppedAtStart() = test {
         val store = InMemoryRegistryStore(
-            registryOf(signedIn(1), AccountEntry(AccountId(3)), active = AccountId(1))
+            registryOf(signedIn(1), AccountEntry(AccountId(3)), active = AccountId(1)),
         )
         val app = TestApp(FakeTdLib(mapOf(1 to ready)), store).started()
         app.active { it == AuthorizationStateReady }
@@ -365,11 +365,11 @@ class AccountManagerTest {
         val store = InMemoryRegistryStore(registryOf(signedIn(1)))
         val app = TestApp(
             store = store,
-            keys = FakeDatabaseKeys(lost = setOf(AccountId(1)))
+            keys = FakeDatabaseKeys(lost = setOf(AccountId(1))),
         ).started()
         assertEquals(
             AccountId(2),
-            app.manager.shown.first { it.active?.id == AccountId(2) }.active?.id
+            app.manager.shown.first { it.active?.id == AccountId(2) }.active?.id,
         )
         app.awaitDeleted(AccountId(1))
         assertTrue("1 close" in app.tdLib.requests)
@@ -404,7 +404,7 @@ private class TestApp(
     val tdLib: FakeTdLib = FakeTdLib(),
     val store: InMemoryRegistryStore = InMemoryRegistryStore(),
     val keys: FakeDatabaseKeys = FakeDatabaseKeys(),
-    options: TdlibOptions? = null
+    options: TdlibOptions? = null,
 ) {
     val root = Files.createTempDirectory("kotogram-accounts")
 
@@ -418,7 +418,7 @@ private class TestApp(
             systemLanguageCode = "en",
             deviceModel = "test",
             systemVersion = "jvm",
-            applicationVersion = "test"
+            applicationVersion = "test",
         ),
         store = store,
         storage = DirectoryAccountStorage(root.toString()),
@@ -430,9 +430,9 @@ private class TestApp(
                         scopedOf(::UpdateRecorder) { bind<AccountUpdates>() }
                         options?.let { owner -> scoped<TdlibOptions> { owner } }
                     }
-                }
+                },
             )
-        }.koin
+        }.koin,
     )
 
     fun started() = apply { manager.start() }
@@ -455,8 +455,9 @@ private class TestApp(
     }
 }
 
-private class InMemoryRegistryStore(var saved: AccountRegistry = AccountRegistry()) :
-    AccountRegistryStore {
+private class InMemoryRegistryStore(
+    var saved: AccountRegistry = AccountRegistry(),
+) : AccountRegistryStore {
     override suspend fun load(): AccountRegistry = saved
 
     override suspend fun save(registry: AccountRegistry) {
@@ -464,11 +465,12 @@ private class InMemoryRegistryStore(var saved: AccountRegistry = AccountRegistry
     }
 }
 
-private class FakeDatabaseKeys(private val lost: Set<AccountId> = emptySet()) : DatabaseKeys {
+private class FakeDatabaseKeys(
+    private val lost: Set<AccountId> = emptySet(),
+) : DatabaseKeys {
     val deleted = CopyOnWriteArrayList<AccountId>()
 
-    override suspend fun getOrCreate(id: AccountId): ByteArray? =
-        if (id in lost) null else ByteArray(KEY_SIZE)
+    override suspend fun getOrCreate(id: AccountId): ByteArray? = if (id in lost) null else ByteArray(KEY_SIZE)
 
     override suspend fun delete(id: AccountId) {
         deleted += id
@@ -479,12 +481,17 @@ private class FakeDatabaseKeys(private val lost: Set<AccountId> = emptySet()) : 
     }
 }
 
-private class FakeOptions(override val options: Flow<Map<String, OptionValue>>) : TdlibOptions
+private class FakeOptions(
+    override val options: Flow<Map<String, OptionValue>>,
+) : TdlibOptions
 
 private class UpdateRecorder : AccountUpdates {
     val updates = CopyOnWriteArrayList<Update>()
 
-    override fun start(scope: CoroutineScope, client: TdClient) {
+    override fun start(
+        scope: CoroutineScope,
+        client: TdClient,
+    ) {
         scope.launch(start = CoroutineStart.UNDISPATCHED) {
             client.updates.collect { updates += it }
         }

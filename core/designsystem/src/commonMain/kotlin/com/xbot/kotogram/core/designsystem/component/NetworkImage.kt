@@ -21,7 +21,6 @@ import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 import com.xbot.kotogram.core.designsystem.style.StyleResolver
 import com.xbot.kotogram.core.designsystem.style.rememberStyle
 
-// The shown account's loader, which reads TDLib's files; without one, Coil's own.
 val LocalImageLoader = staticCompositionLocalOf<ImageLoader?> { null }
 
 @Composable
@@ -31,7 +30,7 @@ fun NetworkImage(
     modifier: Modifier = Modifier,
     thumbnail: Any? = null,
     contentScale: ContentScale = ContentScale.Crop,
-    style: NetworkImageStyle = NetworkImageStyle
+    style: NetworkImageStyle = NetworkImageStyle,
 ) {
     val imageStyle = rememberStyle(::NetworkImageStyleScope, NetworkImageStyle.Default then style)
     val context = LocalPlatformContext.current
@@ -51,7 +50,7 @@ fun NetworkImage(
         modifier = modifier,
         placeholder = placeholder,
         error = placeholder,
-        contentScale = contentScale
+        contentScale = contentScale,
     )
 }
 
@@ -79,7 +78,7 @@ infix fun NetworkImageStyle.then(other: NetworkImageStyle): NetworkImageStyle = 
 
 class NetworkImageStyleScope(
     val theme: KotogramTheme.Values,
-    override val mediaQueryInfo: MediaQueryInfo
+    override val mediaQueryInfo: MediaQueryInfo,
 ) : AdaptiveStyleScope<NetworkImageStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 

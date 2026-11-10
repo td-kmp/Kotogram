@@ -30,7 +30,7 @@ internal val ShapesPage = CatalogPage(
             val spacing = KotogramTheme.spacing
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(spacing.large),
-                verticalArrangement = Arrangement.spacedBy(spacing.large)
+                verticalArrangement = Arrangement.spacedBy(spacing.large),
             ) {
                 ShapeSample("extraSmall", shapes.extraSmall)
                 ShapeSample("small", shapes.small)
@@ -39,18 +39,21 @@ internal val ShapesPage = CatalogPage(
                 ShapeSample("extraLarge", shapes.extraLarge)
                 ShapeSample("full · buttons", CircleShape)
             }
-        }
-    )
+        },
+    ),
 )
 
 @Composable
-private fun ShapeSample(name: String, shape: Shape) {
+private fun ShapeSample(
+    name: String,
+    shape: Shape,
+) {
     Column(verticalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.extraSmall)) {
         Box(
             Modifier
                 .size(width = 120.dp, height = 72.dp)
                 .background(KotogramTheme.colors.surfaceContainerHighest, shape)
-                .border(1.dp, KotogramTheme.colors.outlineVariant, shape)
+                .border(1.dp, KotogramTheme.colors.outlineVariant, shape),
         )
         Text(name, style = KotogramTheme.typography.bodyMedium)
     }

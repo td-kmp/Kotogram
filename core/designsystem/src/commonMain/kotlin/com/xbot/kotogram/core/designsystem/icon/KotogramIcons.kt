@@ -2,7 +2,6 @@ package com.xbot.kotogram.core.designsystem.icon
 
 import androidx.compose.ui.graphics.vector.ImageVector
 
-// Line icons at Telegram for macOS's sizes and weights, centred on Compose's 24-dp canvas.
 object KotogramIcons {
     val Back: ImageVector by lazy(::backIcon)
     val Close: ImageVector by lazy(::closeIcon)

@@ -25,7 +25,7 @@ import io.xbot.tdlib.api.AuthenticationCodeTypeTelegramMessage
 val AuthenticationCodeInfo.title: StringResource
     get() = when (type) {
         is AuthenticationCodeTypeTelegramMessage -> StringResource.Text(
-            Res.string.login_new_code_entercode
+            Res.string.login_new_code_entercode,
         )
 
         else -> StringResource.Text(Res.string.login_new_code_entersms)
@@ -38,26 +38,28 @@ val AuthenticationCodeInfo.description: StringResource
 
         is AuthenticationCodeTypeSms,
         is AuthenticationCodeTypeFirebaseAndroid,
-        is AuthenticationCodeTypeFirebaseIos ->
+        is AuthenticationCodeTypeFirebaseIos,
+        ->
             StringResource.Text(Res.string.login_new_code_smsinfo, phoneNumber)
 
         is AuthenticationCodeTypeSmsWord ->
             StringResource.Text(
                 Res.string.login_enterwordbeginningtext,
                 type.firstLetter,
-                phoneNumber
+                phoneNumber,
             )
 
         is AuthenticationCodeTypeSmsPhrase ->
             StringResource.Text(
                 Res.string.login_enterphrasebeginningtext,
                 type.firstWord,
-                phoneNumber
+                phoneNumber,
             )
 
         is AuthenticationCodeTypeCall,
         is AuthenticationCodeTypeFlashCall,
-        is AuthenticationCodeTypeMissedCall ->
+        is AuthenticationCodeTypeMissedCall,
+        ->
             StringResource.Text(Res.string.login_new_code_callinfo, phoneNumber)
 
         is AuthenticationCodeTypeFragment ->

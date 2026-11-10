@@ -9,12 +9,15 @@ internal const val CANVAS = 24f
 internal const val LINE = 1.33f
 internal val Center = Offset(12f, 12f)
 
-internal fun icon(name: String, block: ImageVector.Builder.() -> Unit): ImageVector = ImageVector.Builder(
+internal fun icon(
+    name: String,
+    block: ImageVector.Builder.() -> Unit,
+): ImageVector = ImageVector.Builder(
     name = "KotogramIcons.$name",
     defaultWidth = CANVAS.dp,
     defaultHeight = CANVAS.dp,
     viewportWidth = CANVAS,
-    viewportHeight = CANVAS
+    viewportHeight = CANVAS,
 ).apply(block).build()
 
 internal fun clip(block: PathBuilder.() -> Unit) = PathBuilder().apply(block).nodes

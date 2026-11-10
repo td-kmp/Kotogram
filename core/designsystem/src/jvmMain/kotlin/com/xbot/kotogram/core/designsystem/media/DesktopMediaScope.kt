@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-// androidx.compose.ui.platform.MediaScope.desktop of CMP's jb-main (1.13.0-beta01).
+// Adapted from androidx.compose.ui.platform.MediaScope.desktop of CMP's jb-main (1.13.0-beta01).
 package com.xbot.kotogram.core.designsystem.media
 
 import androidx.compose.ui.platform.WindowInfo
 import androidx.compose.ui.unit.Dp
 
-internal class DesktopMediaScope(val windowInfo: WindowInfo) : UiMediaScope {
+internal class DesktopMediaScope(
+    val windowInfo: WindowInfo,
+) : UiMediaScope {
 
     override val windowPosture: UiMediaScope.WindowPosture = UiMediaScope.WindowPosture(emptyList())
 
@@ -37,10 +39,10 @@ internal class DesktopMediaScope(val windowInfo: WindowInfo) : UiMediaScope {
         get() = UiMediaScope.KeyboardKind.Physical
 
     override val hasMicrophone: Boolean
-        get() = true // inferred as always having at least 1 microphone
+        get() = true
 
     override val hasCamera: Boolean
-        get() = false // no reliable way to get it
+        get() = false
 
     override val viewingDistance: UiMediaScope.ViewingDistance
         get() = UiMediaScope.ViewingDistance.Near

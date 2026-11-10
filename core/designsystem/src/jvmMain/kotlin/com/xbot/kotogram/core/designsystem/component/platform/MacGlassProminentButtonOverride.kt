@@ -29,13 +29,12 @@ internal object MacGlassProminentButtonOverride : ProminentButtonOverride {
         val textStyle = buttonStyle.textStyle
         val fontSize = with(LocalDensity.current) { textStyle.fontSize.toDp().value.toDouble() }
         val dark = KotogramTheme.colors.background.isDark()
-        val inFront = isSettledInFront()
         NativeBox {
             NativeView(
                 factory = {
                     nucleusNsPlatformView(
                         handle = { Pointer.nativeValue(button.handle) },
-                        onDispose = button::release
+                        onDispose = button::release,
                     )
                 },
                 modifier = Modifier.matchParentSize(),
@@ -45,15 +44,14 @@ internal object MacGlassProminentButtonOverride : ProminentButtonOverride {
                         text = if (loading) "" else text,
                         fontSize = fontSize,
                         fontWeight = textStyle.fontWeight.appleWeight(),
-                        color = colors.contentColor(state)
+                        color = colors.contentColor(state),
                     )
                     button.setBezelColor(colors.containerColor(state))
                     button.setDark(dark)
                     button.setLoading(loading, colors.contentColor(state), colors.containerColor(state))
                     button.setEnabled(state != ButtonState.Disabled)
-                    button.setVisible(inFront)
                 },
-                placedAsOverlay = true
+                placedAsOverlay = true,
             )
         }
     }

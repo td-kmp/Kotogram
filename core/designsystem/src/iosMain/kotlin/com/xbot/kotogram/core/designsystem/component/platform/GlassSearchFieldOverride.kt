@@ -39,7 +39,7 @@ internal object GlassSearchFieldOverride : SearchFieldOverride {
                 view.userInteractionEnabled = inFront
                 fade(view, visible = inFront)
             },
-            properties = GlassProperties
+            properties = GlassProperties,
         )
     }
 }

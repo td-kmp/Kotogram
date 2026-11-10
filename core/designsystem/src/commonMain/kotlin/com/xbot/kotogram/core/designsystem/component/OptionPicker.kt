@@ -47,13 +47,12 @@ import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.navigation_close
 import com.xbot.kotogram.core.resources.stringResource
 
-// What an option's row shows: its text, an emoji or symbol before it, a second line and a value at the end.
 @Immutable
 class OptionLabel(
     val text: String,
     val leading: String? = null,
     val supporting: String? = null,
-    val trailing: String? = null
+    val trailing: String? = null,
 ) {
     internal val menuText: String
         get() = listOfNotNull(leading, text).joinToString(" ") + trailing?.let { "  $it" }.orEmpty()
@@ -62,8 +61,6 @@ class OptionLabel(
         text.contains(query, ignoreCase = true) || supporting?.contains(query, ignoreCase = true) == true
 }
 
-// A menu on a laptop. On touch screens a sheet: a top bar with a close button, a search field, and the options
-// under sticky section headers with the platform's fast scroller; a search lists the matches alone.
 @Composable
 fun <T> OptionPicker(
     expanded: Boolean,
@@ -77,7 +74,7 @@ fun <T> OptionPicker(
     optionSection: ((T) -> String)? = null,
     searchPlaceholder: String = "",
     matches: (T, String) -> Boolean = { option, query -> optionLabel(option).contains(query) },
-    style: OptionPickerStyle = OptionPickerStyle
+    style: OptionPickerStyle = OptionPickerStyle,
 ) {
     val pickerStyle = rememberStyle(::OptionPickerStyleScope, OptionPickerStyle.Default then style)
     if (pickerStyle.mediaQueryInfo.isLaptop) {
@@ -97,14 +94,17 @@ fun <T> OptionPicker(
                     selected = selected,
                     optionSection = optionSection,
                     searchPlaceholder = searchPlaceholder,
-                    matches = matches
+                    matches = matches,
                 )
             }
         }
     }
 }
 
-private class OptionSection<T>(val title: String?, val options: List<T>)
+private class OptionSection<T>(
+    val title: String?,
+    val options: List<T>,
+)
 
 @Composable
 context(style: OptionPickerStyleScope)
@@ -116,7 +116,7 @@ private fun <T> BottomSheetScope.OptionSheetContent(
     selected: T?,
     optionSection: ((T) -> String)?,
     searchPlaceholder: String,
-    matches: (T, String) -> Boolean
+    matches: (T, String) -> Boolean,
 ) {
     val query = rememberTextFieldState()
     val text = query.text.toString().trim()
@@ -140,9 +140,9 @@ private fun <T> BottomSheetScope.OptionSheetContent(
             GlassIconButton(
                 icon = KotogramIcons.Cross,
                 contentDescription = stringResource(Res.string.navigation_close),
-                onClick = ::dismiss
+                onClick = ::dismiss,
             )
-        }
+        },
     )
     if (!style.searchAtBottom) OptionSearch(query, searchPlaceholder)
     Box(Modifier.weight(1f).fillMaxWidth()) {
@@ -152,8 +152,8 @@ private fun <T> BottomSheetScope.OptionSheetContent(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
                 end = if (indexed) style.scrollerGap else 0.dp,
-                bottom = if (style.searchAtBottom) style.bottomSearchSpace else 0.dp
-            )
+                bottom = if (style.searchAtBottom) style.bottomSearchSpace else 0.dp,
+            ),
         ) {
             if (text.isEmpty()) {
                 sections.forEach { section -> sectionItems(section, optionLabel, selected, choose) }
@@ -173,7 +173,7 @@ private fun <T> BottomSheetScope.OptionSheetContent(
             OptionSearch(
                 query = query,
                 placeholder = searchPlaceholder,
-                modifier = Modifier.align(Alignment.BottomCenter).imePadding().navigationBarsPadding()
+                modifier = Modifier.align(Alignment.BottomCenter).imePadding().navigationBarsPadding(),
             )
         }
     }
@@ -184,7 +184,7 @@ private fun <T> LazyListScope.sectionItems(
     section: OptionSection<T>,
     optionLabel: (T) -> OptionLabel,
     selected: T?,
-    choose: (T) -> Unit
+    choose: (T) -> Unit,
 ) {
     section.title?.let { title ->
         stickyHeader(key = "section $title") {
@@ -194,7 +194,7 @@ private fun <T> LazyListScope.sectionItems(
                     .fillMaxWidth()
                     .background(style.sheetColor)
                     .padding(style.headerPadding),
-                style = style.headerTextStyle
+                style = style.headerTextStyle,
             )
         }
     }
@@ -208,17 +208,27 @@ private fun <T> LazyListScope.sectionItems(
 
 @Composable
 context(style: OptionPickerStyleScope)
-private fun OptionSearch(query: TextFieldState, placeholder: String, modifier: Modifier = Modifier) {
+private fun OptionSearch(
+    query: TextFieldState,
+    placeholder: String,
+    modifier: Modifier = Modifier,
+) {
     SearchField(
         state = query,
         modifier = modifier.fillMaxWidth().padding(style.searchPadding),
-        placeholder = placeholder
+        placeholder = placeholder,
     )
 }
 
 @Composable
 context(style: OptionPickerStyleScope)
-private fun OptionRow(label: OptionLabel, selected: Boolean, query: String, last: Boolean, onClick: () -> Unit) {
+private fun OptionRow(
+    label: OptionLabel,
+    selected: Boolean,
+    query: String,
+    last: Boolean,
+    onClick: () -> Unit,
+) {
     val rowStyle = remember(style) { style.rowStyle() }
     ListItem(
         headlineContent = {
@@ -238,23 +248,30 @@ private fun OptionRow(label: OptionLabel, selected: Boolean, query: String, last
         },
         onClick = onClick,
         position = if (last) null else ListItemPosition.Middle,
-        style = rowStyle
+        style = rowStyle,
     )
 }
 
 @Composable
 context(style: OptionPickerStyleScope)
-private fun OptionTrailing(value: String?, selected: Boolean) {
+private fun OptionTrailing(
+    value: String?,
+    selected: Boolean,
+) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(style.checkGap),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         value?.let { Text(it) }
         if (selected) Icon(KotogramIcons.Check, contentDescription = null, tint = style.checkColor)
     }
 }
 
-private fun highlighted(text: String, query: String, match: SpanStyle): AnnotatedString {
+private fun highlighted(
+    text: String,
+    query: String,
+    match: SpanStyle,
+): AnnotatedString {
     val start = if (query.isEmpty()) -1 else text.indexOf(query, ignoreCase = true)
     if (start < 0) return AnnotatedString(text)
     return buildAnnotatedString {
@@ -263,7 +280,6 @@ private fun highlighted(text: String, query: String, match: SpanStyle): Annotate
     }
 }
 
-// Each section takes an item for its header before its options.
 private fun <T> scrollerSections(sections: List<OptionSection<T>>): List<FastScrollerSection> {
     var index = 0
     return sections.mapNotNull { section ->
@@ -273,8 +289,10 @@ private fun <T> scrollerSections(sections: List<OptionSection<T>>): List<FastScr
     }
 }
 
-// A few rows above the selected one, so it opens in sight under its section's header.
-private fun <T> selectedIndex(sections: List<OptionSection<T>>, selected: T?): Int {
+private fun <T> selectedIndex(
+    sections: List<OptionSection<T>>,
+    selected: T?,
+): Int {
     var index = 0
     for (section in sections) {
         if (section.title != null) index++
@@ -287,9 +305,6 @@ private fun <T> selectedIndex(sections: List<OptionSection<T>>, selected: T?): I
 
 private const val ROWS_ABOVE_SELECTED = 3
 
-// The sheet's colour runs under the rows and the headers, so the list reads as one plain list on every platform.
-// The rows are Telegram for iOS's country list's: 17 and 15 regular, a 26 flag. iOS 26 has its search at the
-// bottom, other platforms at the top.
 @Suppress("MagicNumber")
 fun interface OptionPickerStyle : ComponentStyle<OptionPickerStyleScope> {
     companion object : OptionPickerStyle {
@@ -305,8 +320,8 @@ fun interface OptionPickerStyle : ComponentStyle<OptionPickerStyleScope> {
                 theme.typography.bodyLarge.merge(
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = theme.colors.onSurfaceVariant
-                )
+                    color = theme.colors.onSurfaceVariant,
+                ),
             )
             rowMinHeight(56.dp)
             rowPadding(PaddingValues(horizontal = 16.dp, vertical = 8.dp))
@@ -323,7 +338,9 @@ fun interface OptionPickerStyle : ComponentStyle<OptionPickerStyleScope> {
 
 infix fun OptionPickerStyle.then(other: OptionPickerStyle): OptionPickerStyle = when {
     other === OptionPickerStyle -> this
+
     this === OptionPickerStyle -> other
+
     else -> OptionPickerStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
@@ -331,8 +348,10 @@ infix fun OptionPickerStyle.then(other: OptionPickerStyle): OptionPickerStyle = 
 }
 
 @Suppress("TooManyFunctions")
-class OptionPickerStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
-    AdaptiveStyleScope<OptionPickerStyleScope>,
+class OptionPickerStyleScope(
+    val theme: KotogramTheme.Values,
+    override val mediaQueryInfo: MediaQueryInfo,
+) : AdaptiveStyleScope<OptionPickerStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
     var sheetColor: Color = Color.Unspecified
@@ -344,7 +363,6 @@ class OptionPickerStyleScope(val theme: KotogramTheme.Values, override val media
     var searchPadding: PaddingValues = PaddingValues()
         private set
 
-    // Room under the list for a search field floating at the bottom.
     var bottomSearchSpace: Dp = Dp.Unspecified
         private set
 
@@ -378,7 +396,6 @@ class OptionPickerStyleScope(val theme: KotogramTheme.Values, override val media
     var checkGap: Dp = Dp.Unspecified
         private set
 
-    // Room at the end of the rows for the fast scroller.
     var scrollerGap: Dp = Dp.Unspecified
         private set
 
@@ -442,7 +459,6 @@ class OptionPickerStyleScope(val theme: KotogramTheme.Values, override val media
         scrollerGap = gap
     }
 
-    // A row is the design system's list item in this style's sizes, on the sheet's colour.
     internal fun rowStyle(): ListItemStyle {
         val picker = this
         return ListItemStyle {

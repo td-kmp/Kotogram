@@ -37,21 +37,21 @@ internal fun interface EmailAddressScreenStyle : ComponentStyle<EmailAddressScre
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     color = theme.colors.onSurface,
-                    textAlign = TextAlign.Center
-                )
+                    textAlign = TextAlign.Center,
+                ),
             )
             infoTextStyle(
                 theme.typography.bodyLarge.merge(
                     fontSize = 16.sp,
                     color = theme.colors.onSurface,
-                    textAlign = TextAlign.Center
-                )
+                    textAlign = TextAlign.Center,
+                ),
             )
             errorTextStyle(
                 theme.typography.bodyMedium.merge(
                     color = theme.colors.error,
-                    textAlign = TextAlign.Center
-                )
+                    textAlign = TextAlign.Center,
+                ),
             )
             errorFadeSpec(tween(200))
             landscapeHeight(480.dp)
@@ -71,24 +71,22 @@ internal fun interface EmailAddressScreenStyle : ComponentStyle<EmailAddressScre
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Medium,
                         color = theme.colors.onSurface,
-                        textAlign = TextAlign.Center
-                    )
+                        textAlign = TextAlign.Center,
+                    ),
                 )
                 infoTextStyle(
                     theme.typography.bodyLarge.merge(
                         fontSize = 13.5.sp,
                         color = theme.colors.onSurfaceVariant,
-                        textAlign = TextAlign.Center
-                    )
+                        textAlign = TextAlign.Center,
+                    ),
                 )
             }
         }
     }
 }
 
-internal infix fun EmailAddressScreenStyle.then(
-    other: EmailAddressScreenStyle
-): EmailAddressScreenStyle = when {
+internal infix fun EmailAddressScreenStyle.then(other: EmailAddressScreenStyle): EmailAddressScreenStyle = when {
     other === EmailAddressScreenStyle -> this
 
     this === EmailAddressScreenStyle -> other
@@ -102,7 +100,7 @@ internal infix fun EmailAddressScreenStyle.then(
 @Suppress("TooManyFunctions")
 internal class EmailAddressScreenStyleScope(
     val theme: KotogramTheme.Values,
-    override val mediaQueryInfo: MediaQueryInfo
+    override val mediaQueryInfo: MediaQueryInfo,
 ) : AdaptiveStyleScope<EmailAddressScreenStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 

@@ -6,7 +6,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import com.xbot.kotogram.core.designsystem.component.PhotoPickerLauncher
-import kotlin.coroutines.resume
 import kotlinx.browser.document
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -18,12 +17,11 @@ import org.w3c.dom.events.Event
 import org.w3c.files.File
 import org.w3c.files.FileReader
 import org.w3c.files.get
+import kotlin.coroutines.resume
 
 // Adapted from Calf's FilePickerLauncher.wasmJs.kt (Mohamed Rejeb, Apache-2.0).
 @Composable
-internal actual fun platformPhotoPickerLauncher(
-    onPicked: (ByteArray) -> Unit
-): PhotoPickerLauncher? {
+internal actual fun platformPhotoPickerLauncher(onPicked: (ByteArray) -> Unit): PhotoPickerLauncher? {
     val scope = rememberCoroutineScope()
     val currentOnPicked by rememberUpdatedState(onPicked)
     return remember {
@@ -38,7 +36,7 @@ internal actual fun platformPhotoPickerLauncher(
                 if (file != null) scope.launch { file.readBytes().toJpeg()?.let(currentOnPicked) }
             }
             input.oncancel = { input.remove() }
-            // Some browsers fire no events for an input outside the document.
+            // Workaround: some browsers fire no events for an input outside the document.
             document.body?.appendChild(input)
             input.click()
         }

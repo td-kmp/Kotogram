@@ -9,7 +9,7 @@ import androidx.compose.runtime.Immutable
 class NavTransitions<S> internal constructor(
     val push: AnimatedContentTransitionScope<S>.() -> ContentTransform,
     val pop: AnimatedContentTransitionScope<S>.() -> ContentTransform,
-    val predictivePop: AnimatedContentTransitionScope<S>.(swipeEdge: Int) -> ContentTransform
+    val predictivePop: AnimatedContentTransitionScope<S>.(swipeEdge: Int) -> ContentTransform,
 )
 
 @Composable
@@ -18,5 +18,4 @@ fun <S> rememberNavTransitions(): NavTransitions<S> = platformNavTransitions()
 @Composable
 internal expect fun <S> platformNavTransitions(): NavTransitions<S>
 
-// NavigationEvent.EDGE_RIGHT; the design system has no navigationevent dependency.
 internal const val EDGE_RIGHT = 1

@@ -21,16 +21,19 @@ import io.xbot.tdlib.api.StickerFormatTgs
 import io.xbot.tdlib.api.StickerFormatWebp
 import io.xbot.tdlib.api.TextEntityTypeCustomEmoji
 
-// A custom emoji as Telegram plays it: Lottie looped, WebP as is, and a WebM video by its thumbnail for now.
 @Composable
-internal fun CustomEmoji(sticker: Sticker?, fallback: String, modifier: Modifier = Modifier) {
+internal fun CustomEmoji(
+    sticker: Sticker?,
+    fallback: String,
+    modifier: Modifier = Modifier,
+) {
     when {
         sticker == null -> Text(fallback, modifier)
 
         sticker.format is StickerFormatTgs -> LottieImage(
             sticker.sticker,
             modifier,
-            iterations = Int.MAX_VALUE
+            iterations = Int.MAX_VALUE,
         )
 
         sticker.format is StickerFormatWebp ->
@@ -39,7 +42,7 @@ internal fun CustomEmoji(sticker: Sticker?, fallback: String, modifier: Modifier
                 null,
                 modifier,
                 contentScale = ContentScale.Fit,
-                style = TransparentImage
+                style = TransparentImage,
             )
 
         else -> NetworkImage(
@@ -47,14 +50,13 @@ internal fun CustomEmoji(sticker: Sticker?, fallback: String, modifier: Modifier
             contentDescription = null,
             modifier = modifier,
             contentScale = ContentScale.Fit,
-            style = TransparentImage
+            style = TransparentImage,
         )
     }
 }
 
 private val TransparentImage = NetworkImageStyle { placeholderColor(Color.Transparent) }
 
-// Newlines read as spaces, as in Telegram's previews; each custom emoji becomes an inline slot.
 internal fun FormattedText.toPreviewString(): AnnotatedString = buildAnnotatedString {
     val flat = text.replace('\n', ' ')
     var cursor = 0
@@ -77,11 +79,11 @@ internal fun customEmojiSlot(id: Long) = "custom_emoji:$id"
 internal fun customEmojiContent(
     stickers: Map<Long, Sticker>,
     ids: Set<Long>,
-    size: TextUnit
+    size: TextUnit,
 ): Map<String, InlineTextContent> = ids.associate { id ->
     customEmojiSlot(id) to
         InlineTextContent(
-            Placeholder(size, size, PlaceholderVerticalAlign.TextCenter)
+            Placeholder(size, size, PlaceholderVerticalAlign.TextCenter),
         ) { alternate ->
             CustomEmoji(stickers[id], alternate)
         }

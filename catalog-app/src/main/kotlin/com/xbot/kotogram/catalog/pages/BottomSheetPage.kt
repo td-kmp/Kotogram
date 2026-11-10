@@ -30,7 +30,7 @@ internal val BottomSheetPage = CatalogPage(
         "UIKit's page sheet with the content in a composition of its own, which gets the screen's composition " +
         "locals; elsewhere it is Material 3's modal bottom sheet, expanded. The content brings its own top bar, " +
         "with no drag handle, and closes the sheet with dismiss(), which hides it the way a swipe does.",
-    examples = listOf(CatalogExample("Opens on press") { SheetOnPress() })
+    examples = listOf(CatalogExample("Opens on press") { SheetOnPress() }),
 )
 
 @Composable
@@ -44,19 +44,19 @@ private fun SheetOnPress() {
                 modifier = Modifier.fillMaxWidth(),
                 navigation = {
                     GlassIconButton(KotogramIcons.Cross, contentDescription = "Close", onClick = ::dismiss)
-                }
+                },
             )
             SearchField(
                 state = rememberTextFieldState(),
                 modifier = Modifier.fillMaxWidth().padding(horizontal = KotogramTheme.spacing.large),
-                placeholder = "Search"
+                placeholder = "Search",
             )
             listOf("🇺🇿" to "Uzbekistan", "🇰🇿" to "Kazakhstan", "🇷🇺" to "Russia").forEach { country ->
                 ListItem(
                     headlineContent = { Text(country.second) },
                     leadingContent = { Text(country.first) },
                     onClick = ::dismiss,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }

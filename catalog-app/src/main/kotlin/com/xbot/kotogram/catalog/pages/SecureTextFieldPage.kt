@@ -40,10 +40,10 @@ internal val SecureTextFieldPage = CatalogPage(
                 placeholder = { Text("Your password") },
                 isError = true,
                 supportingText = { Text("Invalid password") },
-                textObfuscationMode = TextObfuscationMode.Hidden
+                textObfuscationMode = TextObfuscationMode.Hidden,
             )
-        }
-    )
+        },
+    ),
 )
 
 @Composable
@@ -59,13 +59,13 @@ private fun PasswordField(revealed: Boolean) {
                     .fillMaxSize()
                     .clip(CircleShape)
                     .clickable { shown = !shown },
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     imageVector = if (shown) KotogramIcons.Eye else KotogramIcons.EyeOff,
-                    contentDescription = if (shown) "Hide password" else "Show password"
+                    contentDescription = if (shown) "Hide password" else "Show password",
                 )
             }
-        }
+        },
     )
 }

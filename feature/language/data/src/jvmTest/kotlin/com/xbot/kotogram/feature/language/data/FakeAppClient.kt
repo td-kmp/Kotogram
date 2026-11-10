@@ -16,11 +16,10 @@ import kotlinx.coroutines.CompletableDeferred
 
 internal class FakeAppClient(
     var infos: Map<String, LanguagePackInfo> = emptyMap(),
-    var packs: Map<String, List<LanguagePackString>> = emptyMap()
+    var packs: Map<String, List<LanguagePackString>> = emptyMap(),
 ) : AppClient {
     val requests = mutableListOf<TdFunction<*>>()
 
-    // Holds every answer until completed, as TDLib before its instance starts.
     var started = CompletableDeferred(Unit)
 
     @Suppress("UNCHECKED_CAST")

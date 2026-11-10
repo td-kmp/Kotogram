@@ -12,7 +12,6 @@ import kotlinx.serialization.SerializationException
 private const val UNDECODABLE_ANSWER = -1
 private const val UNAVAILABLE = -2
 
-// The library surfaces an answer it can't decode as an exception.
 suspend fun <R : TdObject> TdClient.sendCatching(function: TdFunction<R>): Either<Error, R> = try {
     Either.Right(send(function))
 } catch (e: TdException) {

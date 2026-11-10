@@ -8,5 +8,5 @@ class ChatListEntry(
     val chat: Chat,
     val position: ChatPosition?,
     val senderUser: User?,
-    val senderChat: Chat?
+    val senderChat: Chat?,
 )

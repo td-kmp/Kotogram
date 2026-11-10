@@ -48,30 +48,29 @@ import io.github.alexzhirkevich.qrose.options.QrBrush
 import io.github.alexzhirkevich.qrose.options.QrLogoPadding
 import io.github.alexzhirkevich.qrose.options.solid
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
+import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
-import kotlinx.coroutines.delay
 
 @Composable
 fun QrCode(
     data: String?,
     contentDescription: String?,
     modifier: Modifier = Modifier,
-    style: QrCodeStyle = QrCodeStyle
+    style: QrCodeStyle = QrCodeStyle,
 ) {
     @Suppress("NAME_SHADOWING")
     val style = rememberStyle(::QrCodeStyleScope, QrCodeStyle.Default then style)
     val revealed = rememberRevealedData(data)
     context(style) {
         QrCodeSurface(modifier) {
-            // Opaque layers, the last kept under the next as it fades in: what both draw stays still, as on macOS.
             AnimatedContent(
                 targetState = revealed,
                 transitionSpec = {
                     fadeIn(style.revealSpec) togetherWith ExitTransition.KeepUntilTransitionsFinished
                 },
                 contentKey = { it != null },
-                label = "QrCode"
+                label = "QrCode",
             ) { shown ->
                 if (shown == null) {
                     QrPlaceholder(Modifier.fillMaxSize())
@@ -81,7 +80,7 @@ fun QrCode(
                         transitionSpec = {
                             fadeIn(style.refreshSpec) togetherWith ExitTransition.KeepUntilTransitionsFinished
                         },
-                        label = "QrCodeRefresh"
+                        label = "QrCodeRefresh",
                     ) { code ->
                         QrImage(data = code, contentDescription = contentDescription, modifier = Modifier.fillMaxSize())
                     }
@@ -93,13 +92,16 @@ fun QrCode(
 
 @Composable
 context(style: QrCodeStyleScope)
-private fun QrCodeSurface(modifier: Modifier, content: @Composable () -> Unit) {
+private fun QrCodeSurface(
+    modifier: Modifier,
+    content: @Composable () -> Unit,
+) {
     Surface(
         modifier = modifier.size(style.size),
         shape = style.shape,
         color = style.containerColor,
         contentColor = style.contentColor,
-        content = content
+        content = content,
     )
 }
 
@@ -135,22 +137,25 @@ private fun QrPlaceholder(modifier: Modifier = Modifier) {
     Image(
         painter = rememberLottiePainter(
             composition = composition,
-            iterations = Compottie.IterateForever
+            iterations = Compottie.IterateForever,
         ),
         contentDescription = null,
         colorFilter = ColorFilter.tint(style.contentColor),
         modifier = modifier
             .background(style.containerColor)
-            .layoutOnQrGrid(PLACEHOLDER_MODULES, style.contentPadding)
+            .layoutOnQrGrid(PLACEHOLDER_MODULES, style.contentPadding),
     )
 }
 
 @Composable
 context(style: QrCodeStyleScope)
-private fun QrImage(data: String, contentDescription: String?, modifier: Modifier = Modifier) {
+private fun QrImage(
+    data: String,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+) {
     val contentColor = style.contentColor
     val spec = remember(data) { qrCodeSpec(data, PLACEHOLDER_MODULES) }
-    // An empty logo keeps the cutout for an icon to come.
     val cutout = remember { EmptyPainter() }
     val painter = rememberQrCodePainter(data, spec, contentColor) {
         errorCorrectionLevel = spec.level
@@ -173,7 +178,7 @@ private fun QrImage(data: String, contentDescription: String?, modifier: Modifie
         contentDescription = contentDescription,
         modifier = modifier
             .background(style.containerColor)
-            .layoutOnQrGrid(spec.modules, style.contentPadding)
+            .layoutOnQrGrid(spec.modules, style.contentPadding),
     )
 }
 
@@ -196,14 +201,12 @@ private fun QrCodePreview() {
             QrImage(
                 data = "tg://login?token=AQFJjO1qHocdoolqLtckd6dPS98k1HhnVDFilU_N_v6psw",
                 contentDescription = null,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             )
         }
     }
 }
 
-// Dark on light in any theme: scanners read that best. Telegram for macOS's code, 12 from the edges of its card;
-// it fades in over 1.2 s and a new one over the last in 0.2 s, as macOS's image view.
 @Suppress("MagicNumber")
 fun interface QrCodeStyle : ComponentStyle<QrCodeStyleScope> {
     companion object : QrCodeStyle {
@@ -223,15 +226,19 @@ fun interface QrCodeStyle : ComponentStyle<QrCodeStyleScope> {
 
 infix fun QrCodeStyle.then(other: QrCodeStyle): QrCodeStyle = when {
     other === QrCodeStyle -> this
+
     this === QrCodeStyle -> other
+
     else -> QrCodeStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
     }
 }
 
-class QrCodeStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
-    AdaptiveStyleScope<QrCodeStyleScope>,
+class QrCodeStyleScope(
+    val theme: KotogramTheme.Values,
+    override val mediaQueryInfo: MediaQueryInfo,
+) : AdaptiveStyleScope<QrCodeStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
     var size: Dp = Dp.Unspecified

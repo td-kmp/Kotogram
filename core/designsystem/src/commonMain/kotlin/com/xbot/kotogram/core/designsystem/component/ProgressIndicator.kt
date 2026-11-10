@@ -17,9 +17,11 @@ import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 import com.xbot.kotogram.core.designsystem.style.StyleResolver
 import com.xbot.kotogram.core.designsystem.style.rememberStyle
 
-// The caller's modifier sets the size; the style's is only for a modifier without one.
 @Composable
-fun ProgressIndicator(modifier: Modifier = Modifier, style: ProgressIndicatorStyle = ProgressIndicatorStyle) {
+fun ProgressIndicator(
+    modifier: Modifier = Modifier,
+    style: ProgressIndicatorStyle = ProgressIndicatorStyle,
+) {
     @Suppress("NAME_SHADOWING")
     val style = rememberStyle(::ProgressIndicatorStyleScope, ProgressIndicatorStyle.Default then style)
     with(LocalProgressIndicatorOverride.current) {
@@ -32,7 +34,10 @@ internal interface ProgressIndicatorOverride {
     fun ProgressIndicatorOverrideScope.ProgressIndicator()
 }
 
-internal class ProgressIndicatorOverrideScope(val modifier: Modifier, val style: ProgressIndicatorStyleScope)
+internal class ProgressIndicatorOverrideScope(
+    val modifier: Modifier,
+    val style: ProgressIndicatorStyleScope,
+)
 
 internal object DefaultProgressIndicatorOverride : ProgressIndicatorOverride {
     @Composable
@@ -44,7 +49,6 @@ internal object DefaultProgressIndicatorOverride : ProgressIndicatorOverride {
 internal val LocalProgressIndicatorOverride: ProvidableCompositionLocal<ProgressIndicatorOverride> =
     staticCompositionLocalOf { DefaultProgressIndicatorOverride }
 
-// The same on every form factor. UIKit's and AppKit's spinners draw their own stroke.
 @Suppress("MagicNumber")
 fun interface ProgressIndicatorStyle : ComponentStyle<ProgressIndicatorStyleScope> {
     companion object : ProgressIndicatorStyle {
@@ -60,15 +64,19 @@ fun interface ProgressIndicatorStyle : ComponentStyle<ProgressIndicatorStyleScop
 
 infix fun ProgressIndicatorStyle.then(other: ProgressIndicatorStyle): ProgressIndicatorStyle = when {
     other === ProgressIndicatorStyle -> this
+
     this === ProgressIndicatorStyle -> other
+
     else -> ProgressIndicatorStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
     }
 }
 
-class ProgressIndicatorStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
-    AdaptiveStyleScope<ProgressIndicatorStyleScope>,
+class ProgressIndicatorStyleScope(
+    val theme: KotogramTheme.Values,
+    override val mediaQueryInfo: MediaQueryInfo,
+) : AdaptiveStyleScope<ProgressIndicatorStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
     var size: Dp = Dp.Unspecified

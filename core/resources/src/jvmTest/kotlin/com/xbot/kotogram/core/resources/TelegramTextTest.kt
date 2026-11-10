@@ -11,31 +11,31 @@ class TelegramTextTest {
     @Test
     fun positionalArgumentsGoByTheirNumber() = assertEquals(
         "Bob invited Alice",
-        "%2\$@ invited %1\$@".formatTelegram(arrayOf("Alice", "Bob"))
+        "%2\$@ invited %1\$@".formatTelegram(arrayOf("Alice", "Bob")),
     )
 
     @Test
     fun bareArgumentsGoInOrder() = assertEquals(
         "3 of 5",
-        "%d of %d".formatTelegram(arrayOf(3, 5))
+        "%d of %d".formatTelegram(arrayOf(3, 5)),
     )
 
     @Test
     fun boldMarksAndEscapedPercentsAreDropped() = assertEquals(
         "Go to Settings, 100%",
-        "Go to **Settings**, 100%%".formatTelegram(emptyArray())
+        "Go to **Settings**, 100%%".formatTelegram(emptyArray()),
     )
 
     @Test
     fun linksKeepTheirText() = assertEquals(
         "Get the code on Fragment",
-        "Get the code on [Fragment](%1\$@)".formatTelegram(arrayOf("https://fragment.com"))
+        "Get the code on [Fragment](%1\$@)".formatTelegram(arrayOf("https://fragment.com")),
     )
 
     @Test
     fun aMissingArgumentKeepsItsPlaceholder() = assertEquals(
         "Hello %@",
-        "Hello %@".formatTelegram(emptyArray())
+        "Hello %@".formatTelegram(emptyArray()),
     )
 
     @Test
@@ -49,7 +49,7 @@ class TelegramTextTest {
     @Test
     fun anArgumentIsNeverMarkup() = assertEquals(
         "**a** [b](c)",
-        "%@".formatTelegram(arrayOf("**a** [b](c)"))
+        "%@".formatTelegram(arrayOf("**a** [b](c)")),
     )
 
     @Test

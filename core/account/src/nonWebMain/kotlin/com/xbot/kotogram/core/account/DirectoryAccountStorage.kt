@@ -3,7 +3,9 @@ package com.xbot.kotogram.core.account
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 
-internal class DirectoryAccountStorage(private val root: String) : AccountStorage {
+internal class DirectoryAccountStorage(
+    private val root: String,
+) : AccountStorage {
     override fun databaseDirectory(id: AccountId): String = "${directoryOf(id)}/db"
 
     override fun filesDirectory(id: AccountId): String = "${directoryOf(id)}/files"

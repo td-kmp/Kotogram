@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-// androidx.compose.ui.platform.WebMediaScope of CMP's jb-main (1.13.10).
+// Adapted from androidx.compose.ui.platform.WebMediaScope of CMP's jb-main (1.13.10).
 @file:OptIn(ExperimentalWasmJsInterop::class)
 
 package com.xbot.kotogram.core.designsystem.media
@@ -33,10 +33,6 @@ import com.xbot.kotogram.core.designsystem.media.UiMediaScope.PointerPrecision
 import com.xbot.kotogram.core.designsystem.media.UiMediaScope.ViewingDistance
 import com.xbot.kotogram.core.designsystem.media.UiMediaScope.WindowFold
 import com.xbot.kotogram.core.designsystem.media.UiMediaScope.WindowPosture
-import kotlin.js.ExperimentalWasmJsInterop
-import kotlin.js.JsAny
-import kotlin.js.js
-import kotlin.js.toList
 import kotlinx.browser.window
 import org.w3c.dom.MediaQueryListEvent
 import org.w3c.dom.events.EventTarget
@@ -44,8 +40,14 @@ import org.w3c.dom.mediacapture.AUDIOINPUT
 import org.w3c.dom.mediacapture.MediaDeviceKind
 import org.w3c.dom.mediacapture.MediaDevices
 import org.w3c.dom.mediacapture.VIDEOINPUT
+import kotlin.js.ExperimentalWasmJsInterop
+import kotlin.js.JsAny
+import kotlin.js.js
+import kotlin.js.toList
 
-internal class WebMediaScope(private val windowInfo: WindowInfo) : UiMediaScope {
+internal class WebMediaScope(
+    private val windowInfo: WindowInfo,
+) : UiMediaScope {
     private val finePointer = MediaFeature("(any-pointer: fine)")
     private val coarsePointer = MediaFeature("(any-pointer: coarse)")
     private val hoveringPointer = MediaFeature("(any-hover: hover)")
@@ -60,7 +62,6 @@ internal class WebMediaScope(private val windowInfo: WindowInfo) : UiMediaScope 
     override val windowHeight: Dp
         get() = windowInfo.containerDpSize.height
 
-    // Two segments per axis at most.
     override val windowPosture: WindowPosture by derivedStateOf {
         val state = if (folded.value) FoldState.HalfOpened else FoldState.Flat
         WindowPosture(
@@ -71,7 +72,7 @@ internal class WebMediaScope(private val windowInfo: WindowInfo) : UiMediaScope 
                 if (verticalSegments.value) {
                     add(WindowFold(state, FoldOrientation.Horizontal))
                 }
-            }
+            },
         )
     }
 
@@ -82,7 +83,7 @@ internal class WebMediaScope(private val windowInfo: WindowInfo) : UiMediaScope 
             else -> PointerPrecision.None
         }
 
-    // Browsers don't report a physical keyboard: a fine pointer that hovers stands for one.
+    // Workaround: browsers don't report a physical keyboard, so a fine pointer that hovers stands for one.
     private val hasLikelyPhysicalKeyboard: Boolean
         get() = finePointer.value && hoveringPointer.value
 
@@ -95,7 +96,6 @@ internal class WebMediaScope(private val windowInfo: WindowInfo) : UiMediaScope 
             else -> KeyboardKind.None
         }
 
-    // Both stay false outside a secure context.
     override var hasMicrophone: Boolean by mutableStateOf(false)
         private set
 
@@ -166,8 +166,9 @@ internal class WebMediaScope(private val windowInfo: WindowInfo) : UiMediaScope 
     }
 }
 
-// CMP's MediaQueryListener, without its fallbacks for browsers that can't run Kotlin/Wasm.
-private class MediaFeature(query: String) {
+private class MediaFeature(
+    query: String,
+) {
     private val media = window.matchMedia(query)
 
     var value: Boolean by mutableStateOf(media.matches)
@@ -186,41 +187,41 @@ private fun getVirtualKeyboard(): EventTarget? = js("(navigator.virtualKeyboard 
 // language=js
 private fun getVisualViewport(): EventTarget? = js("(window.visualViewport || null)")
 
-// VirtualKeyboard's geometry counts only in overlay mode; elsewhere the area below the visual viewport, at scale 1.
 // language=js
-private fun isVirtualKeyboardVisible(): Boolean =
-    js(
-        """(function() {
+private fun isVirtualKeyboardVisible(): Boolean = js(
+    """(function() {
     const keyboard = navigator.virtualKeyboard;
     if (keyboard && keyboard.overlaysContent) return keyboard.boundingRect.height > 0;
     const viewport = window.visualViewport;
     return Boolean(viewport && viewport.scale === 1 &&
         window.innerHeight - viewport.height - viewport.offsetTop > 1);
-})()"""
-    )
+})()""",
+)
 
 // language=js
-private fun getMediaDevices(): MediaDevices? =
-    js(
-        """(
+private fun getMediaDevices(): MediaDevices? = js(
+    """(
     navigator.mediaDevices && typeof navigator.mediaDevices.enumerateDevices === 'function'
         ? navigator.mediaDevices : null
-)"""
-    )
+)""",
+)
 
-private fun enumerateMediaDevices(devices: MediaDevices, onResult: (Boolean, Boolean) -> Unit) {
+private fun enumerateMediaDevices(
+    devices: MediaDevices,
+    onResult: (Boolean, Boolean) -> Unit,
+) {
     devices.enumerateDevices().then<JsAny?>(
         onFulfilled = { result ->
             val inputs = result.toList()
             onResult(
                 inputs.any { it.kind == MediaDeviceKind.AUDIOINPUT },
-                inputs.any { it.kind == MediaDeviceKind.VIDEOINPUT }
+                inputs.any { it.kind == MediaDeviceKind.VIDEOINPUT },
             )
             null
         },
         onRejected = {
             onResult(false, false)
             null
-        }
+        },
     )
 }

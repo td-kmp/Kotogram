@@ -27,8 +27,8 @@ internal val RichTextPage = CatalogPage(
             RichText(
                 formatted(
                     "By signing up, you agree to the Terms of Service.",
-                    "Terms of Service" to TextEntityTypeTextUrl("https://telegram.org/tos")
-                )
+                    "Terms of Service" to TextEntityTypeTextUrl("https://telegram.org/tos"),
+                ),
             )
         },
         CatalogExample("Every inline style") {
@@ -41,15 +41,18 @@ internal val RichTextPage = CatalogPage(
                     "struck out" to TextEntityTypeStrikethrough,
                     "code" to TextEntityTypeCode,
                     "@telegram" to TextEntityTypeMention,
-                    "help@telegram.org" to TextEntityTypeEmailAddress
+                    "help@telegram.org" to TextEntityTypeEmailAddress,
                 ),
-                onEntityClick = {}
+                onEntityClick = {},
             )
-        }
-    )
+        },
+    ),
 )
 
-private fun formatted(text: String, vararg entities: Pair<String, TextEntityType>) = FormattedText(
+private fun formatted(
+    text: String,
+    vararg entities: Pair<String, TextEntityType>,
+) = FormattedText(
     text = text,
-    entities = entities.map { (part, type) -> TextEntity(text.indexOf(part), part.length, type) }
+    entities = entities.map { (part, type) -> TextEntity(text.indexOf(part), part.length, type) },
 )

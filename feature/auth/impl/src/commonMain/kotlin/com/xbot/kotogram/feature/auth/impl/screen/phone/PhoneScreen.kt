@@ -64,7 +64,7 @@ internal fun PhoneScreen(
     canUseQr: Boolean,
     onSubmitted: () -> Unit,
     onQrLoginClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val state by viewModel.collectAsState()
     val focusRequester = remember { FocusRequester() }
@@ -81,7 +81,7 @@ internal fun PhoneScreen(
         onAction = viewModel::onAction,
         onQrLoginClick = onQrLoginClick,
         modifier = modifier,
-        focusRequester = focusRequester
+        focusRequester = focusRequester,
     )
 }
 
@@ -93,25 +93,24 @@ internal fun PhoneScreenContent(
     onAction: (PhoneScreenAction) -> Unit,
     onQrLoginClick: () -> Unit,
     modifier: Modifier = Modifier,
-    focusRequester: FocusRequester = remember { FocusRequester() }
+    focusRequester: FocusRequester = remember { FocusRequester() },
 ) {
     val style = rememberStyle(::PhoneScreenStyleScope, PhoneScreenStyle.Adaptive)
     val posture = mediaQuery { windowPosture }
     val landscape by derivedMediaQuery { windowHeight < style.landscapeHeight }
-    // At the bottom as Telegram for iOS has it, iPad included; under the field on laptops and phones on their side.
     val actionAtBottom = !style.mediaQueryInfo.isLaptop && !landscape
     val invalidCountry = stringResource(Res.string.login_invalidcountrycode)
 
     context(style) {
         Scaffold(
             modifier = modifier,
-            contentWindowInsets = WindowInsets.safeDrawing
+            contentWindowInsets = WindowInsets.safeDrawing,
         ) { innerPadding ->
             Column(
                 Modifier
                     .fillMaxHeight()
                     .fillMaxWidth(if (posture.isBook) 0.5f else 1f)
-                    .padding(innerPadding)
+                    .padding(innerPadding),
             ) {
                 BoxWithConstraints(Modifier.weight(1f)) {
                     Column(
@@ -121,7 +120,7 @@ internal fun PhoneScreenContent(
                             .heightIn(min = maxHeight)
                             .padding(horizontal = style.horizontalPadding),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        verticalArrangement = Arrangement.Center,
                     ) {
                         if (!landscape && !posture.isTabletop) {
                             LottieImage(STICKER, Modifier.size(style.logoSize))
@@ -129,13 +128,13 @@ internal fun PhoneScreenContent(
                         }
                         Text(
                             text = stringResource(Res.string.app_name),
-                            style = style.titleTextStyle
+                            style = style.titleTextStyle,
                         )
                         Spacer(Modifier.height(style.beforeInfo))
                         Text(
                             text = stringResource(Res.string.login_new_phonenumber),
                             style = style.infoTextStyle,
-                            modifier = Modifier.widthIn(max = style.infoWidth)
+                            modifier = Modifier.widthIn(max = style.infoWidth),
                         )
                         Spacer(Modifier.height(style.beforeField))
                         PhoneNumberField(
@@ -150,25 +149,25 @@ internal fun PhoneScreenContent(
                             callingCodeLength = state.callingCode.length,
                             numberPattern = state.numberPattern,
                             numberPlaceholder = stringResource(
-                                Res.string.login_phonefieldplaceholder
+                                Res.string.login_phonefieldplaceholder,
                             ),
                             onSubmit = { onAction(PhoneScreenAction.OnSubmit) },
                             readOnly = state.isSubmitting,
                             focusRequester = focusRequester,
                             modifier = Modifier.contentWidth(),
-                            countryMenu = { CountryPicker(state, onAction) }
+                            countryMenu = { CountryPicker(state, onAction) },
                         )
                         Crossfade(
                             targetState = state.error,
                             animationSpec = style.errorFadeSpec,
                             modifier = Modifier
                                 .height(style.beforeAction)
-                                .padding(top = style.beforeError)
+                                .padding(top = style.beforeError),
                         ) { error ->
                             if (error != null) {
                                 Text(
                                     text = stringResource(error.localizedMessage()),
-                                    style = style.errorTextStyle
+                                    style = style.errorTextStyle,
                                 )
                             }
                         }
@@ -177,7 +176,6 @@ internal fun PhoneScreenContent(
                         }
                     }
                 }
-                // Half open on a table: the form above the fold, the keyboard below it.
                 if (posture.isTabletop) Spacer(Modifier.weight(1f))
                 if (actionAtBottom) {
                     PhoneAction(
@@ -187,7 +185,7 @@ internal fun PhoneScreenContent(
                         onQrLoginClick = onQrLoginClick,
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
-                            .padding(style.bottomActionInset)
+                            .padding(style.bottomActionInset),
                     )
                 }
             }
@@ -202,7 +200,7 @@ private fun PhoneAction(
     canUseQr: Boolean,
     onAction: (PhoneScreenAction) -> Unit,
     onQrLoginClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     if (canUseQr && state.number.isEmpty()) {
         TextButton(onClick = onQrLoginClick, modifier = modifier) {
@@ -213,7 +211,7 @@ private fun PhoneAction(
             text = stringResource(Res.string.login_next),
             onClick = { onAction(PhoneScreenAction.OnSubmit) },
             state = ButtonState.of(enabled = state.canSubmit, loading = state.isSubmitting),
-            modifier = modifier.contentWidth()
+            modifier = modifier.contentWidth(),
         )
     }
 }
@@ -225,7 +223,10 @@ private fun Modifier.contentWidth(): Modifier {
 }
 
 @Composable
-private fun CountryPicker(state: PhoneScreenState, onAction: (PhoneScreenAction) -> Unit) {
+private fun CountryPicker(
+    state: PhoneScreenState,
+    onAction: (PhoneScreenAction) -> Unit,
+) {
     OptionPicker(
         expanded = state.isCountryPickerVisible,
         onDismissRequest = { onAction(PhoneScreenAction.OnCountryPickerVisibilityChange(false)) },
@@ -235,11 +236,11 @@ private fun CountryPicker(state: PhoneScreenState, onAction: (PhoneScreenAction)
                 text = country.name,
                 leading = country.flagEmoji,
                 supporting = country.englishName.takeIf { it != country.name },
-                trailing = country.callingCodes.firstOrNull()?.let { "+$it" }
+                trailing = country.callingCodes.firstOrNull()?.let { "+$it" },
             )
         },
         onSelect = { onAction(PhoneScreenAction.OnCountrySelect(it)) },
-        // macOS's pack has no title for it: its login picks the country from a menu.
+        // Workaround: macOS's pack has no title for the picker, so the field's label stands in.
         title = stringResource(Res.string.login_countrylabel).replaceFirstChar { it.titlecase() },
         selected = state.country,
         optionSection = { it.name.take(1).uppercase() },
@@ -248,29 +249,26 @@ private fun CountryPicker(state: PhoneScreenState, onAction: (PhoneScreenAction)
             country.name.contains(query, ignoreCase = true) ||
                 country.englishName.contains(query, ignoreCase = true) ||
                 country.callingCodes.any { it.startsWith(query.removePrefix("+")) }
-        }
+        },
     )
 }
 
 @KotogramPreview
 @Composable
-private fun PhoneScreenPreview(
-    @PreviewParameter(PhoneScreenStateProvider::class) state: PhoneScreenState
-) {
+private fun PhoneScreenPreview(@PreviewParameter(PhoneScreenStateProvider::class) state: PhoneScreenState) {
     PhoneScreenContent(
         state = state,
         phoneNumber = TextFieldState(state.callingCode + state.number),
         canUseQr = true,
         onAction = {},
-        onQrLoginClick = {}
+        onQrLoginClick = {},
     )
 }
 
 @KotogramLaptopPreview
 @Composable
-private fun PhoneScreenLaptopPreview(
-    @PreviewParameter(PhoneScreenStateProvider::class) state: PhoneScreenState
-) = PhoneScreenPreview(state)
+private fun PhoneScreenLaptopPreview(@PreviewParameter(PhoneScreenStateProvider::class) state: PhoneScreenState) =
+    PhoneScreenPreview(state)
 
 private class PhoneScreenStateProvider : PreviewParameterProvider<PhoneScreenState> {
     private val country = CountryInfo(
@@ -279,14 +277,14 @@ private class PhoneScreenStateProvider : PreviewParameterProvider<PhoneScreenSta
         englishName = "Uzbekistan",
         flagEmoji = "🇺🇿",
         isHidden = false,
-        callingCodes = listOf("998")
+        callingCodes = listOf("998"),
     )
     private val empty = PhoneScreenState(
         countries = listOf(country),
         country = country,
         callingCode = "998",
         numberPattern = "-- --- -- --",
-        isAcceptingNumber = true
+        isAcceptingNumber = true,
     )
     private val entered = empty.copy(number = "901234567", numberPattern = "90 123 45 67")
 
@@ -294,7 +292,7 @@ private class PhoneScreenStateProvider : PreviewParameterProvider<PhoneScreenSta
         empty,
         entered,
         entered.copy(isSubmitting = true),
-        entered.copy(error = AuthError.InvalidPhoneNumber)
+        entered.copy(error = AuthError.InvalidPhoneNumber),
     )
 }
 

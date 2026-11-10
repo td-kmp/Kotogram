@@ -20,19 +20,24 @@ import org.jetbrains.compose.resources.pluralStringResource as bundledPluralStri
 import org.jetbrains.compose.resources.stringResource as bundledStringResource
 
 @Composable
-fun stringResource(resource: ComposeStringResource, vararg formatArgs: Any): String =
-    template(resource).formatTelegram(formatArgs)
+fun stringResource(
+    resource: ComposeStringResource,
+    vararg formatArgs: Any,
+): String = template(resource).formatTelegram(formatArgs)
 
 @Composable
-fun pluralStringResource(resource: PluralStringResource, quantity: Int, vararg formatArgs: Any): String =
-    template(resource, quantity).formatTelegram(formatArgs)
+fun pluralStringResource(
+    resource: PluralStringResource,
+    quantity: Int,
+    vararg formatArgs: Any,
+): String = template(resource, quantity).formatTelegram(formatArgs)
 
 @Composable
 fun annotatedStringResource(
     resource: ComposeStringResource,
     vararg formatArgs: Any,
     linkStyles: TextLinkStyles? = null,
-    onLinkClick: (url: String) -> Unit = {}
+    onLinkClick: (url: String) -> Unit = {},
 ): AnnotatedString = template(resource).annotate(formatArgs, linkStyles, onLinkClick)
 
 @Composable
@@ -46,10 +51,12 @@ fun stringResource(res: StringResource): String = when (res) {
 fun annotatedStringResource(
     res: StringResource,
     linkStyles: TextLinkStyles? = null,
-    onLinkClick: (url: String) -> Unit = {}
+    onLinkClick: (url: String) -> Unit = {},
 ): AnnotatedString = when (res) {
     is StringResource.String -> AnnotatedString(res.text)
+
     is StringResource.Text -> template(res.resource).annotate(res.formatArgs, linkStyles, onLinkClick)
+
     is StringResource.Plural ->
         template(res.resource, res.quantity).annotate(res.formatArgs, linkStyles, onLinkClick)
 }
@@ -59,17 +66,18 @@ private fun template(resource: ComposeStringResource): String =
     LocalLocalization.current.text(resource) ?: bundledStringResource(resource)
 
 @Composable
-private fun template(resource: PluralStringResource, quantity: Int): String =
-    LocalLocalization.current.plural(resource, quantity) ?: bundledPluralStringResource(resource, quantity)
+private fun template(
+    resource: PluralStringResource,
+    quantity: Int,
+): String = LocalLocalization.current.plural(resource, quantity) ?: bundledPluralStringResource(resource, quantity)
 
 @Composable
 private fun String.annotate(
     args: Array<out Any>,
     linkStyles: TextLinkStyles?,
-    onLinkClick: (String) -> Unit
+    onLinkClick: (String) -> Unit,
 ): AnnotatedString {
     val currentOnLinkClick by rememberUpdatedState(onLinkClick)
-    // One listener for the composition: a new one each time would make every AnnotatedString unequal.
     val listener = remember {
         LinkInteractionListener { link -> (link as? LinkAnnotation.Clickable)?.let { currentOnLinkClick(it.tag) } }
     }

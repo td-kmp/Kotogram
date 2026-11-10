@@ -38,21 +38,21 @@ internal fun interface PasswordScreenStyle : ComponentStyle<PasswordScreenStyleS
                     fontSize = 28.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = theme.colors.onSurface,
-                    textAlign = TextAlign.Center
-                )
+                    textAlign = TextAlign.Center,
+                ),
             )
             infoTextStyle(
                 theme.typography.bodyLarge.merge(
                     fontSize = 17.sp,
                     color = theme.colors.onSurface,
-                    textAlign = TextAlign.Center
-                )
+                    textAlign = TextAlign.Center,
+                ),
             )
             errorTextStyle(
                 theme.typography.bodyMedium.merge(
                     color = theme.colors.error,
-                    textAlign = TextAlign.Center
-                )
+                    textAlign = TextAlign.Center,
+                ),
             )
             errorFadeSpec(tween(200))
             landscapeHeight(480.dp)
@@ -73,37 +73,36 @@ internal fun interface PasswordScreenStyle : ComponentStyle<PasswordScreenStyleS
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Medium,
                         color = theme.colors.onSurface,
-                        textAlign = TextAlign.Center
-                    )
+                        textAlign = TextAlign.Center,
+                    ),
                 )
                 infoTextStyle(
                     theme.typography.bodyLarge.merge(
                         fontSize = 13.5.sp,
                         color = theme.colors.onSurfaceVariant,
-                        textAlign = TextAlign.Center
-                    )
+                        textAlign = TextAlign.Center,
+                    ),
                 )
             }
         }
     }
 }
 
-internal infix fun PasswordScreenStyle.then(other: PasswordScreenStyle): PasswordScreenStyle =
-    when {
-        other === PasswordScreenStyle -> this
+internal infix fun PasswordScreenStyle.then(other: PasswordScreenStyle): PasswordScreenStyle = when {
+    other === PasswordScreenStyle -> this
 
-        this === PasswordScreenStyle -> other
+    this === PasswordScreenStyle -> other
 
-        else -> PasswordScreenStyle {
-            with(this@then) { applyStyle() }
-            with(other) { applyStyle() }
-        }
+    else -> PasswordScreenStyle {
+        with(this@then) { applyStyle() }
+        with(other) { applyStyle() }
     }
+}
 
 @Suppress("TooManyFunctions")
 internal class PasswordScreenStyleScope(
     val theme: KotogramTheme.Values,
-    override val mediaQueryInfo: MediaQueryInfo
+    override val mediaQueryInfo: MediaQueryInfo,
 ) : AdaptiveStyleScope<PasswordScreenStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 

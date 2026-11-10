@@ -24,13 +24,13 @@ internal actual fun platformUiMediaScope(): UiMediaScope {
     return scope
 }
 
-// A browser reports no device type: a fine pointer that hovers counts as a computer, as WebMediaScope's keyboard does.
+// Workaround: a browser reports no device type, so a fine pointer that hovers counts as a computer.
 @Composable
 internal actual fun platformMediaQueryInfo(): MediaQueryInfo = remember {
     MediaQueryInfo(
         isLaptop = window.matchMedia("(any-pointer: fine) and (any-hover: hover)").matches,
         isTv = false,
-        isAuto = false
+        isAuto = false,
     )
 }
 

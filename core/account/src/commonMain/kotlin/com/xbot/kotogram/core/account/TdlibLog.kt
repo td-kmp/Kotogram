@@ -19,7 +19,7 @@ internal object TdlibLog {
         val verbosity = TelegramApiConfig.TDLIB_LOG_VERBOSITY
         tdLib.execute(SetLogStream(logStream = LogStreamEmpty).toTdJson())
         tdLib.execute(SetLogVerbosityLevel(newVerbosityLevel = verbosity).toTdJson())
-        // On TDLib's threads, which must not call TDLib back; TDLib aborts right after a level 0 message.
+        // Workaround: TDLib's threads must not call it back, and it aborts right after a level 0 message.
         tdLib.setLogMessageHandler(verbosity) { level, message ->
             when (level) {
                 FATAL -> logger.a(message)

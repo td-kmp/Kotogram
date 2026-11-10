@@ -9,7 +9,6 @@ import platform.Foundation.NSProcessInfo
 import platform.UIKit.UIUserInterfaceStyle
 import platform.UIKit.UIView
 
-// Glass refracts what is under it, so it has to lie over the Compose canvas, and so has everything drawn on it.
 @OptIn(ExperimentalComposeUiApi::class)
 internal val GlassProperties =
     UIKitInteropProperties(isNativeAccessibilityEnabled = true, placedAsOverlay = true)
@@ -20,10 +19,13 @@ internal val hasLiquidGlass: Boolean = NSProcessInfo.processInfo.isOperatingSyst
         majorVersion = LIQUID_GLASS_IOS_VERSION
         minorVersion = 0
         patchVersion = 0
-    }
+    },
 )
 
-internal fun fade(view: UIView, visible: Boolean) {
+internal fun fade(
+    view: UIView,
+    visible: Boolean,
+) {
     val alpha = if (visible) 1.0 else 0.0
     if (view.alpha != alpha) UIView.animateWithDuration(FADE_SECONDS) { view.alpha = alpha }
 }

@@ -14,9 +14,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 
-// A native control can't draw a Compose vector, so it gets the icon drawn at the screen's scale.
 @Composable
-internal fun rememberIconBitmap(icon: ImageVector, size: Dp, color: Color): ImageBitmap {
+internal fun rememberIconBitmap(
+    icon: ImageVector,
+    size: Dp,
+    color: Color,
+): ImageBitmap {
     val painter = rememberVectorPainter(icon)
     val density = LocalDensity.current
     return remember(painter, size, color, density) {

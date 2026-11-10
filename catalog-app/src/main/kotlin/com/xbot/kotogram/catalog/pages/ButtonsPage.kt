@@ -34,8 +34,8 @@ internal val ButtonsPage = CatalogPage(
         CatalogExample("Text") {
             States { state -> TextButton(onClick = {}, state = state) { Text("Forgot password?") } }
         },
-        CatalogExample("Loads for two seconds when pressed") { LoadingOnPress() }
-    )
+        CatalogExample("Loads for two seconds when pressed") { LoadingOnPress() },
+    ),
 )
 
 @Composable
@@ -57,7 +57,7 @@ private fun LoadingOnPress() {
     ProminentButton(
         text = "Sign in",
         onClick = { loading = true },
-        state = ButtonState.of(enabled = true, loading = loading)
+        state = ButtonState.of(enabled = true, loading = loading),
     )
 }
 

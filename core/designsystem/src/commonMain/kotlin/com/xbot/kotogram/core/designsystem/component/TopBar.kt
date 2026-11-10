@@ -43,7 +43,7 @@ fun TopBar(
     modifier: Modifier = Modifier,
     navigation: @Composable (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
-    style: TopBarStyle = TopBarStyle
+    style: TopBarStyle = TopBarStyle,
 ) {
     @Suppress("NAME_SHADOWING")
     val style = rememberStyle(::TopBarStyleScope, TopBarStyle.Adaptive then style)
@@ -58,23 +58,27 @@ fun TopBar(
                 modifier = Modifier.layoutId(TopBarSlot.Actions),
                 horizontalArrangement = Arrangement.spacedBy(style.actionGap),
                 verticalAlignment = Alignment.CenterVertically,
-                content = actions
+                content = actions,
             )
         },
         modifier = modifier,
-        measurePolicy = measurePolicy
+        measurePolicy = measurePolicy,
     )
 }
 
 private enum class TopBarSlot {
     Navigation,
     Title,
-    Actions
+    Actions,
 }
 
-// As wide as the incoming maximum. A centred title keeps clear of the wider side, so it stays in the middle.
-private class TopBarMeasurePolicy(private val style: TopBarStyleScope) : MeasurePolicy {
-    override fun MeasureScope.measure(measurables: List<Measurable>, constraints: Constraints): MeasureResult {
+private class TopBarMeasurePolicy(
+    private val style: TopBarStyleScope,
+) : MeasurePolicy {
+    override fun MeasureScope.measure(
+        measurables: List<Measurable>,
+        constraints: Constraints,
+    ): MeasureResult {
         val centered = style.centeredTitle
         val width = constraints.maxWidth
         val padding = style.horizontalPadding.roundToPx()
@@ -92,7 +96,7 @@ private class TopBarMeasurePolicy(private val style: TopBarStyleScope) : Measure
         val title = measurables.first { it.layoutId == TopBarSlot.Title }
             .measure(loose.copy(maxWidth = titleWidth.coerceAtLeast(0)))
         val height = constraints.constrainHeight(
-            maxOf(style.minHeight.roundToPx(), navigation.height, actions.height, title.height)
+            maxOf(style.minHeight.roundToPx(), navigation.height, actions.height, title.height),
         )
         return layout(width, height) {
             navigation.placeRelative(padding, (height - navigation.height) / 2)
@@ -109,7 +113,7 @@ private fun TopBarPreview() {
     TopBar(
         title = { Text("Country", maxLines = 1, overflow = TextOverflow.Ellipsis) },
         navigation = { IconButton(KotogramIcons.Close, contentDescription = null, onClick = {}) },
-        actions = { IconButton(KotogramIcons.Search, contentDescription = null, onClick = {}) }
+        actions = { IconButton(KotogramIcons.Search, contentDescription = null, onClick = {}) },
     )
 }
 
@@ -117,8 +121,6 @@ private fun TopBarPreview() {
 @Composable
 private fun TopBarLaptopPreview() = TopBarPreview()
 
-// UIKit's navigation bar in a sheet on touch screens (17 semibold, 16 from the edges); our own on a laptop. Apple's
-// platforms centre the title, Material starts it after the navigation button.
 @Suppress("MagicNumber")
 fun interface TopBarStyle : ComponentStyle<TopBarStyleScope> {
     companion object : TopBarStyle {
@@ -134,8 +136,8 @@ fun interface TopBarStyle : ComponentStyle<TopBarStyleScope> {
                 theme.typography.bodyLarge.merge(
                     fontSize = 17.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = theme.colors.onSurface
-                )
+                    color = theme.colors.onSurface,
+                ),
             )
         }
 
@@ -152,15 +154,19 @@ fun interface TopBarStyle : ComponentStyle<TopBarStyleScope> {
 
 infix fun TopBarStyle.then(other: TopBarStyle): TopBarStyle = when {
     other === TopBarStyle -> this
+
     this === TopBarStyle -> other
+
     else -> TopBarStyle {
         with(this@then) { applyStyle() }
         with(other) { applyStyle() }
     }
 }
 
-class TopBarStyleScope(val theme: KotogramTheme.Values, override val mediaQueryInfo: MediaQueryInfo) :
-    AdaptiveStyleScope<TopBarStyleScope>,
+class TopBarStyleScope(
+    val theme: KotogramTheme.Values,
+    override val mediaQueryInfo: MediaQueryInfo,
+) : AdaptiveStyleScope<TopBarStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
     var centeredTitle: Boolean = false

@@ -42,7 +42,7 @@ internal object GlassProminentButtonOverride : ProminentButtonOverride {
                 factory = {
                     UIButton.buttonWithConfiguration(
                         configuration = UIButtonConfiguration.prominentGlassButtonConfiguration(),
-                        primaryAction = UIAction.actionWithHandler { currentOnClick() }
+                        primaryAction = UIAction.actionWithHandler { currentOnClick() },
                     ).apply { alpha = 0.0 }
                 },
                 modifier = Modifier.matchParentSize(),
@@ -51,7 +51,7 @@ internal object GlassProminentButtonOverride : ProminentButtonOverride {
                         title = text.takeUnless { state == ButtonState.Loading },
                         font = UIFont.systemFontOfSize(fontSize, textStyle.fontWeight.appleWeight()),
                         color = colors.contentColor(state).toUIColor(),
-                        loading = state == ButtonState.Loading
+                        loading = state == ButtonState.Loading,
                     )
                     button.tintColor = colors.containerColor(state).toUIColor()
                     button.overrideUserInterfaceStyle = interfaceStyle(dark)
@@ -59,22 +59,26 @@ internal object GlassProminentButtonOverride : ProminentButtonOverride {
                     button.accessibilityLabel = text
                     fade(button, visible = inFront)
                 },
-                properties = GlassProperties
+                properties = GlassProperties,
             )
         }
     }
 }
 
 @OptIn(BetaInteropApi::class)
-private fun glassConfiguration(title: String?, font: UIFont, color: UIColor, loading: Boolean): UIButtonConfiguration =
-    UIButtonConfiguration.prominentGlassButtonConfiguration().apply {
-        attributedTitle = title?.let {
-            NSAttributedString.create(
-                string = it,
-                attributes = mapOf<Any?, Any?>(NSFontAttributeName to font, NSForegroundColorAttributeName to color)
-            )
-        }
-        baseForegroundColor = color
-        showsActivityIndicator = loading
-        cornerStyle = UIButtonConfigurationCornerStyleCapsule
+private fun glassConfiguration(
+    title: String?,
+    font: UIFont,
+    color: UIColor,
+    loading: Boolean,
+): UIButtonConfiguration = UIButtonConfiguration.prominentGlassButtonConfiguration().apply {
+    attributedTitle = title?.let {
+        NSAttributedString.create(
+            string = it,
+            attributes = mapOf<Any?, Any?>(NSFontAttributeName to font, NSForegroundColorAttributeName to color),
+        )
     }
+    baseForegroundColor = color
+    showsActivityIndicator = loading
+    cornerStyle = UIButtonConfigurationCornerStyleCapsule
+}
