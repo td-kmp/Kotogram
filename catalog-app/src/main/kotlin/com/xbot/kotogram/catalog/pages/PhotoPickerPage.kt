@@ -54,7 +54,7 @@ private fun PickedPhoto() {
             Modifier
                 .size(110.dp)
                 .clip(CircleShape)
-                .background(KotogramTheme.colors.surfaceVariant),
+                .background(KotogramTheme.colors.surfaceContainerHighest),
         ) {
             photo?.let { Image(it, contentDescription = null, contentScale = ContentScale.Crop) }
         }

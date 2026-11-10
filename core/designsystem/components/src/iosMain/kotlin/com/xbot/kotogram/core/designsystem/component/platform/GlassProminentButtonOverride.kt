@@ -5,7 +5,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.viewinterop.UIKitView
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.component.ButtonState
 import com.xbot.kotogram.core.designsystem.component.NativeBox
@@ -35,9 +34,9 @@ internal object GlassProminentButtonOverride : ProminentButtonOverride {
         val currentOnClick by rememberUpdatedState(onClick)
         val textStyle = buttonStyle.textStyle
         val fontSize = with(LocalDensity.current) { textStyle.fontSize.toDp().value.toDouble() }
-        val dark = KotogramTheme.colors.background.isDark()
+        val dark = KotogramTheme.colors.surface.isDark()
         NativeBox {
-            UIKitView(
+            OverlayView(
                 factory = {
                     UIButton.buttonWithConfiguration(
                         configuration = UIButtonConfiguration.prominentGlassButtonConfiguration(),

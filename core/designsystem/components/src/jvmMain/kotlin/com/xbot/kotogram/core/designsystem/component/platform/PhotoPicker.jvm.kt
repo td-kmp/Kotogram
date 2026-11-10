@@ -9,10 +9,7 @@ import com.xbot.kotogram.core.designsystem.appkit.MacWindow
 import com.xbot.kotogram.core.designsystem.component.PhotoPickerLauncher
 import com.xbot.kotogram.core.designsystem.theme.currentPlatform
 import dev.nucleusframework.window.tao.LocalTaoWindow
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.File
 
 @Composable
 internal actual fun platformPhotoPickerLauncher(onPick: (ByteArray) -> Unit): PhotoPickerLauncher? {
@@ -24,11 +21,12 @@ internal actual fun platformPhotoPickerLauncher(onPick: (ByteArray) -> Unit): Ph
         PhotoPickerLauncher {
             val handle = window ?: return@PhotoPickerLauncher
             scope.launch {
-                val path = MacWindow(handle).use { it.chooseImage() } ?: return@launch
-                withContext(Dispatchers.IO) {
-                    File(path).readBytes().toJpeg()
-                }?.let(currentOnPick)
+                MacWindow(handle)
+                    .use { it.chooseImage(PHOTO_MAX_SIDE, PHOTO_JPEG_QUALITY / PERCENT) }
+                    ?.let(currentOnPick)
             }
         }
     }
 }
+
+private const val PERCENT = 100.0

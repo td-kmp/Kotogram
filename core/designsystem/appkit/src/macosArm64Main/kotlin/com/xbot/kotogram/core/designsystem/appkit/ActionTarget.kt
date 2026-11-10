@@ -15,5 +15,3 @@ internal class ActionTarget(
 }
 
 internal val ActionSelector = NSSelectorFromString("act:")
-
-internal const val EVENT_BUFFER = 16

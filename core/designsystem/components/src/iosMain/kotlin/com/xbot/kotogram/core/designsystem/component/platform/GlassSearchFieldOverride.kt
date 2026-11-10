@@ -7,7 +7,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.viewinterop.UIKitView
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.component.SearchFieldOverride
 import com.xbot.kotogram.core.designsystem.component.SearchFieldOverrideScope
@@ -27,13 +26,14 @@ internal object GlassSearchFieldOverride : SearchFieldOverride {
         val font = UIFont.systemFontOfSize(fontSize, textStyle.fontWeight.appleWeight())
         val textColor = textStyle.color.toUIColor()
         val placeholderColor = style.placeholderColor.toUIColor()
+        val iconColor = style.iconColor.toUIColor()
         val tintColor = style.cursorColor.toUIColor()
-        val dark = KotogramTheme.colors.background.isDark()
-        UIKitView(
+        val dark = KotogramTheme.colors.surface.isDark()
+        OverlayView(
             factory = { searchView.root },
             modifier = modifier.height(style.height),
             update = { view ->
-                searchView.update(text, placeholder, font, textColor, placeholderColor, tintColor)
+                searchView.update(text, placeholder, font, textColor, placeholderColor, iconColor, tintColor)
                 view.overrideUserInterfaceStyle = interfaceStyle(dark)
             },
             properties = GlassProperties,

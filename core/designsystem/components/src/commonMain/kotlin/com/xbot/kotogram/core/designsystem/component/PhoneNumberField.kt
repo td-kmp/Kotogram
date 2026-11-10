@@ -211,7 +211,7 @@ fun interface PhoneNumberFieldStyle : ComponentStyle<PhoneNumberFieldStyleScope>
         val Default = PhoneNumberFieldStyle {
             width(280.dp)
             shape(theme.shapes.medium)
-            containerColor(theme.colors.surfaceVariant)
+            containerColor(theme.colors.surfaceContainerHighest)
             separatorColor(theme.colors.outline.copy(alpha = 0.12f))
             chevronColor(theme.colors.outline)
             cursorColor(theme.colors.primary)

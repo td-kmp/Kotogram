@@ -13,6 +13,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.catalog.model.CatalogExample
 import com.xbot.kotogram.catalog.model.CatalogPage
@@ -73,6 +75,8 @@ private val MaterialCheckbox = CheckboxStyle {
     shape(RoundedCornerShape(2.dp))
     borderWidth(2.dp)
     checkWidth(2.dp)
+    checkCap(StrokeCap.Butt)
+    checkmark(Offset(3.7f / 18, 9.3f / 18), Offset(7f / 18, 12.6f / 18), Offset(14.3f / 18, 5.3f / 18))
 }
 
 @Composable

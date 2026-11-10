@@ -59,7 +59,7 @@ fun interface NetworkImageStyle : ComponentStyle<NetworkImageStyleScope> {
         override fun NetworkImageStyleScope.applyStyle() {}
 
         val Default = NetworkImageStyle {
-            placeholderColor(theme.colors.surfaceVariant)
+            placeholderColor(theme.colors.surfaceContainerHighest)
             fadeInMillis(200)
         }
     }

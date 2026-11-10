@@ -76,7 +76,7 @@ internal fun ChatListScreenContent(
     context(style) {
         Scaffold(
             modifier = modifier,
-            containerColor = KotogramTheme.colors.background,
+            containerColor = KotogramTheme.colors.surface,
             topBar = { TopBar(title = { Text(stringResource(Res.string.peerlist_title_chats)) }) },
         ) { innerPadding ->
             Column(Modifier.fillMaxSize().padding(innerPadding)) {

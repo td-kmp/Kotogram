@@ -24,4 +24,6 @@ kotlin {
 
 kotlinNativeExport {
     nativeLibName = "MacAppKit"
+    // Workaround: without it the proxies' package is that of the first source file by path.
+    nativePackage = "com.xbot.kotogram.core.designsystem.appkit"
 }

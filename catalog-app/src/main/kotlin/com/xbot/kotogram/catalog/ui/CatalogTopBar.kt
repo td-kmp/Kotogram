@@ -58,6 +58,7 @@ private fun LabeledSwitch(
 
 private val CatalogTopBarStyle = TopBarStyle {
     centeredTitle(false)
+    containerColor(theme.colors.surfaceDim)
     horizontalPadding(theme.spacing.large)
     actionGap(theme.spacing.large)
 }

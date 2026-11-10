@@ -1,9 +1,10 @@
 package com.xbot.kotogram.core.designsystem.appkit
 
+import com.xbot.kotogram.core.designsystem.appkit.extensions.handle
+import com.xbot.kotogram.core.designsystem.appkit.extensions.isDark
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import platform.AppKit.NSBezelStyleGlass
 import platform.AppKit.NSButton
 import platform.AppKit.NSControlBorderShape
@@ -16,10 +17,8 @@ import platform.Foundation.NSMakeSize
 import platform.Foundation.dataWithBytes
 
 class MacGlassIconButton {
-    private var clickCount = 0
-    private val clickEvents = MutableSharedFlow<Int>(extraBufferCapacity = EVENT_BUFFER)
-    private val target = ActionTarget { clickEvents.tryEmit(++clickCount) }
-    private val button = NSButton.buttonWithTitle("", target, ActionSelector).apply {
+    private val clickEvents = clickFlow()
+    private val button = NSButton.buttonWithTitle("", clickEvents.target, ActionSelector).apply {
         refusesFirstResponder = true
         focusRingType = NSFocusRingTypeNone
         bezelStyle = NSBezelStyleGlass
@@ -30,7 +29,25 @@ class MacGlassIconButton {
 
     val viewHandle: Long get() = button.handle()
 
-    fun clicks(): Flow<Int> = clickEvents
+    var accessibilityLabel: String?
+        get() = button.accessibilityLabel()
+        set(value) {
+            button.setAccessibilityLabel(value)
+        }
+
+    var isDark: Boolean
+        get() = button.isDark
+        set(value) {
+            button.isDark = value
+        }
+
+    var isEnabled: Boolean
+        get() = button.enabled
+        set(value) {
+            button.enabled = value
+        }
+
+    fun clicks(): Flow<Int> = clickEvents.flow
 
     // Workaround: the PNG is at the screen's scale, and only the image's size in points makes AppKit draw it sharp.
     fun setImage(
@@ -42,17 +59,5 @@ class MacGlassIconButton {
         val image = NSImage(data = data)
         image.size = NSMakeSize(points, points)
         button.image = image
-    }
-
-    fun setAccessibilityLabel(label: String?) {
-        button.setAccessibilityLabel(label)
-    }
-
-    fun setDark(dark: Boolean) {
-        button.appearance = appearance(dark)
-    }
-
-    fun setEnabled(enabled: Boolean) {
-        button.enabled = enabled
     }
 }

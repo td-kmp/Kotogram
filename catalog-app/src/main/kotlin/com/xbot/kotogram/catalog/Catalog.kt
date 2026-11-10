@@ -37,7 +37,7 @@ fun Catalog(
     }
     val current = backStack.last()
     val onBack: () -> Unit = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) }
-    Surface(modifier.fillMaxSize(), color = KotogramTheme.colors.background) {
+    Surface(modifier.fillMaxSize(), color = KotogramTheme.colors.surfaceDim) {
         Column {
             CatalogTopBar(
                 title = when (current) {
@@ -63,7 +63,7 @@ fun Catalog(
                             CatalogHome(
                                 pages = CatalogPages,
                                 onPageClick = { backStack.add(CatalogKey.Page(it.id)) },
-                                modifier = Modifier.background(KotogramTheme.colors.background),
+                                modifier = Modifier.background(KotogramTheme.colors.surfaceDim),
                             )
                         }
                         entry<CatalogKey.Page> { key ->
@@ -71,7 +71,7 @@ fun Catalog(
                                 page = key.page,
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .background(KotogramTheme.colors.background)
+                                    .background(KotogramTheme.colors.surfaceDim)
                                     .verticalScroll(rememberScrollState()),
                             )
                         }

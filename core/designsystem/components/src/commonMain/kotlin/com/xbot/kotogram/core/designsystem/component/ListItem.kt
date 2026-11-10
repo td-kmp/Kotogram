@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,7 +36,9 @@ import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.PreviewKotogram
 import com.xbot.kotogram.core.designsystem.PreviewKotogramLaptop
@@ -46,6 +49,7 @@ import com.xbot.kotogram.core.designsystem.style.DefaultStyleResolver
 import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 import com.xbot.kotogram.core.designsystem.style.StyleResolver
 import com.xbot.kotogram.core.designsystem.style.rememberStyle
+import com.xbot.kotogram.core.designsystem.theme.currentPlatform
 import androidx.compose.material3.Icon as MaterialIcon
 
 enum class ListItemPosition { Single, First, Middle, Last }
@@ -65,8 +69,12 @@ fun ListItem(
     interactionSource: MutableInteractionSource? = null,
 ) {
     @Suppress("NAME_SHADOWING")
-    val style = rememberStyle(::ListItemStyleScope, ListItemStyle.Default then style)
+    val style = rememberStyle(::ListItemStyleScope, ListItemStyle.Adaptive then style)
     val hasDivider = position == ListItemPosition.First || position == ListItemPosition.Middle
+    val twoLine = supportingContent != null || overlineContent != null
+    val padding = if (twoLine) style.twoLineContentPadding else style.contentPadding
+    // Hack: the padding may sit lower than it sits high, as UIKit's two-line cell; what flanks the text stays centred in the row.
+    val centring = (padding.calculateBottomPadding() - padding.calculateTopPadding()) / 2
     var rowStart by remember { mutableFloatStateOf(0f) }
     var textStart by remember { mutableFloatStateOf(0f) }
     context(style) {
@@ -98,12 +106,15 @@ fun ListItem(
                         )
                     }
                 }
-                .heightIn(min = style.minHeight)
-                .padding(style.contentPadding),
+                .heightIn(min = if (twoLine) style.twoLineMinHeight else style.minHeight)
+                .padding(padding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (leadingContent != null) {
-                Box(Modifier.padding(end = style.leadingGap), contentAlignment = Alignment.Center) {
+                Box(
+                    Modifier.offset(y = centring).padding(end = style.leadingGap),
+                    contentAlignment = Alignment.Center,
+                ) {
                     ProvideContent(style.leadingColor.of(enabled), style.headlineTextStyle, leadingContent)
                 }
             }
@@ -122,7 +133,10 @@ fun ListItem(
                 }
             }
             if (trailingContent != null) {
-                Box(Modifier.padding(start = style.trailingGap), contentAlignment = Alignment.Center) {
+                Box(
+                    Modifier.offset(y = centring).padding(start = style.trailingGap),
+                    contentAlignment = Alignment.Center,
+                ) {
                     ProvideContent(style.trailingColor.of(enabled), style.headlineTextStyle, trailingContent)
                 }
             }
@@ -189,12 +203,15 @@ fun interface ListItemStyle : ComponentStyle<ListItemStyleScope> {
         override fun ListItemStyleScope.applyStyle() {}
 
         val Default = ListItemStyle {
-            minHeight(44.dp)
-            contentPadding(PaddingValues(horizontal = 14.dp, vertical = 12.dp))
+            val apple = currentPlatform.isApple
+            minHeight(52.dp)
+            contentPadding(PaddingValues(horizontal = 20.dp, vertical = 9.dp))
+            twoLineMinHeight(62.dp)
+            twoLineContentPadding(PaddingValues(start = 20.dp, top = 9.dp, end = 20.dp, bottom = 11.67.dp))
+            lineGap(3.dp)
+            groupShape(RoundedCornerShape(26.dp))
             leadingGap(12.dp)
             trailingGap(10.dp)
-            lineGap(2.dp)
-            groupShape(theme.shapes.medium)
             dividerThickness(1.dp)
             dividerColor(theme.colors.outlineVariant)
             containerColor(theme.colors.surface)
@@ -205,9 +222,32 @@ fun interface ListItemStyle : ComponentStyle<ListItemStyleScope> {
             leadingColor(theme.colors.onSurfaceVariant)
             trailingColor(theme.colors.onSurfaceVariant)
             disabledContentColor(theme.colors.onSurface.copy(alpha = 0.38f))
-            headlineTextStyle(theme.typography.bodyLarge)
             overlineTextStyle(theme.typography.labelSmall)
-            supportingTextStyle(theme.typography.bodyMedium)
+            headlineTextStyle(
+                theme.typography.bodyLarge.merge(
+                    fontSize = 17.sp,
+                    letterSpacing = if (apple) (-0.43).sp else TextUnit.Unspecified,
+                ),
+            )
+            supportingTextStyle(
+                theme.typography.bodyMedium.merge(
+                    fontSize = 15.sp,
+                    letterSpacing = if (apple) (-0.23).sp else TextUnit.Unspecified,
+                ),
+            )
+        }
+
+        val Adaptive = Default then ListItemStyle {
+            laptop {
+                minHeight(44.dp)
+                contentPadding(PaddingValues(horizontal = 14.dp, vertical = 12.dp))
+                twoLineMinHeight(44.dp)
+                twoLineContentPadding(PaddingValues(horizontal = 14.dp, vertical = 12.dp))
+                lineGap(2.dp)
+                groupShape(theme.shapes.medium)
+                headlineTextStyle(theme.typography.bodyLarge)
+                supportingTextStyle(theme.typography.bodyMedium)
+            }
         }
     }
 }
@@ -234,6 +274,12 @@ class ListItemStyleScope(
         private set
 
     var contentPadding: PaddingValues = PaddingValues()
+        private set
+
+    var twoLineMinHeight: Dp = Dp.Unspecified
+        private set
+
+    var twoLineContentPadding: PaddingValues = PaddingValues()
         private set
 
     var leadingGap: Dp = Dp.Unspecified
@@ -293,6 +339,14 @@ class ListItemStyleScope(
 
     fun contentPadding(padding: PaddingValues) {
         contentPadding = padding
+    }
+
+    fun twoLineMinHeight(height: Dp) {
+        twoLineMinHeight = height
+    }
+
+    fun twoLineContentPadding(padding: PaddingValues) {
+        twoLineContentPadding = padding
     }
 
     fun leadingGap(gap: Dp) {

@@ -40,12 +40,5 @@ internal object ThumbFastScrollerOverride : FastScrollerOverride {
     }
 }
 
-internal object IndexFastScrollerOverride : FastScrollerOverride {
-    @Composable
-    override fun FastScrollerOverrideScope.FastScroller() {
-        SectionIndex(state, sections, modifier)
-    }
-}
-
 internal val LocalFastScrollerOverride: ProvidableCompositionLocal<FastScrollerOverride> =
     staticCompositionLocalOf { ThumbFastScrollerOverride }

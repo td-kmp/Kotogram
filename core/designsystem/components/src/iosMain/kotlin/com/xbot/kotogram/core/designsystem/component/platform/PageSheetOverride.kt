@@ -38,7 +38,7 @@ internal object PageSheetOverride : BottomSheetOverride {
         val sheetModifier = rememberUpdatedState(modifier)
         val sheetStyle = rememberUpdatedState(style)
         val currentOnDismissRequest by rememberUpdatedState(onDismissRequest)
-        val dark = KotogramTheme.colors.background.isDark()
+        val dark = KotogramTheme.colors.surface.isDark()
         val sheet = remember {
             ComposeUIViewController {
                 val own = currentCompositionLocalContext

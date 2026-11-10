@@ -32,14 +32,14 @@ internal object MacGlassIconButtonOverride : GlassIconButtonOverride {
         LaunchedEffect(button, png, points) {
             png?.let { button.setImage(it, points) }
         }
-        val dark = KotogramTheme.colors.background.isDark()
+        val dark = KotogramTheme.colors.surface.isDark()
         NativeView(
             factory = { nucleusNsPlatformView(handle = { button.viewHandle }, onDispose = button::close) },
             modifier = modifier.minimumInteractiveComponentSize().size(style.size),
             update = {
-                button.setAccessibilityLabel(contentDescription)
-                button.setDark(dark)
-                button.setEnabled(enabled)
+                button.accessibilityLabel = contentDescription
+                button.isDark = dark
+                button.isEnabled = enabled
             },
             placedAsOverlay = true,
         )

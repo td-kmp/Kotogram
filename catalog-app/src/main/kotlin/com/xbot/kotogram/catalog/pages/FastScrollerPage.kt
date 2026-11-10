@@ -1,6 +1,5 @@
 package com.xbot.kotogram.catalog.pages
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,7 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +23,7 @@ import com.xbot.kotogram.catalog.model.CatalogSection
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.component.FastScrollerSection
 import com.xbot.kotogram.core.designsystem.component.ListItem
+import com.xbot.kotogram.core.designsystem.component.ListItemPosition
 import com.xbot.kotogram.core.designsystem.component.ScrollThumb
 import com.xbot.kotogram.core.designsystem.component.SectionIndex
 
@@ -33,8 +33,9 @@ internal val FastScrollerPage = CatalogPage(
     name = "FastScroller",
     description = "A handle at the end of a sectioned list that takes it to a section. FastScroller is the " +
         "platform's: UITableView's index on iOS, drawn by Compose since UIKit has none outside its tables, and a " +
-        "thumb elsewhere that shows the section in a bubble while dragged. Both tick with the haptics of a " +
-        "segment as the section changes.",
+        "thumb elsewhere, after Android's fast scroller: it shows while the list moves, hides a moment later " +
+        "and, dragged, names the section in a bubble. Both lie over the list's margin and take no room from " +
+        "its rows, and tick with the haptics of a segment as the section changes.",
     examples = listOf(
         CatalogExample("SectionIndex, as on iOS") {
             Countries { state, sections ->
@@ -56,17 +57,18 @@ private fun Countries(scroller: @Composable BoxScope.(LazyListState, List<FastSc
         LazyColumn(
             state = state,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(end = ScrollerGap),
+            contentPadding = PaddingValues(horizontal = ListMargin),
         ) {
             CountryGroups.forEach { group ->
-                stickyHeader(key = group.letter) { SectionHeader(group.letter) }
-                items(group.countries, key = { it.englishName }) { country ->
+                item(key = group.letter) { SectionHeader(group.letter) }
+                itemsIndexed(group.countries, key = { _, country -> country.englishName }) { index, country ->
                     ListItem(
                         headlineContent = { Text(country.name) },
                         leadingContent = { Text(country.flag) },
                         trailingContent = { Text(country.code) },
                         onClick = {},
                         modifier = Modifier.fillMaxWidth(),
+                        position = position(index, group.countries.size),
                     )
                 }
             }
@@ -75,16 +77,25 @@ private fun Countries(scroller: @Composable BoxScope.(LazyListState, List<FastSc
     }
 }
 
+private fun position(
+    index: Int,
+    count: Int,
+): ListItemPosition = when {
+    count == 1 -> ListItemPosition.Single
+    index == 0 -> ListItemPosition.First
+    index == count - 1 -> ListItemPosition.Last
+    else -> ListItemPosition.Middle
+}
+
 @Composable
 private fun SectionHeader(letter: String) {
     Text(
         text = letter,
         modifier = Modifier
             .fillMaxWidth()
-            .background(KotogramTheme.colors.surface)
-            .padding(horizontal = KotogramTheme.spacing.medium, vertical = KotogramTheme.spacing.extraSmall),
+            .padding(horizontal = KotogramTheme.spacing.medium, vertical = KotogramTheme.spacing.small),
         style = KotogramTheme.typography.labelLarge,
-        color = KotogramTheme.colors.primary,
+        color = KotogramTheme.colors.onSurfaceVariant,
     )
 }
 
@@ -102,4 +113,4 @@ private val CountrySections: List<FastScrollerSection> = CountryGroups
 
 private val ListHeight = 360.dp
 
-private val ScrollerGap = 24.dp
+private val ListMargin = 20.dp

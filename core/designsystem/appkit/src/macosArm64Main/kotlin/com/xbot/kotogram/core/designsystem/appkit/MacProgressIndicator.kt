@@ -1,5 +1,7 @@
 package com.xbot.kotogram.core.designsystem.appkit
 
+import com.xbot.kotogram.core.designsystem.appkit.extensions.handle
+import com.xbot.kotogram.core.designsystem.appkit.extensions.isDark
 import platform.AppKit.NSControlSizeRegular
 import platform.AppKit.NSControlSizeSmall
 import platform.AppKit.NSLayoutConstraint
@@ -21,17 +23,23 @@ class MacProgressIndicator {
     val viewHandle: Long get() = indicator.handle()
 
     // Workaround: AppKit draws a light spinner only in its dark appearance.
-    fun setLight(light: Boolean) {
-        indicator.appearance = appearance(dark = light)
-    }
+    var isLight: Boolean
+        get() = indicator.isDark
+        set(value) {
+            indicator.isDark = value
+        }
 
-    fun setLarge(large: Boolean) {
-        indicator.controlSize = if (large) NSControlSizeRegular else NSControlSizeSmall
-    }
+    var isLarge: Boolean
+        get() = indicator.controlSize == NSControlSizeRegular
+        set(value) {
+            indicator.controlSize = if (value) NSControlSizeRegular else NSControlSizeSmall
+        }
 
-    fun setAnimating(animating: Boolean) {
-        if (animating) indicator.startAnimation(null) else indicator.stopAnimation(null)
-    }
+    var isAnimating: Boolean = false
+        set(value) {
+            field = value
+            if (value) indicator.startAnimation(null) else indicator.stopAnimation(null)
+        }
 
     internal fun centerIn(parent: NSView) {
         indicator.translatesAutoresizingMaskIntoConstraints = false

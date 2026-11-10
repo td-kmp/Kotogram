@@ -35,7 +35,7 @@ internal fun interface RegistrationScreenStyle : ComponentStyle<RegistrationScre
             beforeLinks(0.dp)
             bottomActionInset(24.dp)
             infoWidth(Dp.Infinity)
-            avatarColor(theme.colors.surfaceVariant)
+            avatarColor(theme.colors.surfaceContainerHighest)
             avatarIconColor(theme.colors.onSurfaceVariant)
             linkColor(theme.colors.primary)
             titleTextStyle(

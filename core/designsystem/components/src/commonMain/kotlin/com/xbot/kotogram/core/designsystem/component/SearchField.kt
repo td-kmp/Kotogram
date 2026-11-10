@@ -17,11 +17,13 @@ import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -36,6 +38,7 @@ import com.xbot.kotogram.core.designsystem.style.DefaultStyleResolver
 import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 import com.xbot.kotogram.core.designsystem.style.StyleResolver
 import com.xbot.kotogram.core.designsystem.style.rememberStyle
+import com.xbot.kotogram.core.designsystem.theme.currentPlatform
 
 @Composable
 fun SearchField(
@@ -68,7 +71,7 @@ internal object DefaultSearchFieldOverride : SearchFieldOverride {
         val textFieldStyle = remember(style) { style.textFieldStyle() }
         TextField(
             state = state,
-            modifier = modifier,
+            modifier = modifier.shadow(style.shadowElevation, style.shape, clip = false),
             placeholder = { Text(placeholder, maxLines = 1) },
             leadingIcon = { Icon(KotogramIcons.Search, contentDescription = null, tint = style.iconColor) },
             trailingIcon = if (state.text.isEmpty()) {
@@ -132,12 +135,20 @@ fun interface SearchFieldStyle : ComponentStyle<SearchFieldStyleScope> {
             height(48.dp)
             shape(CircleShape)
             contentPadding(PaddingValues(horizontal = 16.dp))
-            textStyle(theme.typography.bodyLarge.merge(fontSize = 17.sp, color = theme.colors.onSurface))
+            val apple = currentPlatform.isApple
+            textStyle(
+                theme.typography.bodyLarge.merge(
+                    fontSize = 17.sp,
+                    fontWeight = if (apple) FontWeight.Medium else null,
+                    color = theme.colors.onSurface,
+                ),
+            )
             placeholderColor(theme.colors.onSurfaceVariant)
-            iconColor(theme.colors.onSurfaceVariant)
+            iconColor(if (apple) theme.colors.onSurface else theme.colors.onSurfaceVariant)
             cursorColor(theme.colors.primary)
             iconSize(32.dp)
             iconInset(8.dp)
+            shadowElevation(0.dp)
         }
 
         val Adaptive = Default then SearchFieldStyle {
@@ -196,6 +207,9 @@ class SearchFieldStyleScope(
     var iconInset: Dp = Dp.Unspecified
         private set
 
+    var shadowElevation: Dp = Dp.Unspecified
+        private set
+
     fun height(height: Dp) {
         this.height = height
     }
@@ -230,5 +244,9 @@ class SearchFieldStyleScope(
 
     fun iconInset(inset: Dp) {
         iconInset = inset
+    }
+
+    fun shadowElevation(elevation: Dp) {
+        shadowElevation = elevation
     }
 }

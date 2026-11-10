@@ -92,13 +92,14 @@ internal class GlassSearchView(
         font: UIFont,
         textColor: UIColor,
         placeholderColor: UIColor,
+        iconColor: UIColor,
         tintColor: UIColor,
     ) {
         if (field.text.orEmpty() != text) field.text = text
         field.font = font
         field.textColor = textColor
         field.tintColor = tintColor
-        field.leftView?.tintColor = placeholderColor
+        field.leftView?.tintColor = iconColor
         field.attributedPlaceholder = NSAttributedString.create(
             string = placeholder,
             attributes = mapOf<Any?, Any?>(
@@ -150,6 +151,6 @@ private fun cancelConfiguration(color: UIColor): UIButtonConfiguration =
 
 private const val SPACING = 8.0
 
-private const val INSET = 6.0
+private const val INSET = 0.0
 
 private const val ANIMATION_SECONDS = 0.3

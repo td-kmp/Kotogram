@@ -1,10 +1,12 @@
 package com.xbot.kotogram.core.designsystem.appkit
 
+import com.xbot.kotogram.core.designsystem.appkit.extensions.handle
+import com.xbot.kotogram.core.designsystem.appkit.extensions.isDark
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import platform.AppKit.NSButton
 import platform.AppKit.NSControl
+import platform.AppKit.NSControlStateValue
 import platform.AppKit.NSControlStateValueOff
 import platform.AppKit.NSControlStateValueOn
 import platform.AppKit.NSFocusRingTypeNone
@@ -14,53 +16,86 @@ import platform.AppKit.fittingSize
 class MacToggle(
     kind: MacToggleKind,
 ) {
-    private val stateChanges = MutableSharedFlow<Boolean>(extraBufferCapacity = EVENT_BUFFER)
-    private val target = ActionTarget { stateChanges.tryEmit(isOn) }
-    private val control: NSControl = when (kind) {
-        MacToggleKind.Switch -> NSSwitch().also {
-            it.target = target
-            it.action = ActionSelector
+    private val stateChanges = ActionFlow { isOn }
+    private val toggle: ToggleControl = when (kind) {
+        MacToggleKind.Switch -> SwitchControl(stateChanges.target)
+        MacToggleKind.Checkbox -> CheckboxControl(stateChanges.target)
+    }
+
+    val viewHandle: Long get() = toggle.control.handle()
+
+    val isOn: Boolean get() = toggle.state != NSControlStateValueOff
+
+    val fittingWidth: Double get() = toggle.control.fittingSize.useContents { width }
+
+    val fittingHeight: Double get() = toggle.control.fittingSize.useContents { height }
+
+    var isEnabled: Boolean
+        get() = toggle.control.enabled
+        set(value) {
+            toggle.control.enabled = value
         }
 
-        MacToggleKind.Checkbox -> NSButton.checkboxWithTitle("", target, ActionSelector)
-    }.apply { focusRingType = NSFocusRingTypeNone }
-
-    val viewHandle: Long get() = control.handle()
-
-    val isOn: Boolean
-        get() = when (val control = control) {
-            is NSSwitch -> control.state != NSControlStateValueOff
-            is NSButton -> control.state != NSControlStateValueOff
-            else -> false
+    var isDark: Boolean
+        get() = toggle.control.isDark
+        set(value) {
+            toggle.control.isDark = value
         }
 
-    val fittingWidth: Double get() = control.fittingSize.useContents { width }
+    fun changes(): Flow<Boolean> = stateChanges.flow
 
-    val fittingHeight: Double get() = control.fittingSize.useContents { height }
-
-    fun changes(): Flow<Boolean> = stateChanges
-
-    // Workaround: only a switch set through its animator slides to the new state.
     fun setOn(
         on: Boolean,
         animated: Boolean,
     ) {
-        val state = if (on) NSControlStateValueOn else NSControlStateValueOff
-        when (val control = control) {
-            is NSSwitch -> {
-                val receiver = if (animated) control.animator() else control
-                receiver.state = state
-            }
+        toggle.setState(if (on) NSControlStateValueOn else NSControlStateValueOff, animated)
+    }
+}
 
-            is NSButton -> control.state = state
-        }
+private interface ToggleControl {
+    val control: NSControl
+    val state: NSControlStateValue
+
+    fun setState(
+        state: NSControlStateValue,
+        animated: Boolean,
+    )
+}
+
+private class SwitchControl(
+    target: ActionTarget,
+) : ToggleControl {
+    override val control = NSSwitch().apply {
+        this.target = target
+        action = ActionSelector
+        focusRingType = NSFocusRingTypeNone
     }
 
-    fun setEnabled(enabled: Boolean) {
-        control.enabled = enabled
+    override val state: NSControlStateValue get() = control.state
+
+    // Workaround: only a switch set through its animator slides to the new state.
+    override fun setState(
+        state: NSControlStateValue,
+        animated: Boolean,
+    ) {
+        val receiver = if (animated) control.animator() else control
+        receiver.state = state
+    }
+}
+
+private class CheckboxControl(
+    target: ActionTarget,
+) : ToggleControl {
+    override val control = NSButton.checkboxWithTitle("", target, ActionSelector).apply {
+        focusRingType = NSFocusRingTypeNone
     }
 
-    fun setDark(dark: Boolean) {
-        control.appearance = appearance(dark)
+    override val state: NSControlStateValue get() = control.state
+
+    override fun setState(
+        state: NSControlStateValue,
+        animated: Boolean,
+    ) {
+        control.state = state
     }
 }

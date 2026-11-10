@@ -46,6 +46,8 @@ kotlin {
         implementation(libs.compose.preview)
         implementation(libs.compottie)
         implementation(libs.compottie.dot)
+        implementation(libs.haze)
+        implementation(libs.haze.blur)
         implementation(libs.qrose)
         implementation(libs.qrose.encoder.matrix)
     }

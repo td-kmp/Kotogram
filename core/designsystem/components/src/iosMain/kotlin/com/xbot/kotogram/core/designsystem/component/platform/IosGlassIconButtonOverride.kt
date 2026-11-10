@@ -8,7 +8,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.viewinterop.UIKitView
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.component.GlassIconButtonOverride
 import com.xbot.kotogram.core.designsystem.component.GlassIconButtonOverrideScope
@@ -32,8 +31,8 @@ internal object IosGlassIconButtonOverride : GlassIconButtonOverride {
             bitmap.toUIImage(scale)?.imageWithRenderingMode(UIImageRenderingMode.UIImageRenderingModeAlwaysTemplate)
         }
         val color = iconColor.toUIColor()
-        val dark = KotogramTheme.colors.background.isDark()
-        UIKitView(
+        val dark = KotogramTheme.colors.surface.isDark()
+        OverlayView(
             factory = {
                 UIButton.buttonWithConfiguration(
                     configuration = UIButtonConfiguration.glassButtonConfiguration(),

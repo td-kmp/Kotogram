@@ -36,13 +36,13 @@ internal fun MacToggleView(
         }
     }
     val size = remember(toggle) { DpSize(toggle.fittingWidth.dp, toggle.fittingHeight.dp) }
-    val dark = KotogramTheme.colors.background.isDark()
+    val dark = KotogramTheme.colors.surface.isDark()
     NativeView(
         factory = { nucleusNsPlatformView(handle = { toggle.viewHandle }, onDispose = toggle::close) },
         modifier = modifier.size(size),
         update = {
-            toggle.setEnabled(enabled)
-            toggle.setDark(dark)
+            toggle.isEnabled = enabled
+            toggle.isDark = dark
         },
         placedAsOverlay = true,
     )

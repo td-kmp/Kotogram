@@ -10,7 +10,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.UIKitView
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.component.SwitchOverride
 import com.xbot.kotogram.core.designsystem.component.SwitchOverrideScope
@@ -43,8 +42,8 @@ internal object IosSwitchOverride : SwitchOverride {
         val size = remember(switch) { switch.intrinsicContentSize.useContents { DpSize(width.dp, height.dp) } }
         val trackColor = style.checkedTrackColor.toUIColor()
         val interactive = onCheckedChange != null
-        val dark = KotogramTheme.colors.background.isDark()
-        UIKitView(
+        val dark = KotogramTheme.colors.surface.isDark()
+        OverlayView(
             factory = { switch },
             modifier = modifier.size(size),
             update = {

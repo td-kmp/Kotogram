@@ -123,4 +123,5 @@ Compose:
       - LocalSearchFieldOverride
       - LocalSharedViewModelStoreOwner
       - LocalSwitchOverride
+      - LocalTopBarOverride
       - LocalUiMediaScope

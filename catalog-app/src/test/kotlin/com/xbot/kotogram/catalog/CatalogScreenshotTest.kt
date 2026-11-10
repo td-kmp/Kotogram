@@ -42,7 +42,7 @@ class CatalogScreenshotTest(
             val density = Density(LocalDensity.current.density, fontScale)
             CompositionLocalProvider(LocalDensity provides density) {
                 KotogramTheme(darkTheme = darkTheme, dynamicColor = false) {
-                    Surface(color = KotogramTheme.colors.background) {
+                    Surface(color = KotogramTheme.colors.surfaceDim) {
                         Column(Modifier.fillMaxWidth().testTag(SCREEN_TAG)) {
                             if (screen == HOME) {
                                 CatalogTopBar(HOME_TITLE, onBack = null, darkTheme, {}, laptop, {})

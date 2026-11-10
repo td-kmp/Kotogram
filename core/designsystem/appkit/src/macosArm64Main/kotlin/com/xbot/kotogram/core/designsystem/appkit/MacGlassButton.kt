@@ -1,7 +1,10 @@
 package com.xbot.kotogram.core.designsystem.appkit
 
+import com.xbot.kotogram.core.designsystem.appkit.extensions.handle
+import com.xbot.kotogram.core.designsystem.appkit.extensions.isDark
+import com.xbot.kotogram.core.designsystem.appkit.extensions.toArgb
+import com.xbot.kotogram.core.designsystem.appkit.extensions.toNSColor
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import platform.AppKit.NSBezelStyleGlass
 import platform.AppKit.NSButton
 import platform.AppKit.NSControlSizeExtraLarge
@@ -15,10 +18,8 @@ import platform.Foundation.NSSelectorFromString
 import platform.Foundation.create
 
 class MacGlassButton {
-    private var clickCount = 0
-    private val clickEvents = MutableSharedFlow<Int>(extraBufferCapacity = EVENT_BUFFER)
-    private val target = ActionTarget { clickEvents.tryEmit(++clickCount) }
-    private val button = NSButton.buttonWithTitle("", target, ActionSelector).apply {
+    private val clickEvents = clickFlow()
+    private val button = NSButton.buttonWithTitle("", clickEvents.target, ActionSelector).apply {
         refusesFirstResponder = true
         focusRingType = NSFocusRingTypeNone
         bezelStyle = NSBezelStyleGlass
@@ -29,7 +30,25 @@ class MacGlassButton {
 
     val viewHandle: Long get() = button.handle()
 
-    fun clicks(): Flow<Int> = clickEvents
+    var bezelColor: Int
+        get() = button.bezelColor?.toArgb() ?: 0
+        set(value) {
+            button.bezelColor = value.toNSColor()
+        }
+
+    var isDark: Boolean
+        get() = button.isDark
+        set(value) {
+            button.isDark = value
+        }
+
+    var isEnabled: Boolean
+        get() = button.enabled
+        set(value) {
+            button.enabled = value
+        }
+
+    fun clicks(): Flow<Int> = clickEvents.flow
 
     fun setTitle(
         text: String,
@@ -44,24 +63,12 @@ class MacGlassButton {
         button.attributedTitle = NSAttributedString.create(string = text, attributes = attributes)
     }
 
-    fun setBezelColor(argb: Int) {
-        button.bezelColor = argb.toNSColor()
-    }
-
-    fun setDark(dark: Boolean) {
-        button.appearance = appearance(dark)
-    }
-
     fun setLoading(
         loading: Boolean,
         lightSpinner: Boolean,
     ) {
-        spinner.setLight(lightSpinner)
-        spinner.setAnimating(loading)
-    }
-
-    fun setEnabled(enabled: Boolean) {
-        button.enabled = enabled
+        spinner.isLight = lightSpinner
+        spinner.isAnimating = loading
     }
 
     companion object {

@@ -94,8 +94,8 @@ fun interface BottomSheetStyle : ComponentStyle<BottomSheetStyleScope> {
         override fun BottomSheetStyleScope.applyStyle() {}
 
         val Default = BottomSheetStyle {
-            containerColor(theme.colors.background)
-            contentColor(theme.colors.onBackground)
+            containerColor(theme.colors.surfaceContainerLow)
+            contentColor(theme.colors.onSurface)
         }
     }
 }

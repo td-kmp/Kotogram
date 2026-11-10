@@ -10,7 +10,6 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
-import androidx.compose.ui.viewinterop.UIKitView
 import com.xbot.kotogram.core.designsystem.component.ProgressIndicatorOverride
 import com.xbot.kotogram.core.designsystem.component.ProgressIndicatorOverrideScope
 import com.xbot.kotogram.core.designsystem.extensions.toUIColor
@@ -24,7 +23,7 @@ internal object ActivityIndicatorOverride : ProgressIndicatorOverride {
         val density = LocalDensity.current
         var large by remember { mutableStateOf(false) }
         val uiColor = style.color.toUIColor()
-        UIKitView(
+        OverlayView(
             factory = {
                 UIActivityIndicatorView(activityIndicatorStyle = UIActivityIndicatorViewStyleMedium).apply {
                     hidesWhenStopped = false

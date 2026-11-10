@@ -43,8 +43,11 @@ fun interface RichTextStyle : ComponentStyle<RichTextStyleScope> {
         val Default = RichTextStyle {
             formattedTextStyles(
                 FormattedTextStyles(
-                    code = SpanStyle(fontFamily = FontFamily.Monospace, background = theme.colors.surfaceVariant),
-                    spoiler = SpanStyle(background = theme.colors.surfaceVariant),
+                    code = SpanStyle(
+                        fontFamily = FontFamily.Monospace,
+                        background = theme.colors.surfaceContainerHighest,
+                    ),
+                    spoiler = SpanStyle(background = theme.colors.surfaceContainerHighest),
                     link = TextLinkStyles(style = SpanStyle(color = theme.colors.primary)),
                 ),
             )

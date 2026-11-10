@@ -1,37 +1,40 @@
 package com.xbot.kotogram.core.designsystem.component
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.xbot.kotogram.core.designsystem.KotogramTheme
@@ -129,53 +132,85 @@ private fun <T> BottomSheetScope.OptionSheetContent(
     }
     val scrollerSections = remember(sections) { scrollerSections(sections) }
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = selectedIndex(sections, selected))
+    val scrollBehavior = rememberTopBarScrollBehavior(listState)
+    val barStyle = remember(style) {
+        val color = style.sheetColor
+        TopBarStyle { containerColor(color) }
+    }
+    val searchStyle = remember(style) {
+        val elevation = style.searchElevation
+        SearchFieldStyle { shadowElevation(elevation) }
+    }
+    val density = LocalDensity.current
+    var barHeight by remember { mutableStateOf(0.dp) }
+    val close: () -> Unit = { dismiss() }
     val choose: (T) -> Unit = { option ->
         onSelect(option)
         dismiss()
     }
-    TopBar(
-        title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-        modifier = Modifier.fillMaxWidth(),
-        navigation = {
-            GlassIconButton(
-                icon = KotogramIcons.Cross,
-                contentDescription = stringResource(Res.string.navigation_close),
-                onClick = ::dismiss,
-            )
-        },
-    )
-    if (!style.searchAtBottom) OptionSearch(query, searchPlaceholder)
     Box(Modifier.weight(1f).fillMaxWidth()) {
         val indexed = text.isEmpty() && scrollerSections.isNotEmpty()
         LazyColumn(
             state = listState,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.ime)
+                .topBarScrollSource(scrollBehavior),
             contentPadding = PaddingValues(
-                end = if (indexed) style.scrollerGap else 0.dp,
-                bottom = if (style.searchAtBottom) style.bottomSearchSpace else 0.dp,
+                start = style.listMargin,
+                top = barHeight,
+                end = style.listMargin,
+                bottom = style.bottomSearchSpace,
             ),
         ) {
             if (text.isEmpty()) {
                 sections.forEach { section -> sectionItems(section, optionLabel, selected, choose) }
             } else {
                 val found = options.filter { matches(it, text) }
+                item { Spacer(Modifier.height(style.headerPadding.calculateTopPadding())) }
                 itemsIndexed(found) { index, option ->
-                    OptionRow(optionLabel(option), option == selected, text, index == found.lastIndex) {
+                    OptionRow(optionLabel(option), option == selected, text, position(index, found.size)) {
                         choose(option)
                     }
                 }
             }
         }
+        TopBar(
+            title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .onSizeChanged { barHeight = with(density) { it.height.toDp() } },
+            navigation = {
+                GlassIconButton(
+                    icon = KotogramIcons.Cross,
+                    contentDescription = stringResource(Res.string.navigation_close),
+                    onClick = close,
+                )
+            },
+            windowInsets = WindowInsets(top = style.barTopInset),
+            scrollBehavior = scrollBehavior,
+            style = barStyle,
+        )
         if (indexed) {
-            FastScroller(listState, scrollerSections, Modifier.align(Alignment.CenterEnd).fillMaxHeight())
-        }
-        if (style.searchAtBottom) {
-            OptionSearch(
-                query = query,
-                placeholder = searchPlaceholder,
-                modifier = Modifier.align(Alignment.BottomCenter).imePadding().navigationBarsPadding(),
+            FastScroller(
+                state = listState,
+                sections = scrollerSections,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .fillMaxHeight()
+                    .padding(top = barHeight, bottom = style.bottomSearchSpace),
             )
         }
+        SearchField(
+            state = query,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .windowInsetsPadding(WindowInsets.ime.union(WindowInsets(bottom = style.searchBottomInset)))
+                .fillMaxWidth()
+                .padding(style.searchPadding),
+            placeholder = searchPlaceholder,
+            style = searchStyle,
+        )
     }
 }
 
@@ -186,21 +221,10 @@ private fun <T> LazyListScope.sectionItems(
     selected: T?,
     choose: (T) -> Unit,
 ) {
-    section.title?.let { title ->
-        stickyHeader(key = "section $title") {
-            Text(
-                text = title,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(style.sheetColor)
-                    .padding(style.headerPadding),
-                style = style.headerTextStyle,
-            )
-        }
-    }
+    section.title?.let { title -> item(key = "section $title") { SectionHeader(title) } }
     items(section.options.size) { index ->
         val option = section.options[index]
-        OptionRow(optionLabel(option), option == selected, query = "", last = index == section.options.lastIndex) {
+        OptionRow(optionLabel(option), option == selected, query = "", position(index, section.options.size)) {
             choose(option)
         }
     }
@@ -208,76 +232,22 @@ private fun <T> LazyListScope.sectionItems(
 
 @Composable
 context(style: OptionPickerStyleScope)
-private fun OptionSearch(
-    query: TextFieldState,
-    placeholder: String,
-    modifier: Modifier = Modifier,
-) {
-    SearchField(
-        state = query,
-        modifier = modifier.fillMaxWidth().padding(style.searchPadding),
-        placeholder = placeholder,
+private fun SectionHeader(title: String) {
+    Text(
+        text = title,
+        modifier = Modifier.fillMaxWidth().padding(style.headerPadding),
+        style = style.headerTextStyle,
     )
 }
 
-@Composable
-context(style: OptionPickerStyleScope)
-private fun OptionRow(
-    label: OptionLabel,
-    selected: Boolean,
-    query: String,
-    last: Boolean,
-    onClick: () -> Unit,
-) {
-    val rowStyle = remember(style) { style.rowStyle() }
-    ListItem(
-        headlineContent = {
-            Text(highlighted(label.text, query, style.matchStyle), maxLines = 1, overflow = TextOverflow.Ellipsis)
-        },
-        modifier = Modifier.fillMaxWidth(),
-        supportingContent = label.supporting?.let { supporting ->
-            @Composable { Text(supporting, maxLines = 1, overflow = TextOverflow.Ellipsis) }
-        },
-        leadingContent = label.leading?.let { leading ->
-            @Composable { Text(leading, style = style.leadingTextStyle) }
-        },
-        trailingContent = if (label.trailing != null || selected) {
-            @Composable { OptionTrailing(label.trailing, selected) }
-        } else {
-            null
-        },
-        onClick = onClick,
-        position = if (last) null else ListItemPosition.Middle,
-        style = rowStyle,
-    )
-}
-
-@Composable
-context(style: OptionPickerStyleScope)
-private fun OptionTrailing(
-    value: String?,
-    selected: Boolean,
-) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(style.checkGap),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        value?.let { Text(it) }
-        if (selected) Icon(KotogramIcons.Check, contentDescription = null, tint = style.checkColor)
-    }
-}
-
-private fun highlighted(
-    text: String,
-    query: String,
-    match: SpanStyle,
-): AnnotatedString {
-    val start = if (query.isEmpty()) -1 else text.indexOf(query, ignoreCase = true)
-    if (start < 0) return AnnotatedString(text)
-    return buildAnnotatedString {
-        append(text)
-        addStyle(match, start, start + query.length)
-    }
+private fun position(
+    index: Int,
+    count: Int,
+): ListItemPosition = when {
+    count == 1 -> ListItemPosition.Single
+    index == 0 -> ListItemPosition.First
+    index == count - 1 -> ListItemPosition.Last
+    else -> ListItemPosition.Middle
 }
 
 private fun <T> scrollerSections(sections: List<OptionSection<T>>): List<FastScrollerSection> {
@@ -311,27 +281,41 @@ fun interface OptionPickerStyle : ComponentStyle<OptionPickerStyleScope> {
         override fun OptionPickerStyleScope.applyStyle() {}
 
         val Default = OptionPickerStyle {
-            sheetColor(theme.colors.surface)
-            searchAtBottom(currentPlatform.isApple)
-            searchPadding(PaddingValues(horizontal = 16.dp, vertical = 8.dp))
-            bottomSearchSpace(72.dp)
-            headerPadding(PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 6.dp))
-            headerTextStyle(
-                theme.typography.bodyLarge.merge(
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = theme.colors.onSurfaceVariant,
-                ),
-            )
-            rowMinHeight(56.dp)
-            rowPadding(PaddingValues(horizontal = 16.dp, vertical = 8.dp))
-            headlineTextStyle(theme.typography.bodyLarge.merge(fontSize = 17.sp))
-            supportingTextStyle(theme.typography.bodyMedium.merge(fontSize = 15.sp))
-            leadingTextStyle(TextStyle(fontSize = 26.sp))
+            val apple = currentPlatform.isApple
+            sheetColor(theme.colors.surfaceDim)
+            rowColor(theme.colors.surface)
+            headlineColor(theme.colors.onSurface)
+            supportingColor(theme.colors.onSurfaceVariant)
+            trailingColor(theme.colors.onSurfaceVariant)
+            dividerColor(theme.colors.outlineVariant)
             matchStyle(SpanStyle(fontWeight = FontWeight.SemiBold))
             checkColor(theme.colors.primary)
             checkGap(6.dp)
-            scrollerGap(20.dp)
+            leadingSize(width = 23.sp, height = 20.sp)
+            leadingShift(0.67.dp)
+            leadingTextStyle(TextStyle(fontSize = 20.5.sp))
+            listMargin(20.dp)
+            headerPadding(PaddingValues(start = 20.dp, end = 20.dp, top = 28.67.dp, bottom = 6.33.dp))
+            headerTextStyle(
+                theme.typography.bodyLarge.merge(
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = if (apple) (-0.43).sp else TextUnit.Unspecified,
+                    color = theme.colors.onSurfaceVariant,
+                ),
+            )
+            searchPadding(PaddingValues(horizontal = 28.dp, vertical = 8.dp))
+            if (apple) {
+                barTopInset(20.dp)
+                searchBottomInset(20.dp)
+                bottomSearchSpace(86.dp)
+                searchElevation(0.dp)
+            } else {
+                barTopInset(0.dp)
+                searchBottomInset(8.dp)
+                bottomSearchSpace(72.dp)
+                searchElevation(6.dp)
+            }
         }
     }
 }
@@ -357,7 +341,37 @@ class OptionPickerStyleScope(
     var sheetColor: Color = Color.Unspecified
         private set
 
-    var searchAtBottom: Boolean = false
+    var rowColor: Color = Color.Unspecified
+        private set
+
+    var headlineColor: Color = Color.Unspecified
+        private set
+
+    var supportingColor: Color = Color.Unspecified
+        private set
+
+    var trailingColor: Color = Color.Unspecified
+        private set
+
+    var dividerColor: Color = Color.Unspecified
+        private set
+
+    var leadingWidth: TextUnit = TextUnit.Unspecified
+        private set
+
+    var leadingHeight: TextUnit = TextUnit.Unspecified
+        private set
+
+    var leadingShift: Dp = 0.dp
+        private set
+
+    var listMargin: Dp = Dp.Unspecified
+        private set
+
+    var barTopInset: Dp = Dp.Unspecified
+        private set
+
+    var searchBottomInset: Dp = Dp.Unspecified
         private set
 
     var searchPadding: PaddingValues = PaddingValues()
@@ -366,22 +380,13 @@ class OptionPickerStyleScope(
     var bottomSearchSpace: Dp = Dp.Unspecified
         private set
 
+    var searchElevation: Dp = Dp.Unspecified
+        private set
+
     var headerPadding: PaddingValues = PaddingValues()
         private set
 
     var headerTextStyle: TextStyle = TextStyle.Default
-        private set
-
-    var rowMinHeight: Dp = Dp.Unspecified
-        private set
-
-    var rowPadding: PaddingValues = PaddingValues()
-        private set
-
-    var headlineTextStyle: TextStyle = TextStyle.Default
-        private set
-
-    var supportingTextStyle: TextStyle = TextStyle.Default
         private set
 
     var leadingTextStyle: TextStyle = TextStyle.Default
@@ -396,15 +401,52 @@ class OptionPickerStyleScope(
     var checkGap: Dp = Dp.Unspecified
         private set
 
-    var scrollerGap: Dp = Dp.Unspecified
-        private set
-
     fun sheetColor(color: Color) {
         sheetColor = color
     }
 
-    fun searchAtBottom(atBottom: Boolean) {
-        searchAtBottom = atBottom
+    fun rowColor(color: Color) {
+        rowColor = color
+    }
+
+    fun headlineColor(color: Color) {
+        headlineColor = color
+    }
+
+    fun supportingColor(color: Color) {
+        supportingColor = color
+    }
+
+    fun trailingColor(color: Color) {
+        trailingColor = color
+    }
+
+    fun dividerColor(color: Color) {
+        dividerColor = color
+    }
+
+    fun leadingSize(
+        width: TextUnit,
+        height: TextUnit,
+    ) {
+        leadingWidth = width
+        leadingHeight = height
+    }
+
+    fun leadingShift(shift: Dp) {
+        leadingShift = shift
+    }
+
+    fun listMargin(margin: Dp) {
+        listMargin = margin
+    }
+
+    fun barTopInset(inset: Dp) {
+        barTopInset = inset
+    }
+
+    fun searchBottomInset(inset: Dp) {
+        searchBottomInset = inset
     }
 
     fun searchPadding(padding: PaddingValues) {
@@ -415,28 +457,16 @@ class OptionPickerStyleScope(
         bottomSearchSpace = space
     }
 
+    fun searchElevation(elevation: Dp) {
+        searchElevation = elevation
+    }
+
     fun headerPadding(padding: PaddingValues) {
         headerPadding = padding
     }
 
     fun headerTextStyle(style: TextStyle) {
         headerTextStyle = style
-    }
-
-    fun rowMinHeight(height: Dp) {
-        rowMinHeight = height
-    }
-
-    fun rowPadding(padding: PaddingValues) {
-        rowPadding = padding
-    }
-
-    fun headlineTextStyle(style: TextStyle) {
-        headlineTextStyle = style
-    }
-
-    fun supportingTextStyle(style: TextStyle) {
-        supportingTextStyle = style
     }
 
     fun leadingTextStyle(style: TextStyle) {
@@ -455,18 +485,14 @@ class OptionPickerStyleScope(
         checkGap = gap
     }
 
-    fun scrollerGap(gap: Dp) {
-        scrollerGap = gap
-    }
-
     internal fun rowStyle(): ListItemStyle {
         val picker = this
         return ListItemStyle {
-            minHeight(picker.rowMinHeight)
-            contentPadding(picker.rowPadding)
-            containerColor(picker.sheetColor)
-            headlineTextStyle(picker.headlineTextStyle)
-            supportingTextStyle(picker.supportingTextStyle)
+            containerColor(picker.rowColor)
+            dividerColor(picker.dividerColor)
+            headlineColor(picker.headlineColor)
+            supportingColor(picker.supportingColor)
+            trailingColor(picker.trailingColor)
         }
     }
 }

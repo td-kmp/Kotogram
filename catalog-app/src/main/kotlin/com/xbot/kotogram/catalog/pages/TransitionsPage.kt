@@ -93,7 +93,7 @@ private fun TransitionScreen(
 ) {
     val colors = KotogramTheme.colors
     val spacing = KotogramTheme.spacing
-    val background = if (depth % 2 == 0) colors.surface else colors.surfaceVariant
+    val background = if (depth % 2 == 0) colors.surface else colors.surfaceContainerHighest
     Column(
         modifier = Modifier.fillMaxSize().background(background).padding(spacing.large),
         verticalArrangement = Arrangement.SpaceBetween,
