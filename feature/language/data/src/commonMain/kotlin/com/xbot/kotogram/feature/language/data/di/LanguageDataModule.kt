@@ -22,7 +22,12 @@ import org.koin.dsl.module
 val languageDataModule = module {
     single<ChosenLanguageStore> { DataStoreChosenLanguageStore(get<AppStorage>().preferences) }
     single {
-        DefaultLanguageRepository(appScope = get(AppCoroutineScope), client = get(), store = get())
+        DefaultLanguageRepository(
+            appScope = get(AppCoroutineScope),
+            client = get(),
+            store = get(),
+            platform = platformLanguage(),
+        )
     } bind LanguageRepository::class
     scope(AccountScope) {
         scopedOf(::LanguageOptions) { bind<TdlibOptions>() }

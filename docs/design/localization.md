@@ -1,6 +1,6 @@
 # Kotogram — strings from Telegram's language packs
 
-Status: **English bundled; "Continue in …", switching and updates as macOS and iOS; the whole pack in memory** (2026-11-07). A language list in settings is not done. Open questions at the end.
+Status: **English bundled; "Continue in …", switching and updates as macOS and iOS; the whole pack in memory; Android and iOS declare the pack's languages, and a language chosen for the app in the system's settings is followed** (2026-11-11). A language list in settings is not done. Open questions at the end.
 
 ## What the reference clients do
 
@@ -10,6 +10,16 @@ All three keep one bundled language and take every other from Telegram's servers
 - **Telegram for iOS** (`AuthorizationSequenceSplashController.swift`, `Localizations.swift`): the same. `help.getConfig` gives `suggested_lang_code`; `langpack.getStrings` gives `Login.ContinueWithLocalization` in that language; the intro shows it under "Start Messaging" unless it is English. A tap downloads the pack and its base, stores `LocalizationSettings` for the whole app (not per account) and puts the code into the connection's `lang_code`. The app's 20 `.lproj` folders hold only `InfoPlist.strings` (permission prompts) and Siri vocabulary: iOS's per-app language setting changes those, never the UI, which follows the chosen pack alone.
 - **Telegram X** (target `android_x`): `Tdlib.updateLanguageParameters` sets `language_pack_database_path`, `localization_target` and `language_pack_id` on every client. `Lang.getStringImpl` uses the Android resource name as the pack key: an in-memory cache, then `Client.execute(GetLanguagePackString(...))`, then the pack's base, then the bundled English resource. `applyLanguage` calls `SynchronizeLanguagePack` (and for the base) before it sets `language_pack_id` and switches the UI.
 - **Unigram** (target `unigram`, database `LocalPath/langpack`): `LocaleService.GetString` reads an in-memory dictionary, then `Client.Execute(GetLanguagePackString)`, then the bundled `LocaleFallback`. A switch sets `language_pack_id` on every client and awaits `SynchronizeLanguagePack`.
+
+### How they declare languages to the platform (checked 2026-11-11, their `master`)
+
+None of them ties the platform's per-app language to its pack; that tie is our design, on the platforms' documented APIs.
+
+- **Telegram for Android** has no `android:localeConfig`, so Android's settings offer no language for it. It keeps its language in its own `SharedPreferences` (`LocaleController`, key `language`) and without one takes the system's. Its resources hold `ar`, `de`, `es`, `it`, `ko`, `nl`, `pt-rBR`, `ru`, `uk` beside English.
+- **Telegram X** has none either. Its release build fetches a few built-in strings (the intro, the network status, login errors: `builtin-strings.txt`) for every language of `android_x` from translations.telegram.org into `values-xx` and sets `localeFilters` to them (`FetchLocalizedStringsTask`).
+- **Telegram for iOS** has 19 `.lproj` folders with only `InfoPlist.strings` and Siri's vocabulary, `CFBundleDevelopmentRegion = en` and `CFBundleAllowMixedLocalizations`. That gives the App Store its list of languages and iOS its language row for the app; the interface ignores the row and follows the chosen pack.
+- **The platforms.** Android 13 and later list an app's languages from `android:localeConfig` ([per-app language preferences](https://developer.android.com/guide/topics/resources/app-languages)); below 13 there is no system setting, and `AppCompatDelegate.setApplicationLocales` with `autoStoreLocales` keeps a choice, in an `AppCompatActivity` only. Android 14 can replace the list at run time (`LocaleManager.setOverrideLocaleConfig`). Google Play shows no list of an app's languages. The App Store takes its list from the bundle's `.lproj` folders, and iOS shows the language row for an app with more than one ([Apple's forum](https://developer.apple.com/forums/thread/836440), [QA1828](https://developer.apple.com/library/archive/qa/qa1828/_index.html)); only the user changes it, in Settings, and iOS restarts the app after it.
+- **The `macos` pack's languages** ([translations.telegram.org](https://translations.telegram.org/languages/list/macos)): `en`, `be`, `ca`, `zh-hans`, `zh-hant`, `hr`, `cs`, `nl`, `fi`, `fr`, `de`, `he`, `it`, `kk`, `ko`, `ms`, `nb`, `pl`, `pt-br`, `ro`, `ru`, `sr`, `es`, `tr`, `uk`. `ios` and `android` have 33.
 
 ## What TDLib does (`td/telegram/LanguagePackManager.cpp`, `Td.cpp`, checked at c15d3f5)
 
@@ -23,8 +33,12 @@ All three keep one bundled language and take every other from Telegram's servers
 
 ## What the user sees (our design, as macOS and iOS)
 
-1. **The app is English to the system:** only English is bundled and declared (`developmentRegion = en` on iOS, no `localeConfig` on Android), so no system setting offers another language. Layout is left to right unless the chosen pack is RTL.
+1. **The app starts in English or in the language it has stored,** on every platform, as the reference clients do: only English is bundled, and nothing waits for the network behind the splash. Layout is left to right unless the chosen pack is RTL.
 2. **The first sign-in offers the system language:** when the server's suggestion isn't the language in use and no account is signed in, one string of that pack, `getLanguagePackStrings(id, ["Login.ContinueOnLanguage"])` ("Продолжить на русском"), is a link on the first login screen; it goes for good at the first change of step, as macOS's `AuthView.hideLanguage()`. On a laptop it lies over the screen at the bottom, 15 from the edge, macOS's place. On touch screens it is a part of the screen, under its action (decided on 2026-11-11 over [the prototype](language-suggestion-prototype.html)): Telegram for iOS and Android show it under "Start Messaging" on their intro (`RMIntroViewController`, `IntroActivity` in portrait), a screen we don't have, and an overlay there met the screen's own action. The phone and QR screens take a `footer` slot for it under their action, at least as tall as their bottom inset; the link's row is its 50 with 8 under it, grows and fades in when the string arrives, and the action moves up by the difference. The link has no ripple (`TextButtonStyle { ripple(false) }`): Android's is a bare `TextView`.
+   - **Android and iOS also declare the `macos` pack's 25 languages** (decided 2026-11-11): `res/xml/locales_config.xml` on Android, a `.lproj` folder each on iOS (with the app's name in `InfoPlist.strings`, as Telegram for iOS's hold only that kind of file). So the system's settings offer a language for the app and the App Store lists them.
+   - **A language the user chooses there is followed** (own): the pack downloads behind what is on screen and replaces it when it is here, on Android in the running app with no restart of the activity (`configChanges` has `locale`), on iOS after the restart iOS does. Without such a choice the system's own language changes nothing: it is only offered by the link.
+   - **A switch made in the app is told to Android** (`AppCompatDelegate.setApplicationLocales`), so the system's setting and its store show the same language. iOS lets only the user set it.
+   - **Tried and dropped the same day:** taking the system's language at the first start and holding the splash for its pack. On an emulator the pack came 5.8 to 6.3 s after the process started; the developer: reading a cache behind the splash is one thing, the network another. Bundling the sign-in screens' strings for every language (Telegram X's built-in strings; translations.telegram.org exports the `macos` pack as `.strings`) would show the system's language at once, and was put off as too much for now.
 3. **A tap switches everything at once:** `getLanguagePackInfo`, then the whole pack and its base; then the choice is stored, every instance gets `language_pack_id`, and every screen changes. The button shows progress meanwhile, and stays if the switch fails.
 4. **Later starts** show the splash until the stored pack is read from TDLib's database, so the first screen is already in its language. After 3 s without it the bundled English shows, and the pack follows (our choice).
 5. **English again** clears `language_pack_id`: TDLib then downloads nothing, and the connection still says `en`.
@@ -53,6 +67,9 @@ feature:language
   domain  LanguagePack(info, strings, baseStrings); LanguageState: Loading, Bundled, Loaded(pack)
           LanguageRepository: state, apply(id): Either; LanguageSuggestionRepository: suggestion (per account)
   data    DefaultLanguageRepository (single); ChosenLanguageStore (the chosen LanguagePackInfo as TDLib's JSON)
+          PlatformLanguage: the platform's language for the app as a pack id, and a request to change it;
+          AndroidPlatformLanguage (AppCompat's and LocaleManager's app locales), IosPlatformLanguage (the bundle's
+          preferred localization); none on the JVM and the web. SupportedLanguageTags and languagePackIdOf
           per account: LanguageOptions : TdlibOptions, LanguagePackUpdates and SuggestedLanguagePack : AccountUpdates,
           DefaultLanguageSuggestionRepository
   impl    PackLocalization (the pack, then its base), DefaultLocalizationSource
@@ -75,8 +92,16 @@ shared                App: the splash until the localization is ready, then Prov
 - **Options.** `LanguageOptions` gives `localization_target` = `macos`, `language_pack_database_path` = `<tdlibDirectory>/langpack` and `language_pack_id`, the stored choice (`OptionValueEmpty` for English: TDLib keeps the last one in its binlog). `AccountManager.setUp` sends every `TdlibOptions`' first options without waiting for their answers, then `setTdlibParameters`, then each change; `TdClient.send` keeps the order of its calls (tdlib-kmp alpha03). Checked on 2026-11-07 on the desktop: TDLib received `setOption` ×3, then `setTdlibParameters`.
 - **Start.** `DefaultLanguageRepository` reads the stored info; without one it is `Bundled` at once. With one it releases `language_pack_id` first (every instance waits for it to start) and then asks `AppClient` for the whole pack and its base. That request waits in TDLib's queue and runs right after the managers exist.
 - **Switch.** `apply` runs in `appScope` under the repository's mutex: `getLanguagePackInfo` (its id may differ from the one asked for), the pack and its base, the store, then the state; `LanguageOptions` sends the new `language_pack_id` to every instance. `apply("en")` clears the choice.
+- **The system's choice** (`PlatformLanguage`, Android and iOS; none on the JVM and the web). It gives the pack of the language the user chose for the app in the system's settings, `null` without a choice. After the start (from the store, as everywhere) the repository switches to each value that isn't the language in use, the way a tap does but with nobody waiting: the state changes when the pack is here. `apply` switches and then tells the platform (`set`).
+  - **Android** (`AndroidPlatformLanguage`): the app's locales from `LocaleManager` on Android 13 and later and from `AppCompatDelegate` below; an empty list is no choice. Read again on a configuration change and when an activity is created or resumed. `set` is `AppCompatDelegate.setApplicationLocales`. `MainActivity` is an `AppCompatActivity` with `autoStoreLocales`, which is what keeps a choice below Android 13. Own: before the first activity attaches, AppCompat hasn't read its store there, so on those versions a stored choice is seen a moment late; it is the language the app stored too.
+  - **iOS** (`IosPlatformLanguage`): `AppleLanguages` in the app's own defaults domain, where iOS keeps a language chosen for the app (not checked through Settings itself, see the handoff); read once, since iOS restarts the app when it changes. `set` does nothing.
+  - **Matching** (`languagePackIdOf`, own): the first tag of the list whose language has a pack; Chinese by script, then by region (`TW`, `HK`, `MO` are traditional); `iw` and `no` are `he` and `nb`; a region doesn't matter where the pack has one (`pt-PT` is `pt-br`).
 - **Updates.** `LanguagePackUpdates` passes each `updateLanguagePackStrings` of the chosen pack or its base to the repository, under the same mutex: changed strings replace theirs, deleted ones go, none reads the pack again from the database. Every account listens, since any instance may be the one that sends it.
 - **The button.** `SuggestedLanguagePack` follows `suggested_language_pack_id` of its instance; `DefaultLanguageSuggestionRepository` drops it while it is the stored choice and fetches its one string through that account's client.
+
+### Measured on Android (2026-11-11, an Android 37 emulator on an M-series Mac, debug build)
+
+The app's language set with `cmd locale set-app-locales`. Switching in the running app: `ru` in 0.34 s from TDLib's database, no restart of the process, and back to English at once. A restart with `ru` stored: the pack 2.7 s into the request, which waits for TDLib to start. A first download: the pack 5.8 to 6.3 s after the process started (1.6 to 2.4 s of it the download). A real phone is not measured.
 
 ### Measured (2026-11-07, desktop, M-series Mac)
 
@@ -100,6 +125,9 @@ shared                App: the splash until the localization is ready, then Prov
 ## Not done yet
 
 - A language list in settings (`getLocalizationTargetInfo`, with `translated_string_count`), and macOS's after-login offer.
+- Android 14's `setOverrideLocaleConfig` with the server's list of packs: the declared list is the pack's languages as of 2026-11-11, and a new one needs a release.
+- Strings of the sign-in screens bundled per language, as Telegram X's built-in strings, so that the first start is in the system's language at once (put off on 2026-11-11).
+- `UIPrefersShowingLanguageSettings` on iOS, which shows the language row even with one preferred language.
 - A message when a switch fails: the button only comes back.
 - Links `t.me/setlanguage/…` (`internalLinkTypeLanguagePack`): custom packs, which TDLib leaves out of the connection's `lang_code`.
 - The pack's language in `TextStyle.localeList` (CJK glyphs) and in date and number formatting.
@@ -107,7 +135,7 @@ shared                App: the splash until the localization is ready, then Prov
 
 ## Tests
 
-`PluralFormTest`, `LocalizationTest` and `TelegramTextTest` (`core:resources`): CLDR forms for `en`, `ru`, `ar`, `pt`, the pack-key lookup, markup and arguments. `DefaultLanguageRepositoryTest` (`feature:language:data`, a fake `AppClient`): start, a slow TDLib, switch, failure, English, updates. `LocalizationTest` (`feature:language:impl`): pack, base and bundle. `AccountManagerTest`: options before the parameters, and only changed options sent again. `AuthViewModelTest`: the button on the first sign-in only. `KoinGraphTest` (real TDLib): `language_pack_database_path` applied and the bundled localization ready.
+`PluralFormTest`, `LocalizationTest` and `TelegramTextTest` (`core:resources`): CLDR forms for `en`, `ru`, `ar`, `pt`, the pack-key lookup, markup and arguments. `DefaultLanguageRepositoryTest` (`feature:language:data`, a fake `AppClient`): start, a slow TDLib, switch, failure, English, updates, and a fake platform (no choice in the system, a choice loading behind the bundled English, one already stored, a change, a choice taken back, a language without a pack, `apply` told to the system and not told when it fails). `LanguagePacksTest`: the matching, and that `locales_config.xml`, the `.lproj` folders and the Xcode project's regions list exactly `SupportedLanguageTags`. `LocalizationTest` (`feature:language:impl`): pack, base and bundle. `AccountManagerTest`: options before the parameters, and only changed options sent again. `AuthViewModelTest`: the button on the first sign-in only. `KoinGraphTest` (real TDLib): `language_pack_database_path` applied and the bundled localization ready.
 
 ## Open questions
 
