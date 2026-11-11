@@ -2,6 +2,7 @@ package com.xbot.kotogram.feature.auth.impl.screen.phone
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -22,7 +23,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -65,6 +68,7 @@ internal fun PhoneScreen(
     onSubmit: () -> Unit,
     onQrLoginClick: () -> Unit,
     modifier: Modifier = Modifier,
+    footer: @Composable () -> Unit = {},
 ) {
     val state by viewModel.collectAsState()
     val focusRequester = remember { FocusRequester() }
@@ -82,6 +86,7 @@ internal fun PhoneScreen(
         onQrLoginClick = onQrLoginClick,
         modifier = modifier,
         focusRequester = focusRequester,
+        footer = footer,
     )
 }
 
@@ -94,8 +99,11 @@ internal fun PhoneScreenContent(
     onQrLoginClick: () -> Unit,
     modifier: Modifier = Modifier,
     focusRequester: FocusRequester = remember { FocusRequester() },
+    footer: @Composable () -> Unit = {},
 ) {
     val style = rememberStyle(::PhoneScreenStyleScope, PhoneScreenStyle.Adaptive)
+    val currentFooter by rememberUpdatedState(footer)
+    val movableFooter = remember { movableContentOf { currentFooter() } }
     val posture = mediaQuery { windowPosture }
     val landscape by derivedMediaQuery { windowHeight < style.landscapeHeight }
     val actionAtBottom = !style.mediaQueryInfo.isLaptop && !landscape
@@ -175,11 +183,13 @@ internal fun PhoneScreenContent(
                         }
                         if (!actionAtBottom) {
                             PhoneAction(state, canUseQr, onAction, onQrLoginClick)
+                            movableFooter()
                         }
                     }
                 }
                 if (posture.isTabletop) Spacer(Modifier.weight(1f))
                 if (actionAtBottom) {
+                    val inset = style.bottomActionInset
                     PhoneAction(
                         state = state,
                         canUseQr = canUseQr,
@@ -187,8 +197,14 @@ internal fun PhoneScreenContent(
                         onQrLoginClick = onQrLoginClick,
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
-                            .padding(style.bottomActionInset),
+                            .padding(start = inset, top = inset, end = inset),
                     )
+                    Box(
+                        modifier = Modifier.align(Alignment.CenterHorizontally).heightIn(min = inset),
+                        contentAlignment = Alignment.TopCenter,
+                    ) {
+                        movableFooter()
+                    }
                 }
             }
         }

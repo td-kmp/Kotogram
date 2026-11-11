@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -98,18 +99,21 @@ internal fun StyledButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     val source = interactionSource ?: remember { MutableInteractionSource() }
-    MaterialButton(
-        onClick = onClick,
-        modifier = modifier.then(pressFeedback(source)).heightIn(min = style.minHeight),
-        enabled = state == ButtonState.Enabled,
-        shape = style.shape,
-        colors = style.buttonColors().during(state),
-        elevation = null,
-        contentPadding = style.contentPadding,
-        interactionSource = source,
-    ) {
-        CompositionLocalProvider(LocalTextStyle provides style.textStyle) {
-            ButtonContent(state, content)
+    val ripple = LocalRippleConfiguration.current.takeIf { style.ripple }
+    CompositionLocalProvider(LocalRippleConfiguration provides ripple) {
+        MaterialButton(
+            onClick = onClick,
+            modifier = modifier.then(pressFeedback(source)).heightIn(min = style.minHeight),
+            enabled = state == ButtonState.Enabled,
+            shape = style.shape,
+            colors = style.buttonColors().during(state),
+            elevation = null,
+            contentPadding = style.contentPadding,
+            interactionSource = source,
+        ) {
+            CompositionLocalProvider(LocalTextStyle provides style.textStyle) {
+                ButtonContent(state, content)
+            }
         }
     }
 }
@@ -179,6 +183,7 @@ fun interface ButtonStyle : ComponentStyle<ButtonStyleScope> {
             disabledContentColor(theme.colors.onSurfaceVariant.copy(alpha = 0.38f))
             textStyle(theme.typography.labelLarge.merge(fontSize = 17.sp, fontWeight = FontWeight.SemiBold))
             progressSize(22.dp)
+            ripple(true)
         }
 
         val Adaptive = Default then ButtonStyle {
@@ -218,6 +223,7 @@ fun interface TextButtonStyle : ComponentStyle<ButtonStyleScope> {
             disabledContentColor(theme.colors.onSurfaceVariant.copy(alpha = 0.38f))
             textStyle(theme.typography.bodyLarge.merge(fontSize = 16.sp))
             progressSize(22.dp)
+            ripple(true)
         }
 
         val Adaptive = Default then TextButtonStyle {
@@ -275,6 +281,9 @@ class ButtonStyleScope(
     var progressSize: Dp = Dp.Unspecified
         private set
 
+    var ripple: Boolean = true
+        private set
+
     fun minHeight(height: Dp) {
         minHeight = height
     }
@@ -309,6 +318,10 @@ class ButtonStyleScope(
 
     fun progressSize(size: Dp) {
         progressSize = size
+    }
+
+    fun ripple(enabled: Boolean) {
+        ripple = enabled
     }
 
     internal fun buttonColors(): ButtonColors =

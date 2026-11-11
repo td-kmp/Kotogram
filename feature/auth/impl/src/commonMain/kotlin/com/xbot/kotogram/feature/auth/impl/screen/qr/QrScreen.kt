@@ -27,6 +27,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -58,6 +61,7 @@ internal fun QrScreen(
     viewModel: QrViewModel,
     onPhoneLoginClick: () -> Unit,
     modifier: Modifier = Modifier,
+    footer: @Composable () -> Unit = {},
 ) {
     val state by viewModel.collectAsState()
     LaunchedEffect(state.needsQrCode) {
@@ -67,6 +71,7 @@ internal fun QrScreen(
         state = state,
         onPhoneLoginClick = onPhoneLoginClick,
         modifier = modifier,
+        footer = footer,
     )
 }
 
@@ -75,8 +80,11 @@ internal fun QrScreenContent(
     state: QrScreenState,
     onPhoneLoginClick: () -> Unit,
     modifier: Modifier = Modifier,
+    footer: @Composable () -> Unit = {},
 ) {
     val style = rememberStyle(::QrScreenStyleScope, QrScreenStyle.Adaptive)
+    val currentFooter by rememberUpdatedState(footer)
+    val movableFooter = remember { movableContentOf { currentFooter() } }
     val laptop = style.mediaQueryInfo.isLaptop
     val posture = mediaQuery { windowPosture }
     val landscape by derivedMediaQuery { windowHeight < style.landscapeHeight }
@@ -107,6 +115,7 @@ internal fun QrScreenContent(
                     ) {
                         QrInstructions(state, TextAlign.Start)
                         PhoneLoginButton(onPhoneLoginClick)
+                        movableFooter()
                     }
                 }
 
@@ -124,6 +133,7 @@ internal fun QrScreenContent(
                     ) {
                         QrInstructions(state, TextAlign.Center)
                         PhoneLoginButton(onPhoneLoginClick)
+                        movableFooter()
                     }
                 }
 
@@ -141,16 +151,22 @@ internal fun QrScreenContent(
                             qrCode()
                             Spacer(Modifier.height(style.beforeTitle))
                             QrInstructions(state, TextAlign.Center)
-                            if (laptop) PhoneLoginButton(onPhoneLoginClick)
+                            if (laptop) {
+                                PhoneLoginButton(onPhoneLoginClick)
+                                movableFooter()
+                            }
                         }
                     }
                     if (!laptop) {
-                        PhoneLoginButton(
-                            onClick = onPhoneLoginClick,
+                        PhoneLoginButton(onPhoneLoginClick, Modifier.align(Alignment.CenterHorizontally))
+                        Box(
                             modifier = Modifier
                                 .align(Alignment.CenterHorizontally)
-                                .padding(bottom = style.touchPadding),
-                        )
+                                .heightIn(min = style.touchPadding),
+                            contentAlignment = Alignment.TopCenter,
+                        ) {
+                            movableFooter()
+                        }
                     }
                 }
             }

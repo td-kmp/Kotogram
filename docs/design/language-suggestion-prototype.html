@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-screen="phone" data-place="under" data-device="tall">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>"Continue in …" on a phone: prototype</title>
+<style>
+/* One live phone on the left, the notes for the chosen placement on the right. The phone carries the app's colours,
+   sizes and motion; the page around it stays quiet. */
+:root {
+  color-scheme: dark;
+  --page: #0b1117; --panel: #111a23; --ink: #e3eaf1; --muted: #8a9bab; --line: #1f2c39; --chip: #18242f;
+  /* Night Accent, theme/Color.kt */
+  --surfaceDim: #101820; --highest: #213040; --onSurface: #ffffff; --onSurfaceVariant: #b1c3d5;
+  --outline: #b1c3d5; --primary: #2ea6ff; --onPrimary: #ffffff; --error: #ef5b5b;
+  --kb: #1c1f24; --key: #4a4e55; --bezel: #05080b;
+  --ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --app-font: -apple-system, system-ui, sans-serif;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --page: #f5f6f8; --panel: #ffffff; --ink: #16202a; --muted: #5d6b78; --line: #dce1e7; --chip: #e9eef4;
+  /* Day Classic, theme/Color.kt */
+  --surfaceDim: #efeff3; --highest: #f4f4f4; --onSurface: #000000; --onSurfaceVariant: #999999;
+  --outline: #9e9e9e; --primary: #2481cc; --onPrimary: #ffffff; --error: #ff3b30;
+  --kb: #d0d3d9; --key: #ffffff; --bezel: #c9ced6;
+}
+:root[data-device="tall"] { --dw: 390px; --dh: 844px; }
+:root[data-device="short"] { --dw: 360px; --dh: 700px; }
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 15px/1.55 var(--ui); padding: 32px 20px 64px; }
+.wrap { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 26px; }
+code { font-family: var(--mono); font-size: 0.87em; }
+p { margin: 0; }
+header { display: flex; flex-direction: column; gap: 10px; max-width: 70ch; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 0; font-size: clamp(24px, 3.6vw, 32px); line-height: 1.15; font-weight: 600; text-wrap: balance; }
+.lead { color: var(--muted); }
+
+.bar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center;
+  padding: 10px 0; background: var(--page); border-block: 1px solid var(--line); }
+.ctl { display: flex; align-items: center; gap: 8px; }
+.label { font: 500 12px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--panel); }
+.seg button, .plain { font: 500 13px/1 var(--ui); color: var(--muted); background: none; border: 0; padding: 9px 12px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--chip); color: var(--ink); }
+.seg button:focus-visible, .plain:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.seg button[data-rec]::after { content: ""; display: inline-block; width: 6px; height: 6px; margin-left: 7px;
+  border-radius: 50%; background: var(--primary); vertical-align: 1px; }
+.plain { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); }
+
+.stage { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 36px; align-items: start; scroll-margin-top: 120px; }
+@media (max-width: 860px) { .stage { grid-template-columns: 1fr; justify-items: center; } }
+.holder { width: calc(var(--dw) * var(--z, 1) + 20px); height: calc(var(--dh) * var(--z, 1) + 20px);
+  padding: 10px; border-radius: calc(46px * var(--z, 1)); background: var(--bezel); }
+
+/* ---------- the phone: sizes in px are the app's dp ---------- */
+.device { position: relative; width: var(--dw); height: var(--dh); transform: scale(var(--z, 1)); transform-origin: top left;
+  display: flex; flex-direction: column; overflow: hidden; border-radius: 38px;
+  background: var(--surfaceDim); color: var(--onSurface); font-family: var(--app-font); --inset: 34px; }
+.device.kb { --inset: 291px; }
+.status { flex: none; height: 47px; display: flex; align-items: flex-end; justify-content: space-between;
+  padding: 0 30px 9px; font-size: 15px; font-weight: 600; }
+.status i { font-style: normal; letter-spacing: 2px; font-size: 11px; }
+.screen { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.screen[hidden] { display: none; }
+.content { position: relative; flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column;
+  scrollbar-width: none; }
+.center { margin: auto 0; padding: 0 16px; display: flex; flex-direction: column; align-items: center; }
+.sticker { width: 100px; height: 100px; display: grid; place-items: center; font-size: 76px; line-height: 1; }
+.title { margin-top: 18px; font-size: 28px; line-height: 34px; font-weight: 700; text-align: center; }
+.info { margin-top: 18px; max-width: 306px; font-size: 17px; line-height: 22px; text-align: center; }
+.err { align-self: stretch; height: 40px; padding-top: 10px; font-size: 13px; line-height: 18px; color: var(--error);
+  text-align: center; opacity: 0; transition: opacity 0.2s; }
+.err.on { opacity: 1; }
+[data-place="inline"] .err { height: auto; max-height: 0; padding-top: 0; overflow: hidden; transition: max-height 0.2s, padding 0.2s, opacity 0.2s; }
+[data-place="inline"] .err.on { max-height: 40px; padding-top: 10px; }
+
+.block { position: relative; align-self: stretch; margin-top: 30px; border-radius: 10px; background: var(--highest); overflow: hidden; }
+.block::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: inset 0 0 0 2px transparent; transition: box-shadow 0.15s; }
+.block:focus-within::after, .device.kb .block::after { box-shadow: inset 0 0 0 2px var(--primary); }
+.block.error::after { box-shadow: inset 0 0 0 2px var(--error); }
+.country { display: flex; align-items: center; height: 50px; padding: 0 16px; font-size: 17px;
+  border-bottom: 1px solid color-mix(in srgb, var(--outline) 12%, transparent); }
+.country span { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.country svg { flex: none; width: 24px; height: 24px; color: var(--onSurfaceVariant); }
+.number { position: relative; display: flex; align-items: center; height: 50px; padding: 0 16px;
+  font: 17px/normal var(--mono); cursor: text; }
+.hint { position: absolute; inset: 0 16px; display: flex; align-items: center; white-space: pre; pointer-events: none;
+  color: var(--onSurfaceVariant); }
+.hint .ghost { visibility: hidden; }
+.number input { position: relative; width: 100%; margin: 0; padding: 0; border: 0; outline: 0; background: none;
+  color: var(--onSurface); font: inherit; caret-color: var(--primary); }
+
+.qr { width: 240px; height: 240px; padding: 16px; border-radius: 24px; background: #ffffff; }
+.qr svg { display: block; width: 100%; height: 100%; }
+.qr-title { margin-top: 30px; max-width: 380px; font-size: 28px; line-height: 34px; font-weight: 700; text-align: center; }
+.steps { margin: 24px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px; counter-reset: s; }
+.steps li { display: flex; gap: 14px; font-size: 17px; line-height: 22px; counter-increment: s; }
+.steps li::before { content: counter(s); flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--primary);
+  color: var(--onPrimary); font: 500 15px/26px var(--mono); text-align: center; }
+.steps li span { padding-top: 2px; }
+
+.bottom { flex: none; padding: 24px; display: flex; flex-direction: column; align-items: center; }
+[data-screen="qr"] .bottom { padding: 12px 24px 24px; }
+.next { align-self: stretch; height: 50px; border: 0; border-radius: 25px; background: var(--primary); color: var(--onPrimary);
+  font: 600 17px/1 var(--app-font); cursor: pointer; }
+.next:disabled { background: color-mix(in srgb, var(--onSurface) 12%, transparent);
+  color: color-mix(in srgb, var(--onSurface) 38%, transparent); cursor: default; }
+.link { display: grid; place-items: center; min-width: 0; height: 50px; padding: 0 16px; border: 0; border-radius: 25px;
+  background: none; color: var(--primary); font: 16px/1 var(--app-font); cursor: pointer; white-space: nowrap; }
+.link:hover { background: color-mix(in srgb, var(--primary) 8%, transparent); }
+.link > * { grid-area: 1 / 1; }
+.spin { width: 22px; height: 22px; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--primary) 25%, transparent);
+  border-top-color: var(--primary); opacity: 0; animation: turn 0.8s linear infinite; }
+.loading .spin { opacity: 1; }
+.loading .text { visibility: hidden; }
+@keyframes turn { to { rotate: 360deg; } }
+
+/* The suggestion: its row grows and fades in when the string arrives, and goes the same way. */
+.suggest { display: grid; grid-template-rows: 0fr; opacity: 0; pointer-events: none;
+  transition: grid-template-rows 0.25s ease, opacity 0.2s ease, margin 0.25s ease; }
+.suggest > div { min-height: 0; overflow: hidden; display: flex; justify-content: center; }
+.suggest.on { grid-template-rows: 1fr; opacity: 1; pointer-events: auto; }
+.slot-top { flex: none; display: flex; justify-content: flex-end; padding: 0 8px; }
+.slot-top .link { height: 44px; }
+[data-slot="under"] .suggest.on { margin-bottom: -16px; }
+[data-slot="above"] .suggest.on { margin-top: -16px; }
+[data-slot="inline"] .suggest.on { margin-top: 6px; }
+.slot-now { position: absolute; left: 0; right: 0; bottom: calc(var(--inset) + 15px); display: flex; justify-content: center;
+  transition: bottom 0.25s ease; pointer-events: none; }
+.slot-now .suggest { grid-template-rows: 1fr; }
+
+.toast { position: absolute; top: 56px; left: 50%; translate: -50% 0; max-width: 300px; padding: 8px 14px; border-radius: 16px;
+  background: color-mix(in srgb, var(--onSurface) 88%, transparent); color: var(--surfaceDim); font-size: 13px; line-height: 17px;
+  text-align: center; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+.toast.on { opacity: 1; }
+
+.keyboard { flex: none; height: 0; overflow: hidden; background: var(--kb); transition: height 0.25s ease; }
+.device.kb .keyboard { height: 291px; }
+.keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px 6px; padding: 6px 6px 0; }
+.keys button { height: 46px; border: 0; border-radius: 5px; background: var(--key); color: var(--onSurface);
+  font: 25px/1 var(--app-font); cursor: pointer; }
+.keys button.bare { background: none; font-size: 20px; }
+.home { flex: none; height: 34px; display: grid; place-items: center; transition: height 0.25s ease; }
+.device.kb .home { height: 0; overflow: hidden; }
+.home::after { content: ""; width: 134px; height: 5px; border-radius: 3px; background: var(--onSurface); opacity: 0.85; }
+
+/* ---------- notes ---------- */
+.notes { display: flex; flex-direction: column; gap: 18px; max-width: 58ch; }
+.notes h2 { margin: 0; font-size: 22px; font-weight: 600; }
+.source { font: 500 12px/1.4 var(--mono); letter-spacing: 0.04em; text-transform: uppercase; color: var(--primary); }
+.notes ul { margin: 0; padding-left: 18px; color: var(--muted); display: flex; flex-direction: column; gap: 8px; }
+.notes ul b { color: var(--ink); font-weight: 600; }
+.metric { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); font-size: 14px; }
+.metric b { font-weight: 600; }
+.try { color: var(--muted); font-size: 14px; }
+.try b { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <span class="eyebrow">Prototype · feature:auth:impl · LanguageSuggestion on touch screens · "Under the action" built on 2026-11-11</span>
+  <h1>Where "Continue in …" goes on a phone</h1>
+  <p class="lead">Today <code>AuthScreen</code> lays the link over whichever screen comes first, at the bottom, where a
+    touch screen keeps its own action. Here it is a part of the screen instead, in four places. The phone is live: type a
+    number, tap the link, press the button.</p>
+</header>
+
+<div class="bar">
+  <div class="ctl"><span class="label">First screen</span>
+    <div class="seg" data-key="screen"><button data-v="phone">Phone number</button><button data-v="qr">QR code</button></div></div>
+  <div class="ctl"><span class="label">Place</span>
+    <div class="seg" data-key="place"><button data-v="now">Now</button><button data-v="under" data-rec>Under the action</button><button data-v="above">Above it</button><button data-v="inline">In the content</button><button data-v="top">Top corner</button></div></div>
+  <div class="ctl"><span class="label">Phone</span>
+    <div class="seg" data-key="device"><button data-v="tall">390 × 844</button><button data-v="short">360 × 700</button></div></div>
+  <div class="ctl"><span class="label">Theme</span>
+    <div class="seg" data-key="theme"><button data-v="dark">Dark</button><button data-v="light">Light</button></div></div>
+  <button class="plain" id="replay" type="button">Start over</button>
+</div>
+
+<div class="stage">
+  <div class="holder"><div class="device" id="device">
+    <div class="status"><span>9:41</span><i>●●●●</i></div>
+    <div class="slot-top" data-slot="top"></div>
+
+    <div class="screen" data-for="phone">
+      <div class="content"><div class="center">
+        <div class="sticker">☎️</div>
+        <div class="title">Kotogram</div>
+        <p class="info" data-t="info"></p>
+        <div class="block" id="block">
+          <div class="country"><span data-t="country"></span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <label class="number"><span class="hint"><span class="ghost"></span><span class="rest"></span></span>
+            <input id="number" type="text" inputmode="none" autocomplete="off" spellcheck="false" aria-label="Phone number"></label>
+        </div>
+        <p class="err" data-t="err"></p>
+        <div data-slot="inline"></div>
+      </div></div>
+      <div class="bottom">
+        <div data-slot="above"></div>
+        <button class="next" id="next" type="button" data-t="next"></button>
+        <div data-slot="under"></div>
+      </div>
+    </div>
+
+    <div class="screen" data-for="qr" hidden>
+      <div class="content"><div class="center">
+        <div class="qr" id="qr"></div>
+        <div class="qr-title" data-t="qrTitle"></div>
+        <ol class="steps"><li><span data-t="qr1"></span></li><li><span data-t="qr2"></span></li><li><span data-t="qr3"></span></li></ol>
+        <div data-slot="inline"></div>
+      </div></div>
+      <div class="bottom">
+        <div data-slot="above"></div>
+        <button class="link" id="byPhone" type="button"><span class="text" data-t="byPhone"></span></button>
+        <div data-slot="under"></div>
+      </div>
+    </div>
+
+    <div class="slot-now" data-slot="now"></div>
+    <div class="toast" id="toast"></div>
+    <div class="keyboard"><div class="keys" id="keys"></div></div>
+    <div class="home"></div>
+  </div></div>
+
+  <div class="notes">
+    <div class="source" id="n-source"></div>
+    <h2 id="n-title"></h2>
+    <ul id="n-points"></ul>
+    <div class="metric" id="n-metric"></div>
+    <p class="try"><b>To try:</b> tap the number to raise the keyboard and tap beside it to drop it. Tap the link: it
+      loads, the screen turns Russian and the link goes. Press the button with a short number for the error, with a full
+      one to leave the step, which also removes the link for good. "Start over" brings it back, a moment late as the
+      server's string arrives.</p>
+  </div>
+</div>
+
+</div>
+<script>
+const TEXT = {
+  en: { info: "Please confirm your country code and enter your phone number.", country: "🇺🇿 Uzbekistan", next: "Next",
+    err: "Invalid phone number. Please try again.", qrTitle: "Log in to Telegram by QR Code", qr1: "Open Telegram on your phone",
+    qr2: "Go to Settings > Devices > Link Desktop Device", qr3: "Point your phone at this screen to confirm login",
+    byPhone: "Log in by phone number" },
+  ru: { info: "Проверьте код страны и введите свой номер телефона.", country: "🇺🇿 Узбекистан", next: "Далее",
+    err: "Неверный номер телефона. Попробуйте ещё раз.", qrTitle: "Вход в Telegram по QR-коду", qr1: "Откройте Telegram на телефоне",
+    qr2: "Перейдите в Настройки > Устройства > Подключить устройство", qr3: "Наведите телефон на этот экран для подтверждения входа",
+    byPhone: "Вход по номеру телефона" },
+};
+const SUGGESTION = "Продолжить на русском";
+const CODE = "998";
+const PATTERN = "XX XXX XX XX";
+const NOTES = {
+  now: { source: "Now · macOS's place on every form factor", title: "An overlay at the bottom",
+    points: ["<b>Collides on touch.</b> It sits 15 above the edge, and the screen's own action is 24 above the same edge.",
+      "Nothing moves when it arrives or goes: it is drawn over the screen, not laid out with it.",
+      "Right on a laptop, where the content is centred and the bottom is free."] },
+  under: { source: "Telegram for iOS and Android · their intro in portrait", title: "Under the screen's action",
+    points: ["<b>The order of the official phones:</b> the main button, then the link under it (<code>RMIntroViewController</code>, <code>IntroActivity</code>).",
+      "The action moves up by the link's row when the string arrives and back when it goes, as iOS moves its button.",
+      "Takes 34 more above the keyboard than the button alone."] },
+  above: { source: "Telegram for Android · its intro in landscape", title: "Above the screen's action",
+    points: ["<b>The button never moves:</b> the row grows above it and the content gives up the room.",
+      "The link sits between the field and the main action, the first thing under the thumb.",
+      "Takes 34 more above the keyboard, the same as under."] },
+  inline: { source: "Own · no reference", title: "In the content, under the field",
+    points: ["<b>Costs the bottom nothing:</b> it scrolls with the content and the action stays put.",
+      "With the keyboard up on a short phone it can end below the fold, behind the action.",
+      "It shares the place under the field with the error text, which then stands between them."] },
+  top: { source: "Own · no reference in Telegram", title: "In the top corner",
+    points: ["<b>Away from the action and the keyboard</b>, where other apps keep a language switch.",
+      "A 44 bar at the top while it shows, so the content still moves when it arrives.",
+      "The whole phrase has to fit beside nothing else: fine on the first screen, which has no back button."] },
+};
+
+const KEYS = ["screen", "place", "device", "theme"];
+const root = document.documentElement;
+const S = { digits: CODE, lang: "en", suggestion: false, switching: false, left: false, error: false, kb: false };
+KEYS.forEach((k) => { S[k] = root.dataset[k]; });
+const params = new URLSearchParams(location.search);
+params.forEach((v, k) => { S[k] = v === "1" ? true : v === "0" ? false : v; });
+const frozen = params.has("kb") || params.has("suggestion");
+
+const device = document.getElementById("device");
+const input = document.getElementById("number");
+const suggest = document.createElement("div");
+suggest.className = "suggest";
+suggest.innerHTML = '<div><button class="link" type="button"><span class="text"></span><span class="spin"></span></button></div>';
+const link = suggest.querySelector(".link");
+link.querySelector(".text").textContent = SUGGESTION;
+
+function split() {
+  const known = S.digits.startsWith(CODE);
+  const national = known ? S.digits.slice(CODE.length) : "";
+  let text = "", i = 0, n = 0;
+  for (; i < PATTERN.length && n < national.length; i++) text += PATTERN[i] === "X" ? national[n++] : PATTERN[i];
+  text += national.slice(n);
+  const typed = !S.digits ? "" : known ? "+" + CODE + (text ? " " + text : "") : "+" + S.digits;
+  const rest = !known ? "" : (text ? "" : " ") + PATTERN.slice(i).replace(/X/g, "-");
+  return { known, national, typed, rest };
+}
+
+function toast(message) {
+  const el = document.getElementById("toast");
+  el.textContent = message;
+  el.classList.add("on");
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => el.classList.remove("on"), 2600);
+}
+
+function leave(where) {
+  S.left = true;
+  S.suggestion = false;
+  toast("→ " + where + ". The link is gone for good.");
+  update();
+}
+
+function arrive() {
+  clearTimeout(arrive.timer);
+  arrive.timer = setTimeout(() => { if (!S.left && S.lang === "en") { S.suggestion = true; update(); } }, 900);
+}
+
+function keepFieldInView() {
+  const content = device.querySelector('.screen[data-for="phone"] .content');
+  const block = document.getElementById("block");
+  const bottom = block.offsetTop + block.offsetHeight + 12;
+  content.scrollTop = S.kb ? Math.max(0, bottom - content.clientHeight) : 0;
+}
+
+function metric() {
+  const content = device.querySelector(`.screen[data-for="${S.screen}"] .content`);
+  const over = Math.round(content.scrollHeight - content.clientHeight);
+  const room = Math.round(content.clientHeight);
+  const state = S.screen === "phone" && S.kb ? "With the keyboard up" : "Without the keyboard";
+  document.getElementById("n-metric").innerHTML = over > 1
+    ? `${state} the content has <b>${room}</b> to itself and is <b>${over} too tall</b>: it scrolls.`
+    : `${state} the content has <b>${room}</b> to itself and <b>fits</b>.`;
+}
+
+function update() {
+  KEYS.forEach((k) => { root.dataset[k] = S[k]; });
+  document.querySelectorAll(".seg").forEach((seg) => seg.querySelectorAll("button").forEach((button) => {
+    button.setAttribute("aria-pressed", String(S[seg.dataset.key] === button.dataset.v));
+  }));
+  document.querySelectorAll(".screen").forEach((el) => { el.hidden = el.dataset.for !== S.screen; });
+  const screen = device.querySelector(`.screen[data-for="${S.screen}"]`);
+  const slot = S.place === "top" || S.place === "now" ? device.querySelector(`[data-slot="${S.place}"]`)
+    : screen.querySelector(`[data-slot="${S.place}"]`);
+  if (suggest.parentElement !== slot) slot.append(suggest);
+  suggest.classList.toggle("on", S.suggestion);
+  link.classList.toggle("loading", S.switching);
+
+  document.querySelectorAll("[data-t]").forEach((el) => { el.textContent = TEXT[S.lang][el.dataset.t]; });
+  const v = split();
+  if (!v.known) document.querySelector('[data-t="country"]').textContent = S.digits ? "Invalid Country Code" : "";
+  device.querySelector(".ghost").textContent = v.typed;
+  device.querySelector(".rest").textContent = v.rest;
+  if (input.value !== v.typed) input.value = v.typed;
+  document.getElementById("next").disabled = !(v.known && v.national.length >= 5);
+  document.getElementById("block").classList.toggle("error", S.error);
+  document.querySelector(".err").classList.toggle("on", S.error);
+  device.classList.toggle("kb", S.kb && S.screen === "phone");
+
+  const note = NOTES[S.place];
+  document.getElementById("n-source").textContent = note.source;
+  document.getElementById("n-title").textContent = S.screen === "qr" && S.place === "inline" ? "In the content, under the steps" : note.title;
+  document.getElementById("n-points").innerHTML = note.points.map((p) => `<li>${p}</li>`).join("");
+  const holder = document.querySelector(".holder");
+  const height = parseFloat(getComputedStyle(root).getPropertyValue("--dh"));
+  const room = innerHeight - document.querySelector(".bar").offsetHeight - 48;
+  holder.style.setProperty("--z", Math.min(1, Math.max(0.55, room / (height + 20))).toFixed(3));
+  setTimeout(() => { keepFieldInView(); metric(); }, 280);
+}
+
+function type(digits) {
+  S.digits = digits.slice(0, 15);
+  S.error = false;
+  update();
+  input.setSelectionRange(input.value.length, input.value.length);
+}
+
+document.getElementById("keys").innerHTML = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "⌫"]
+  .map((k) => k ? `<button type="button" data-k="${k}"${k === "⌫" ? ' class="bare"' : ""}>${k}</button>` : "<span></span>").join("");
+document.getElementById("keys").addEventListener("mousedown", (e) => e.preventDefault());
+document.getElementById("keys").addEventListener("click", (e) => {
+  const key = e.target.dataset.k;
+  if (key) type(key === "⌫" ? S.digits.slice(0, -1) : S.digits + key);
+});
+input.addEventListener("input", () => type(input.value.replace(/\D/g, "")));
+input.addEventListener("focus", () => { if (!frozen) { S.kb = true; update(); } });
+input.addEventListener("blur", () => { if (!frozen) { S.kb = false; update(); } });
+
+link.addEventListener("mousedown", (e) => e.preventDefault());
+link.addEventListener("click", () => {
+  if (S.switching) return;
+  S.switching = true;
+  update();
+  setTimeout(() => { S.switching = false; S.lang = "ru"; S.suggestion = false; update(); }, 800);
+});
+document.getElementById("next").addEventListener("mousedown", (e) => e.preventDefault());
+document.getElementById("next").addEventListener("click", () => {
+  if (split().national.length < PATTERN.replace(/ /g, "").length) { S.error = true; update(); } else leave("The code screen");
+});
+document.getElementById("byPhone").addEventListener("click", () => leave("The phone number screen"));
+document.getElementById("replay").addEventListener("click", () => {
+  Object.assign(S, { digits: CODE, lang: "en", suggestion: false, switching: false, left: false, error: false });
+  update();
+  arrive();
+});
+document.querySelectorAll(".seg button").forEach((button) => button.addEventListener("click", () => {
+  S[button.parentElement.dataset.key] = button.dataset.v;
+  update();
+  if (S.screen === "phone" && button.parentElement.dataset.key === "screen") input.focus();
+}));
+addEventListener("resize", update);
+
+// A stand-in for the code: three finder squares and a fixed scatter of modules.
+(function drawQr() {
+  const size = 29, cells = [];
+  let seed = 7;
+  const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const inFinder = (x, y) => (x < 8 && y < 8) || (x >= size - 8 && y < 8) || (x < 8 && y >= size - 8);
+  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+    if (!inFinder(x, y) && random() > 0.52) cells.push(`<rect x="${x}" y="${y}" width="1" height="1" rx="0.35"/>`);
+  }
+  const finder = (x, y) => `<rect x="${x + 0.5}" y="${y + 0.5}" width="6" height="6" rx="1.8" fill="none" stroke="#000" stroke-width="1"/>` +
+    `<rect x="${x + 2}" y="${y + 2}" width="3" height="3" rx="0.9"/>`;
+  document.getElementById("qr").innerHTML = `<svg viewBox="0 0 ${size} ${size}" fill="#000">${cells.join("")}` +
+    finder(0, 0) + finder(size - 7, 0) + finder(0, size - 7) + "</svg>";
+})();
+
+update();
+if (frozen) update(); else { arrive(); if (S.screen === "phone") input.focus(); }
+</script>
+</body>
+</html>
