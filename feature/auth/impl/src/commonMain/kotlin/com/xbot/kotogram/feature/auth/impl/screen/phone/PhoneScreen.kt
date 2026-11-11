@@ -152,9 +152,11 @@ internal fun PhoneScreenContent(
                                 Res.string.login_phonefieldplaceholder,
                             ),
                             onSubmit = { onAction(PhoneScreenAction.OnSubmit) },
-                            readOnly = state.isSubmitting,
-                            focusRequester = focusRequester,
                             modifier = Modifier.contentWidth(),
+                            countryPlaceholder = stringResource(Res.string.login_countrylabel),
+                            readOnly = state.isSubmitting,
+                            isError = state.error != null,
+                            focusRequester = focusRequester,
                             countryMenu = { CountryPicker(state, onAction) },
                         )
                         Crossfade(

@@ -82,7 +82,8 @@ class CatalogScreenshotTest(
 
 private const val HOME = "home"
 private const val HOME_TITLE = "Kotogram design system"
-private val FIELD_SCREENS = listOf("text-field", "secure-text-field", "search-field", "code-field")
+private val FIELD_SCREENS =
+    listOf("text-field", "secure-text-field", "search-field", "code-field", "phone-number-field")
 private val TOUCH_SCREENS = FIELD_SCREENS + listOf("icon-button", "checkbox", "switch", "top-bar")
 
 private val MOVING_SCREENS = setOf("transitions")

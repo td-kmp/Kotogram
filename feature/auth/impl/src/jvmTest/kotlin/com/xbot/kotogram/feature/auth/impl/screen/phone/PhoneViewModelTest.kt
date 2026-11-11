@@ -86,6 +86,16 @@ class PhoneViewModelTest {
     }
 
     @Test
+    fun aNumberOfNoCountryIsNotSent() = runTest {
+        val state = phoneScreen(
+            { phoneNumber.setTextAndPlaceCursorAtEnd("2025550123") },
+            { onAction(PhoneScreenAction.OnSubmit) },
+        )
+        assertEquals(false, state.canSubmit)
+        assertEquals(emptyList(), repository.phoneNumbers)
+    }
+
+    @Test
     fun aChosenCountryReplacesTheCallingCodeAndKeepsTheNumber() = runTest {
         val state = phoneScreen(
             { phoneNumber.setTextAndPlaceCursorAtEnd("998901234") },

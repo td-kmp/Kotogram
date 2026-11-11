@@ -1,6 +1,7 @@
 package com.xbot.kotogram.feature.auth.data.repository
 
 import arrow.core.Either
+import com.xbot.kotogram.feature.auth.data.extensions.orTestNumber
 import com.xbot.kotogram.feature.auth.data.extensions.request
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import com.xbot.kotogram.feature.auth.domain.repository.CountryRepository
@@ -21,5 +22,7 @@ internal class DefaultCountryRepository(
     override suspend fun getCountryCode(): Either<AuthError, String> = client.request(GetCountryCode).map { it.text }
 
     override suspend fun getPhoneNumberInfo(phoneNumberPrefix: String): Either<AuthError, PhoneNumberInfo> =
-        client.request(GetPhoneNumberInfo(phoneNumberPrefix = phoneNumberPrefix))
+        client.request(GetPhoneNumberInfo(phoneNumberPrefix = phoneNumberPrefix)).map {
+            it.orTestNumber(phoneNumberPrefix)
+        }
 }

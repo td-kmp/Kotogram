@@ -36,4 +36,10 @@ kotlin {
         implementation(libs.koin.core)
         implementation(libs.kotlinx.coroutines.core)
     }
+
+    sourceSets {
+        jvmTest.dependencies {
+            implementation(libs.kotlin.test)
+        }
+    }
 }

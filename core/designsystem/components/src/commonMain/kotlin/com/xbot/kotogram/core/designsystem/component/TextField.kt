@@ -97,6 +97,7 @@ fun TextField(
     title: @Composable (() -> Unit)? = null,
     suggestion: @Composable (() -> Unit)? = null,
     placeholder: @Composable (() -> Unit)? = null,
+    mask: @Composable (() -> Unit)? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     prefix: @Composable (() -> Unit)? = null,
@@ -146,6 +147,7 @@ fun TextField(
                         title = title,
                         suggestion = suggestion,
                         placeholder = placeholder,
+                        mask = mask,
                         leadingIcon = leadingIcon,
                         trailingIcon = trailingIcon,
                         prefix = prefix,
@@ -212,6 +214,7 @@ fun SecureTextField(
                         title = title,
                         suggestion = suggestion,
                         placeholder = placeholder,
+                        mask = null,
                         leadingIcon = leadingIcon,
                         trailingIcon = trailingIcon,
                         prefix = prefix,
@@ -233,7 +236,12 @@ internal fun materialTextFieldColors(
     disabledIndicatorColor: Color,
     errorIndicatorColor: Color,
     labelColor: Color,
+    containerColor: Color = Color.Unspecified,
 ): TextFieldColors = MaterialTextFieldDefaults.colors(
+    focusedContainerColor = containerColor,
+    unfocusedContainerColor = containerColor,
+    disabledContainerColor = containerColor,
+    errorContainerColor = containerColor,
     focusedIndicatorColor = focusedIndicatorColor,
     unfocusedIndicatorColor = unfocusedIndicatorColor,
     disabledIndicatorColor = disabledIndicatorColor,
@@ -251,6 +259,7 @@ private fun textFieldColors(): TextFieldColors = materialTextFieldColors(
     disabledIndicatorColor = style.disabledIndicatorColor,
     errorIndicatorColor = style.errorIndicatorColor,
     labelColor = style.labelColor,
+    containerColor = style.containerColor,
 )
 
 @Composable
@@ -280,6 +289,7 @@ private fun TextFieldDecoration(
     title: @Composable (() -> Unit)?,
     suggestion: @Composable (() -> Unit)?,
     placeholder: @Composable (() -> Unit)?,
+    mask: @Composable (() -> Unit)?,
     leadingIcon: @Composable (() -> Unit)?,
     trailingIcon: @Composable (() -> Unit)?,
     prefix: @Composable (() -> Unit)?,
@@ -378,6 +388,11 @@ private fun TextFieldDecoration(
                     )
                 }
             }
+            if (mask != null) {
+                Box(Modifier.layoutId(TextFieldSlot.Mask)) {
+                    ProvideContentColorTextStyle(colors.placeholderColor(enabled, isError, focused), slotStyle, mask)
+                }
+            }
             Box(Modifier.layoutId(TextFieldSlot.Text), propagateMinConstraints = true) {
                 innerTextField()
             }
@@ -415,7 +430,7 @@ private fun ProvideContentColorTextStyle(
     )
 }
 
-private fun Modifier.textFieldContainer(
+internal fun Modifier.textFieldContainer(
     shape: Shape,
     color: State<Color>,
     indicatorColor: State<Color>,
@@ -428,8 +443,9 @@ private fun Modifier.textFieldContainer(
         layoutDirection,
         this,
     )
-    onDrawBehind {
+    onDrawWithContent {
         drawOutline(outline, color.value)
+        drawContent()
         translate(thickness / 2, thickness / 2) {
             drawOutline(indicatorOutline, indicatorColor.value, style = Stroke(thickness))
         }
@@ -445,6 +461,7 @@ private enum class TextFieldSlot {
     Prefix,
     Suffix,
     Placeholder,
+    Mask,
     Text,
     Supporting,
 }
@@ -473,8 +490,10 @@ private class TextFieldMeasurePolicy(
         val textConstraints = constraints.copy(minHeight = 0).offset(horizontal = -occupied, vertical = -vertical)
         val text = measurables.measure(TextFieldSlot.Text, textConstraints)!!
         val placeholder = measurables.measure(TextFieldSlot.Placeholder, textConstraints.copy(minWidth = 0))
-        val contentHeight = maxOf(text.height, placeholder.heightOrZero, prefix.heightOrZero, suffix.heightOrZero)
-        val width = constraints.constrainWidth(occupied + maxOf(text.width, placeholder.widthOrZero))
+        val mask = measurables.measure(TextFieldSlot.Mask, textConstraints.copy(minWidth = 0))
+        val contentHeight =
+            maxOf(text.height, placeholder.heightOrZero, mask.heightOrZero, prefix.heightOrZero, suffix.heightOrZero)
+        val width = constraints.constrainWidth(occupied + maxOf(text.width, placeholder.widthOrZero, mask.widthOrZero))
         val height = maxOf(
             style.minHeight.roundToPx(),
             contentHeight + vertical,
@@ -502,6 +521,7 @@ private class TextFieldMeasurePolicy(
                 contentStart + prefix.widthOrZero,
                 contentTop + (contentHeight - placeholder.height) / 2,
             )
+            mask?.placeRelative(contentStart + prefix.widthOrZero, contentTop + (contentHeight - mask.height) / 2)
             text.placeRelative(contentStart + prefix.widthOrZero, contentTop)
             suffix?.placeRelative(width - trailing.widthOrZero - end.roundToPx() - suffix.width, contentTop)
             supporting?.placeRelative(0, containerTop + height)
@@ -563,6 +583,7 @@ fun interface TextFieldStyle : ComponentStyle<TextFieldStyleScope> {
             minWidth(280.dp)
             minHeight(50.dp)
             shape(theme.shapes.medium)
+            containerColor(theme.colors.surfaceContainerHighest)
             contentPadding(PaddingValues(horizontal = 16.dp, vertical = 12.dp))
             textStyle(theme.typography.bodyLarge.merge(fontSize = 17.sp))
             placeholderTextStyle(theme.typography.bodyLarge.merge(fontSize = 17.sp))
@@ -629,6 +650,9 @@ class TextFieldStyleScope(
         private set
 
     var shape: Shape = RectangleShape
+        private set
+
+    var containerColor: Color = Color.Unspecified
         private set
 
     var contentPadding: PaddingValues = PaddingValues()
@@ -701,6 +725,10 @@ class TextFieldStyleScope(
 
     fun shape(shape: Shape) {
         this.shape = shape
+    }
+
+    fun containerColor(color: Color) {
+        containerColor = color
     }
 
     fun contentPadding(padding: PaddingValues) {
