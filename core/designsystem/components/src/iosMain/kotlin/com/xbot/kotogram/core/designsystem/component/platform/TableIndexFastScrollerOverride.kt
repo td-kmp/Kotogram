@@ -9,10 +9,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.component.FastScrollerOverride
 import com.xbot.kotogram.core.designsystem.component.FastScrollerOverrideScope
-import com.xbot.kotogram.core.designsystem.component.SectionIndexStyle
-import com.xbot.kotogram.core.designsystem.component.SectionIndexStyleScope
 import com.xbot.kotogram.core.designsystem.extensions.toUIColor
-import com.xbot.kotogram.core.designsystem.style.rememberStyle
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.convert
 import kotlinx.coroutines.launch
@@ -33,7 +30,6 @@ internal object TableIndexFastScrollerOverride : FastScrollerOverride {
     @OptIn(ExperimentalForeignApi::class)
     @Composable
     override fun FastScrollerOverrideScope.FastScroller() {
-        val style = rememberStyle(::SectionIndexStyleScope, SectionIndexStyle.Default)
         val scope = rememberCoroutineScope()
         val currentSections by rememberUpdatedState(sections)
         val currentState by rememberUpdatedState(state)
@@ -45,7 +41,7 @@ internal object TableIndexFastScrollerOverride : FastScrollerOverride {
             }
         }
         val titles = remember(sections) { sections.map { it.title } }
-        val tint = style.textStyle.color.toUIColor()
+        val tint = style.indexColor.toUIColor()
         OverlayView(
             factory = {
                 UITableView(CGRectMake(0.0, 0.0, 0.0, 0.0), UITableViewStyle.UITableViewStylePlain).also { table ->

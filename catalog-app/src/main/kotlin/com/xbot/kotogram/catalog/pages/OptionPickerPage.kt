@@ -21,8 +21,9 @@ internal val OptionPickerPage = CatalogPage(
     description = "One of many. On a laptop a menu, AppKit's on macOS. On iOS UIKit's own table in a page sheet, as " +
         "Telegram for iOS's country list: inset grouped sections, the system's bar, index and search. On other " +
         "touch screens a sheet made of the design system's parts: BottomSheet, TopBar with a button to close " +
-        "it, SearchField and ListItem rows under sticky section headers, with the platform's FastScroller. The " +
-        "selected option opens in sight with a check; a search lists the matches alone, the match in semibold.",
+        "it, SearchField and ListItem rows under sticky section headers, with FastScroller over its sections " +
+        "and ScrollIndicator over a search's matches. The selected option opens in sight with a check; a search " +
+        "lists the matches alone, the match in semibold.",
     examples = listOf(CatalogExample("A country, as at sign-in") { CountryPicker() }),
 )
 

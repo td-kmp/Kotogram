@@ -191,15 +191,14 @@ private fun <T> BottomSheetScope.OptionSheetContent(
             scrollBehavior = scrollBehavior,
             style = barStyle,
         )
+        val scrollerModifier = Modifier
+            .align(Alignment.CenterEnd)
+            .fillMaxHeight()
+            .padding(top = barHeight, bottom = style.bottomSearchSpace)
         if (indexed) {
-            FastScroller(
-                state = listState,
-                sections = scrollerSections,
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .fillMaxHeight()
-                    .padding(top = barHeight, bottom = style.bottomSearchSpace),
-            )
+            FastScroller(listState, scrollerSections, scrollerModifier)
+        } else {
+            ScrollIndicator(listState, scrollerModifier)
         }
         SearchField(
             state = query,

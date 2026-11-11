@@ -120,6 +120,7 @@ Compose:
       - LocalNavigator
       - LocalProgressIndicatorOverride
       - LocalProminentButtonOverride
+      - LocalScrollIndicatorOverride
       - LocalSearchFieldOverride
       - LocalSharedViewModelStoreOwner
       - LocalSwitchOverride

@@ -9,6 +9,7 @@ import com.xbot.kotogram.core.designsystem.component.LocalGlassIconButtonOverrid
 import com.xbot.kotogram.core.designsystem.component.LocalMenuOverride
 import com.xbot.kotogram.core.designsystem.component.LocalProgressIndicatorOverride
 import com.xbot.kotogram.core.designsystem.component.LocalProminentButtonOverride
+import com.xbot.kotogram.core.designsystem.component.LocalScrollIndicatorOverride
 import com.xbot.kotogram.core.designsystem.component.LocalSwitchOverride
 import com.xbot.kotogram.core.designsystem.component.LocalTopBarOverride
 import com.xbot.kotogram.core.designsystem.theme.currentPlatform
@@ -22,6 +23,7 @@ internal actual fun platformComponentOverrides(): Array<ProvidedValue<*>> {
         LocalMenuOverride provides MacPopUpMenuOverride,
         LocalSwitchOverride provides MacSwitchOverride,
         LocalCheckboxOverride provides MacCheckboxOverride,
+        LocalScrollIndicatorOverride provides MacScrollIndicatorOverride,
         LocalTopBarOverride provides AppleTopBarOverride,
         if (hasGlassButtons) LocalProminentButtonOverride provides MacGlassProminentButtonOverride else null,
         if (hasGlassButtons) LocalGlassIconButtonOverride provides MacGlassIconButtonOverride else null,

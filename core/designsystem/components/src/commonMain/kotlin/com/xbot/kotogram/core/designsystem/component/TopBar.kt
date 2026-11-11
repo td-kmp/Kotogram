@@ -13,14 +13,12 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ProvidableCompositionLocal
@@ -38,7 +36,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.MeasurePolicy
@@ -92,10 +89,7 @@ fun TopBar(
 }
 
 @Stable
-class TopBarScrollBehavior
-@OptIn(ExperimentalMaterial3Api::class)
-internal constructor(
-    internal val material: TopAppBarScrollBehavior,
+class TopBarScrollBehavior internal constructor(
     internal val haze: HazeState,
     private val content: ScrollableState,
 ) {
@@ -103,18 +97,13 @@ internal constructor(
         get() = content.canScrollBackward
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun rememberTopBarScrollBehavior(content: ScrollableState): TopBarScrollBehavior {
-    val material = TopAppBarDefaults.pinnedScrollBehavior()
     val haze = rememberHazeState()
-    return remember(material, haze, content) { TopBarScrollBehavior(material, haze, content) }
+    return remember(haze, content) { TopBarScrollBehavior(haze, content) }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-fun Modifier.topBarScrollSource(behavior: TopBarScrollBehavior): Modifier =
-    nestedScroll(behavior.material.nestedScrollConnection)
-        .then(if (currentPlatform.isApple) Modifier.hazeSource(behavior.haze) else Modifier)
+fun Modifier.topBarScrollSource(behavior: TopBarScrollBehavior): Modifier = hazeSource(behavior.haze)
 
 internal interface TopBarOverride {
     @Composable
@@ -133,12 +122,12 @@ internal class TopBarOverrideScope(
 )
 
 internal object DefaultTopBarOverride : TopBarOverride {
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun TopBarOverrideScope.TopBar() {
+        val containerColor = if (scrollBehavior == null) style.containerColor else Color.Transparent
         val colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = style.containerColor,
-            scrolledContainerColor = style.scrolledContainerColor,
+            containerColor = containerColor,
+            scrolledContainerColor = containerColor,
             navigationIconContentColor = style.contentColor,
             titleContentColor = style.contentColor,
             actionIconContentColor = style.contentColor,
@@ -152,34 +141,33 @@ internal object DefaultTopBarOverride : TopBarOverride {
                 content = actions,
             )
         }
-        if (style.centeredTitle) {
-            CenterAlignedTopAppBar(
-                title = barTitle,
-                modifier = modifier,
-                navigationIcon = barNavigation,
-                actions = barActions,
-                expandedHeight = style.minHeight,
-                windowInsets = windowInsets,
-                colors = colors,
-                scrollBehavior = scrollBehavior?.material,
-            )
-        } else {
-            TopAppBar(
-                title = barTitle,
-                modifier = modifier,
-                navigationIcon = barNavigation,
-                actions = barActions,
-                expandedHeight = style.minHeight,
-                windowInsets = windowInsets,
-                colors = colors,
-                scrollBehavior = scrollBehavior?.material,
-            )
+        val insetTop = windowInsets.getTop(LocalDensity.current)
+        Box(modifier) {
+            scrollBehavior?.let { ScrollEdgeEffect(it, style, insetTop, Modifier.matchParentSize()) }
+            if (style.centeredTitle) {
+                CenterAlignedTopAppBar(
+                    title = barTitle,
+                    navigationIcon = barNavigation,
+                    actions = barActions,
+                    expandedHeight = style.minHeight,
+                    windowInsets = windowInsets,
+                    colors = colors,
+                )
+            } else {
+                TopAppBar(
+                    title = barTitle,
+                    navigationIcon = barNavigation,
+                    actions = barActions,
+                    expandedHeight = style.minHeight,
+                    windowInsets = windowInsets,
+                    colors = colors,
+                )
+            }
         }
     }
 }
 
 internal object AppleTopBarOverride : TopBarOverride {
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun TopBarOverrideScope.TopBar() {
         val measurePolicy = remember(style) { TopBarMeasurePolicy(style) }
@@ -228,6 +216,7 @@ private fun ScrollEdgeEffect(
     val falloffStart = insetTop - with(LocalDensity.current) { style.edgeBlurLead.roundToPx() }
     val blur = remember(style, falloffStart) {
         HazeBlurStyle {
+            blurEnabled(true)
             blurRadius(style.edgeBlurRadius)
             noiseFactor(0f)
             backgroundColor(style.containerColor)
@@ -360,7 +349,6 @@ fun interface TopBarStyle : ComponentStyle<TopBarStyleScope> {
             titleGap(8.dp)
             actionGap(8.dp)
             containerColor(theme.colors.surface)
-            scrolledContainerColor(theme.colors.surfaceContainer)
             contentColor(theme.colors.onSurface)
             titleTextStyle(
                 if (apple) {
@@ -432,9 +420,6 @@ class TopBarStyleScope(
     var containerColor: Color = Color.Unspecified
         private set
 
-    var scrolledContainerColor: Color = Color.Unspecified
-        private set
-
     var contentColor: Color = Color.Unspecified
         private set
 
@@ -482,10 +467,6 @@ class TopBarStyleScope(
 
     fun containerColor(color: Color) {
         containerColor = color
-    }
-
-    fun scrolledContainerColor(color: Color) {
-        scrolledContainerColor = color
     }
 
     fun contentColor(color: Color) {

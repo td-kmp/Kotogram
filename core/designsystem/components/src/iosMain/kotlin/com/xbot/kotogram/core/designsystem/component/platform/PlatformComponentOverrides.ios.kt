@@ -8,6 +8,7 @@ import com.xbot.kotogram.core.designsystem.component.LocalFastScrollerOverride
 import com.xbot.kotogram.core.designsystem.component.LocalGlassIconButtonOverride
 import com.xbot.kotogram.core.designsystem.component.LocalProgressIndicatorOverride
 import com.xbot.kotogram.core.designsystem.component.LocalProminentButtonOverride
+import com.xbot.kotogram.core.designsystem.component.LocalScrollIndicatorOverride
 import com.xbot.kotogram.core.designsystem.component.LocalSearchFieldOverride
 import com.xbot.kotogram.core.designsystem.component.LocalSwitchOverride
 import com.xbot.kotogram.core.designsystem.component.LocalTopBarOverride
@@ -17,6 +18,7 @@ internal actual fun platformComponentOverrides(): Array<ProvidedValue<*>> = list
     LocalProgressIndicatorOverride provides ActivityIndicatorOverride,
     LocalBottomSheetOverride provides PageSheetOverride,
     LocalFastScrollerOverride provides TableIndexFastScrollerOverride,
+    LocalScrollIndicatorOverride provides IosScrollIndicatorOverride,
     LocalSwitchOverride provides IosSwitchOverride,
     LocalTopBarOverride provides AppleTopBarOverride,
     if (hasLiquidGlass) LocalProminentButtonOverride provides GlassProminentButtonOverride else null,
