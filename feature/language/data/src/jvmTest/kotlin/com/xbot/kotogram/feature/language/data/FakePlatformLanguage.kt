@@ -8,9 +8,9 @@ internal class FakePlatformLanguage(
 ) : PlatformLanguage {
     override val languagePackId = MutableStateFlow(chosenInSystem)
 
-    val set = mutableListOf<String>()
+    val synced = mutableListOf<String>()
 
-    override suspend fun set(languagePackId: String) {
-        set += languagePackId
+    override fun sync(languagePackId: String) {
+        synced += languagePackId
     }
 }

@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -60,12 +61,12 @@ internal class DefaultLanguageRepository(
     init {
         appScope.launch {
             mutex.withLock { restore() }
-            platform?.languagePackId?.collect { chosenInSystem -> if (chosenInSystem != null) follow(chosenInSystem) }
+            platform?.languagePackId?.filterNotNull()?.collect(::follow)
         }
     }
 
     override suspend fun apply(languagePackId: String): Either<LanguageError, Unit> = appScope.async {
-        mutex.withLock { switchTo(languagePackId) }.onRight { platform?.set(languagePackId) }
+        mutex.withLock { switchTo(languagePackId) }.onRight { platform?.sync(chosenLanguagePackId()) }
     }.await()
 
     suspend fun onStringsChanged(update: UpdateLanguagePackStrings) {
@@ -98,10 +99,11 @@ internal class DefaultLanguageRepository(
     }
 
     private suspend fun follow(languagePackId: String) {
-        mutex.withLock {
-            if (languagePackId != (chosen.value?.id ?: BUNDLED_LANGUAGE_PACK_ID)) switchTo(languagePackId)
-        }
+        val followed = mutex.withLock { languagePackId == chosenLanguagePackId() || switchTo(languagePackId).isRight() }
+        if (followed) platform?.sync(chosenLanguagePackId())
     }
+
+    private fun chosenLanguagePackId(): String = chosen.value?.id ?: BUNDLED_LANGUAGE_PACK_ID
 
     private suspend fun switchTo(languagePackId: String): Either<LanguageError, Unit> = either {
         if (languagePackId == BUNDLED_LANGUAGE_PACK_ID) {

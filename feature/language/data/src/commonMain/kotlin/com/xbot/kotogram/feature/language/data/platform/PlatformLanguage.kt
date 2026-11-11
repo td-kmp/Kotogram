@@ -5,5 +5,5 @@ import kotlinx.coroutines.flow.Flow
 internal interface PlatformLanguage {
     val languagePackId: Flow<String?>
 
-    suspend fun set(languagePackId: String)
+    fun sync(languagePackId: String)
 }

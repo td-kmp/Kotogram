@@ -2,23 +2,30 @@ package com.xbot.kotogram.feature.language.data.platform
 
 import com.xbot.kotogram.feature.language.data.languagePackIdOf
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flow
 import platform.Foundation.NSBundle
 import platform.Foundation.NSUserDefaults
 
 internal class IosPlatformLanguage : PlatformLanguage {
-    override val languagePackId: Flow<String?> = flowOf(read())
+    private val defaults = NSUserDefaults.standardUserDefaults
 
-    // Workaround: iOS lets only the user choose an app's language, in Settings, so a choice made in the app stays here.
-    override suspend fun set(languagePackId: String) = Unit
+    override val languagePackId: Flow<String?> = flow { emit(changedLanguagePackId()) }
 
-    private fun read(): String? {
-        val bundleId = NSBundle.mainBundle.bundleIdentifier ?: return null
-        val chosen = NSUserDefaults.standardUserDefaults.persistentDomainForName(bundleId)?.get(APP_LANGUAGES)
-        return (chosen as? List<*>)?.filterIsInstance<String>()?.takeIf { it.isNotEmpty() }?.let(::languagePackIdOf)
+    override fun sync(languagePackId: String) {
+        defaults.setObject(localization(), forKey = SYNCED_LOCALIZATION)
     }
 
+    // Workaround: the app can't set its language on iOS, so only a change since the last sync is followed.
+    private fun changedLanguagePackId(): String? {
+        val current = localization() ?: return null
+        val synced = defaults.stringForKey(SYNCED_LOCALIZATION)
+        if (synced == null) defaults.setObject(current, forKey = SYNCED_LOCALIZATION)
+        return current.takeIf { synced != null && it != synced }?.let(::languagePackIdOf)
+    }
+
+    private fun localization(): String? = NSBundle.mainBundle.preferredLocalizations.firstOrNull() as? String
+
     private companion object {
-        const val APP_LANGUAGES = "AppleLanguages"
+        const val SYNCED_LOCALIZATION = "syncedLocalization"
     }
 }

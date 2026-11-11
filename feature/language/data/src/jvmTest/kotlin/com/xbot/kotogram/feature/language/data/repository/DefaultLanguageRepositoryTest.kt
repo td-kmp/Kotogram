@@ -186,11 +186,23 @@ class DefaultLanguageRepositoryTest {
     @Test
     fun theSystemsChoiceThatIsAlreadyStoredIsNotFetchedAgain() = runTest {
         store.saved = russian
-        val repository = repository(FakePlatformLanguage("ru"))
+        val platform = FakePlatformLanguage("ru")
+        val repository = repository(platform)
         runCurrent()
 
         assertEquals("а", loaded(repository).texts()["A"])
         assertEquals(0, client.requests.count { it is GetLanguagePackInfo })
+        assertEquals(listOf("ru"), platform.synced)
+    }
+
+    @Test
+    fun aFollowedChoiceIsSyncedBack() = runTest {
+        val platform = FakePlatformLanguage("ru")
+        val repository = repository(platform)
+        runCurrent()
+
+        assertEquals("а", loaded(repository).texts()["A"])
+        assertEquals(listOf("ru"), platform.synced)
     }
 
     @Test
@@ -224,12 +236,14 @@ class DefaultLanguageRepositoryTest {
     }
 
     @Test
-    fun aLanguageOfTheSystemWithoutAPackLeavesTheLanguage() = runTest {
-        val repository = repository(FakePlatformLanguage("de"))
+    fun aLanguageOfTheSystemWithoutAPackLeavesTheLanguageAndIsNotSynced() = runTest {
+        val platform = FakePlatformLanguage("de")
+        val repository = repository(platform)
         runCurrent()
 
         assertEquals(LanguageState.Bundled, repository.state.value)
         assertNull(store.saved)
+        assertEquals(emptyList(), platform.synced)
     }
 
     @Test
@@ -241,7 +255,7 @@ class DefaultLanguageRepositoryTest {
         assertEquals(Unit, repository.apply("ru").getOrNull())
 
         assertEquals("б", loaded(repository).texts()["B"])
-        assertEquals(listOf("ru"), platform.set)
+        assertEquals(listOf("ru"), platform.synced)
     }
 
     @Test
@@ -252,7 +266,7 @@ class DefaultLanguageRepositoryTest {
 
         assertIs<LanguageError.Unknown>(repository.apply("de").leftOrNull())
 
-        assertEquals(emptyList(), platform.set)
+        assertEquals(emptyList(), platform.synced)
     }
 
     private fun loaded(repository: DefaultLanguageRepository): LanguagePack =

@@ -13,7 +13,6 @@ compose-material3 = "1.12.0-alpha03"
 
 # AndroidX
 androidx-activity = "1.13.0"
-androidx-appcompat = "1.8.0"
 androidx-core = "1.16.0"
 androidx-core-splashscreen = "1.2.0"
 
@@ -69,7 +68,6 @@ compose-resources = { group = "org.jetbrains.compose.components", name = "compon
 
 # AndroidX
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidx-activity" }
-androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
 androidx-core = { group = "androidx.core", name = "core", version.ref = "androidx-core" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "androidx-core-splashscreen" }
 

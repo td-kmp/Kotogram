@@ -77,7 +77,6 @@ dependencies {
     implementation(projects.shared)
     coreLibraryDesugaring(libs.android.desugar.jdk.libs)
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.koin.android)
