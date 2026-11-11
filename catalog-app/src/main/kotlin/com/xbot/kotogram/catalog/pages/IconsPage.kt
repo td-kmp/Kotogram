@@ -86,6 +86,44 @@ private val SettingsAndProfile = listOf(
     "Message" to KotogramIcons.Message,
 )
 
+private val ChatListRow = listOf(
+    "SpeakerOff" to KotogramIcons.SpeakerOff,
+    "PinFilled" to KotogramIcons.PinFilled,
+    "ForwardFilled" to KotogramIcons.ForwardFilled,
+    "MentionBadge" to KotogramIcons.MentionBadge,
+    "ReactionBadge" to KotogramIcons.ReactionBadge,
+    "VerifiedBadge" to KotogramIcons.VerifiedBadge,
+    "VerifiedCheck" to KotogramIcons.VerifiedCheck,
+    "MessageVoice" to KotogramIcons.MessageVoice,
+    "MessageAudio" to KotogramIcons.MessageAudio,
+    "MessageLocation" to KotogramIcons.MessageLocation,
+    "MessagePoll" to KotogramIcons.MessagePoll,
+    "MessageCallIncoming" to KotogramIcons.MessageCallIncoming,
+    "MessageCallOutgoing" to KotogramIcons.MessageCallOutgoing,
+    "ThumbnailPlay" to KotogramIcons.ThumbnailPlay,
+    "MessageVideoCallIncoming" to KotogramIcons.MessageVideoCallIncoming,
+    "MessageVideoCallOutgoing" to KotogramIcons.MessageVideoCallOutgoing,
+    "MessageStoryReply" to KotogramIcons.MessageStoryReply,
+    "MessageGift" to KotogramIcons.MessageGift,
+    "MessageTodo" to KotogramIcons.MessageTodo,
+    "MessageGame" to KotogramIcons.MessageGame,
+    "PollVotesBadge" to KotogramIcons.PollVotesBadge,
+    "PremiumStar" to KotogramIcons.PremiumStar,
+    "SecretLock" to KotogramIcons.SecretLock,
+    "GeneralTopic" to KotogramIcons.GeneralTopic,
+    "TopicArrow" to KotogramIcons.TopicArrow,
+    "TopicClosed" to KotogramIcons.TopicClosed,
+)
+
+private val Avatars = listOf(
+    "AvatarSavedMessages" to KotogramIcons.AvatarSavedMessages,
+    "AvatarReplies" to KotogramIcons.AvatarReplies,
+    "AvatarMyNotes" to KotogramIcons.AvatarMyNotes,
+    "AvatarAnonymous" to KotogramIcons.AvatarAnonymous,
+    "AvatarArchive" to KotogramIcons.AvatarArchive,
+    "AvatarDeleted" to KotogramIcons.AvatarDeleted,
+)
+
 private val AllIcons = Common + SignIn + ChatList + Chat + SettingsAndProfile
 
 internal val IconsPage = CatalogPage(
@@ -93,7 +131,8 @@ internal val IconsPage = CatalogPage(
     section = CatalogSection.Foundations,
     name = "Icons",
     description = "KotogramIcons: line icons drawn from lines, circles and arcs at Telegram for macOS's sizes and " +
-        "weights, in the middle of Compose's 24-dp canvas.",
+        "weights, in the middle of Compose's 24-dp canvas. The chat list row's icons are Telegram for iOS's, at " +
+        "their own sizes.",
     examples = listOf(
         CatalogExample("Common") { IconGrid(Common, 24.dp) },
         CatalogExample("Sign-in") { IconGrid(SignIn, 24.dp) },
@@ -101,20 +140,29 @@ internal val IconsPage = CatalogPage(
         CatalogExample("Chat") { IconGrid(Chat, 24.dp) },
         CatalogExample("Settings and profile") { IconGrid(SettingsAndProfile, 24.dp) },
         CatalogExample("At three times the size") { IconGrid(AllIcons, 72.dp) },
+        CatalogExample("Chat list row") { IconGrid(ChatListRow, cellWidth = WideCellWidth) },
+        CatalogExample("Avatars") { IconGrid(Avatars, cellWidth = WideCellWidth) },
+        CatalogExample("Chat list row at three times the size") {
+            IconGrid(ChatListRow, scale = 3f, cellWidth = WideCellWidth)
+        },
     ),
 )
 
 @Composable
 private fun IconGrid(
     icons: List<Pair<String, ImageVector>>,
-    size: Dp,
+    size: Dp = Dp.Unspecified,
+    scale: Float = 1f,
+    cellWidth: Dp = CellWidth,
 ) {
     val spacing = KotogramTheme.spacing
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(spacing.large),
         verticalArrangement = Arrangement.spacedBy(spacing.large),
     ) {
-        icons.forEach { (name, icon) -> IconSample(name, icon, size) }
+        icons.forEach { (name, icon) ->
+            IconSample(name, icon, if (size == Dp.Unspecified) icon.defaultWidth * scale else size, cellWidth)
+        }
     }
 }
 
@@ -123,9 +171,10 @@ private fun IconSample(
     name: String,
     icon: ImageVector,
     size: Dp,
+    cellWidth: Dp,
 ) {
     Column(
-        modifier = Modifier.width(maxOf(size, CellWidth)),
+        modifier = Modifier.width(maxOf(size, cellWidth)),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.extraSmall),
     ) {
@@ -135,3 +184,4 @@ private fun IconSample(
 }
 
 private val CellWidth = 80.dp
+private val WideCellWidth = 128.dp

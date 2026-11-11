@@ -26,6 +26,7 @@ internal fun CustomEmoji(
     sticker: Sticker?,
     fallback: String,
     modifier: Modifier = Modifier,
+    loops: Int = Int.MAX_VALUE,
 ) {
     when {
         sticker == null -> Text(fallback, modifier)
@@ -33,7 +34,7 @@ internal fun CustomEmoji(
         sticker.format is StickerFormatTgs -> LottieImage(
             sticker.sticker,
             modifier,
-            iterations = Int.MAX_VALUE,
+            iterations = loops,
         )
 
         sticker.format is StickerFormatWebp ->

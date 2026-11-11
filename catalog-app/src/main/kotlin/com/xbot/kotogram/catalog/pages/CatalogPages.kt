@@ -19,6 +19,7 @@ val CatalogPages: List<CatalogPage> = listOf(
     CodeFieldPage,
     PhoneNumberFieldPage,
     ListItemPage,
+    ChatListItemPage,
     FastScrollerPage,
     ScrollIndicatorPage,
     TopBarPage,

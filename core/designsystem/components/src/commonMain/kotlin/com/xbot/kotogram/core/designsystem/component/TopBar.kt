@@ -350,18 +350,7 @@ fun interface TopBarStyle : ComponentStyle<TopBarStyleScope> {
             actionGap(8.dp)
             containerColor(theme.colors.surface)
             contentColor(theme.colors.onSurface)
-            titleTextStyle(
-                if (apple) {
-                    theme.typography.bodyLarge.merge(
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = (-0.43).sp,
-                        color = theme.colors.onSurface,
-                    )
-                } else {
-                    theme.typography.titleLarge.merge(color = theme.colors.onSurface)
-                },
-            )
+            titleTextStyle(theme.typography.titleLarge.merge(color = theme.colors.onSurface))
             edgeBlurRadius(15.dp)
             edgeBlurLead(16.dp)
             edgeTintAlpha(if (theme.colors.surface.isDark()) 0.6f else 0.5f)
@@ -375,7 +364,6 @@ fun interface TopBarStyle : ComponentStyle<TopBarStyleScope> {
                 contentHeight(Dp.Unspecified)
                 if (currentPlatform.isApple) horizontalPadding(10.dp)
                 actionGap(4.dp)
-                titleTextStyle(theme.typography.titleMedium.merge(color = theme.colors.onSurface))
             }
         }
     }

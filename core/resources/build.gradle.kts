@@ -42,6 +42,7 @@ kotlin {
         api(libs.compose.ui)
         api(libs.tdlib.client)
         api(libs.kotlinx.coroutines.core)
+        implementation(libs.kotlinx.datetime)
         implementation(libs.compose.runtime)
     }
 

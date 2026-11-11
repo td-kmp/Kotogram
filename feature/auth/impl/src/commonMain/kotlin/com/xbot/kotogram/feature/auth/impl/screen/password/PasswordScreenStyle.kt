@@ -34,22 +34,19 @@ internal fun interface PasswordScreenStyle : ComponentStyle<PasswordScreenStyleS
             bottomActionInset(24.dp)
             infoWidth(Dp.Infinity)
             titleTextStyle(
-                theme.typography.bodyLarge.merge(
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.SemiBold,
+                theme.typography.headlineLarge.merge(
                     color = theme.colors.onSurface,
                     textAlign = TextAlign.Center,
                 ),
             )
             infoTextStyle(
                 theme.typography.bodyLarge.merge(
-                    fontSize = 17.sp,
                     color = theme.colors.onSurface,
                     textAlign = TextAlign.Center,
                 ),
             )
             errorTextStyle(
-                theme.typography.bodyMedium.merge(
+                theme.typography.bodySmall.merge(
                     color = theme.colors.error,
                     textAlign = TextAlign.Center,
                 ),
@@ -68,17 +65,8 @@ internal fun interface PasswordScreenStyle : ComponentStyle<PasswordScreenStyleS
                 beforeField(20.dp)
                 afterField(40.dp)
                 beforeLinks(20.dp)
-                titleTextStyle(
-                    theme.typography.bodyLarge.merge(
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = theme.colors.onSurface,
-                        textAlign = TextAlign.Center,
-                    ),
-                )
                 infoTextStyle(
                     theme.typography.bodyLarge.merge(
-                        fontSize = 13.5.sp,
                         color = theme.colors.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                     ),

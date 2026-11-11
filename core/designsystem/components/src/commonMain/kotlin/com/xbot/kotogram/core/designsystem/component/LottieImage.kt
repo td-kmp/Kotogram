@@ -78,12 +78,13 @@ private fun LottieImage(
     val dynamicProperties = rememberLottieDynamicProperties(colors) {
         colors.forEach { (keyPath, color) -> repaint(keyPath, color) }
     }
+    val properties = dynamicProperties.takeIf { colors.isNotEmpty() }
     Image(
-        painter = rememberLottiePainter(
-            composition = composition,
-            iterations = iterations,
-            dynamicProperties = dynamicProperties.takeIf { colors.isNotEmpty() },
-        ),
+        painter = if (iterations == 0) {
+            rememberLottiePainter(composition = composition, progress = { 0f }, dynamicProperties = properties)
+        } else {
+            rememberLottiePainter(composition = composition, iterations = iterations, dynamicProperties = properties)
+        },
         contentDescription = null,
         modifier = modifier,
     )

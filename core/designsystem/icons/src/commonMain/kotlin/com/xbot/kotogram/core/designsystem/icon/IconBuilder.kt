@@ -11,13 +11,16 @@ internal val Center = Offset(12f, 12f)
 
 internal fun icon(
     name: String,
+    canvas: Float = CANVAS,
+    width: Float = canvas,
+    height: Float = canvas,
     block: ImageVector.Builder.() -> Unit,
 ): ImageVector = ImageVector.Builder(
     name = "KotogramIcons.$name",
-    defaultWidth = CANVAS.dp,
-    defaultHeight = CANVAS.dp,
-    viewportWidth = CANVAS,
-    viewportHeight = CANVAS,
+    defaultWidth = width.dp,
+    defaultHeight = height.dp,
+    viewportWidth = width,
+    viewportHeight = height,
 ).apply(block).build()
 
 internal fun clip(block: PathBuilder.() -> Unit) = PathBuilder().apply(block).nodes

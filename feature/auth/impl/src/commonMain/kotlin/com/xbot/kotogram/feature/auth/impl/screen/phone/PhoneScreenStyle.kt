@@ -33,27 +33,24 @@ internal fun interface PhoneScreenStyle : ComponentStyle<PhoneScreenStyleScope> 
             bottomActionInset(24.dp)
             infoWidth(306.dp)
             titleTextStyle(
-                theme.typography.bodyLarge.merge(
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
+                theme.typography.headlineLargeEmphasized.merge(
                     color = theme.colors.onSurface,
                 ),
             )
             infoTextStyle(
                 theme.typography.bodyLarge.merge(
-                    fontSize = 17.sp,
                     color = theme.colors.onSurface,
                     textAlign = TextAlign.Center,
                 ),
             )
             errorTextStyle(
-                theme.typography.bodyMedium.merge(
+                theme.typography.bodySmall.merge(
                     color = theme.colors.error,
                     textAlign = TextAlign.Center,
                 ),
             )
             qrLoginTextStyle(
-                theme.typography.bodyLarge.merge(fontSize = 15.sp, fontWeight = FontWeight.Medium),
+                theme.typography.titleSmall,
             )
             errorFadeSpec(tween(200))
             landscapeHeight(480.dp)
@@ -67,22 +64,8 @@ internal fun interface PhoneScreenStyle : ComponentStyle<PhoneScreenStyleScope> 
                 beforeInfo(10.dp)
                 beforeField(20.dp)
                 infoWidth(Dp.Infinity)
-                qrLoginTextStyle(
-                    theme.typography.bodyLarge.merge(
-                        fontSize = 13.5.sp,
-                        fontWeight = FontWeight.Medium,
-                    ),
-                )
-                titleTextStyle(
-                    theme.typography.bodyLarge.merge(
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = theme.colors.onSurface,
-                    ),
-                )
                 infoTextStyle(
                     theme.typography.bodyLarge.merge(
-                        fontSize = 13.5.sp,
                         color = theme.colors.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                     ),

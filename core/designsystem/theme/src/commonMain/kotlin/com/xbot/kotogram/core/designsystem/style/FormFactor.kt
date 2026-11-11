@@ -1,12 +1,15 @@
 package com.xbot.kotogram.core.designsystem.style
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import com.xbot.kotogram.core.designsystem.indicationOverrides
 import com.xbot.kotogram.core.designsystem.media.LocalUiMediaScope
 import com.xbot.kotogram.core.designsystem.media.UiMediaScope
 import com.xbot.kotogram.core.designsystem.media.UiMediaScope.KeyboardKind
 import com.xbot.kotogram.core.designsystem.media.UiMediaScope.PointerPrecision
+import com.xbot.kotogram.core.designsystem.theme.rememberKotogramTypography
 
 @Composable
 fun ProvideFormFactor(
@@ -18,8 +21,15 @@ fun ProvideFormFactor(
     CompositionLocalProvider(
         LocalUiMediaScope provides formFactorScope,
         LocalMediaQueryInfo provides if (laptop) LaptopMediaQueryInfo else TouchMediaQueryInfo,
-        content = content,
-    )
+    ) {
+        MaterialTheme(
+            colorScheme = MaterialTheme.colorScheme,
+            typography = rememberKotogramTypography(laptop),
+            shapes = MaterialTheme.shapes,
+        ) {
+            CompositionLocalProvider(*indicationOverrides(), content = content)
+        }
+    }
 }
 
 private class FormFactorUiMediaScope(

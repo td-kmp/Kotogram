@@ -10,6 +10,7 @@ import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.KotogramTheme
+import com.xbot.kotogram.core.designsystem.component.MessageThumbnailType
 import com.xbot.kotogram.core.designsystem.media.LocalUiMediaScope
 import com.xbot.kotogram.core.designsystem.media.UiMediaScope
 import com.xbot.kotogram.core.designsystem.media.UiMediaScope.KeyboardKind
@@ -94,15 +95,23 @@ private fun ChatListRow.withPhoto(photo: ByteArray?) =
     copy(avatar = AvatarModel(null, photo, avatar.letters, avatar.colorIndex))
 
 private fun ChatListRow.withThumbnail(thumbnail: ByteArray?) = copy(
-    preview = (preview as? ChatPreview.Media)?.let { ChatPreview.Media(it.kind, it.text, thumbnail) } ?: preview,
+    preview = (preview as? ChatPreview.Message)?.takeIf { thumbnail != null }?.let {
+        ChatPreview.Message(
+            it.content,
+            it.icon,
+            listOf(ThumbnailModel(thumbnail, MessageThumbnailType.Photo, false)),
+            it.hideAuthor,
+        )
+    } ?: preview,
 )
 
 private fun ChatListRow.copy(
     avatar: AvatarModel = this.avatar,
     preview: ChatPreview = this.preview,
 ) = ChatListRow(
-    chatId, title, avatar, emojiStatusId, isMuted, isPinned, time, outgoing, unreadCount, hasUnreadMention,
-    isMarkedAsUnread, senderName, preview,
+    chatId, title, avatar, stories, avatarBadge, mark, emojiStatusId, botVerificationEmojiId, isSecret,
+    isDirectMessages, isMuted, isPinned, date, status, unreadCount, hasUnreadMention, hasUnreadReaction,
+    hasUnreadPollVotes, isMarkedAsUnread, author, preview, typing, topics, tags, hasOpenAppButton,
 )
 
 private fun photo(argb: Long): ByteArray {

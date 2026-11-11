@@ -227,10 +227,9 @@ fun interface PhoneNumberFieldStyle : ComponentStyle<PhoneNumberFieldStyleScope>
             separatorColor(theme.colors.outline.copy(alpha = 0.12f))
             hintColor(theme.colors.onSurfaceVariant)
             chevronSize(24.dp)
-            countryTextStyle(theme.typography.bodyLarge.merge(fontSize = 17.sp, color = theme.colors.onSurface))
+            countryTextStyle(theme.typography.bodyLarge.merge(color = theme.colors.onSurface))
             numberTextStyle(
                 theme.typography.bodyLarge.merge(
-                    fontSize = 17.sp,
                     fontFamily = FontFamily.Monospace,
                     color = theme.colors.onSurface,
                 ),
@@ -246,13 +245,6 @@ fun interface PhoneNumberFieldStyle : ComponentStyle<PhoneNumberFieldStyleScope>
                 minRowHeight(40.dp)
                 contentPadding(PaddingValues(theme.spacing.small))
                 chevronSize(20.dp)
-                countryTextStyle(theme.typography.bodyLarge.merge(color = theme.colors.onSurface))
-                numberTextStyle(
-                    theme.typography.bodyLarge.merge(
-                        fontFamily = FontFamily.Monospace,
-                        color = theme.colors.onSurface,
-                    ),
-                )
                 focusedIndicatorColor(Color.Transparent)
                 errorIndicatorColor(Color.Transparent)
             }

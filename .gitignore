@@ -37,3 +37,6 @@ android-app/keystore.properties
 
 # JVM crash logs
 hs_err_pid*.log
+
+# Local pixel references cut from the developer's own screenshots: personal, never committed
+catalog-app/references/

@@ -181,7 +181,7 @@ fun interface ButtonStyle : ComponentStyle<ButtonStyleScope> {
             contentColor(theme.colors.onPrimary)
             disabledContainerColor(theme.colors.onSurface.copy(alpha = 0.1f))
             disabledContentColor(theme.colors.onSurfaceVariant.copy(alpha = 0.38f))
-            textStyle(theme.typography.labelLarge.merge(fontSize = 17.sp, fontWeight = FontWeight.SemiBold))
+            textStyle(theme.typography.labelLarge)
             progressSize(22.dp)
             ripple(true)
         }
@@ -190,7 +190,6 @@ fun interface ButtonStyle : ComponentStyle<ButtonStyleScope> {
             laptop {
                 minHeight(36.dp)
                 contentPadding(PaddingValues(horizontal = 15.dp, vertical = 6.dp))
-                textStyle(theme.typography.labelLarge)
                 progressSize(18.dp)
             }
         }
@@ -221,7 +220,7 @@ fun interface TextButtonStyle : ComponentStyle<ButtonStyleScope> {
             contentColor(theme.colors.primary)
             disabledContainerColor(Color.Transparent)
             disabledContentColor(theme.colors.onSurfaceVariant.copy(alpha = 0.38f))
-            textStyle(theme.typography.bodyLarge.merge(fontSize = 16.sp))
+            textStyle(theme.typography.bodyLarge)
             progressSize(22.dp)
             ripple(true)
         }
@@ -230,7 +229,6 @@ fun interface TextButtonStyle : ComponentStyle<ButtonStyleScope> {
             laptop {
                 minHeight(36.dp)
                 contentPadding(PaddingValues(horizontal = 10.dp, vertical = 6.dp))
-                textStyle(theme.typography.bodyLarge)
                 progressSize(18.dp)
             }
         }

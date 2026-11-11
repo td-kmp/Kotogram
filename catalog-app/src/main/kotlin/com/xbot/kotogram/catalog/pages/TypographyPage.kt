@@ -20,22 +20,28 @@ internal val TypographyPage = CatalogPage(
     id = "typography",
     section = CatalogSection.Foundations,
     name = "Typography",
-    description = "Telegram for macOS's sizes in Material 3's roles. Apple platforms draw them in the system's " +
-        "SF Pro; Android, the web, Windows and Linux in Inter.",
+    description = "Two scales in Material 3's roles, switched by the theme: Telegram for iOS's sizes on touch " +
+        "screens, Telegram for macOS's on laptops (toggle Mobile). Each role carries SF Pro's tracking for its " +
+        "size. Apple platforms draw them in SF Pro; Android, the web, Windows and Linux in Inter.",
     examples = listOf(
         CatalogExample("Roles") {
             val typography = KotogramTheme.typography
             TypeScale(
+                "headlineLarge" to typography.headlineLarge,
+                "headlineLargeEmphasized" to typography.headlineLargeEmphasized,
+                "headlineMedium" to typography.headlineMedium,
                 "headlineSmall" to typography.headlineSmall,
                 "titleLarge" to typography.titleLarge,
                 "titleMedium" to typography.titleMedium,
                 "titleSmall" to typography.titleSmall,
                 "bodyLarge" to typography.bodyLarge,
+                "bodyLargeEmphasized" to typography.bodyLargeEmphasized,
                 "bodyMedium" to typography.bodyMedium,
                 "bodySmall" to typography.bodySmall,
                 "labelLarge" to typography.labelLarge,
                 "labelMedium" to typography.labelMedium,
                 "labelSmall" to typography.labelSmall,
+                "labelSmallEmphasized" to typography.labelSmallEmphasized,
             )
         },
         CatalogExample("Weights") {
@@ -55,14 +61,12 @@ internal val TypographyPage = CatalogPage(
                 style = KotogramTheme.typography.bodyLarge,
             )
         },
-        CatalogExample("Material 3's large roles, not used by macOS") {
+        CatalogExample("Material 3's display roles") {
             val typography = KotogramTheme.typography
             TypeScale(
                 "displayLarge" to typography.displayLarge,
                 "displayMedium" to typography.displayMedium,
                 "displaySmall" to typography.displaySmall,
-                "headlineLarge" to typography.headlineLarge,
-                "headlineMedium" to typography.headlineMedium,
                 sample = "Telegram",
             )
         },
@@ -79,7 +83,7 @@ private fun TypeScale(
         roles.forEach { (name, style) ->
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "$name · ${style.fontSize.value.toInt()} ${weightName(style.fontWeight)}",
+                    text = "$name · ${size(style.fontSize.value)} ${weightName(style.fontWeight)}",
                     style = KotogramTheme.typography.bodySmall,
                     color = KotogramTheme.colors.onSurfaceVariant,
                     modifier = Modifier.width(LabelWidth),
@@ -90,6 +94,8 @@ private fun TypeScale(
     }
 }
 
+private fun size(value: Float): String = if (value % 1f == 0f) value.toInt().toString() else value.toString()
+
 private fun weightName(weight: FontWeight?): String = when (weight) {
     FontWeight.Medium -> "medium"
     FontWeight.SemiBold -> "semibold"
@@ -98,4 +104,4 @@ private fun weightName(weight: FontWeight?): String = when (weight) {
 }
 
 private const val SAMPLE = "Sign in to Telegram"
-private val LabelWidth = 190.dp
+private val LabelWidth = 250.dp

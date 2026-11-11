@@ -30,7 +30,7 @@ class CatalogScreenshotTest(
     private val fontScale: Float,
     private val laptop: Boolean,
 ) {
-    private val windowHeight = if (screen == HOME) HOME_HEIGHT else PAGE_HEIGHT
+    private val windowHeight = if (screen == HOME) HOME_HEIGHT else TALL_SCREENS[screen] ?: PAGE_HEIGHT
     private val scaleSuffix = if (fontScale == 1f) "" else "_font${fontScale.toInt()}x"
     private val formFactorSuffix = if (laptop) "" else "_mobile"
 
@@ -84,7 +84,8 @@ private const val HOME = "home"
 private const val HOME_TITLE = "Kotogram design system"
 private val FIELD_SCREENS =
     listOf("text-field", "secure-text-field", "search-field", "code-field", "phone-number-field")
-private val TOUCH_SCREENS = FIELD_SCREENS + listOf("icon-button", "checkbox", "switch", "top-bar")
+private val TOUCH_SCREENS =
+    FIELD_SCREENS + listOf("icon-button", "checkbox", "switch", "top-bar", "chat-list-item", "typography")
 
 private val MOVING_SCREENS = setOf("transitions")
 private const val LARGE_FONT_SCALE = 2f
@@ -92,5 +93,6 @@ private const val SCREEN_TAG = "catalog-screen"
 private const val WIDTH = 900
 private const val HOME_HEIGHT = 520
 private const val PAGE_HEIGHT = 3000
+private val TALL_SCREENS = mapOf("chat-list-item" to 7600)
 private const val SETTLE_MILLIS = 6_000L
 private const val CHANGE_THRESHOLD = 0.01f

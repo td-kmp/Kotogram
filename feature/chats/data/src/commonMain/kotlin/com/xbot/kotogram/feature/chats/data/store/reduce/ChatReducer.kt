@@ -2,21 +2,31 @@ package com.xbot.kotogram.feature.chats.data.store.reduce
 
 import com.xbot.kotogram.feature.chats.data.store.ChatsState
 import io.xbot.tdlib.api.Chat
+import io.xbot.tdlib.api.Message
 import io.xbot.tdlib.api.Update
 import io.xbot.tdlib.api.UpdateChatAccentColors
+import io.xbot.tdlib.api.UpdateChatAddedToList
 import io.xbot.tdlib.api.UpdateChatDraftMessage
 import io.xbot.tdlib.api.UpdateChatEmojiStatus
 import io.xbot.tdlib.api.UpdateChatIsMarkedAsUnread
 import io.xbot.tdlib.api.UpdateChatLastMessage
+import io.xbot.tdlib.api.UpdateChatMessageAutoDeleteTime
 import io.xbot.tdlib.api.UpdateChatNotificationSettings
 import io.xbot.tdlib.api.UpdateChatPhoto
 import io.xbot.tdlib.api.UpdateChatPosition
 import io.xbot.tdlib.api.UpdateChatReadInbox
 import io.xbot.tdlib.api.UpdateChatReadOutbox
+import io.xbot.tdlib.api.UpdateChatRemovedFromList
 import io.xbot.tdlib.api.UpdateChatTitle
 import io.xbot.tdlib.api.UpdateChatUnreadMentionCount
+import io.xbot.tdlib.api.UpdateChatUnreadPollVoteCount
 import io.xbot.tdlib.api.UpdateChatUnreadReactionCount
+import io.xbot.tdlib.api.UpdateChatVideoChat
+import io.xbot.tdlib.api.UpdateChatViewAsTopics
+import io.xbot.tdlib.api.UpdateMessageContent
 import io.xbot.tdlib.api.UpdateMessageMentionRead
+import io.xbot.tdlib.api.UpdateMessageSendFailed
+import io.xbot.tdlib.api.UpdateMessageSendSucceeded
 import io.xbot.tdlib.api.UpdateMessageUnreadReactions
 import io.xbot.tdlib.api.UpdateNewChat
 
@@ -60,6 +70,51 @@ internal object ChatReducer : Reducer {
         else -> state.reduceReadState(update)
     }
 
+    private fun ChatsState.reduceDetails(update: Update): ChatsState = when (update) {
+        is UpdateChatVideoChat -> changeChat(update.chatId) { it.copy(videoChat = update.videoChat) }
+
+        is UpdateChatMessageAutoDeleteTime -> changeChat(update.chatId) {
+            it.copy(messageAutoDeleteTime = update.messageAutoDeleteTime)
+        }
+
+        is UpdateChatUnreadPollVoteCount -> changeChat(update.chatId) {
+            it.copy(unreadPollVoteCount = update.unreadPollVoteCount)
+        }
+
+        is UpdateChatViewAsTopics -> changeChat(update.chatId) { it.copy(viewAsTopics = update.viewAsTopics) }
+
+        is UpdateChatAddedToList -> changeChat(update.chatId) {
+            it.copy(chatLists = it.chatLists.filter { list -> list != update.chatList } + update.chatList)
+        }
+
+        is UpdateChatRemovedFromList -> changeChat(update.chatId) {
+            it.copy(chatLists = it.chatLists.filter { list -> list != update.chatList })
+        }
+
+        else -> reduceLastMessage(update)
+    }
+
+    private fun ChatsState.reduceLastMessage(update: Update): ChatsState = when (update) {
+        is UpdateMessageContent -> changeChat(update.chatId) { chat ->
+            val last = chat.lastMessage
+            if (last?.id == update.messageId) chat.copy(lastMessage = last.copy(content = update.newContent)) else chat
+        }
+
+        is UpdateMessageSendSucceeded -> replaceLast(update.message.chatId, update.oldMessageId, update.message)
+
+        is UpdateMessageSendFailed -> replaceLast(update.message.chatId, update.oldMessageId, update.message)
+
+        else -> this
+    }
+
+    private fun ChatsState.replaceLast(
+        chatId: Long,
+        oldMessageId: Long,
+        message: Message,
+    ): ChatsState = changeChat(chatId) { chat ->
+        if (chat.lastMessage?.id == oldMessageId) chat.copy(lastMessage = message) else chat
+    }
+
     private fun ChatsState.reduceReadState(update: Update): ChatsState = when (update) {
         is UpdateChatReadInbox -> changeChat(update.chatId) {
             it.copy(
@@ -92,7 +147,7 @@ internal object ChatReducer : Reducer {
             it.copy(isMarkedAsUnread = update.isMarkedAsUnread)
         }
 
-        else -> this
+        else -> reduceDetails(update)
     }
 
     private inline fun ChatsState.changeChat(

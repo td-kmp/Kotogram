@@ -32,19 +32,20 @@ import com.xbot.kotogram.core.designsystem.theme.rememberKotogramTypography
 @Composable
 fun KotogramTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colorScheme = kotogramColorScheme(darkTheme, dynamicColor)
     val spacing = remember { KotogramSpacing() }
+    val mediaQueryInfo = platformMediaQueryInfo()
     CompositionLocalProvider(
         LocalKotogramSpacing provides spacing,
         LocalUiMediaScope provides platformUiMediaScope(),
-        LocalMediaQueryInfo provides platformMediaQueryInfo(),
+        LocalMediaQueryInfo provides mediaQueryInfo,
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
-            typography = rememberKotogramTypography(),
+            typography = rememberKotogramTypography(laptop = mediaQueryInfo.isLaptop),
             shapes = KotogramShapes,
         ) {
             CompositionLocalProvider(*indicationOverrides(), content = content)
@@ -52,7 +53,7 @@ fun KotogramTheme(
     }
 }
 
-private fun indicationOverrides(): Array<ProvidedValue<*>> = if (currentPlatform.isApple) {
+internal fun indicationOverrides(): Array<ProvidedValue<*>> = if (currentPlatform.isApple) {
     arrayOf(LocalIndication provides DimIndication, LocalRippleConfiguration provides null)
 } else {
     emptyArray()

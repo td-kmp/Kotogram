@@ -419,20 +419,14 @@ fun interface CodeFieldStyle : ComponentStyle<CodeFieldStyleScope> {
             cellSize(DpSize(43.dp, 51.dp))
             cellSpacing(15.dp)
             shape(RoundedCornerShape(15.dp))
-            textStyle(
-                theme.typography.headlineSmall.merge(
-                    fontSize = 23.sp,
-                    fontWeight = FontWeight.Normal,
-                    fontFeatureSettings = "tnum",
-                ),
-            )
+            textStyle(theme.typography.headlineMedium.merge(fontFeatureSettings = "tnum"))
             activeBorderWidth(1.dp)
             focusedIndicatorColor(theme.colors.primary)
             unfocusedIndicatorColor(Color.Transparent)
             disabledIndicatorColor(Color.Transparent)
             errorIndicatorColor(theme.colors.error)
             labelColor(theme.colors.onSurfaceVariant)
-            supportingTextStyle(theme.typography.bodyMedium.merge(textAlign = TextAlign.Center))
+            supportingTextStyle(theme.typography.bodySmall.merge(textAlign = TextAlign.Center))
             supportingGap(theme.spacing.small)
             digitRise(5.dp)
             digitScale(0.1f)
@@ -449,12 +443,6 @@ fun interface CodeFieldStyle : ComponentStyle<CodeFieldStyleScope> {
                 cellSize(DpSize(40.dp, 40.dp))
                 cellSpacing(8.dp)
                 shape(theme.shapes.medium)
-                textStyle(
-                    theme.typography.headlineSmall.merge(
-                        fontSize = 24.sp,
-                        fontFeatureSettings = "tnum",
-                    ),
-                )
             }
         }
     }

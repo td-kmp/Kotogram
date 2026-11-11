@@ -27,16 +27,13 @@ internal fun interface PremiumPurchaseScreenStyle : ComponentStyle<PremiumPurcha
             bottomActionInset(24.dp)
             infoWidth(Dp.Infinity)
             titleTextStyle(
-                theme.typography.bodyLarge.merge(
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
+                theme.typography.headlineLargeEmphasized.merge(
                     color = theme.colors.onSurface,
                     textAlign = TextAlign.Center,
                 ),
             )
             infoTextStyle(
                 theme.typography.bodyLarge.merge(
-                    fontSize = 16.sp,
                     color = theme.colors.onSurface,
                     textAlign = TextAlign.Center,
                 ),
@@ -52,17 +49,8 @@ internal fun interface PremiumPurchaseScreenStyle : ComponentStyle<PremiumPurcha
                 animationSize(140.dp)
                 beforeTitle(20.dp)
                 beforeInfo(10.dp)
-                titleTextStyle(
-                    theme.typography.bodyLarge.merge(
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = theme.colors.onSurface,
-                        textAlign = TextAlign.Center,
-                    ),
-                )
                 infoTextStyle(
                     theme.typography.bodyLarge.merge(
-                        fontSize = 13.5.sp,
                         color = theme.colors.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                     ),

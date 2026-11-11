@@ -295,14 +295,7 @@ fun interface OptionPickerStyle : ComponentStyle<OptionPickerStyleScope> {
             leadingTextStyle(TextStyle(fontSize = 20.5.sp))
             listMargin(20.dp)
             headerPadding(PaddingValues(start = 20.dp, end = 20.dp, top = 28.67.dp, bottom = 6.33.dp))
-            headerTextStyle(
-                theme.typography.bodyLarge.merge(
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = if (apple) (-0.43).sp else TextUnit.Unspecified,
-                    color = theme.colors.onSurfaceVariant,
-                ),
-            )
+            headerTextStyle(theme.typography.titleLarge.merge(color = theme.colors.onSurfaceVariant))
             searchPadding(PaddingValues(horizontal = 28.dp, vertical = 8.dp))
             if (apple) {
                 barTopInset(20.dp)

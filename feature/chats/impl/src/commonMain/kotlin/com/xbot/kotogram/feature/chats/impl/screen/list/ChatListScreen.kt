@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -22,19 +22,27 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.PreviewKotogram
+import com.xbot.kotogram.core.designsystem.component.ChatListItemSeparator
+import com.xbot.kotogram.core.designsystem.component.MessageStatus
 import com.xbot.kotogram.core.designsystem.component.ProgressIndicator
 import com.xbot.kotogram.core.designsystem.component.TopBar
 import com.xbot.kotogram.core.designsystem.style.rememberStyle
 import com.xbot.kotogram.core.resources.Res
+import com.xbot.kotogram.core.resources.StringResource
 import com.xbot.kotogram.core.resources.annotatedStringResource
+import com.xbot.kotogram.core.resources.chat_list_photo1
 import com.xbot.kotogram.core.resources.chatlist_emptytext
 import com.xbot.kotogram.core.resources.error_anerror
 import com.xbot.kotogram.core.resources.peerlist_title_chats
 import com.xbot.kotogram.core.resources.stringResource
+import com.xbot.kotogram.feature.chats.impl.extensions.firstGrapheme
+import io.xbot.tdlib.api.ChatListArchive
+import io.xbot.tdlib.api.ChatListMain
 import io.xbot.tdlib.api.FormattedText
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import org.orbitmvi.orbit.compose.collectAsState
+import kotlin.time.Clock
 
 private const val END_THRESHOLD = 10
 
@@ -90,10 +98,34 @@ internal fun ChatListScreenContent(
                 }
                 Box(Modifier.weight(1f).fillMaxWidth()) {
                     LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
-                        items(state.rows, key = { it.chatId }, contentType = { "chat" }) { row ->
-                            ChatRow(row = row, customEmoji = state.customEmoji, onClick = {
-                                onChatClick(row.chatId)
-                            })
+                        val archive = state.archive
+                        if (archive != null && state.selected == ChatListMain) {
+                            item(key = ARCHIVE_KEY, contentType = ARCHIVE_KEY) {
+                                ArchiveRow(
+                                    summary = archive,
+                                    separator = ChatListItemSeparator.FullWidth,
+                                    onClick = { onAction(ChatListScreenAction.OnFolderSelect(ChatListArchive)) },
+                                    modifier = Modifier.animateItem(),
+                                )
+                            }
+                        }
+                        itemsIndexed(
+                            items = state.rows,
+                            key = { _, row -> row.chatId },
+                            contentType = { _, _ -> "chat" },
+                        ) { index, row ->
+                            val next = state.rows.getOrNull(index + 1)
+                            ChatRow(
+                                row = row,
+                                customEmoji = state.customEmoji,
+                                separator = if (next == null || (row.isPinned && !next.isPinned)) {
+                                    ChatListItemSeparator.FullWidth
+                                } else {
+                                    ChatListItemSeparator.Inset
+                                },
+                                onClick = { onChatClick(row.chatId) },
+                                modifier = Modifier.animateItem(),
+                            )
                         }
                     }
                     if (state.rows.isEmpty()) {
@@ -132,12 +164,12 @@ private class ChatListScreenStateProvider : PreviewParameterProvider<ChatListScr
 }
 
 internal val SampleRows = listOf(
-    sampleRow(1, "Anastasia", "And you?", time = "00:23", unread = 5, color = 0),
+    sampleRow(1, "Anastasia", "And you?", date = minutesAgo(10), unread = 5, color = 0),
     sampleRow(
         2,
         "I want to be with you",
         "Hi, it's Nastya. I'm about to turn thirty, I have a husband and a son…",
-        time = "Sun",
+        date = minutesAgo(3 * DAY_MINUTES),
         muted = true,
         pinned = true,
         color = 2,
@@ -146,36 +178,36 @@ internal val SampleRows = listOf(
         3,
         "Nastya",
         "goodnight",
-        time = "14/10",
+        date = minutesAgo(30 * DAY_MINUTES),
         pinned = true,
         color = 3,
-        outgoing = OutgoingStatus.Read,
+        status = MessageStatus.Read,
     ),
     sampleRow(
         4,
         "Emergency | News 18+",
         "A ten-year-old boy crashed his quad bike",
-        time = "01:04",
+        date = minutesAgo(120),
         unread = 537,
         muted = true,
         color = 0,
-        media = MediaKind.Photo,
+        photo = true,
     ),
     sampleRow(
         5,
         "Live • News",
         "",
-        time = "01:04",
+        date = minutesAgo(121),
         unread = 37,
         muted = true,
         color = 3,
-        media = MediaKind.Photo,
+        photo = true,
     ),
     sampleRow(
         6,
         "Rozetked Discuss",
         "Sure, and some more memory for it…",
-        time = "01:02",
+        date = minutesAgo(123),
         unread = 189_700,
         muted = true,
         color = 1,
@@ -185,46 +217,65 @@ internal val SampleRows = listOf(
         7,
         "Proxy MTProto",
         "Server: Unknown Port: 443 Secret: ee…",
-        time = "01:00",
+        date = minutesAgo(125),
         unread = 6_300,
         muted = true,
         color = 5,
     ),
 )
 
+@Suppress("LongParameterList")
 private fun sampleRow(
     id: Long,
     title: String,
     text: String,
-    time: String,
+    date: Int,
     color: Int,
     unread: Int = 0,
     muted: Boolean = false,
     pinned: Boolean = false,
-    outgoing: OutgoingStatus? = null,
-    media: MediaKind? = null,
+    status: MessageStatus? = null,
+    photo: Boolean = false,
     sender: String? = null,
 ) = ChatListRow(
     chatId = id,
-    title = title,
-    avatar = AvatarModel(
-        photo = null,
-        thumbnail = null,
-        letters = title.take(1),
-        colorIndex = color,
-    ),
+    title = RowTitle.Name(title),
+    avatar = AvatarModel(photo = null, thumbnail = null, letters = title.firstGrapheme(), colorIndex = color),
+    stories = null,
+    avatarBadge = null,
+    mark = null,
     emojiStatusId = null,
+    botVerificationEmojiId = null,
+    isSecret = false,
+    isDirectMessages = false,
     isMuted = muted,
     isPinned = pinned,
-    time = time,
-    outgoing = outgoing,
+    date = date,
+    status = status,
     unreadCount = unread,
     hasUnreadMention = false,
+    hasUnreadReaction = false,
+    hasUnreadPollVotes = false,
     isMarkedAsUnread = false,
-    senderName = sender,
-    preview = if (media != null) {
-        ChatPreview.Media(media, FormattedText(text = text), thumbnail = null)
-    } else {
-        ChatPreview.Text(FormattedText(text = text))
-    },
+    author = sender?.let(AuthorName::Name),
+    preview = ChatPreview.Message(
+        content = if (photo && text.isEmpty()) {
+            PreviewText.Resource(StringResource.Plural(Res.plurals.chat_list_photo1, 1, 1))
+        } else {
+            PreviewText.Formatted(FormattedText(text = text))
+        },
+        icon = null,
+        thumbnails = emptyList(),
+        hideAuthor = false,
+    ),
+    typing = null,
+    topics = emptyList(),
+    tags = emptyList(),
+    hasOpenAppButton = false,
 )
+
+private fun minutesAgo(minutes: Int): Int = (Clock.System.now().epochSeconds - minutes * MINUTE_SECONDS).toInt()
+
+private const val MINUTE_SECONDS = 60L
+private const val ARCHIVE_KEY = "archive"
+private const val DAY_MINUTES = 24 * 60

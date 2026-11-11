@@ -34,25 +34,15 @@ internal fun interface QrScreenStyle : ComponentStyle<QrScreenStyleScope> {
             stepTextGap(14.dp)
             stepTextTop(2.dp)
             stepTextBottom(0.dp)
-            titleTextStyle(
-                theme.typography.bodyLarge.merge(
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = theme.colors.onSurface,
-                ),
-            )
-            stepTextStyle(
-                theme.typography.bodyLarge.merge(fontSize = 17.sp, color = theme.colors.onSurface),
-            )
+            titleTextStyle(theme.typography.headlineLargeEmphasized.merge(color = theme.colors.onSurface))
+            stepTextStyle(theme.typography.bodyLarge.merge(color = theme.colors.onSurface))
             stepNumberTextStyle(
-                theme.typography.bodyLarge.merge(
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Medium,
+                theme.typography.titleSmall.merge(
                     fontFamily = FontFamily.Monospace,
                     color = theme.colors.onPrimary,
                 ),
             )
-            buttonTextStyle(theme.typography.bodyLarge.merge(fontSize = 16.sp))
+            buttonTextStyle(theme.typography.bodyLarge)
             errorTextStyle(
                 theme.typography.bodySmall.merge(
                     color = theme.colors.error,
@@ -71,33 +61,9 @@ internal fun interface QrScreenStyle : ComponentStyle<QrScreenStyleScope> {
                 stepNumberSize(20.dp)
                 stepTextGap(10.dp)
                 stepTextBottom(6.dp)
-                titleTextStyle(
-                    theme.typography.bodyLarge.merge(
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = theme.colors.onSurface,
-                    ),
-                )
-                stepTextStyle(
-                    theme.typography.bodyLarge.merge(
-                        fontSize = 13.sp,
-                        color = theme.colors.onSurface,
-                    ),
-                )
-                stepNumberTextStyle(
-                    theme.typography.bodyLarge.merge(
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium,
-                        fontFamily = FontFamily.Monospace,
-                        color = theme.colors.onPrimary,
-                    ),
-                )
-                buttonTextStyle(
-                    theme.typography.bodyLarge.merge(
-                        fontSize = 13.5.sp,
-                        fontWeight = FontWeight.Medium,
-                    ),
-                )
+                titleTextStyle(theme.typography.headlineSmall.merge(color = theme.colors.onSurface))
+                stepTextStyle(theme.typography.bodyMedium.merge(color = theme.colors.onSurface))
+                buttonTextStyle(theme.typography.titleSmall)
             }
         }
     }

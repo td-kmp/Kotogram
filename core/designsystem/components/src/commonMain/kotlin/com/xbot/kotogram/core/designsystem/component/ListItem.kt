@@ -36,7 +36,6 @@ import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.xbot.kotogram.core.designsystem.KotogramTheme
@@ -49,7 +48,6 @@ import com.xbot.kotogram.core.designsystem.style.DefaultStyleResolver
 import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 import com.xbot.kotogram.core.designsystem.style.StyleResolver
 import com.xbot.kotogram.core.designsystem.style.rememberStyle
-import com.xbot.kotogram.core.designsystem.theme.currentPlatform
 import androidx.compose.material3.Icon as MaterialIcon
 
 enum class ListItemPosition { Single, First, Middle, Last }
@@ -203,7 +201,6 @@ fun interface ListItemStyle : ComponentStyle<ListItemStyleScope> {
         override fun ListItemStyleScope.applyStyle() {}
 
         val Default = ListItemStyle {
-            val apple = currentPlatform.isApple
             minHeight(52.dp)
             contentPadding(PaddingValues(horizontal = 20.dp, vertical = 9.dp))
             twoLineMinHeight(62.dp)
@@ -223,18 +220,8 @@ fun interface ListItemStyle : ComponentStyle<ListItemStyleScope> {
             trailingColor(theme.colors.onSurfaceVariant)
             disabledContentColor(theme.colors.onSurface.copy(alpha = 0.38f))
             overlineTextStyle(theme.typography.labelSmall)
-            headlineTextStyle(
-                theme.typography.bodyLarge.merge(
-                    fontSize = 17.sp,
-                    letterSpacing = if (apple) (-0.43).sp else TextUnit.Unspecified,
-                ),
-            )
-            supportingTextStyle(
-                theme.typography.bodyMedium.merge(
-                    fontSize = 15.sp,
-                    letterSpacing = if (apple) (-0.23).sp else TextUnit.Unspecified,
-                ),
-            )
+            headlineTextStyle(theme.typography.bodyLarge)
+            supportingTextStyle(theme.typography.bodyMedium)
         }
 
         val Adaptive = Default then ListItemStyle {
@@ -245,8 +232,6 @@ fun interface ListItemStyle : ComponentStyle<ListItemStyleScope> {
                 twoLineContentPadding(PaddingValues(horizontal = 14.dp, vertical = 12.dp))
                 lineGap(2.dp)
                 groupShape(theme.shapes.medium)
-                headlineTextStyle(theme.typography.bodyLarge)
-                supportingTextStyle(theme.typography.bodyMedium)
             }
         }
     }

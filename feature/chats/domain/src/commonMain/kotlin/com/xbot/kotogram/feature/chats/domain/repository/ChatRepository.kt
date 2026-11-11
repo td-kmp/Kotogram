@@ -1,6 +1,7 @@
 package com.xbot.kotogram.feature.chats.domain.repository
 
 import arrow.core.Either
+import com.xbot.kotogram.feature.chats.domain.model.ArchiveSummary
 import com.xbot.kotogram.feature.chats.domain.model.ChatError
 import com.xbot.kotogram.feature.chats.domain.model.ChatFolderTab
 import com.xbot.kotogram.feature.chats.domain.model.ChatListEntry
@@ -14,6 +15,12 @@ interface ChatRepository {
     suspend fun loadMore(list: ChatList): Either<ChatError, Boolean>
 
     fun folderTabs(): Flow<List<ChatFolderTab>>
+
+    fun archive(): Flow<ArchiveSummary?>
+
+    suspend fun loadStories(): Either<ChatError, Unit>
+
+    suspend fun loadForumTopics(chatId: Long): Either<ChatError, Unit>
 
     fun chat(chatId: Long): Flow<Chat?>
 }

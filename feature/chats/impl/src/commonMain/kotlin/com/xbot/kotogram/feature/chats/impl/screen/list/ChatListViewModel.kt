@@ -1,9 +1,11 @@
 package com.xbot.kotogram.feature.chats.impl.screen.list
 
 import androidx.lifecycle.ViewModel
+import com.xbot.kotogram.core.designsystem.component.AvatarShape
 import com.xbot.kotogram.feature.chats.domain.repository.ChatRepository
 import com.xbot.kotogram.feature.media.domain.repository.CustomEmojiRepository
 import io.xbot.tdlib.api.ChatList
+import io.xbot.tdlib.api.ChatListArchive
 import io.xbot.tdlib.api.ChatListMain
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,6 +34,11 @@ internal class ChatListViewModel(
                 launch {
                     repository.folderTabs().collect { tabs -> reduce { state.copy(tabs = tabs) } }
                 }
+                launch {
+                    repository.archive().collect { archive -> reduce { state.copy(archive = archive) } }
+                }
+                launch { repository.loadMore(ChatListArchive) }
+                launch { repository.loadStories() }
                 selected
                     .flatMapLatest { list ->
                         val mapper = ChatListRowMapper()
@@ -41,6 +48,7 @@ internal class ChatListViewModel(
                     .collect { rows ->
                         reduce { state.copy(rows = rows) }
                         resolveCustomEmoji(rows)
+                        loadForumTopics(rows)
                     }
             }
         }
@@ -59,6 +67,16 @@ internal class ChatListViewModel(
         customEmojiRepository.stickers(missing).onRight { found ->
             reduce { state.copy(customEmoji = state.customEmoji + found) }
         }
+    }
+
+    private val requestedTopics = HashSet<Long>()
+
+    private suspend fun loadForumTopics(rows: List<ChatListRow>) {
+        rows.filter {
+            it.avatar.shape == AvatarShape.RoundedRect && it.topics.isEmpty() &&
+                requestedTopics.add(it.chatId)
+        }
+            .forEach { repository.loadForumTopics(it.chatId) }
     }
 
     private fun onFolderSelect(chatList: ChatList) = intent {

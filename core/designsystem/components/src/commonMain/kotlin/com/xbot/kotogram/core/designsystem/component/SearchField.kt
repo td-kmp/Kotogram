@@ -137,11 +137,8 @@ fun interface SearchFieldStyle : ComponentStyle<SearchFieldStyleScope> {
             contentPadding(PaddingValues(horizontal = 16.dp))
             val apple = currentPlatform.isApple
             textStyle(
-                theme.typography.bodyLarge.merge(
-                    fontSize = 17.sp,
-                    fontWeight = if (apple) FontWeight.Medium else null,
-                    color = theme.colors.onSurface,
-                ),
+                (if (apple) theme.typography.bodyLargeEmphasized else theme.typography.bodyLarge)
+                    .merge(color = theme.colors.onSurface),
             )
             placeholderColor(theme.colors.onSurfaceVariant)
             iconColor(if (apple) theme.colors.onSurface else theme.colors.onSurfaceVariant)

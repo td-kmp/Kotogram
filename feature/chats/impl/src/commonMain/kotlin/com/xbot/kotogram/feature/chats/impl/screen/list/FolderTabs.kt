@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.chatlist_filter_all
 import com.xbot.kotogram.core.resources.stringResource
@@ -43,10 +45,10 @@ internal fun FolderTabs(
     val fill = tabs.size <= TABS_SHARING_WIDTH
     Row(
         modifier = modifier
-            .padding(style.tabsPadding)
+            .padding(TabsPadding)
             .fillMaxWidth()
             .background(style.tabsColor, CircleShape)
-            .padding(style.tabsInnerPadding)
+            .padding(TabsInnerPadding)
             .then(if (fill) Modifier else Modifier.horizontalScroll(rememberScrollState())),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -73,15 +75,15 @@ private fun RowScope.Tab(
 ) {
     Row(
         modifier = modifier
-            .height(style.tabHeight)
+            .height(TabHeight)
             .background(if (isSelected) style.selectedTabColor else Color.Transparent, CircleShape)
             .clickable(onClick = onClick)
-            .padding(horizontal = style.tabContentPadding),
+            .padding(horizontal = TabContentPadding),
         horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val name = tab.folder?.name?.text
-        val emojiSize = with(LocalDensity.current) { style.emojiStatusSize.toSp() }
+        val emojiSize = with(LocalDensity.current) { style.tabEmojiSize.toSp() }
         Text(
             text =
                 name?.toPreviewString()
@@ -96,16 +98,16 @@ private fun RowScope.Tab(
             }.orEmpty(),
         )
         if (tab.unreadCount > 0) {
-            Spacer(Modifier.width(style.tabBadgeGap))
+            Spacer(Modifier.width(TabBadgeGap))
             Box(
                 modifier = Modifier
-                    .height(style.tabBadgeHeight)
-                    .defaultMinSize(minWidth = style.tabBadgeHeight)
+                    .height(TabBadgeHeight)
+                    .defaultMinSize(minWidth = TabBadgeHeight)
                     .background(
-                        if (tab.hasUnmutedUnread) style.badgeColor else style.mutedBadgeColor,
+                        if (tab.hasUnmutedUnread) style.tabBadgeColor else style.tabMutedBadgeColor,
                         CircleShape,
                     )
-                    .padding(horizontal = style.badgePadding),
+                    .padding(horizontal = style.tabBadgePadding),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(tab.unreadCount.toString(), style = style.tabBadgeTextStyle, maxLines = 1)
@@ -115,3 +117,10 @@ private fun RowScope.Tab(
 }
 
 private const val TABS_SHARING_WIDTH = 3
+
+private val TabsPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+private val TabsInnerPadding = 4.dp
+private val TabHeight = 36.dp
+private val TabContentPadding = 16.dp
+private val TabBadgeHeight = 18.dp
+private val TabBadgeGap = 6.dp
