@@ -34,3 +34,6 @@ android-app/keystore.properties
 
 # Ignore Claude Code directory
 .claude
+
+# JVM crash logs
+hs_err_pid*.log

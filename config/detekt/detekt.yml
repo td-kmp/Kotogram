@@ -3,11 +3,126 @@ naming:
     ignoreAnnotated: ['Composable']
 
 complexity:
-  LongMethod:
-    ignoreAnnotated: ['Composable']
+  CyclomaticComplexMethod:
+    ignoreSimpleWhenEntries: true
   LongParameterList:
+    ignoreAnnotated: ['Composable']
+  LongMethod:
     ignoreAnnotated: ['Composable']
 
 style:
+  MaxLineLength:
+    active: false
+  NewLineAtEndOfFile:
+    active: false
+  WildcardImport:
+    active: false
   MagicNumber:
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
     ignoreAnnotated: ['Composable', 'Preview']
+  UnusedPrivateFunction:
+    ignoreAnnotated: ['Preview']
+  ForbiddenComment:
+    comments:
+      - value: '\A'
+        reason: 'No comments: name things instead. A non-obvious hack or workaround gets one line that starts with "Hack: " or "Workaround: ".'
+    # Besides those: one-line notices of borrowed code, licence headers and language injections.
+    allowedPatterns: '^(Hack: |Workaround: |Adapted from |Copied from |language=).+$|^Copyright '
+  # Everything above `data` sees TDLib's classes, but only `data` talks to TDLib.
+  ForbiddenImport:
+    active: true
+    forbiddenImports:
+      - value: 'io.xbot.tdlib.client.*'
+        reason: 'Only core:account and feature data modules talk to TDLib.'
+      - value: 'org.jetbrains.compose.resources.stringResource'
+        reason: 'Strings come from Telegram''s language pack first: use com.xbot.kotogram.core.resources.stringResource.'
+      - value: 'org.jetbrains.compose.resources.pluralStringResource'
+        reason: 'Plurals come from Telegram''s language pack first: use com.xbot.kotogram.core.resources.pluralStringResource.'
+      - value: 'org.jetbrains.compose.resources.getString'
+        reason: 'Strings come from Telegram''s language pack first: use com.xbot.kotogram.core.resources.extensions.getString.'
+      - value: 'org.jetbrains.compose.resources.getPluralString'
+        reason: 'Plurals come from Telegram''s language pack first: use com.xbot.kotogram.core.resources.extensions.getString.'
+    excludes: ['**/core/account/**', '**/feature/*/data/**']
+  # Screens use core:designsystem; Material 3 only where it has no counterpart there.
+  ForbiddenImport/designSystem:
+    active: true
+    forbiddenImports:
+      - value: 'androidx.compose.material3.MaterialTheme'
+        reason: 'Use KotogramTheme: its colors, typography and shapes read the same Material 3 values.'
+      - value: 'androidx.compose.material3.TextField'
+        reason: 'Use com.xbot.kotogram.core.designsystem.component.TextField.'
+      - value: 'androidx.compose.material3.OutlinedTextField'
+        reason: 'Use com.xbot.kotogram.core.designsystem.component.TextField.'
+      - value: 'androidx.compose.material3.TextFieldDefaults'
+        reason: 'Use com.xbot.kotogram.core.designsystem.component.TextFieldDefaults.'
+      - value: 'androidx.compose.material3.OutlinedTextFieldDefaults'
+        reason: 'Use com.xbot.kotogram.core.designsystem.component.TextFieldDefaults.'
+      - value: 'androidx.compose.material3.SecureTextField'
+        reason: 'Use com.xbot.kotogram.core.designsystem.component.SecureTextField.'
+      - value: 'androidx.compose.material3.OutlinedSecureTextField'
+        reason: 'Use com.xbot.kotogram.core.designsystem.component.SecureTextField.'
+      - value: 'androidx.compose.foundation.text.BasicTextField'
+        reason: 'Use the design system''s TextField, or CodeField for codes.'
+      - value: 'androidx.compose.foundation.text.BasicSecureTextField'
+        reason: 'Use com.xbot.kotogram.core.designsystem.component.SecureTextField.'
+      - value: 'androidx.compose.material3.Button'
+        reason: 'Use com.xbot.kotogram.core.designsystem.component.Button.'
+      - value: 'androidx.compose.material3.TextButton'
+        reason: 'Use com.xbot.kotogram.core.designsystem.component.TextButton.'
+      - value: 'androidx.compose.material3.CircularProgressIndicator'
+        reason: 'Use com.xbot.kotogram.core.designsystem.component.ProgressIndicator.'
+      - value: 'dev.nucleusframework.window.material.MaterialDecoratedWindow'
+        reason: 'Use com.xbot.kotogram.core.designsystem.window.KotogramWindow: it applies KotogramTheme inside the window.'
+      - value: 'androidx.compose.material3.OutlinedButton'
+        reason: 'Use the design system''s Button or TextButton.'
+      - value: 'androidx.compose.material3.FilledTonalButton'
+        reason: 'Use the design system''s Button or TextButton.'
+      - value: 'androidx.compose.material3.ElevatedButton'
+        reason: 'Use the design system''s Button or TextButton.'
+      - value: 'androidx.compose.material3.ButtonDefaults'
+        reason: 'Use com.xbot.kotogram.core.designsystem.component.ButtonDefaults.'
+      - value: 'androidx.compose.material3.ListItem'
+        reason: 'Use com.xbot.kotogram.core.designsystem.component.ListItem.'
+      - value: 'androidx.compose.material3.ListItemDefaults'
+        reason: 'Use com.xbot.kotogram.core.designsystem.component.ListItemDefaults.'
+      - value: 'androidx.compose.material.icons.*'
+        reason: 'Icons come from com.xbot.kotogram.core.designsystem.icon.KotogramIcons.'
+      - value: 'androidx.compose.ui.graphics.vector.path'
+        reason: 'Icons are drawn in core:designsystem (KotogramIcons).'
+      - value: 'androidx.compose.ui.graphics.vector.group'
+        reason: 'Icons are drawn in core:designsystem (KotogramIcons).'
+      - value: 'androidx.compose.ui.graphics.vector.PathBuilder'
+        reason: 'Icons are drawn in core:designsystem (KotogramIcons).'
+      - value: 'androidx.compose.ui.graphics.vector.addPathNodes'
+        reason: 'Icons are drawn in core:designsystem (KotogramIcons).'
+      - value: 'org.jetbrains.compose.resources.painterResource'
+        reason: 'Icons and images live in core:designsystem.'
+      - value: 'org.jetbrains.compose.resources.vectorResource'
+        reason: 'Icons and images live in core:designsystem.'
+      - value: 'org.jetbrains.compose.resources.imageResource'
+        reason: 'Icons and images live in core:designsystem.'
+    excludes: ['**/core/designsystem/**']
+
+Compose:
+  active: true
+  CompositionLocalAllowlist:
+    allowedCompositionLocals:
+      - LocalBottomSheetOverride
+      - LocalCheckboxOverride
+      - LocalFastScrollerOverride
+      - LocalGlassIconButtonOverride
+      - LocalImageLoader
+      - LocalKotogramSpacing
+      - LocalLocalization
+      - LocalMediaQueryInfo
+      - LocalMenuOverride
+      - LocalNavigator
+      - LocalProgressIndicatorOverride
+      - LocalProminentButtonOverride
+      - LocalScrollIndicatorOverride
+      - LocalSearchFieldOverride
+      - LocalSharedViewModelStoreOwner
+      - LocalSwitchOverride
+      - LocalTopBarOverride
+      - LocalUiMediaScope

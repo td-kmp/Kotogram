@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ForbiddenImport/designSystem:CodeScreen.kt:import androidx.compose.material3.OutlinedTextField</ID>
+    <ID>ForbiddenImport/designSystem:EmailAddressScreen.kt:import androidx.compose.material3.OutlinedTextField</ID>
+    <ID>ForbiddenImport/designSystem:EmailCodeScreen.kt:import androidx.compose.material3.OutlinedTextField</ID>
+    <ID>ForbiddenImport/designSystem:PasswordScreen.kt:import androidx.compose.material3.OutlinedTextField</ID>
+    <ID>ForbiddenImport/designSystem:PhoneComponents.kt:import androidx.compose.material3.OutlinedTextField</ID>
+    <ID>ForbiddenImport/designSystem:RegistrationScreen.kt:import androidx.compose.material3.OutlinedTextField</ID>
+  </CurrentIssues>
+</SmellBaseline>

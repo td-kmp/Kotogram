@@ -3,6 +3,12 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
     repositories {
+        // Nucleus's decorated-window-tao is a local build of the fork's placedAsOverlay over the release (docs/handoff.md).
+        mavenLocal {
+            mavenContent {
+                includeGroupAndSubgroups("dev.nucleusframework")
+            }
+        }
         google {
             mavenContent {
                 includeGroupAndSubgroups("androidx")
@@ -17,6 +23,13 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
+        // Local builds of tdlib-kmp and of Nucleus's decorated-window-tao go first (docs/handoff.md).
+        mavenLocal {
+            mavenContent {
+                includeGroup("io.github.xephosbot")
+                includeGroupAndSubgroups("dev.nucleusframework")
+            }
+        }
         google {
             mavenContent {
                 includeGroupAndSubgroups("androidx")
@@ -34,7 +47,27 @@ plugins {
 
 include(":android-app")
 include(":jvm-app")
+include(":catalog-app")
+include(":web-app")
 include(":shared")
-include(":shared:data")
-include(":shared:domain")
-include(":shared-ui")
+include(":core:account")
+include(":core:designsystem:theme")
+include(":core:designsystem:components")
+include(":core:designsystem:icons")
+include(":core:designsystem:appkit")
+include(":core:resources")
+include(":core:navigation:api")
+include(":core:navigation:impl")
+include(":feature:auth:api")
+include(":feature:auth:domain")
+include(":feature:auth:data")
+include(":feature:auth:impl")
+include(":feature:chats:api")
+include(":feature:chats:domain")
+include(":feature:chats:data")
+include(":feature:chats:impl")
+include(":feature:language:domain")
+include(":feature:language:data")
+include(":feature:language:impl")
+include(":feature:media:domain")
+include(":feature:media:data")
