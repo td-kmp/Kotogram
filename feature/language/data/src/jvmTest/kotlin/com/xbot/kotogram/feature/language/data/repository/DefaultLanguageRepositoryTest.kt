@@ -1,10 +1,12 @@
 package com.xbot.kotogram.feature.language.data.repository
 
 import com.xbot.kotogram.feature.language.data.FakeAppClient
+import com.xbot.kotogram.feature.language.data.FakePlatformLanguage
 import com.xbot.kotogram.feature.language.data.store.ChosenLanguageStore
 import com.xbot.kotogram.feature.language.domain.model.LanguageError
 import com.xbot.kotogram.feature.language.domain.model.LanguagePack
 import com.xbot.kotogram.feature.language.domain.model.LanguageState
+import io.xbot.tdlib.api.GetLanguagePackInfo
 import io.xbot.tdlib.api.GetLanguagePackStrings
 import io.xbot.tdlib.api.LanguagePackInfo
 import io.xbot.tdlib.api.LanguagePackString
@@ -35,7 +37,8 @@ class DefaultLanguageRepositoryTest {
     )
     private val store = InMemoryChosenLanguageStore()
 
-    private fun TestScope.repository() = DefaultLanguageRepository(backgroundScope, client, store)
+    private fun TestScope.repository(platform: FakePlatformLanguage? = null) =
+        DefaultLanguageRepository(backgroundScope, client, store, platform)
 
     @Test
     fun withoutAChoiceTheBundledStringsShowAtOnce() = runTest {
@@ -155,6 +158,115 @@ class DefaultLanguageRepositoryTest {
         repository.onStringsChanged(update("ru", ordinary("A", "x")).copy(localizationTarget = "android"))
 
         assertEquals(before, repository.state.value)
+    }
+
+    @Test
+    fun withoutAChoiceInTheSystemTheAppsOwnChoiceStands() = runTest {
+        store.saved = russian
+        val repository = repository(FakePlatformLanguage())
+        runCurrent()
+
+        assertEquals("а", loaded(repository).texts()["A"])
+    }
+
+    @Test
+    fun aLanguageChosenInTheSystemLoadsBehindTheBundledOne() = runTest {
+        client.started = CompletableDeferred()
+        val repository = repository(FakePlatformLanguage("ru"))
+        runCurrent()
+        assertEquals(LanguageState.Bundled, repository.state.value)
+
+        client.started.complete(Unit)
+        runCurrent()
+        assertEquals("а", loaded(repository).texts()["A"])
+        assertEquals(russian, store.saved)
+        assertEquals("ru", repository.languagePackId.first())
+    }
+
+    @Test
+    fun theSystemsChoiceThatIsAlreadyStoredIsNotFetchedAgain() = runTest {
+        store.saved = russian
+        val platform = FakePlatformLanguage("ru")
+        val repository = repository(platform)
+        runCurrent()
+
+        assertEquals("а", loaded(repository).texts()["A"])
+        assertEquals(0, client.requests.count { it is GetLanguagePackInfo })
+        assertEquals(listOf("ru"), platform.synced)
+    }
+
+    @Test
+    fun aFollowedChoiceIsSyncedBack() = runTest {
+        val platform = FakePlatformLanguage("ru")
+        val repository = repository(platform)
+        runCurrent()
+
+        assertEquals("а", loaded(repository).texts()["A"])
+        assertEquals(listOf("ru"), platform.synced)
+    }
+
+    @Test
+    fun aChangeInTheSystemSwitchesThePack() = runTest {
+        val platform = FakePlatformLanguage()
+        val repository = repository(platform)
+        runCurrent()
+        assertEquals(LanguageState.Bundled, repository.state.value)
+
+        platform.languagePackId.value = "ru"
+        runCurrent()
+        assertEquals("б", loaded(repository).texts()["B"])
+        assertEquals(russian, store.saved)
+
+        platform.languagePackId.value = "en"
+        runCurrent()
+        assertEquals(LanguageState.Bundled, repository.state.value)
+        assertNull(store.saved)
+    }
+
+    @Test
+    fun aChoiceTakenBackInTheSystemKeepsTheLanguage() = runTest {
+        val platform = FakePlatformLanguage("ru")
+        val repository = repository(platform)
+        runCurrent()
+
+        platform.languagePackId.value = null
+        runCurrent()
+
+        assertEquals("а", loaded(repository).texts()["A"])
+    }
+
+    @Test
+    fun aLanguageOfTheSystemWithoutAPackLeavesTheLanguageAndIsNotSynced() = runTest {
+        val platform = FakePlatformLanguage("de")
+        val repository = repository(platform)
+        runCurrent()
+
+        assertEquals(LanguageState.Bundled, repository.state.value)
+        assertNull(store.saved)
+        assertEquals(emptyList(), platform.synced)
+    }
+
+    @Test
+    fun aSwitchInTheAppIsToldToTheSystem() = runTest {
+        val platform = FakePlatformLanguage()
+        val repository = repository(platform)
+        runCurrent()
+
+        assertEquals(Unit, repository.apply("ru").getOrNull())
+
+        assertEquals("б", loaded(repository).texts()["B"])
+        assertEquals(listOf("ru"), platform.synced)
+    }
+
+    @Test
+    fun aFailedSwitchIsNotToldToTheSystem() = runTest {
+        val platform = FakePlatformLanguage()
+        val repository = repository(platform)
+        runCurrent()
+
+        assertIs<LanguageError.Unknown>(repository.apply("de").leftOrNull())
+
+        assertEquals(emptyList(), platform.synced)
     }
 
     private fun loaded(repository: DefaultLanguageRepository): LanguagePack =

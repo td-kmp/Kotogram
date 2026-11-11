@@ -9,6 +9,7 @@ import com.xbot.kotogram.feature.language.data.extensions.isFor
 import com.xbot.kotogram.feature.language.data.extensions.languagePack
 import com.xbot.kotogram.feature.language.data.extensions.toLanguageError
 import com.xbot.kotogram.feature.language.data.extensions.withChanges
+import com.xbot.kotogram.feature.language.data.platform.PlatformLanguage
 import com.xbot.kotogram.feature.language.data.store.ChosenLanguageStore
 import com.xbot.kotogram.feature.language.domain.model.LanguageError
 import com.xbot.kotogram.feature.language.domain.model.LanguagePack
@@ -28,6 +29,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -40,6 +42,7 @@ internal class DefaultLanguageRepository(
     private val appScope: CoroutineScope,
     private val client: AppClient,
     private val store: ChosenLanguageStore,
+    private val platform: PlatformLanguage? = null,
 ) : LanguageRepository {
     private val logger = Logger.withTag("LanguageRepository")
     private val mutex = Mutex()
@@ -56,11 +59,15 @@ internal class DefaultLanguageRepository(
     }.distinctUntilChanged()
 
     init {
-        appScope.launch { mutex.withLock { restore() } }
+        appScope.launch {
+            mutex.withLock { restore() }
+            platform?.languagePackId?.filterNotNull()?.collect(::follow)
+        }
     }
 
-    override suspend fun apply(languagePackId: String): Either<LanguageError, Unit> =
-        appScope.async { mutex.withLock { switchTo(languagePackId) } }.await()
+    override suspend fun apply(languagePackId: String): Either<LanguageError, Unit> = appScope.async {
+        mutex.withLock { switchTo(languagePackId) }.onRight { platform?.sync(chosenLanguagePackId()) }
+    }.await()
 
     suspend fun onStringsChanged(update: UpdateLanguagePackStrings) {
         mutex.withLock {
@@ -91,22 +98,30 @@ internal class DefaultLanguageRepository(
         fallback.cancel()
     }
 
+    private suspend fun follow(languagePackId: String) {
+        val followed = mutex.withLock { languagePackId == chosenLanguagePackId() || switchTo(languagePackId).isRight() }
+        if (followed) platform?.sync(chosenLanguagePackId())
+    }
+
+    private fun chosenLanguagePackId(): String = chosen.value?.id ?: BUNDLED_LANGUAGE_PACK_ID
+
     private suspend fun switchTo(languagePackId: String): Either<LanguageError, Unit> = either {
         if (languagePackId == BUNDLED_LANGUAGE_PACK_ID) {
-            choose(info = null, next = LanguageState.Bundled)
+            choose(info = null)
+            mutableState.value = LanguageState.Bundled
         } else {
-            val info = client.send(GetLanguagePackInfo(languagePackId = languagePackId)).bind()
-            choose(info, LanguageState.Loaded(download(info).bind()))
+            mutableState.value = LanguageState.Loaded(fetch(languagePackId).bind())
         }
     }.mapLeft { it.toLanguageError() }
 
-    private suspend fun choose(
-        info: LanguagePackInfo?,
-        next: LanguageState,
-    ) {
+    private suspend fun fetch(languagePackId: String): Either<Error, LanguagePack> = either {
+        val info = client.send(GetLanguagePackInfo(languagePackId = languagePackId)).bind()
+        download(info).bind().also { choose(info) }
+    }
+
+    private suspend fun choose(info: LanguagePackInfo?) {
         store.save(info)
         chosen.value = info
-        mutableState.value = next
     }
 
     private suspend fun download(info: LanguagePackInfo): Either<Error, LanguagePack> {

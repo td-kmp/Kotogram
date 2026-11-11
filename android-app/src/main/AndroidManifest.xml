@@ -9,6 +9,7 @@
         android:allowBackup="false"
         android:enableOnBackInvokedCallback="true"
         android:label="Kotogram"
+        android:localeConfig="@xml/locales_config"
         android:supportsRtl="true"
         android:theme="@style/Theme.Kotogram">
         <activity
