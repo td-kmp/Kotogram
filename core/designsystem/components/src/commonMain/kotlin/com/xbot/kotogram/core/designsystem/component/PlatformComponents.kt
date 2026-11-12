@@ -6,5 +6,9 @@ import com.xbot.kotogram.core.designsystem.component.platform.platformComponentO
 
 @Composable
 fun ProvidePlatformComponents(content: @Composable () -> Unit) {
-    CompositionLocalProvider(*platformComponentOverrides(), content = content)
+    CompositionLocalProvider(
+        *platformComponentOverrides(),
+        LocalImageLoader provides rememberImageLoader(),
+        content = content,
+    )
 }

@@ -15,15 +15,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.AlignmentLine
 import androidx.compose.ui.layout.FirstBaseline
@@ -36,6 +38,8 @@ import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.layout.VerticalAlignmentLine
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.text
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
@@ -50,6 +54,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.extensions.addRectStack
+import com.xbot.kotogram.core.designsystem.extensions.shownLineRight
 import com.xbot.kotogram.core.designsystem.icon.KotogramIcons
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -74,7 +79,7 @@ enum class MessageIcon {
 enum class MessageThumbnailType { Photo, Video, RoundVideo }
 
 @Immutable
-class MessageThumbnail(
+data class MessageThumbnail(
     val image: @Composable (blur: ImageBlur?) -> Unit,
     val type: MessageThumbnailType = MessageThumbnailType.Photo,
     val spoiler: Boolean = false,
@@ -85,31 +90,31 @@ sealed interface TopicIcon {
     data object General : TopicIcon
 
     @Immutable
-    class Bubble(
+    data class Bubble(
         val color: Int,
     ) : TopicIcon
 
     @Immutable
-    class Emoji(
+    data class Emoji(
         val content: @Composable () -> Unit,
     ) : TopicIcon
 }
 
 @Immutable
-class ForumTopic(
+data class ForumTopic(
     val title: String,
     val icon: TopicIcon? = null,
     val unread: Boolean = false,
 )
 
 @Immutable
-class FolderTag(
+data class FolderTag(
     val title: String,
     val colorIndex: Int,
 )
 
 @Immutable
-class ArchivedChat(
+data class ArchivedChat(
     val title: String,
     val unread: Boolean = false,
 )
@@ -217,12 +222,15 @@ private fun ChatListItemScope.TextBlock(
         }
     }
     val spoilers = remember(text) { text.spoilers() }
-    val annotated = remember(text, leading) {
+    val slots = inlineContent.keys
+    val annotated = remember(text, leading, slots) {
         buildAnnotatedString {
             leading.forEach { appendInlineContent(it, " ") }
-            append(text.hiding(spoilers))
+            append(text.hiding(spoilers, slots))
         }
     }
+    val shownContent = inlineContent.withHiddenSlots(spoilers)
+    val readText = remember(text, spoilers) { AnnotatedString(text.withoutSpoilers(spoilers)) }
     val leadingContent = leadingContent(icon, thumbnails)
     val highlight = remember { TopicHighlight() }
     val topics = (header as? HeaderContent.Topics)?.topics.orEmpty()
@@ -234,8 +242,12 @@ private fun ChatListItemScope.TextBlock(
         remember(texts, this) { SpoilerInk(texts.textInk, SpoilerInset.toPx(), SpoilerTruncated.toPx()) }
     }
     Layout(
-        modifier = modifier.drawBehind {
-            if (highlighted) highlight.path?.let { drawPath(it, highlightColor) }
+        modifier = modifier.drawWithCache {
+            val shape = highlight.shape?.takeIf { highlighted }
+            val path = shape?.let {
+                Path().apply { addRectStack(listOf(it.top, it.bottom), radius = it.radius, snap = it.snap) }
+            }
+            onDrawBehind { path?.let { drawPath(it, highlightColor) } }
         },
         content = {
             when (header) {
@@ -256,10 +268,11 @@ private fun ChatListItemScope.TextBlock(
                 style = texts.text,
                 maxLines = if (header != null || tags.isNotEmpty()) 1 else 2,
                 overflow = TextOverflow.Ellipsis,
-                inlineContent = inlineContent + leadingContent,
+                inlineContent = shownContent + leadingContent,
                 onTextLayout = {
                     spoilerAreas.update(it, spoilers, leading.size, spoilerInk)
-                    highlight.lineRight = it.shownRight(texts.textEllipsis)
+                    // Workaround: onTextLayout runs inside the text's measure, before the block reads the line's end.
+                    highlight.lineRight = it.shownLineRight(0, texts.textEllipsis)
                 },
                 modifier = Modifier
                     .layoutId(BlockPart.Text)
@@ -267,7 +280,9 @@ private fun ChatListItemScope.TextBlock(
                         if (spoilers.isEmpty()) {
                             Modifier
                         } else {
-                            Modifier.graphicsLayer().invisibleInk(dustColor) { spoilerAreas.rects }
+                            Modifier
+                                .semantics { this.text = readText }
+                                .invisibleInk(dustColor) { spoilerAreas.rects }
                         },
                     ),
             )
@@ -308,15 +323,17 @@ private class TextBlockMeasurePolicy(
         val height = maxOf(textY + text.height, tags?.let { tagsY + it.height } ?: 0)
         val firstBaseline = header?.baselineOr(textBaseline) ?: textBaseline
         val width = loose.maxWidth.takeIf { it != Constraints.Infinity } ?: text.width
-        highlight.update(this, header, textY, text, textStyle.fontSize)
+        val bottom = highlight.update(this, header, textY, text, textStyle.fontSize)?.bottom
         return layout(width, height, mapOf(FirstBaseline to firstBaseline)) {
             header?.place(0, 0)
             text.place(0, textY)
             tags?.place(0, tagsY)
-            arrow?.place(
-                (highlight.bottom.right - arrow.width).roundToInt(),
-                (highlight.bottom.top + floor((highlight.bottom.height - arrow.height) / 2)).roundToInt(),
-            )
+            if (arrow != null && bottom != null) {
+                arrow.place(
+                    (bottom.right - arrow.width).roundToInt(),
+                    (bottom.top + floor((bottom.height - arrow.height) / 2)).roundToInt(),
+                )
+            }
         }
     }
 }
@@ -451,9 +468,9 @@ private val TopicArrowSize = 18.dp
 private val TopicArrowReserve = 18.dp
 
 private class TopicHighlight {
-    var path: Path? = null
-    var bottom: Rect = Rect.Zero
     var lineRight: Float = 0f
+    var shape: HighlightShape? by mutableStateOf(null)
+        private set
 
     fun update(
         density: Density,
@@ -461,12 +478,9 @@ private class TopicHighlight {
         textY: Int,
         text: Placeable,
         fontSize: TextUnit,
-    ) = with(density) {
+    ): HighlightShape? = with(density) {
         val topicWidth = header?.get(FirstTopicEnd)?.takeIf { it != AlignmentLine.Unspecified }
-        if (header == null || topicWidth == null) {
-            path = null
-            return@with
-        }
+        if (header == null || topicWidth == null) return@with null
         val unit = 1.dp.toPx()
         val left = -TopicHighlightStart.toPx()
         val top = header.baselineOr(0) - fontSize.toPx() * TOPIC_HIGHLIGHT_RISE
@@ -475,16 +489,22 @@ private class TopicHighlight {
         val topRight = topicWidth + TopicHighlightEnd.toPx()
         var bottomRight = ceil(minOf(lineRight, text.width.toFloat()) / unit) * unit + TopicTextExtra.toPx()
         if (bottomRight < topRight && topRight - bottomRight < TopicMergeDistance.toPx()) bottomRight = topRight
-        bottom = Rect(left, midY, bottomRight, bottomEdge)
-        path = Path().apply {
-            addRectStack(
-                rects = listOf(Rect(left, top, topRight, midY), bottom),
-                radius = floor(bottom.height / 2 / unit) * unit,
-                snap = TopicSnap.toPx(),
-            )
-        }
-    }
+        val bottom = Rect(left, midY, bottomRight, bottomEdge)
+        HighlightShape(
+            top = Rect(left, top, topRight, midY),
+            bottom = bottom,
+            radius = floor(bottom.height / 2 / unit) * unit,
+            snap = TopicSnap.toPx(),
+        )
+    }.also { shape = it }
 }
+
+private data class HighlightShape(
+    val top: Rect,
+    val bottom: Rect,
+    val radius: Float,
+    val snap: Float,
+)
 
 internal val FirstTopicEnd = VerticalAlignmentLine(::minOf)
 private val TopicTextExtra = 15.dp

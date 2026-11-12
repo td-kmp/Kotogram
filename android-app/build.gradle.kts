@@ -47,9 +47,8 @@ android {
             isDebuggable = true
         }
         release {
-            if (keystorePropertiesFile.exists()) {
-                signingConfig = signingConfigs.getByName("release")
-            }
+
+            signingConfig = signingConfigs.getByName("debug")
             optimization {
                 enable = true
             }
@@ -81,4 +80,5 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.koin.android)
     debugImplementation(libs.compose.ui.tooling)
+    debugImplementation(libs.leakcanary.android)
 }

@@ -9,6 +9,8 @@ plugins {
 }
 
 kotlin {
+    applyDefaultHierarchyTemplate()
+
     android {
         namespace = "com.xbot.kotogram.core.designsystem.components"
         compileSdk {
@@ -54,6 +56,10 @@ kotlin {
     }
 
     sourceSets {
+        val skikoMain = create("skikoMain") { dependsOn(commonMain.get()) }
+        jvmMain.get().dependsOn(skikoMain)
+        iosMain.get().dependsOn(skikoMain)
+        webMain.get().dependsOn(skikoMain)
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
         }

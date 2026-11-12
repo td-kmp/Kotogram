@@ -15,11 +15,13 @@ import com.xbot.kotogram.core.designsystem.component.platform.asCoilBitmap
 import com.xbot.kotogram.core.designsystem.component.platform.asComposeBitmap
 
 @Immutable
-class ImageBlur(
+data class ImageBlur(
     val resolution: Int,
     val saturation: Float = 1f,
 ) {
     internal val cacheKey: String get() = "blur:$resolution:$saturation"
+
+    internal val decodeSize: Int get() = resolution * DECODE_PER_CELL
 
     internal companion object {
         val Placeholder = ImageBlur(resolution = 11)
@@ -41,21 +43,24 @@ internal class BlurTransformation(
 
 internal fun ImageBitmap.blurred(blur: ImageBlur): ImageBitmap {
     val short = minOf(width, height).coerceAtLeast(1)
-    val coarseWidth = (width * blur.resolution / short).coerceAtLeast(1)
-    val coarseHeight = (height * blur.resolution / short).coerceAtLeast(1)
+    val coarseWidth = (width * blur.resolution / short).coerceIn(1, width.coerceAtLeast(1))
+    val coarseHeight = (height * blur.resolution / short).coerceIn(1, height.coerceAtLeast(1))
     val paint = Paint().apply { filterQuality = FilterQuality.Low }
     var current = this
     while (current.width >= coarseWidth * 2 && current.height >= coarseHeight * 2) {
         current = current.scaled((current.width + 1) / 2, (current.height + 1) / 2, paint)
     }
     current = current.scaled(coarseWidth, coarseHeight, paint)
-    while (minOf(current.width, current.height) < SMOOTH_SIDE) current = current.chaikinSubdivided(paint)
+    while (current.canSubdivide()) current = current.chaikinSubdivided(paint)
     if (blur.saturation != 1f) {
         paint.colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(blur.saturation) })
         current = current.scaled(current.width, current.height, paint)
     }
     return current
 }
+
+private fun ImageBitmap.canSubdivide(): Boolean =
+    minOf(width, height) < SMOOTH_SIDE && maxOf(width, height) * 2 <= MAX_SIDE
 
 private fun ImageBitmap.chaikinSubdivided(bilinear: Paint): ImageBitmap = scaled(width * 2, height * 2, bilinear)
 
@@ -70,3 +75,5 @@ private fun ImageBitmap.scaled(
 }
 
 private const val SMOOTH_SIDE = 64
+private const val MAX_SIDE = 1024
+private const val DECODE_PER_CELL = 8

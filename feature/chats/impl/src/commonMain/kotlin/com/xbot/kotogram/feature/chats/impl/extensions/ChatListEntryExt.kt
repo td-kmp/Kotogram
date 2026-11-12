@@ -307,7 +307,7 @@ private fun ChatListEntry.hasSameActivityAs(other: ChatListEntry) = stories === 
     scopeSettings === other.scopeSettings &&
     tags.hasSameItemsAs(other.tags) &&
     mentionedUsers.hasSameItemsAs(other.mentionedUsers) &&
-    typing.map { it.action }.hasSameItemsAs(other.typing.map { it.action }) &&
-    typing.map { it.user }.hasSameItemsAs(other.typing.map { it.user }) &&
-    topics.map { it.info }.hasSameItemsAs(other.topics.map { it.info }) &&
-    topics.map { it.isUnread } == other.topics.map { it.isUnread }
+    typing.hasSameItemsAs(other.typing) { it.action } &&
+    typing.hasSameItemsAs(other.typing) { it.user } &&
+    topics.hasSameItemsAs(other.topics) { it.info } &&
+    topics.hasEqualItemsAs(other.topics) { it.isUnread }

@@ -3,7 +3,6 @@ package com.xbot.kotogram.core.designsystem.component
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,6 +17,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorProducer
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.AlignmentLine
@@ -58,7 +57,7 @@ sealed interface TitleMark {
     data object Premium : TitleMark
 
     @Immutable
-    class Warning(
+    data class Warning(
         val label: String,
     ) : TitleMark
 }
@@ -66,7 +65,7 @@ sealed interface TitleMark {
 @Stable
 class ChatListItemScope internal constructor(
     internal val texts: ChatListItemTexts,
-    internal val containerColor: Color,
+    internal val containerColor: ColorProducer,
 ) {
     internal val style: ChatListItemStyleScope get() = texts.style
 }
@@ -88,11 +87,11 @@ fun ChatListItem(
     @Suppress("NAME_SHADOWING")
     val style = rememberStyle(::ChatListItemStyleScope, ChatListItemStyle.Adaptive then style)
     val texts = rememberChatListItemTexts(style)
-    val container by animateColorAsState(
+    val container = animateColorAsState(
         targetValue = if (pinned) style.pinnedContainerColor else style.containerColor,
         animationSpec = tween(PIN_MILLIS, easing = EaseInOut),
     )
-    val scope = remember(texts, container) { ChatListItemScope(texts, container) }
+    val scope = remember(texts, container) { ChatListItemScope(texts) { container.value } }
     val clickable = if (onClick != null) {
         Modifier.clickable(
             interactionSource = interactionSource,
@@ -104,7 +103,7 @@ fun ChatListItem(
     }
     Layout(
         modifier = modifier
-            .background(container)
+            .drawBehind { drawRect(container.value) }
             .then(clickable)
             .drawBehind {
                 val inset = separator == ChatListItemSeparator.Inset

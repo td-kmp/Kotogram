@@ -21,8 +21,19 @@ interface DateFormats {
 fun rememberDateFormats(): DateFormats {
     val language = LocalLocalization.current.language?.pluralCode ?: BUNDLED_LANGUAGE
     val hour24 = platformHour24()
-    return remember(language, hour24) { platformDateFormats(language, platformRegion(), hour24) }
+    return remember(language, hour24) { sharedDateFormats(DateFormatsKey(language, platformRegion(), hour24)) }
 }
+
+private data class DateFormatsKey(
+    val language: String,
+    val region: String?,
+    val hour24: Boolean?,
+)
+
+private var shared: Pair<DateFormatsKey, DateFormats>? = null
+
+private fun sharedDateFormats(key: DateFormatsKey): DateFormats = shared?.takeIf { it.first == key }?.second
+    ?: platformDateFormats(key.language, key.region, key.hour24).also { shared = key to it }
 
 @Composable
 fun relativeDateString(epochSeconds: Long): String = rememberDateFormats().relative(epochSeconds)

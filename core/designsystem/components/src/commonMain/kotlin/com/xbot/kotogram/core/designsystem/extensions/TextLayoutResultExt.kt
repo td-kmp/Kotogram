@@ -6,14 +6,52 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
+import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.text.TextLayoutInput
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.style.TextDecoration
+import com.xbot.kotogram.core.designsystem.component.platform.LineRightCountsEllipsis
 import kotlin.math.ceil
 
-internal fun TextLayoutResult.glyphBounds(): Rect = if (size.width > 0 && size.height > 0) ink() else Rect.Zero
+internal fun TextLayoutResult.glyphBounds(): Rect {
+    if (size.width <= 0 || size.height <= 0) return Rect.Zero
+    return InkCache[layoutInput] ?: (outlineBounds() ?: rasterInkBounds()).also { InkCache[layoutInput] = it }
+}
 
-private fun TextLayoutResult.ink(): Rect {
-    // Hack: Compose has no glyph bounds, so the text is drawn offscreen and its ink is read back.
+internal expect fun TextLayoutResult.glyphPathBounds(): Rect?
+
+internal fun TextLayoutResult.outlineBounds(): Rect? =
+    if (isPlainLine()) glyphPathBounds()?.translate(getLineLeft(0), 0f) else null
+
+private fun TextLayoutResult.isPlainLine(): Boolean = lineCount == 1 &&
+    !hasVisualOverflow &&
+    layoutInput.placeholders.isEmpty() &&
+    layoutInput.text.spanStyles.isEmpty() &&
+    layoutInput.text.paragraphStyles.isEmpty() &&
+    isPlain(layoutInput.style)
+
+private fun isPlain(style: TextStyle): Boolean = style.brush == null &&
+    style.shadow == null &&
+    style.textDecoration.let { it == null || it == TextDecoration.None } &&
+    style.drawStyle.let { it == null || it == Fill } &&
+    style.textGeometricTransform == null &&
+    style.baselineShift == null &&
+    style.fontFeatureSettings == null
+
+internal fun TextLayoutResult.shownLineRight(
+    line: Int,
+    ellipsis: Float,
+): Float {
+    if (line >= lineCount) return 0f
+    // Workaround: Skia leaves the ellipsis out of a cut line's right; Android's layout counts it.
+    val cut = line == lineCount - 1 && hasVisualOverflow && !LineRightCountsEllipsis
+    return (getLineRight(line) + if (cut) ellipsis else 0f).coerceAtMost(size.width.toFloat())
+}
+
+internal fun TextLayoutResult.rasterInkBounds(): Rect {
+    // Hack: Compose has no glyph bounds, so text the platform can't outline is drawn offscreen and read back.
     val baseline = firstBaseline
     val pad = size.height / 2
     val width = size.width + pad * 2
@@ -26,7 +64,7 @@ private fun TextLayoutResult.ink(): Rect {
         canvas = Canvas(bitmap),
         size = Size(width.toFloat(), height.toFloat()),
     ) {
-        drawText(this@ink, topLeft = Offset(pad.toFloat(), originY - baseline))
+        drawText(this@rasterInkBounds, topLeft = Offset(pad.toFloat(), originY - baseline))
     }
     val pixels = IntArray(width * height)
     bitmap.readPixels(pixels)
@@ -52,5 +90,20 @@ private fun TextLayoutResult.ink(): Rect {
     )
 }
 
+private object InkCache {
+    private val entries = LinkedHashMap<TextLayoutInput, Rect>()
+
+    operator fun get(input: TextLayoutInput): Rect? = entries.remove(input)?.also { entries[input] = it }
+
+    operator fun set(
+        input: TextLayoutInput,
+        ink: Rect,
+    ) {
+        entries[input] = ink
+        if (entries.size > INK_CACHE_SIZE) entries.remove(entries.keys.first())
+    }
+}
+
 private const val ALPHA_SHIFT = 24
 private const val ALPHA_MAX = 255f
+private const val INK_CACHE_SIZE = 128

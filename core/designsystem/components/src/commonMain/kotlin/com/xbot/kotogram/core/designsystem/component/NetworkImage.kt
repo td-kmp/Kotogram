@@ -36,12 +36,12 @@ fun NetworkImage(
 ) {
     val imageStyle = rememberStyle(::NetworkImageStyleScope, NetworkImageStyle.Default then style)
     val context = LocalPlatformContext.current
-    val imageLoader = LocalImageLoader.current ?: remember(context) { ImageLoader(context) }
+    val imageLoader = rememberImageLoader()
     val request = remember(model, context, imageStyle.fadeInMillis, blur) {
         ImageRequest.Builder(context)
             .data(model)
             .crossfade(imageStyle.fadeInMillis)
-            .apply { if (blur != null) transformations(BlurTransformation(blur)) }
+            .apply { if (blur != null) transformations(BlurTransformation(blur)).size(blur.decodeSize) }
             .build()
     }
     val placeholder = if (thumbnail != null) {
@@ -65,6 +65,12 @@ fun NetworkImage(
         error = placeholder,
         contentScale = contentScale,
     )
+}
+
+@Composable
+internal fun rememberImageLoader(): ImageLoader {
+    val context = LocalPlatformContext.current
+    return LocalImageLoader.current ?: remember(context) { ImageLoader(context) }
 }
 
 fun interface NetworkImageStyle : ComponentStyle<NetworkImageStyleScope> {

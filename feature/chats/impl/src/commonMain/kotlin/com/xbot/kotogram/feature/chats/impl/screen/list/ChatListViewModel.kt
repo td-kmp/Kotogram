@@ -9,8 +9,11 @@ import io.xbot.tdlib.api.ChatListArchive
 import io.xbot.tdlib.api.ChatListMain
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -39,16 +42,23 @@ internal class ChatListViewModel(
                 }
                 launch { repository.loadMore(ChatListArchive) }
                 launch { repository.loadStories() }
+                val latestRows = Channel<List<ChatListRow>>(Channel.CONFLATED)
+                launch {
+                    for (rows in latestRows) {
+                        resolveCustomEmoji(rows)
+                        loadForumTopics(rows)
+                    }
+                }
                 selected
                     .flatMapLatest { list ->
                         val mapper = ChatListRowMapper()
-                        repository.chatList(list).map(mapper::map)
+                        repository.chatList(list).map(mapper::map).distinctUntilChanged { old, new -> old === new }
                     }
                     .flowOn(Dispatchers.Default)
+                    .conflate()
                     .collect { rows ->
                         reduce { state.copy(rows = rows) }
-                        resolveCustomEmoji(rows)
-                        loadForumTopics(rows)
+                        latestRows.trySend(rows)
                     }
             }
         }

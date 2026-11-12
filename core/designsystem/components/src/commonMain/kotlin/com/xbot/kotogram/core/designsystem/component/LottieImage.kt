@@ -45,7 +45,7 @@ fun LottieImage(
     colors: Map<String, Color> = emptyMap(),
 ) {
     val context = LocalPlatformContext.current
-    val imageLoader = LocalImageLoader.current ?: remember(context) { ImageLoader(context) }
+    val imageLoader = rememberImageLoader()
     val spec = remember(model, imageLoader) {
         val options = Options(context)
         val key = imageLoader.components.key(model, options) ?: model.toString()

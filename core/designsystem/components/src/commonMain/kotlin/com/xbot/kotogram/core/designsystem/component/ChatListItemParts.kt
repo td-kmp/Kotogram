@@ -9,6 +9,7 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -44,6 +45,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.xbot.kotogram.core.designsystem.extensions.shown
 import com.xbot.kotogram.core.designsystem.icon.KotogramIcons
 import kotlin.math.roundToInt
 
@@ -54,16 +56,15 @@ fun ChatListItemScope.Date(
     status: MessageStatus? = null,
 ) {
     val lift = with(LocalDensity.current) { (texts.date.fontSize.toPx() * STATUS_ICON_LIFT).roundToInt() }
-    var lastStatus by remember { mutableStateOf(status) }
-    if (status != null) lastStatus = status
+    val statuses = updateTransition(status)
     Row(modifier) {
-        AnimatedVisibility(
-            visible = status != null,
+        statuses.AnimatedVisibility(
+            visible = { it != null },
             modifier = Modifier.alignBy { it.measuredHeight / 2 + lift },
             enter = fadeIn(tween(STATUS_FADE_MILLIS)),
             exit = fadeOut(tween(STATUS_FADE_MILLIS)),
         ) {
-            lastStatus?.let { MessageStatusIcon(status = it, modifier = Modifier.size(style.statusIconSize)) }
+            statuses.shown?.let { MessageStatusIcon(status = it, modifier = Modifier.size(style.statusIconSize)) }
         }
         if (status != null) Spacer(Modifier.width(StatusGap))
         Text(text, style = texts.date, maxLines = 1, modifier = Modifier.alignByBaseline())
@@ -82,19 +83,17 @@ fun ChatListItemScope.Badges(
     archived: Boolean = false,
 ) {
     val marker = badgeMarker(mention, reaction, pollVotes, muted, archived)
-    var lastMarker by remember { mutableStateOf(marker) }
-    if (marker != null) lastMarker = marker
-    var lastCount by remember { mutableStateOf(unreadCount) }
-    if (unreadCount != null) lastCount = unreadCount
+    val markers = updateTransition(marker)
+    val counts = updateTransition(unreadCount)
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        AnimatedVisibility(visible = marker != null, enter = popIn(bounce = true), exit = popOut()) {
-            lastMarker?.let { Icon(it.icon, null, Modifier.size(BadgeHeight), tint = it.color) }
+        markers.AnimatedVisibility(visible = { it != null }, enter = popIn(bounce = true), exit = popOut()) {
+            markers.shown?.let { Icon(it.icon, null, Modifier.size(BadgeHeight), tint = it.color) }
         }
         if (marker != null && unreadCount != null) Spacer(Modifier.width(style.badgeGap))
-        AnimatedVisibility(visible = unreadCount != null, enter = popIn(bounce = !muted), exit = popOut()) {
+        counts.AnimatedVisibility(visible = { it != null }, enter = popIn(bounce = !muted), exit = popOut()) {
             val color = if (muted) style.mutedBadgeColor else style.badgeColor
             val content = if (muted) style.mutedBadgeContentColor else style.badgeContentColor
-            CountBadge(lastCount.orEmpty(), color, content, bounce = !muted)
+            CountBadge(counts.shown.orEmpty(), color, content, bounce = !muted)
         }
         if (pinned && marker == null && unreadCount == null) {
             Icon(KotogramIcons.PinFilled, null, Modifier.size(PinnedIconSize), tint = style.iconColor)
@@ -121,7 +120,7 @@ private fun ChatListItemScope.badgeMarker(
     else -> null
 }
 
-private class BadgeMarker(
+private data class BadgeMarker(
     val icon: ImageVector,
     val color: Color,
 )

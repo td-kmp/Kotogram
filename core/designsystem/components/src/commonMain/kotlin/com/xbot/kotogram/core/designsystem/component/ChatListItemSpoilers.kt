@@ -1,5 +1,7 @@
 package com.xbot.kotogram.core.designsystem.component
 
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
@@ -11,19 +13,40 @@ internal typealias Spoiler = AnnotatedString.Range<String>
 
 internal fun AnnotatedString.spoilers(): List<Spoiler> = getStringAnnotations(SPOILER_ANNOTATION, 0, length)
 
-internal fun AnnotatedString.hiding(spoilers: List<Spoiler>): AnnotatedString {
+internal fun AnnotatedString.hiding(
+    spoilers: List<Spoiler>,
+    slots: Set<String>,
+): AnnotatedString {
     if (spoilers.isEmpty()) return this
+    val covered = getStringAnnotations(0, length)
+        .filter { slot -> slot.item in slots && spoilers.any { it.start < slot.end && slot.start < it.end } }
+        .sortedBy { it.start }
     return buildAnnotatedString {
-        append(this@hiding)
+        var cursor = 0
+        covered.forEach { slot ->
+            append(this@hiding, cursor, slot.start)
+            appendInlineContent(hiddenSlot(slot.item), this@hiding.text.substring(slot.start, slot.end))
+            cursor = slot.end
+        }
+        append(this@hiding, cursor, this@hiding.length)
         spoilers.forEach { addStyle(SpanStyle(color = Color.Transparent), it.start, it.end) }
     }
 }
 
-internal fun TextLayoutResult.shownRight(ellipsis: Float): Float {
-    if (lineCount == 0) return 0f
-    // Workaround: Skia leaves the ellipsis out of the line's right.
-    val right = getLineRight(0) + if (hasVisualOverflow) ellipsis else 0f
-    return right.coerceAtMost(size.width.toFloat())
+internal fun Map<String, InlineTextContent>.withHiddenSlots(spoilers: List<Spoiler>): Map<String, InlineTextContent> =
+    if (spoilers.isEmpty()) {
+        this
+    } else {
+        this + entries.associate { (slot, content) -> hiddenSlot(slot) to InlineTextContent(content.placeholder) {} }
+    }
+
+internal fun AnnotatedString.withoutSpoilers(spoilers: List<Spoiler>): String = buildString {
+    var cursor = 0
+    spoilers.sortedBy { it.start }.forEach { spoiler ->
+        if (spoiler.start > cursor) append(text, cursor, spoiler.start)
+        cursor = maxOf(cursor, spoiler.end)
+    }
+    if (cursor < text.length) append(text, cursor, text.length)
 }
 
 internal class SpoilerAreas {
@@ -68,6 +91,7 @@ private fun TextLayoutResult.addWords(
     ink: SpoilerInk,
 ) {
     val shown = getLineEnd(line, visibleEnd = true)
+    val lineEnd = getLineEnd(line)
     val from = maxOf(start, getLineStart(line))
     val to = minOf(end, shown)
     val top = getLineTop(line) + ink.inset
@@ -78,11 +102,14 @@ private fun TextLayoutResult.addWords(
         if (!boundary && word < 0) word = index
         if (!boundary || word < 0) continue
         val left = getHorizontalPosition(word, usePrimaryDirection = true)
-        var right = if (index >=
-            getLineEnd(line)
-        ) getLineRight(line) else getHorizontalPosition(index, usePrimaryDirection = true)
+        val atLineEnd = index >= lineEnd
+        var right = if (atLineEnd) getLineRight(line) else getHorizontalPosition(index, usePrimaryDirection = true)
         if (index == to && isLastLine && end > shown) right = minOf(right + ink.truncated, size.width.toFloat())
         areas += Rect(minOf(left, right), top, maxOf(left, right), bottom)
         word = -1
     }
 }
+
+private fun hiddenSlot(slot: String) = "$HIDDEN_SLOT$slot"
+
+private const val HIDDEN_SLOT = "chat-list-item:hidden:"

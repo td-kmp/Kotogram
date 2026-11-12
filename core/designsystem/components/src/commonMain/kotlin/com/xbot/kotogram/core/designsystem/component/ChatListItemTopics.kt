@@ -95,15 +95,18 @@ private fun ChatListItemScope.TopicChip(topic: ForumTopic) {
         },
     ) { measurables, constraints ->
         val iconMeasurable = measurables.getOrNull(1)
-        val iconWidth = if (iconMeasurable !=
-            null
-        ) TopicIconSize.roundToPx() + TopicIconGap.roundToPx() else TopicNoIcon.roundToPx()
-        val title = measurables[0].measure(Constraints(maxWidth = (constraints.maxWidth - iconWidth).coerceAtLeast(0)))
+        val iconWidth = when (iconMeasurable) {
+            null -> TopicNoIcon.roundToPx()
+            else -> TopicIconSize.roundToPx() + TopicIconGap.roundToPx()
+        }
+        val inset = TopicTitleInset.roundToPx()
+        val titleMaxWidth = (constraints.maxWidth - iconWidth - inset * 2).coerceAtLeast(0)
+        val title = measurables[0].measure(Constraints(maxWidth = titleMaxWidth))
         val icon = iconMeasurable?.measure(Constraints())
         val baseline = title.baselineOr(title.height)
-        val inset = TopicTitleInset.roundToPx()
         val titleWidth = ceil(title.width.toDp().value).dp.roundToPx()
-        layout(iconWidth + titleWidth + inset * 2, title.height, mapOf(FirstBaseline to baseline)) {
+        val width = (iconWidth + titleWidth + inset * 2).coerceAtMost(constraints.maxWidth)
+        layout(width, title.height, mapOf(FirstBaseline to baseline)) {
             title.place(iconWidth + inset, 0)
             icon?.place(0, baseline - (TOPIC_ICON_LIFT * texts.text.fontSize.toPx()).roundToInt() - icon.height / 2)
         }

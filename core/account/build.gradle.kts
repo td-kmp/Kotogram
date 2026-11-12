@@ -111,7 +111,7 @@ buildkonfig {
             "TDLIB_LOG_VERBOSITY",
             providers.gradleProperty("tdlib.log.verbosity").orNull
                 ?: localProperties.getProperty("tdlib.log.verbosity")
-                ?: "4",
+                ?: "2",
         )
         buildConfigField(
             BOOLEAN,

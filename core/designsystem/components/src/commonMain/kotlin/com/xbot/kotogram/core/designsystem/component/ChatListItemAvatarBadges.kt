@@ -10,6 +10,7 @@ import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Canvas
@@ -50,6 +51,8 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.xbot.kotogram.core.designsystem.extensions.background
+import com.xbot.kotogram.core.designsystem.extensions.shown
 import com.xbot.kotogram.core.designsystem.icon.KotogramIcons
 import kotlin.math.floor
 
@@ -91,25 +94,23 @@ private fun ChatListItemScope.VoiceChatBars() {
     val side by transition.animateFloat(SIDE_BARS[0], SIDE_BARS[0], barsSpec(SIDE_BARS))
     val middle by transition.animateFloat(MIDDLE_BARS[0], MIDDLE_BARS[0], barsSpec(MIDDLE_BARS))
     val barColor = style.voiceChatBarColor
-    run {
-        Canvas(
-            Modifier
-                .size(VoiceChatSize)
-                .background(containerColor, CircleShape)
-                .padding(OnlineRing)
-                .background(style.onlineColor, CircleShape),
-        ) {
-            val unit = 1.dp.toPx()
-            val bar = BAR_WIDTH * unit
-            listOf(BAR_LEFT to side, BAR_MIDDLE to middle, BAR_RIGHT to side).forEach { (x, height) ->
-                val h = height * unit
-                drawRoundRect(
-                    color = barColor,
-                    topLeft = Offset((x - OnlineRing.value) * unit, size.height / 2 - h / 2),
-                    size = Size(bar, h),
-                    cornerRadius = CornerRadius(bar / 2),
-                )
-            }
+    Canvas(
+        Modifier
+            .size(VoiceChatSize)
+            .background(containerColor, CircleShape)
+            .padding(OnlineRing)
+            .background(style.onlineColor, CircleShape),
+    ) {
+        val unit = 1.dp.toPx()
+        val bar = BAR_WIDTH * unit
+        listOf(BAR_LEFT to side, BAR_MIDDLE to middle, BAR_RIGHT to side).forEach { (x, height) ->
+            val h = height * unit
+            drawRoundRect(
+                color = barColor,
+                topLeft = Offset((x - OnlineRing.value) * unit, size.height / 2 - h / 2),
+                size = Size(bar, h),
+                cornerRadius = CornerRadius(bar / 2),
+            )
         }
     }
 }
@@ -124,16 +125,16 @@ private fun barsSpec(values: FloatArray): InfiniteRepeatableSpec<Float> = Infini
 
 @Composable
 internal fun ChatListItemScope.AutoDeleteBadge(
-    visible: Boolean,
-    text: String,
+    text: String?,
     avatar: @Composable (blur: ImageBlur?) -> Unit,
 ) {
+    val timers = updateTransition(text)
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd) {
-        AnimatedVisibility(
-            visible = visible,
+        timers.AnimatedVisibility(
+            visible = { it != null },
             enter = scaleIn(spring(stiffness = Spring.StiffnessMediumLow)),
             exit = scaleOut(spring(stiffness = Spring.StiffnessMediumLow)),
-        ) { AutoDeleteContent(text, avatar) }
+        ) { AutoDeleteContent(timers.shown.orEmpty(), avatar) }
     }
 }
 
@@ -146,35 +147,34 @@ private fun ChatListItemScope.AutoDeleteContent(
     val density = LocalDensity.current
     val contentColor = style.autoDeleteContentColor
     val family = style.titleTextStyle.fontFamily
-    run {
-        Box(Modifier.size(AutoDeleteSize).clip(CircleShape)) {
-            BlurredCorner(style.avatarSize, avatar)
-            Spacer(
-                Modifier
-                    .fillMaxSize()
-                    .background(AutoDeleteShade)
-                    .drawWithCache {
-                        val maxWidth = size.width - with(density) { AutoDeleteTextInset.toPx() } * 2
-                        var fontSize = floor(AutoDeleteSize.value * AUTO_DELETE_TEXT_SCALE)
-                        var layout = measurer.measure(text, autoDeleteText(fontSize, contentColor, family))
-                        while (layout.size.width > maxWidth && fontSize > 2f) {
-                            fontSize -= 1f
-                            layout = measurer.measure(text, autoDeleteText(fontSize, contentColor, family))
-                        }
-                        val topLeft = Offset(
-                            floor((size.width - layout.size.width) / 2),
-                            floor((size.height - layout.size.height) / 2),
-                        )
-                        onDrawBehind {
-                            drawText(layout, topLeft = topLeft)
-                            drawTimerRing(contentColor)
-                        }
-                    },
-            )
-        }
+    Box(Modifier.size(AutoDeleteSize).clip(CircleShape)) {
+        BlurredCorner(style.avatarSize, avatar)
+        Spacer(
+            Modifier
+                .fillMaxSize()
+                .background(AutoDeleteShade)
+                .drawWithCache {
+                    val maxWidth = size.width - with(density) { AutoDeleteTextInset.toPx() } * 2
+                    var fontSize = floor(AutoDeleteSize.value * AUTO_DELETE_TEXT_SCALE)
+                    var layout = measurer.measure(text, autoDeleteText(fontSize, contentColor, family))
+                    while (layout.size.width > maxWidth && fontSize > 2f) {
+                        fontSize -= 1f
+                        layout = measurer.measure(text, autoDeleteText(fontSize, contentColor, family))
+                    }
+                    val topLeft = Offset(
+                        floor((size.width - layout.size.width) / 2),
+                        floor((size.height - layout.size.height) / 2),
+                    )
+                    onDrawBehind {
+                        drawText(layout, topLeft = topLeft)
+                        drawTimerRing(contentColor)
+                    }
+                },
+        )
     }
 }
 
+// Hack: the backdrop is a second, blurred copy of the avatar's slot, so whatever the slot holds runs twice.
 @Composable
 private fun BoxScope.BlurredCorner(
     avatarSize: Dp,
@@ -255,7 +255,6 @@ internal fun ChatListItemScope.LiveBadge(label: String) {
         }
     }
 }
-
 private val OnlineSize = 14.dp
 
 private val OnlineRing = 2.dp

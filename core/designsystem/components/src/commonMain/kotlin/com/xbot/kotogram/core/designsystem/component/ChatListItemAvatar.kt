@@ -5,10 +5,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Rect
@@ -25,14 +21,14 @@ import kotlin.math.floor
 @Immutable
 sealed interface StoryRing {
     @Immutable
-    class Stories(
+    data class Stories(
         val total: Int,
         val unseen: Int,
         val closeFriends: Boolean = false,
     ) : StoryRing
 
     @Immutable
-    class Live(
+    data class Live(
         val label: String,
     ) : StoryRing
 }
@@ -44,7 +40,7 @@ sealed interface AvatarBadge {
     data object VoiceChat : AvatarBadge
 
     @Immutable
-    class AutoDelete(
+    data class AutoDelete(
         val text: String,
     ) : AvatarBadge
 
@@ -72,12 +68,9 @@ fun ChatListItemScope.ChatAvatar(
                 },
         ) { content(null) }
         if (stories != null) StoryRingCanvas(stories, shape)
-        val autoDelete = (badge as? AvatarBadge.AutoDelete)?.text
-        var lastAutoDelete by remember { mutableStateOf(autoDelete) }
-        if (autoDelete != null) lastAutoDelete = autoDelete
         OnlineDot(visible = badge == AvatarBadge.Online)
         VoiceChatDot(visible = badge == AvatarBadge.VoiceChat)
-        AutoDeleteBadge(visible = autoDelete != null, text = lastAutoDelete.orEmpty(), avatar = content)
+        AutoDeleteBadge(text = (badge as? AvatarBadge.AutoDelete)?.text, avatar = content)
         if (badge == AvatarBadge.Subscription) SubscriptionStar()
         if (stories is StoryRing.Live) LiveBadge(stories.label)
     }

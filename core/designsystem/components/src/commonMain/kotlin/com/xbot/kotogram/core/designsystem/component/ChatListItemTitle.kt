@@ -3,6 +3,7 @@ package com.xbot.kotogram.core.designsystem.component
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -15,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.layout.AlignmentLine
 import androidx.compose.ui.layout.FirstBaseline
 import androidx.compose.ui.layout.Layout
@@ -23,11 +25,27 @@ import androidx.compose.ui.layout.MeasurePolicy
 import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.layout.Placeable
+import androidx.compose.ui.layout.VerticalAlignmentLine
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.node.DrawModifierNode
+import androidx.compose.ui.node.LayoutModifierNode
+import androidx.compose.ui.node.ModifierNodeElement
+import androidx.compose.ui.node.SemanticsModifierNode
+import androidx.compose.ui.node.invalidateDraw
+import androidx.compose.ui.platform.InspectorInfo
+import androidx.compose.ui.semantics.SemanticsPropertyReceiver
+import androidx.compose.ui.semantics.text
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import com.xbot.kotogram.core.designsystem.extensions.shownLineRight
 import com.xbot.kotogram.core.designsystem.icon.KotogramIcons
 import kotlin.math.ceil
 import kotlin.math.roundToInt
@@ -43,21 +61,12 @@ fun ChatListItemScope.Title(
     emojiStatus: @Composable (() -> Unit)? = null,
     botVerification: @Composable (() -> Unit)? = null,
 ) {
-    val lineEnd = remember { FloatArray(1) }
     val titleStyle = if (secret) texts.title.merge(color = style.secretColor) else texts.title
+    val measurer = rememberTextMeasurer()
     Layout(
         modifier = modifier,
         content = {
-            Text(
-                text = text,
-                style = titleStyle,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.layoutId(TitlePart.Text),
-                onTextLayout = { layout ->
-                    lineEnd[0] = layout.getLineRight(0) + if (layout.didOverflowHeight) texts.ellipsisWidth else 0f
-                },
-            )
+            Spacer(Modifier.layoutId(TitlePart.Text).titleText(text, titleStyle, measurer, texts.ellipsisWidth))
             if (botVerification != null) {
                 Box(Modifier.layoutId(TitlePart.BotVerification).size(BotVerificationSize), Alignment.Center) {
                     botVerification()
@@ -87,9 +96,84 @@ fun ChatListItemScope.Title(
             }
             if (label != null) TitleLabel(label, Modifier.layoutId(TitlePart.Label))
         },
-        measurePolicy = TitleMeasurePolicy(style, texts.title.fontSize, lineEnd, mark),
+        measurePolicy = remember(style, texts, mark) { TitleMeasurePolicy(style, texts.title.fontSize, mark) },
     )
 }
+
+private fun Modifier.titleText(
+    title: String,
+    style: TextStyle,
+    measurer: TextMeasurer,
+    ellipsis: Float,
+): Modifier = this then TitleTextElement(title, style, measurer, ellipsis)
+
+private data class TitleTextElement(
+    val title: String,
+    val style: TextStyle,
+    val measurer: TextMeasurer,
+    val ellipsis: Float,
+) : ModifierNodeElement<TitleTextNode>() {
+    override fun create() = TitleTextNode(title, style, measurer, ellipsis)
+
+    override fun update(node: TitleTextNode) {
+        node.title = title
+        node.style = style
+        node.measurer = measurer
+        node.ellipsis = ellipsis
+    }
+
+    override fun InspectorInfo.inspectableProperties() {
+        name = "titleText"
+        properties["title"] = title
+    }
+}
+
+private class TitleTextNode(
+    var title: String,
+    var style: TextStyle,
+    var measurer: TextMeasurer,
+    var ellipsis: Float,
+) : Modifier.Node(),
+    LayoutModifierNode,
+    DrawModifierNode,
+    SemanticsModifierNode {
+    private var textLayout: TextLayoutResult? = null
+
+    override fun MeasureScope.measure(
+        measurable: Measurable,
+        constraints: Constraints,
+    ): MeasureResult {
+        val result = measurer.measure(
+            text = title,
+            style = style,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
+            constraints = constraints,
+            layoutDirection = layoutDirection,
+            density = this,
+        )
+        if (result != textLayout) {
+            textLayout = result
+            invalidateDraw()
+        }
+        val (width, height) = result.size
+        val end = ceil(result.shownLineRight(0, ellipsis)).toInt()
+        val placeable = measurable.measure(Constraints.fixed(width, height))
+        val lines = mapOf(FirstBaseline to result.firstBaseline.roundToInt(), TitleTextEnd to end)
+        return layout(width, height, lines) { placeable.place(0, 0) }
+    }
+
+    override fun ContentDrawScope.draw() {
+        textLayout?.let { drawText(it) }
+        drawContent()
+    }
+
+    override fun SemanticsPropertyReceiver.applySemantics() {
+        text = AnnotatedString(title)
+    }
+}
+
+private val TitleTextEnd = VerticalAlignmentLine(::maxOf)
 
 @Composable
 private fun ChatListItemScope.TitleMarkIcon(
@@ -152,7 +236,6 @@ private enum class TitlePart { Text, BotVerification, Secret, EmojiStatus, Mark,
 private class TitleMeasurePolicy(
     private val style: ChatListItemStyleScope,
     private val fontSize: TextUnit,
-    private val lineEnd: FloatArray,
     private val mark: TitleMark?,
 ) : MeasurePolicy {
     override fun MeasureScope.measure(
@@ -169,7 +252,8 @@ private class TitleMeasurePolicy(
             Constraints(maxWidth = (constraints.maxWidth - reserve).coerceAtLeast(0)),
         )
         val baseline = title[FirstBaseline].takeIf { it != AlignmentLine.Unspecified } ?: title.height
-        val placed = leadingIcons(icons, leading, baseline) + trailingIcons(icons, textStart, baseline)
+        val textEnd = textStart + (title[TitleTextEnd].takeIf { it != AlignmentLine.Unspecified } ?: title.width)
+        val placed = leadingIcons(icons, leading, baseline) + trailingIcons(icons, textEnd, baseline)
         val width = maxOf(textStart + title.width, placed.maxOfOrNull { it.x + it.placeable.width } ?: 0)
         return layout(width.coerceAtMost(constraints.maxWidth), title.height) {
             title.place(textStart, 0)
@@ -194,11 +278,10 @@ private class TitleMeasurePolicy(
 
     private fun MeasureScope.trailingIcons(
         icons: Map<TitlePart, Placeable>,
-        textStart: Int,
+        textEnd: Int,
         baseline: Int,
     ): List<PlacedIcon> {
-        // Workaround: onTextLayout runs inside the text's measure; Skia leaves the ellipsis out of the line's right.
-        var origin = textStart + ceil(lineEnd[0]).toInt() + TitleIconStart.roundToPx()
+        var origin = textEnd + TitleIconStart.roundToPx()
         val placed = mutableListOf<PlacedIcon>()
         for (part in listOf(TitlePart.EmojiStatus, TitlePart.Mark, TitlePart.Muted)) {
             val icon = icons[part] ?: continue
