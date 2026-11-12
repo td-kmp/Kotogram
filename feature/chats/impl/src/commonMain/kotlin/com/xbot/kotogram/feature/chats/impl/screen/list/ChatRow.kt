@@ -107,10 +107,14 @@ internal fun ChatRow(
     val tags = row.tags.map { FolderTag(it.title, it.colorId) }
     ChatListItem(
         avatar = {
-            ChatAvatar(stories = row.stories?.toRing(), badge = row.avatarBadge?.toBadge(), shape = row.avatar.shape) {
+            ChatAvatar(
+                stories = row.stories?.toRing(),
+                badge = row.avatarBadge?.toBadge(),
+                shape = row.avatar.shape,
+            ) { blur ->
                 val icon = row.avatar.icon
                 if (icon != null) {
-                    Avatar(icon, Modifier.fillMaxSize(), shape = row.avatar.shape)
+                    Avatar(icon, Modifier.fillMaxSize(), shape = row.avatar.shape, blur = blur)
                 } else {
                     Avatar(
                         photo = row.avatar.photo,
@@ -118,6 +122,7 @@ internal fun ChatRow(
                         colorIndex = row.avatar.colorIndex,
                         thumbnail = row.avatar.thumbnail,
                         shape = row.avatar.shape,
+                        blur = blur,
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
@@ -271,8 +276,13 @@ private fun previewThumbnails(preview: ChatPreview): List<MessageThumbnail> {
     if (preview !is ChatPreview.Message) return emptyList()
     return preview.thumbnails.map { thumbnail ->
         MessageThumbnail(
-            image = {
-                NetworkImage(model = thumbnail.image, contentDescription = null, modifier = Modifier.fillMaxSize())
+            image = { blur ->
+                NetworkImage(
+                    model = thumbnail.image,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    blur = blur,
+                )
             },
             type = thumbnail.type,
             spoiler = thumbnail.spoiler,

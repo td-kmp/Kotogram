@@ -1,75 +1,37 @@
 package com.xbot.kotogram.core.designsystem.component
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.InlineTextContent
-import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.BlurredEdgeTreatment
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathOperation
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.PathParser
-import androidx.compose.ui.layout.AlignmentLine
 import androidx.compose.ui.layout.FirstBaseline
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Placeable
-import androidx.compose.ui.layout.VerticalAlignmentLine
-import androidx.compose.ui.layout.layoutId
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.Placeholder
-import androidx.compose.ui.text.PlaceholderVerticalAlign
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.xbot.kotogram.core.designsystem.extensions.glyphBounds
 import com.xbot.kotogram.core.designsystem.icon.KotogramIcons
 import com.xbot.kotogram.core.designsystem.theme.platformRoundedFontFamily
+import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.roundToInt
-import kotlin.random.Random
 
 @Composable
 internal fun ChatListItemScope.TopicsLine(
@@ -89,7 +51,8 @@ internal fun ChatListItemScope.TopicsLine(
             remaining -= placeable.width + TopicSpacing.roundToPx()
         }
         val height = placeables.maxOfOrNull { it.height } ?: 0
-        val firstEnd = placeables.firstOrNull()?.let { it.width - TopicTitleInset.roundToPx() } ?: 0
+        val start = -TopicLineStart.roundToPx()
+        val firstEnd = placeables.firstOrNull()?.let { start + it.width - TopicTitleInset.roundToPx() } ?: 0
         val baseline = placeables.firstOrNull()?.baselineOr(0) ?: 0
         val width = placeables.sumOf { it.width } + TopicSpacing.roundToPx() * (placeables.size - 1).coerceAtLeast(0)
         layout(
@@ -100,7 +63,7 @@ internal fun ChatListItemScope.TopicsLine(
                 FirstTopicEnd to firstEnd,
             ),
         ) {
-            var x = -TopicTitleInset.roundToPx()
+            var x = start
             placeables.forEach {
                 it.place(x, 0)
                 x += it.width + TopicSpacing.roundToPx()
@@ -139,7 +102,8 @@ private fun ChatListItemScope.TopicChip(topic: ForumTopic) {
         val icon = iconMeasurable?.measure(Constraints())
         val baseline = title.baselineOr(title.height)
         val inset = TopicTitleInset.roundToPx()
-        layout(iconWidth + title.width + inset, title.height, mapOf(FirstBaseline to baseline)) {
+        val titleWidth = ceil(title.width.toDp().value).dp.roundToPx()
+        layout(iconWidth + titleWidth + inset * 2, title.height, mapOf(FirstBaseline to baseline)) {
             title.place(iconWidth + inset, 0)
             icon?.place(0, baseline - (TOPIC_ICON_LIFT * texts.text.fontSize.toPx()).roundToInt() - icon.height / 2)
         }
@@ -153,6 +117,8 @@ private val TopicIconGap = 2.dp
 private val TopicNoIcon = 1.dp
 
 internal val TopicTitleInset = 1.dp
+
+private val TopicLineStart = 2.dp
 
 private val TopicSpacing = 4.dp
 

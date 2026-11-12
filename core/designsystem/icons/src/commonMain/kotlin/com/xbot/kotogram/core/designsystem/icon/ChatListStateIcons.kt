@@ -2,8 +2,10 @@
 
 package com.xbot.kotogram.core.designsystem.icon
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.PathFillType
 import com.xbot.kotogram.core.designsystem.extensions.fill
+import com.xbot.kotogram.core.designsystem.extensions.line
 import com.xbot.kotogram.core.designsystem.extensions.roundRect
 import com.xbot.kotogram.core.designsystem.extensions.stroke
 
@@ -79,6 +81,11 @@ internal fun pollVotesBadgeIcon() = icon("PollVotesBadge", canvas = 20f) {
         lineTo(16.5f, 16.5f)
         close()
     }
+}
+
+internal fun disclosureArrowIcon() = icon("DisclosureArrow") {
+    stroke(2f) { line(Offset(10f, 7f), Offset(15f, 12f)) }
+    stroke(2f) { line(Offset(15f, 12f), Offset(10f, 17f)) }
 }
 
 internal fun topicArrowIcon() = icon("TopicArrow", width = 6f, height = 12f) {

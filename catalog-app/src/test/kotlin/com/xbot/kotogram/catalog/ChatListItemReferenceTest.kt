@@ -25,11 +25,13 @@ import androidx.compose.ui.unit.Density
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.component.Avatar
 import com.xbot.kotogram.core.designsystem.component.AvatarBadge
+import com.xbot.kotogram.core.designsystem.component.AvatarShape
 import com.xbot.kotogram.core.designsystem.component.Badges
 import com.xbot.kotogram.core.designsystem.component.ChatAvatar
 import com.xbot.kotogram.core.designsystem.component.ChatListItem
 import com.xbot.kotogram.core.designsystem.component.ChatListItemSeparator
 import com.xbot.kotogram.core.designsystem.component.Date
+import com.xbot.kotogram.core.designsystem.component.ForumTopic
 import com.xbot.kotogram.core.designsystem.component.Message
 import com.xbot.kotogram.core.designsystem.component.MessageIcon
 import com.xbot.kotogram.core.designsystem.component.MessageStatus
@@ -37,6 +39,7 @@ import com.xbot.kotogram.core.designsystem.component.MessageThumbnail
 import com.xbot.kotogram.core.designsystem.component.MessageThumbnailType
 import com.xbot.kotogram.core.designsystem.component.Title
 import com.xbot.kotogram.core.designsystem.component.TitleMark
+import com.xbot.kotogram.core.designsystem.component.TopicIcon
 import com.xbot.kotogram.core.designsystem.style.ProvideFormFactor
 import org.junit.Assume.assumeTrue
 import java.awt.image.BufferedImage
@@ -54,7 +57,7 @@ class ChatListItemReferenceTest {
         val out = File(OUTPUT).apply { mkdirs() }
         val report = buildString {
             ReferenceRows.forEach { (folder, rows) ->
-                rows.forEach { row ->
+                rows.filter { File(root, "$folder/${it.file}.png").isFile }.forEach { row ->
                     val reference = ImageIO.read(File(root, "$folder/${row.file}.png"))
                     val images = ReferenceImages(root, folder, row)
                     var ours: BufferedImage? = null
@@ -98,8 +101,13 @@ private fun ReferenceRow(
 ) {
     ChatListItem(
         avatar = {
-            ChatAvatar(badge = if (row.online) AvatarBadge.Online else null) {
-                if (row.letters != null) {
+            ChatAvatar(
+                badge = if (row.online) AvatarBadge.Online else null,
+                shape = if (row.forum) AvatarShape.RoundedRect else AvatarShape.Circle,
+            ) {
+                if (row.forum) {
+                    Image(images.avatar, null, Modifier.fillMaxSize())
+                } else if (row.letters != null) {
                     Avatar(
                         photo = null,
                         letters = row.letters,
@@ -124,6 +132,7 @@ private fun ReferenceRow(
                 author = row.author,
                 icon = row.icon,
                 thumbnails = thumbnails(row, images.thumbnail),
+                topics = row.topics,
             )
         },
         badges = {
@@ -231,6 +240,8 @@ private data class ReferenceRow(
     val separator: ChatListItemSeparator = ChatListItemSeparator.Inset,
     val letters: String? = null,
     val colorIndex: Int = 0,
+    val forum: Boolean = false,
+    val topics: List<ForumTopic> = emptyList(),
 )
 
 private val MamaFirst = ReferenceRow("0-mama-pinned-1", "Мама", "18:19", "Немного подожди", pinned = true)
@@ -293,6 +304,8 @@ private val Sber = ReferenceRow(
 private const val GROUP = "Javokhir и ."
 private const val LINK = "https://t.me/+7N7g7L8o5T1iOTky"
 private const val YOU = "Вы"
+private const val ORANGE_TOPIC = 0xFFD67E
+private const val VIOLET_TOPIC = 0xCB86DB
 
 private val ReferenceRows = listOf(
     LIGHT to listOf(
@@ -330,6 +343,22 @@ private val ReferenceRows = listOf(
             unread = "183",
             muted = true,
             thumbnails = 1,
+        ),
+        ReferenceRow(
+            file = "8-forum",
+            title = "ФЛ-1",
+            date = "10:32",
+            author = "Victoria",
+            text = "P100027580-7 - Apple Pay & Google Pay",
+            unread = "1",
+            muted = true,
+            icon = MessageIcon.Forwarded,
+            thumbnails = 1,
+            forum = true,
+            topics = listOf(
+                ForumTopic("Apple Pay & Google Pay", TopicIcon.Bubble(ORANGE_TOPIC), unread = true),
+                ForumTopic("Visa Infinite", TopicIcon.Bubble(VIOLET_TOPIC)),
+            ),
         ),
     ),
     LIGHT_SMALL to listOf(

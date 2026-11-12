@@ -112,6 +112,7 @@ private val ChatListRow = listOf(
     "SecretLock" to KotogramIcons.SecretLock,
     "GeneralTopic" to KotogramIcons.GeneralTopic,
     "TopicArrow" to KotogramIcons.TopicArrow,
+    "DisclosureArrow" to KotogramIcons.DisclosureArrow,
     "TopicClosed" to KotogramIcons.TopicClosed,
 )
 

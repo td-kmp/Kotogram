@@ -411,8 +411,8 @@ private fun SampleChat(
     val letters = title.split(' ').take(2).joinToString("") { it.take(1) }
     ChatListItem(
         avatar = {
-            ChatAvatar(stories = stories, badge = badge, shape = shape) {
-                Avatar(null, letters, colorIndex, Modifier.fillMaxSize(), shape = shape)
+            ChatAvatar(stories = stories, badge = badge, shape = shape) { blur ->
+                Avatar(null, letters, colorIndex, Modifier.fillMaxSize(), shape = shape, blur = blur)
             }
         },
         title = {

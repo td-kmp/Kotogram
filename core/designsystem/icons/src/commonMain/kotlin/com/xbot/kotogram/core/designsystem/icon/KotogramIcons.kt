@@ -46,6 +46,7 @@ object KotogramIcons {
     val MessageVideoCallOutgoing: ImageVector by lazy(::messageVideoCallOutgoingIcon)
     val PollVotesBadge: ImageVector by lazy(::pollVotesBadgeIcon)
     val TopicArrow: ImageVector by lazy(::topicArrowIcon)
+    val DisclosureArrow: ImageVector by lazy(::disclosureArrowIcon)
     val GeneralTopic: ImageVector by lazy(::generalTopicIcon)
     val TopicClosed: ImageVector by lazy(::topicClosedIcon)
     val PremiumStar: ImageVector by lazy(::premiumStarIcon)

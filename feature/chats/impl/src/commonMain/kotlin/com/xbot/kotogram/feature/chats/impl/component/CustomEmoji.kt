@@ -15,11 +15,13 @@ import androidx.compose.ui.unit.TextUnit
 import com.xbot.kotogram.core.designsystem.component.LottieImage
 import com.xbot.kotogram.core.designsystem.component.NetworkImage
 import com.xbot.kotogram.core.designsystem.component.NetworkImageStyle
+import com.xbot.kotogram.core.designsystem.component.SPOILER_ANNOTATION
 import io.xbot.tdlib.api.FormattedText
 import io.xbot.tdlib.api.Sticker
 import io.xbot.tdlib.api.StickerFormatTgs
 import io.xbot.tdlib.api.StickerFormatWebp
 import io.xbot.tdlib.api.TextEntityTypeCustomEmoji
+import io.xbot.tdlib.api.TextEntityTypeSpoiler
 
 @Composable
 internal fun CustomEmoji(
@@ -73,6 +75,11 @@ internal fun FormattedText.toPreviewString(): AnnotatedString = buildAnnotatedSt
             cursor = end
         }
     append(flat.substring(cursor))
+    entities.forEach { entity ->
+        val start = entity.offset.coerceIn(0, flat.length)
+        val end = (entity.offset + entity.length).coerceIn(start, flat.length)
+        if (entity.type is TextEntityTypeSpoiler && start < end) addStringAnnotation(SPOILER_ANNOTATION, "", start, end)
+    }
 }
 
 internal fun customEmojiSlot(id: Long) = "custom_emoji:$id"

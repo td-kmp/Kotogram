@@ -50,6 +50,7 @@ fun Avatar(
     thumbnail: Any? = null,
     shape: AvatarShape = AvatarShape.Circle,
     contentDescription: String? = null,
+    blur: ImageBlur? = null,
     style: AvatarStyle = AvatarStyle,
 ) {
     val avatarStyle = rememberStyle(::AvatarStyleScope, AvatarStyle.Default then style)
@@ -58,12 +59,14 @@ fun Avatar(
             model = photo,
             contentDescription = contentDescription,
             thumbnail = thumbnail,
+            blur = blur,
             modifier = modifier.clip(shape.toShape()),
         )
         return
     }
     val (light, dark) = avatarStyle.gradients[colorIndex.mod(avatarStyle.gradients.size)]
     val measurer = rememberTextMeasurer()
+    val blurred = blur != null
     Box(
         modifier = modifier
             .clip(shape.toShape())
@@ -73,9 +76,9 @@ fun Avatar(
                     start = Offset.Zero,
                     end = Offset(0f, size.height),
                 )
-                if (letters.isEmpty() ||
-                    size.minDimension < 1f
-                ) return@drawWithCache onDrawBehind { drawRect(gradient) }
+                if (letters.isEmpty() || blurred || size.minDimension < 1f) {
+                    return@drawWithCache onDrawBehind { drawRect(gradient) }
+                }
                 val text = measurer.measure(
                     text = letters,
                     style = avatarStyle.lettersTextStyle.copy(fontSize = (size.width * LETTERS_SCALE).toSp()),
@@ -102,6 +105,7 @@ fun Avatar(
     modifier: Modifier = Modifier,
     shape: AvatarShape = AvatarShape.Circle,
     contentDescription: String? = null,
+    blur: ImageBlur? = null,
     style: AvatarStyle = AvatarStyle,
 ) {
     val avatarStyle = rememberStyle(::AvatarStyleScope, AvatarStyle.Default then style)
@@ -112,6 +116,7 @@ fun Avatar(
     }
     val tint = if (icon == AvatarIcon.HiddenArchive) avatarStyle.hiddenArchiveIconColor else avatarStyle.iconColor
     val painter = rememberVectorPainter(icon.vector())
+    val blurred = blur != null
     Box(
         modifier = modifier
             .clip(shape.toShape())
@@ -125,8 +130,10 @@ fun Avatar(
                 val filter = ColorFilter.tint(tint)
                 onDrawBehind {
                     drawRect(gradient)
-                    translate(topLeft.x, topLeft.y) {
-                        with(painter) { draw(iconSize, colorFilter = filter) }
+                    if (!blurred) {
+                        translate(topLeft.x, topLeft.y) {
+                            with(painter) { draw(iconSize, colorFilter = filter) }
+                        }
                     }
                 }
             },

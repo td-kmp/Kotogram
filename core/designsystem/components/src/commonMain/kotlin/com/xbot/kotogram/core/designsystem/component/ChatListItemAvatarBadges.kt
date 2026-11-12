@@ -27,26 +27,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.BlurredEdgeTreatment
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
@@ -134,7 +126,7 @@ private fun barsSpec(values: FloatArray): InfiniteRepeatableSpec<Float> = Infini
 internal fun ChatListItemScope.AutoDeleteBadge(
     visible: Boolean,
     text: String,
-    avatar: @Composable () -> Unit,
+    avatar: @Composable (blur: ImageBlur?) -> Unit,
 ) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd) {
         AnimatedVisibility(
@@ -148,7 +140,7 @@ internal fun ChatListItemScope.AutoDeleteBadge(
 @Composable
 private fun ChatListItemScope.AutoDeleteContent(
     text: String,
-    avatar: @Composable () -> Unit,
+    avatar: @Composable (blur: ImageBlur?) -> Unit,
 ) {
     val measurer = rememberTextMeasurer()
     val density = LocalDensity.current
@@ -186,7 +178,7 @@ private fun ChatListItemScope.AutoDeleteContent(
 @Composable
 private fun BoxScope.BlurredCorner(
     avatarSize: Dp,
-    avatar: @Composable () -> Unit,
+    avatar: @Composable (blur: ImageBlur?) -> Unit,
 ) {
     Box(
         modifier = Modifier
@@ -197,9 +189,8 @@ private fun BoxScope.BlurredCorner(
                 layout(constraints.maxWidth, constraints.maxHeight) {
                     placeable.place(constraints.maxWidth - placeable.width, constraints.maxHeight - placeable.height)
                 }
-            }
-            .blur(AutoDeleteBlur, BlurredEdgeTreatment.Rectangle),
-    ) { avatar() }
+            },
+    ) { avatar(ImageBlur.Backdrop) }
 }
 
 private fun autoDeleteText(
@@ -294,8 +285,6 @@ private val AutoDeleteSize = 24.dp
 private const val AUTO_DELETE_TEXT_SCALE = 0.48f
 
 private val AutoDeleteTextInset = 5.dp
-
-private val AutoDeleteBlur = 8.dp
 
 private val AutoDeleteShade = Color.Black.copy(alpha = 0.06f)
 

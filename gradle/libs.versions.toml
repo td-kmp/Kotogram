@@ -38,6 +38,7 @@ tdlib = "1.8.69-1.0.0-alpha02"
 calf = "0.14.0"
 coil = "3.6.3"
 haze = "2.0.1"
+graphics-shapes = "1.1.0"
 compottie = "2.3.3"
 qrose = "1.3.1"
 nucleus = "3.0.0-dev-202611061347"
@@ -103,6 +104,7 @@ coil-core = { group = "io.coil-kt.coil3", name = "coil-core", version.ref = "coi
 coil-compose-core = { group = "io.coil-kt.coil3", name = "coil-compose-core", version.ref = "coil" }
 haze = { group = "dev.chrisbanes.haze", name = "haze", version.ref = "haze" }
 haze-blur = { group = "dev.chrisbanes.haze", name = "haze-blur", version.ref = "haze" }
+androidx-graphics-shapes = { group = "androidx.graphics", name = "graphics-shapes", version.ref = "graphics-shapes" }
 compottie = { group = "io.github.alexzhirkevich", name = "compottie", version.ref = "compottie" }
 compottie-dot = { group = "io.github.alexzhirkevich", name = "compottie-dot", version.ref = "compottie" }
 qrose = { group = "io.github.alexzhirkevich", name = "qrose", version.ref = "qrose" }

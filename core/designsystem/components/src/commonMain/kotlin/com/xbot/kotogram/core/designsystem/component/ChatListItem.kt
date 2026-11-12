@@ -2,12 +2,10 @@ package com.xbot.kotogram.core.designsystem.component
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -23,7 +21,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.AlignmentLine
 import androidx.compose.ui.layout.FirstBaseline
 import androidx.compose.ui.layout.Layout
@@ -33,26 +30,21 @@ import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.layout.layoutId
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.sp
 import com.xbot.kotogram.core.designsystem.KotogramTheme
-import com.xbot.kotogram.core.designsystem.icon.KotogramIcons
 import com.xbot.kotogram.core.designsystem.style.AdaptiveStyleScope
 import com.xbot.kotogram.core.designsystem.style.ComponentStyle
 import com.xbot.kotogram.core.designsystem.style.DefaultStyleResolver
 import com.xbot.kotogram.core.designsystem.style.MediaQueryInfo
 import com.xbot.kotogram.core.designsystem.style.StyleResolver
 import com.xbot.kotogram.core.designsystem.style.rememberStyle
-import kotlin.math.floor
 import kotlin.math.roundToInt
 
 enum class MessageStatus { Sending, Sent, Read, Failed }
@@ -96,21 +88,17 @@ fun ChatListItem(
     @Suppress("NAME_SHADOWING")
     val style = rememberStyle(::ChatListItemStyleScope, ChatListItemStyle.Adaptive then style)
     val texts = rememberChatListItemTexts(style)
-    val source = interactionSource ?: remember { MutableInteractionSource() }
-    val pressed by source.collectIsPressedAsState()
-    val highlighted = pressed && onClick != null
-    val target = when {
-        highlighted -> style.pressedContainerColor
-        pinned -> style.pinnedContainerColor
-        else -> style.containerColor
-    }
     val container by animateColorAsState(
-        target,
-        if (highlighted) snap() else tween(UNHIGHLIGHT_MILLIS, easing = EaseInOut),
+        targetValue = if (pinned) style.pinnedContainerColor else style.containerColor,
+        animationSpec = tween(PIN_MILLIS, easing = EaseInOut),
     )
     val scope = remember(texts, container) { ChatListItemScope(texts, container) }
     val clickable = if (onClick != null) {
-        Modifier.clickable(interactionSource = source, indication = null, onClick = onClick)
+        Modifier.clickable(
+            interactionSource = interactionSource,
+            indication = KotogramTheme.indication,
+            onClick = onClick,
+        )
     } else {
         Modifier
     }
@@ -182,6 +170,8 @@ internal class ChatListItemTexts(
     val badge: TextStyle,
     val smallLabel: TextStyle,
     val ellipsisWidth: Float,
+    val textInk: Float,
+    val textEllipsis: Float,
 )
 
 @Composable
@@ -202,6 +192,8 @@ private fun rememberChatListItemTexts(style: ChatListItemStyleScope): ChatListIt
             badge = style.badgeTextStyle,
             smallLabel = style.smallLabelTextStyle,
             ellipsisWidth = measurer.measure("…", style.titleTextStyle).size.width.toFloat(),
+            textInk = measurer.measure(" ", style.textTextStyle).size.height.toFloat(),
+            textEllipsis = measurer.measure("…", style.textTextStyle).size.width.toFloat(),
         )
     }
 }
@@ -233,7 +225,6 @@ fun interface ChatListItemStyle : ComponentStyle<ChatListItemStyleScope> {
             separatorEnd(16.dp)
             containerColor(theme.colors.surface)
             pinnedContainerColor(theme.colors.surfaceContainerHigh)
-            pressedContainerColor(theme.colors.surfaceContainerHighest)
             separatorColor(theme.colors.outlineVariant)
             iconColor(theme.colors.outline)
             checkColor(theme.colors.primary)
@@ -287,6 +278,7 @@ fun interface ChatListItemStyle : ComponentStyle<ChatListItemStyleScope> {
             smallLabelTextStyle(theme.typography.labelSmallEmphasized)
             openAppTextStyle(theme.typography.titleSmall)
             topicHighlightColor(lerp(theme.colors.surfaceContainerHigh, theme.colors.outline, HIGHLIGHT_MIX))
+            topicArrowColor(theme.colors.outline.copy(alpha = TOPIC_ARROW_ALPHA))
         }
 
         val Adaptive = Default then ChatListItemStyle {
@@ -386,9 +378,6 @@ class ChatListItemStyleScope(
         private set
 
     var pinnedContainerColor: Color = Color.Unspecified
-        private set
-
-    var pressedContainerColor: Color = Color.Unspecified
         private set
 
     var separatorColor: Color = Color.Unspecified
@@ -514,6 +503,9 @@ class ChatListItemStyleScope(
     var topicHighlightColor: Color = Color.Unspecified
         private set
 
+    var topicArrowColor: Color = Color.Unspecified
+        private set
+
     fun avatarSize(value: Dp) {
         avatarSize = value
     }
@@ -588,10 +580,6 @@ class ChatListItemStyleScope(
 
     fun pinnedContainerColor(value: Color) {
         pinnedContainerColor = value
-    }
-
-    fun pressedContainerColor(value: Color) {
-        pressedContainerColor = value
     }
 
     fun separatorColor(value: Color) {
@@ -757,14 +745,19 @@ class ChatListItemStyleScope(
     fun topicHighlightColor(value: Color) {
         topicHighlightColor = value
     }
+
+    fun topicArrowColor(value: Color) {
+        topicArrowColor = value
+    }
 }
 
 private val AvatarGap = 10.dp
 private val BadgeTextGap = 5.dp
 private const val LIGHTER = 0.2f
-private const val UNHIGHLIGHT_MILLIS = 300
+private const val PIN_MILLIS = 300
 private val EaseInOut = CubicBezierEasing(0.42f, 0f, 0.58f, 1f)
 private const val DARKER = 0.15f
 private const val SEEN_ALPHA = 0.4f
 private const val LABEL_ALPHA = 0.4f
 private const val HIGHLIGHT_MIX = 0.1f
+private const val TOPIC_ARROW_ALPHA = 0.56f

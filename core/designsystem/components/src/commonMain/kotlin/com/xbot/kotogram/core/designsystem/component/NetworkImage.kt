@@ -13,6 +13,7 @@ import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import coil3.request.transformations
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.style.AdaptiveStyleScope
 import com.xbot.kotogram.core.designsystem.style.ComponentStyle
@@ -30,16 +31,28 @@ fun NetworkImage(
     modifier: Modifier = Modifier,
     thumbnail: Any? = null,
     contentScale: ContentScale = ContentScale.Crop,
+    blur: ImageBlur? = null,
     style: NetworkImageStyle = NetworkImageStyle,
 ) {
     val imageStyle = rememberStyle(::NetworkImageStyleScope, NetworkImageStyle.Default then style)
     val context = LocalPlatformContext.current
     val imageLoader = LocalImageLoader.current ?: remember(context) { ImageLoader(context) }
-    val request = remember(model, context, imageStyle.fadeInMillis) {
-        ImageRequest.Builder(context).data(model).crossfade(imageStyle.fadeInMillis).build()
+    val request = remember(model, context, imageStyle.fadeInMillis, blur) {
+        ImageRequest.Builder(context)
+            .data(model)
+            .crossfade(imageStyle.fadeInMillis)
+            .apply { if (blur != null) transformations(BlurTransformation(blur)) }
+            .build()
     }
     val placeholder = if (thumbnail != null) {
-        rememberAsyncImagePainter(thumbnail, imageLoader)
+        val thumbnailRequest = remember(thumbnail, context, blur) {
+            ImageRequest.Builder(context)
+                .data(thumbnail)
+                .memoryCacheKey((thumbnail as? ByteArray)?.let { "thumbnail:${it.size}:${it.contentHashCode()}" })
+                .transformations(BlurTransformation(blur ?: ImageBlur.Placeholder))
+                .build()
+        }
+        rememberAsyncImagePainter(thumbnailRequest, imageLoader)
     } else {
         remember(imageStyle.placeholderColor) { ColorPainter(imageStyle.placeholderColor) }
     }

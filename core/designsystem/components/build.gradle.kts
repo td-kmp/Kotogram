@@ -42,6 +42,7 @@ kotlin {
         api(libs.coil.compose.core)
         implementation(projects.core.designsystem.icons)
         implementation(libs.okio)
+        implementation(libs.androidx.graphics.shapes)
         implementation(libs.androidx.lifecycle.runtime.compose)
         implementation(libs.compose.preview)
         implementation(libs.compottie)
