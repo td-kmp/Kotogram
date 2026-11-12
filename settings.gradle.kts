@@ -23,10 +23,9 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
-        // Local builds of tdlib-kmp and of Nucleus's decorated-window-tao go first (docs/handoff.md).
+        // Nucleus's decorated-window-tao is a local build of the fork's placedAsOverlay over the release (docs/handoff.md).
         mavenLocal {
             mavenContent {
-                includeGroup("io.github.xephosbot")
                 includeGroupAndSubgroups("dev.nucleusframework")
             }
         }
