@@ -1,6 +1,6 @@
 [versions]
 # Android
-android-minsdk = "24"
+android-minsdk = "29"
 android-targetsdk = "37"
 android-compilesdk = "37"
 android-gradle-plugin = "9.4.1"

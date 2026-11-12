@@ -5,8 +5,23 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.nativePaint
 
-internal actual fun Canvas.drawPointBatch(
-    points: FloatArray,
-    count: Int,
+internal actual fun Canvas.drawSprites(
+    positions: FloatArray,
+    textureCoordinates: FloatArray,
+    colors: IntArray,
+    indices: ShortArray,
     paint: Paint,
-) = nativeCanvas.drawPoints(points, 0, count, paint.nativePaint)
+) = nativeCanvas.drawVertices(
+    android.graphics.Canvas.VertexMode.TRIANGLES,
+    positions.size,
+    positions,
+    0,
+    textureCoordinates,
+    0,
+    colors,
+    0,
+    indices,
+    0,
+    indices.size,
+    paint.nativePaint,
+)

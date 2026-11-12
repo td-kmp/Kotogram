@@ -3,7 +3,6 @@ package com.xbot.kotogram.core.designsystem.extensions
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.Typeface
-import android.os.Build
 import android.text.TextPaint
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.TextLayoutResult
@@ -12,7 +11,6 @@ import androidx.compose.ui.text.font.FontSynthesis
 import androidx.compose.ui.text.font.FontWeight
 
 internal actual fun TextLayoutResult.glyphPathBounds(): Rect? {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return null
     val text = layoutInput.text.text
     val outline = Path()
     outlinePaint()?.getTextPath(text, 0, text.length, 0f, 0f, outline)

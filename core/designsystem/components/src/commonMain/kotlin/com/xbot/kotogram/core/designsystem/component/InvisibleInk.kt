@@ -2,31 +2,30 @@ package com.xbot.kotogram.core.designsystem.component
 
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
-import androidx.compose.ui.graphics.drawscope.clipRect
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.node.CompositionLocalConsumerModifierNode
 import androidx.compose.ui.node.DrawModifierNode
-import androidx.compose.ui.node.GlobalPositionAwareModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
-import androidx.compose.ui.node.currentValueOf
 import androidx.compose.ui.node.invalidateDraw
+import androidx.compose.ui.node.requireDensity
 import androidx.compose.ui.platform.InspectorInfo
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
-import com.xbot.kotogram.core.designsystem.component.platform.NativeDust
-import com.xbot.kotogram.core.designsystem.component.platform.nativeDust
-import com.xbot.kotogram.core.designsystem.extensions.drawPointBatch
+import androidx.compose.ui.unit.IntRect
+import com.xbot.kotogram.core.designsystem.component.platform.FrameLayer
+import com.xbot.kotogram.core.designsystem.component.platform.frameLayer
+import com.xbot.kotogram.core.designsystem.extensions.drawSprites
+import com.xbot.kotogram.core.designsystem.extensions.toSpritePaint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlin.math.PI
+import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.roundToInt
@@ -64,94 +63,70 @@ private class InvisibleInkNode(
     var areas: () -> List<Rect>,
 ) : Modifier.Node(),
     DrawModifierNode,
-    GlobalPositionAwareModifierNode,
     CompositionLocalConsumerModifierNode {
-    private val paint = Paint().apply { strokeCap = StrokeCap.Round }
+    private val picture: (Canvas) -> Unit = { canvas -> dust?.draw(canvas, DustTime.seconds, color) }
+    private var layer: FrameLayer? = null
     private var dust: Dust? = null
     private var frames: Job? = null
-    private var seconds = DustClock.latestSeconds()
-    private var native: NativeDust? = null
-    private var nativeChecked = false
+
+    override fun onAttach() {
+        layer = frameLayer()
+    }
 
     override fun onDetach() {
         frames = null
-        native?.release()
-        native = null
-        nativeChecked = false
-    }
-
-    override fun onGloballyPositioned(coordinates: LayoutCoordinates) {
-        if (!nativeChecked) {
-            nativeChecked = true
-            native = nativeDust(::onNativeFrame)?.also { invalidateDraw() }
-        }
-        native?.place(coordinates, with(currentValueOf(LocalDensity)) { BLEED.dp.toPx() })
+        dust = null
+        layer?.release()
+        layer = null
     }
 
     override fun ContentDrawScope.draw() {
         drawContent()
-        val rects = areas()
-        val unit = 1.dp.toPx()
-        val native = native
-        native?.show(rects, color, unit)
-        val drawn = rects.isNotEmpty() && native?.drawing != true
-        if (!drawn || native != null) {
+        val layer = layer
+        if (layer != null && hasDust(density)) {
+            val bleed = ceil(BLEED * density).toInt()
+            val bounds = IntRect(-bleed, -bleed, ceil(size.width).toInt() + bleed, ceil(size.height).toInt() + bleed)
+            with(layer) { draw(bounds, picture) }
+            if (frames == null) frames = coroutineScope.launch { animate(layer) }
+        } else {
             frames?.cancel()
             frames = null
-        } else if (frames == null) {
-            frames = coroutineScope.launch { animate() }
-        }
-        if (drawn) drawDust(rects, unit)
-    }
-
-    private fun ContentDrawScope.drawDust(
-        rects: List<Rect>,
-        unit: Float,
-    ) {
-        val current = dust?.takeIf { it.areas === rects && it.unit == unit } ?: Dust(rects, unit).also { dust = it }
-        current.advance(seconds)
-        val bleed = BLEED * unit
-        paint.strokeWidth = SPECKLE * unit
-        clipRect(-bleed, -bleed, size.width + bleed, size.height + bleed) {
-            drawIntoCanvas { canvas -> current.draw(canvas, paint, color) }
         }
     }
 
-    private fun onNativeFrame(frameTimeNanos: Long) {
-        seconds = DustClock.seconds(frameTimeNanos)
-        invalidateDraw()
-    }
-
-    private suspend fun animate() {
+    private suspend fun animate(layer: FrameLayer) {
         while (true) {
-            withFrameNanos { now -> seconds = DustClock.seconds(now) }
-            invalidateDraw()
+            withFrameNanos { frameTimeNanos ->
+                DustTime.advance(frameTimeNanos)
+                val shown = isAttached && hasDust(requireDensity().density) && layer.update(picture)
+                if (!shown && isAttached) invalidateDraw()
+            }
         }
     }
-}
 
-internal object DustClock {
-    var originNanos = NOT_STARTED
-        private set
-    private var latestNanos = NOT_STARTED
-
-    fun seconds(frameTimeNanos: Long): Double {
-        if (originNanos == NOT_STARTED) originNanos = frameTimeNanos
-        latestNanos = frameTimeNanos
-        return dustSeconds(frameTimeNanos, originNanos)
+    private fun hasDust(unit: Float): Boolean {
+        val rects = areas()
+        if (rects.isEmpty()) return false
+        if (dust?.fits(rects, unit) != true) dust = Dust(rects.toList(), unit)
+        return true
     }
-
-    fun latestSeconds(): Double = if (latestNanos == NOT_STARTED) 0.0 else seconds(latestNanos)
 }
 
-internal fun dustSeconds(
-    frameTimeNanos: Long,
-    originNanos: Long,
-): Double = ((frameTimeNanos - originNanos) % DUST_PERIOD_NANOS).coerceAtLeast(0L) / NANOS_IN_SECOND
+private object DustTime {
+    private var origin = NOT_STARTED
+
+    var seconds = 0.0
+        private set
+
+    fun advance(frameTimeNanos: Long) {
+        if (origin == NOT_STARTED) origin = frameTimeNanos
+        seconds = (frameTimeNanos - origin) / NANOS_IN_SECOND
+    }
+}
 
 private class Dust(
-    val areas: List<Rect>,
-    val unit: Float,
+    private val areas: List<Rect>,
+    private val unit: Float,
 ) {
     private val shares = FloatArray(areas.size)
     private val count: Int
@@ -162,7 +137,7 @@ private class Dust(
     private val driftX: FloatArray
     private val driftY: FloatArray
     private val alphas: FloatArray
-    private val levels = Array(ALPHA_LEVELS + 1) { SpeckleBatch() }
+    private val speckles: Speckles
 
     init {
         var total = 0f
@@ -171,7 +146,7 @@ private class Dust(
             shares[index] = total
         }
         for (index in shares.indices) shares[index] /= total.coerceAtLeast(1f)
-        count = dustSpeckleCount(total, unit)
+        count = (total / (unit * unit) * DENSITY).roundToInt().coerceAtMost(MAX_SPECKLES)
         phases = FloatArray(count) { unitHash(it, PHASE) }
         generations = IntArray(count) { Int.MIN_VALUE }
         startX = FloatArray(count)
@@ -179,10 +154,25 @@ private class Dust(
         driftX = FloatArray(count)
         driftY = FloatArray(count)
         alphas = FloatArray(count)
+        speckles = Speckles(count, SPECKLE * unit)
     }
 
-    fun advance(seconds: Double) {
-        for (level in levels) level.clear()
+    fun fits(
+        areas: List<Rect>,
+        unit: Float,
+    ): Boolean = this.unit == unit && this.areas == areas
+
+    fun draw(
+        canvas: Canvas,
+        seconds: Double,
+        color: Color,
+    ) {
+        advance(seconds)
+        speckles.draw(canvas, color)
+    }
+
+    private fun advance(seconds: Double) {
+        speckles.clear()
         val lives = seconds / LIFETIME
         for (index in 0 until count) {
             val life = lives + phases[index]
@@ -191,21 +181,7 @@ private class Dust(
             val age = (life - generation).toFloat()
             val alpha = (alphas[index] + alphaOverLife(age)).coerceIn(0f, 1f)
             if (alpha < MIN_VISIBLE) continue
-            val level = if (alpha >= 1f) ALPHA_LEVELS else (alpha * ALPHA_LEVELS).toInt()
-            levels[level].add(startX[index] + driftX[index] * age, startY[index] + driftY[index] * age)
-        }
-    }
-
-    fun draw(
-        canvas: Canvas,
-        paint: Paint,
-        color: Color,
-    ) {
-        levels.forEachIndexed { level, batch ->
-            if (batch.isEmpty) return@forEachIndexed
-            val alpha = if (level == ALPHA_LEVELS) 1f else (level + LEVEL_MIDDLE) / ALPHA_LEVELS
-            paint.color = color.copy(alpha = color.alpha * alpha)
-            batch.draw(canvas, paint)
+            speckles.add(startX[index] + driftX[index] * age, startY[index] + driftY[index] * age, alpha)
         }
     }
 
@@ -231,11 +207,29 @@ private class Dust(
     }
 }
 
-private class SpeckleBatch {
-    private val chunks = ArrayList<FloatArray>()
+private class Speckles(
+    capacity: Int,
+    diameter: Float,
+) {
+    private val sprite = SpeckleSprite.of(diameter)
+    private val half = sprite.side / 2f
+    private val positions = FloatArray(capacity * QUAD_FLOATS)
+    private val colors = IntArray(capacity * QUAD_CORNERS)
+    private val alphas = FloatArray(capacity)
+    private val textureCoordinates = FloatArray(capacity * QUAD_FLOATS)
+    private val indices = ShortArray(capacity * QUAD_INDICES)
     private var size = 0
+    private var drawn = 0
 
-    val isEmpty: Boolean get() = size == 0
+    init {
+        val side = sprite.side.toFloat()
+        val corners = floatArrayOf(0f, 0f, side, 0f, side, side, 0f, side)
+        for (at in textureCoordinates.indices) textureCoordinates[at] = corners[at % QUAD_FLOATS]
+        for (at in indices.indices) {
+            val quad = at / QUAD_INDICES
+            indices[at] = (quad * QUAD_CORNERS + QuadTriangles[at % QUAD_INDICES]).toShort()
+        }
+    }
 
     fun clear() {
         size = 0
@@ -244,24 +238,57 @@ private class SpeckleBatch {
     fun add(
         x: Float,
         y: Float,
+        alpha: Float,
     ) {
-        val chunk = size / CHUNK
-        if (chunk == chunks.size) chunks += FloatArray(CHUNK)
-        val at = size % CHUNK
-        chunks[chunk][at] = x
-        chunks[chunk][at + 1] = y
-        size += 2
+        val left = x - half
+        val top = y - half
+        val right = x + half
+        val bottom = y + half
+        var at = size * QUAD_FLOATS
+        positions[at++] = left
+        positions[at++] = top
+        positions[at++] = right
+        positions[at++] = top
+        positions[at++] = right
+        positions[at++] = bottom
+        positions[at++] = left
+        positions[at] = bottom
+        alphas[size++] = alpha
     }
 
     fun draw(
         canvas: Canvas,
-        paint: Paint,
+        color: Color,
     ) {
-        var left = size
-        for (chunk in chunks) {
-            if (left <= 0) break
-            canvas.drawPointBatch(chunk, minOf(left, CHUNK), paint)
-            left -= CHUNK
+        if (positions.isEmpty()) return
+        val argb = color.toArgb()
+        val rgb = argb and RGB_MASK
+        val opacity = (argb ushr ALPHA_SHIFT).toFloat()
+        for (index in 0 until size) {
+            val tinted = ((alphas[index] * opacity + ROUNDING).toInt() shl ALPHA_SHIFT) or rgb
+            colors.fill(tinted, index * QUAD_CORNERS, (index + 1) * QUAD_CORNERS)
+        }
+        // Hack: the canvases take whole arrays, so the quads left from the last frame collapse into points.
+        if (size < drawn) positions.fill(0f, size * QUAD_FLOATS, drawn * QUAD_FLOATS)
+        drawn = size
+        canvas.drawSprites(positions, textureCoordinates, colors, indices, sprite.paint)
+    }
+}
+
+private class SpeckleSprite(
+    val side: Int,
+    val paint: Paint,
+) {
+    companion object {
+        private val sprites = HashMap<Float, SpeckleSprite>()
+
+        fun of(diameter: Float): SpeckleSprite = sprites.getOrPut(diameter) {
+            // Hack: an odd side puts the dot's centre in the middle of a pixel, which keeps a still sprite sharp.
+            val side = (ceil(diameter).toInt() + 2 * SPRITE_MARGIN) or 1
+            val bitmap = ImageBitmap(side, side)
+            val center = Offset(side / 2f, side / 2f)
+            Canvas(bitmap).drawCircle(center, diameter / 2f, Paint().apply { color = Color.White })
+            SpeckleSprite(side, bitmap.toSpritePaint())
         }
     }
 }
@@ -300,93 +327,7 @@ private fun hash(
     return value xor (value ushr HASH_SHIFT)
 }
 
-internal fun dustSpeckleCount(
-    area: Float,
-    unit: Float,
-): Int = (area / (unit * unit) * DENSITY).roundToInt().coerceAtMost(MAX_SPECKLES)
-
-internal fun dustVertexShader(): String =
-    """
-    #version 300 es
-    precision highp float;
-    precision highp int;
-    uniform float uTime;
-    uniform float uUnit;
-    uniform vec2 uSize;
-    uniform int uAreaCount;
-    uniform vec4 uAreas[$DUST_MAX_AREAS];
-    uniform float uShares[$DUST_MAX_AREAS];
-    out float vAlpha;
-    flat out float vDiameter;
-
-    uint hash(uint seed, uint salt) {
-        uint value = seed * ${HASH_A.toUInt()}u + salt * ${HASH_B.toUInt()}u;
-        value = (value ^ (value >> ${HASH_SHIFT}u)) * ${HASH_B.toUInt()}u;
-        value = (value ^ (value >> ${HASH_SHIFT_SHORT}u)) * ${HASH_C.toUInt()}u;
-        return value ^ (value >> ${HASH_SHIFT}u);
-    }
-
-    float unitHash(uint seed, uint salt) {
-        return float(hash(seed, salt) >> ${HASH_DROP}u) * $HASH_UNIT;
-    }
-
-    float alphaOverLife(float age) {
-        if (age < $FADE_IN_START) return 0.0;
-        if (age < $PEAK) return (age - $FADE_IN_START) / ($PEAK - $FADE_IN_START);
-        if (age < $FADE_OUT_START) return 1.0 - (age - $PEAK) / ($FADE_OUT_START - $PEAK);
-        return -(age - $FADE_OUT_START) / (1.0 - $FADE_OUT_START);
-    }
-
-    void main() {
-        uint index = uint(gl_VertexID);
-        float life = uTime / $LIFETIME + unitHash(index, ${PHASE}u);
-        float generation = floor(life);
-        float age = life - generation;
-        uint seed = hash(index, uint(generation));
-        float alpha = clamp($MIN_ALPHA + unitHash(seed, ${ALPHA}u) + alphaOverLife(age), 0.0, 1.0);
-        float share = unitHash(seed, ${AREA}u);
-        int area = uAreaCount - 1;
-        for (int i = 0; i < uAreaCount && i < $DUST_MAX_AREAS; i++) {
-            if (share < uShares[i]) { area = i; break; }
-        }
-        vec4 box = uAreas[area];
-        float angle = unitHash(seed, ${ANGLE}u) * $FULL_TURN;
-        float tilt = unitHash(seed, ${TILT}u) * 2.0 - 1.0;
-        float travel = unitHash(seed, ${SPEED}u) * $MAX_SPEED * sqrt(1.0 - tilt * tilt) * uUnit * age * $LIFETIME;
-        vec2 start = box.xy + vec2(unitHash(seed, ${X}u), unitHash(seed, ${Y}u)) * (box.zw - box.xy);
-        vec2 position = start + vec2(cos(angle), sin(angle)) * travel;
-        vAlpha = alpha;
-        vDiameter = $SPECKLE * uUnit;
-        gl_PointSize = vDiameter + 2.0;
-        gl_Position = alpha < $MIN_VISIBLE
-            ? vec4(2.0, 2.0, 0.0, 1.0)
-            : vec4(position.x / uSize.x * 2.0 - 1.0, 1.0 - position.y / uSize.y * 2.0, 0.0, 1.0);
-    }
-    """.trimIndent()
-
-internal fun dustFragmentShader(): String =
-    """
-    #version 300 es
-    precision mediump float;
-    uniform vec4 uColor;
-    in float vAlpha;
-    flat in float vDiameter;
-    out vec4 fragColor;
-
-    void main() {
-        float distance = length(gl_PointCoord - vec2(0.5)) * (vDiameter + 2.0);
-        float coverage = clamp(vDiameter * 0.5 + 0.5 - distance, 0.0, 1.0);
-        float alpha = uColor.a * vAlpha * coverage;
-        if (alpha <= 0.0) discard;
-        fragColor = vec4(uColor.rgb * alpha, alpha);
-    }
-    """.trimIndent()
-
-internal const val DUST_MAX_AREAS = 64
-
 private const val NOT_STARTED = Long.MIN_VALUE
-private const val DUST_PERIOD_NANOS = 3_600_000_000_000L
-
 private const val DENSITY = 0.35f
 private const val MAX_SPECKLES = 2000
 private const val LIFETIME = 1f
@@ -395,12 +336,17 @@ private const val SPECKLE = 1.1f
 private const val BLEED = 3f
 private const val MIN_ALPHA = 0.5f
 private const val MIN_VISIBLE = 0.02f
-private const val ALPHA_LEVELS = 16
-private const val LEVEL_MIDDLE = 0.5f
 private const val FADE_IN_START = 0.25f
 private const val PEAK = 0.5f
 private const val FADE_OUT_START = 0.75f
-private const val CHUNK = 128
+private const val QUAD_CORNERS = 4
+private const val QUAD_FLOATS = 8
+private const val QUAD_INDICES = 6
+private val QuadTriangles = intArrayOf(0, 1, 2, 0, 2, 3)
+private const val SPRITE_MARGIN = 1
+private const val RGB_MASK = 0xFFFFFF
+private const val ALPHA_SHIFT = 24
+private const val ROUNDING = 0.5f
 private const val FULL_TURN = (2 * PI).toFloat()
 private const val NANOS_IN_SECOND = 1e9
 private const val HASH_PRIME = 31

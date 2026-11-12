@@ -4,15 +4,23 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.skiaCanvas
 import androidx.compose.ui.graphics.skiaPaint
+import org.jetbrains.skia.BlendMode
+import org.jetbrains.skia.VertexMode
 
-internal actual fun Canvas.drawPointBatch(
-    points: FloatArray,
-    count: Int,
+internal actual fun Canvas.drawSprites(
+    positions: FloatArray,
+    textureCoordinates: FloatArray,
+    colors: IntArray,
+    indices: ShortArray,
     paint: Paint,
 ) {
-    // Hack: Skia's canvas takes no count, so the unused end of the array goes off screen.
-    if (count < points.size) points.fill(OFF_SCREEN, count, points.size)
-    skiaCanvas.drawPoints(points, paint.skiaPaint)
+    skiaCanvas.drawVertices(
+        VertexMode.TRIANGLES,
+        positions,
+        colors,
+        textureCoordinates,
+        indices,
+        BlendMode.MODULATE,
+        paint.skiaPaint,
+    )
 }
-
-private const val OFF_SCREEN = -1e6f

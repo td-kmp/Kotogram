@@ -2,7 +2,6 @@ package com.xbot.kotogram.core.designsystem.theme
 
 import android.content.pm.PackageManager
 import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -25,15 +24,12 @@ internal actual fun platformMediaQueryInfo(): MediaQueryInfo {
     val packageManager = LocalContext.current.packageManager
     return remember(packageManager) {
         MediaQueryInfo(
-            isLaptop = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1 && packageManager.isLaptop(),
+            isLaptop = packageManager.hasSystemFeature(PackageManager.FEATURE_PC),
             isTv = packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK),
             isAuto = packageManager.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE),
         )
     }
 }
-
-@RequiresApi(Build.VERSION_CODES.O_MR1)
-private fun PackageManager.isLaptop() = hasSystemFeature(PackageManager.FEATURE_PC)
 
 @Composable
 internal actual fun platformDynamicColorScheme(darkTheme: Boolean): ColorScheme? {
