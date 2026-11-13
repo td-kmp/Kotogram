@@ -2,6 +2,9 @@ package com.xbot.kotogram.core.designsystem.window
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.rememberWindowState
@@ -37,8 +40,12 @@ fun NucleusApplicationScope.KotogramWindow(
             minimumSize = minimumSize,
         ) {
             val window = this
-            KotogramTheme(darkTheme = darkTheme, dynamicColor = dynamicColor) {
-                window.content()
+            val base = LocalWindowInfo.current
+            val windowInfo = remember(base, window) { KotogramWindowInfo(base, window) }
+            CompositionLocalProvider(LocalWindowInfo provides windowInfo) {
+                KotogramTheme(darkTheme = darkTheme, dynamicColor = dynamicColor) {
+                    window.content()
+                }
             }
         }
     }

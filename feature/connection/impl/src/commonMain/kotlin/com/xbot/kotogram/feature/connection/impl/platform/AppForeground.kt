@@ -1,6 +1,7 @@
 package com.xbot.kotogram.feature.connection.impl.platform
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 
 @Composable
-expect fun isAppInForeground(): Boolean
+internal expect fun rememberAppForeground(): State<Boolean>

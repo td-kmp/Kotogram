@@ -8,16 +8,15 @@ import com.xbot.kotogram.core.designsystem.component.ProvidePlatformComponents
 import com.xbot.kotogram.core.resources.LocalizationSource
 import com.xbot.kotogram.core.resources.ProvideLocalization
 import com.xbot.kotogram.feature.connection.impl.ConnectionEffect
-import com.xbot.kotogram.feature.connection.impl.platform.isAppInForeground
 import com.xbot.kotogram.shared.root.RootNavigation
 import com.xbot.kotogram.shared.screen.splash.SplashScreen
 import org.koin.compose.koinInject
 
 @Composable
-fun App(inForeground: Boolean = isAppInForeground()) {
+fun App() {
     val localization by koinInject<LocalizationSource>().localization.collectAsStateWithLifecycle()
 
-    ConnectionEffect(inForeground)
+    ConnectionEffect()
     KotogramTheme {
         ProvidePlatformComponents {
             when (val current = localization) {

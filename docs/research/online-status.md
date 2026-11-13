@@ -110,19 +110,25 @@ The author's own on top of Telegram X's behaviour.
   a `wiFi` 0.3 s apart (the hotspot is Wi-Fi to macOS, not cellular). `spotlessApply` and `detekt` pass. Nothing
   ran on Windows, Linux, a phone or a browser, and no TDLib client was given the reports.
 - **Wired:** `feature:connection:impl`'s `ConnectionEffect()` sits at the root of `App()` and writes
-  `isAppInForeground()`, a platform's own signal (as `isSystemInDarkTheme()`), to `setInForeground`, and false
-  when it leaves the composition. Android: the activity's lifecycle at `RESUMED` (`LocalLifecycleOwner` above
+  `rememberAppForeground()`, a platform's own signal as a `State`, to `setInForeground` through `snapshotFlow`,
+  and false when it leaves the composition. Not a recomposition: a window out of sight renders no frames, and
+  composition runs on frames (Nucleus's macOS host drops every frame while the window is minimized or occluded,
+  `TaoComposeSceneHost.renderFrameSuspending`), so a value read in composition stayed true in the background. Android: the activity's lifecycle at `RESUMED` (`LocalLifecycleOwner` above
   the navigation is `MainActivity`), Telegram X's `onResume` and `onPause`. iOS: `UIApplication`'s state and its
   did-become-active, will-resign-active and did-enter-background notifications, as Telegram-iOS's `AppDelegate`.
-  Desktop: `jvm-app` passes the window's own state, active and not minimized (`NucleusDecoratedWindowScope.state`),
-  as Telegram Desktop's `hasActiveWindow`; `LocalWindowInfo.isWindowFocused` alone stayed true with the window
-  minimized on macOS (Nucleus puts `windowDidMiniaturize` into `isMinimized`, not into the focus), and is only
-  the default for other hosts. Telegram Desktop's idle timeout (`offlineIdleTimeout`) isn't taken. Web: `focus` and
+  Desktop: the window's focus, `LocalWindowInfo.isWindowFocused`, as Telegram Desktop's `hasActiveWindow`.
+  `KotogramWindow` provides its own `KotogramWindowInfo` (Nucleus's `WindowInfo` by delegation, plus `isMinimized`,
+  `isMaximized`, `isFullscreen`) whose focus is the window state's active and not minimized: Nucleus's own stayed
+  true with the window minimized on macOS (`windowDidMiniaturize` goes into `isMinimized`, not into the focus).
+  Telegram Desktop's idle timeout (`offlineIdleTimeout`) isn't taken. Web: `focus` and
   `blur` of the window and `document.hasFocus()`, as Web A's `useBackgroundMode`. `shared` starts
   `connectionDataModule`.
 - **Checked:** `KoinGraphTest` (real TDLib, this Mac's network monitor) sets the app in front and TDLib answers
   `getOption online` with true; nothing is logged against `setOption online` or `setNetworkType`, so options
-  sent before `setTdlibParameters` are taken. The effect hasn't run in an app on any platform.
+  sent before `setTdlibParameters` are taken. On this Mac (2026-11-13), `jvm-app` with `OnlineOptions`'s log:
+  minimizing the window over Accessibility gave false and restoring it true, twice, with the app staying active
+  throughout; another app in front gave false, and back true. Read in composition, the minimize gave nothing.
+  Not run on a phone, Windows, Linux or a browser.
 - **Open:** whether several Kotlin/Native libraries (`appkit`'s and a platform module's) live well in one JVM.
   Then the phone: the chat list fresh right after the background (§6).
 

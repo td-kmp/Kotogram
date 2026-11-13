@@ -2,10 +2,9 @@ package com.xbot.kotogram.feature.connection.impl.platform
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSOperationQueue
 import platform.UIKit.UIApplication
@@ -15,8 +14,8 @@ import platform.UIKit.UIApplicationState
 import platform.UIKit.UIApplicationWillResignActiveNotification
 
 @Composable
-actual fun isAppInForeground(): Boolean {
-    var active by remember {
+internal actual fun rememberAppForeground(): State<Boolean> {
+    val active = remember {
         mutableStateOf(UIApplication.sharedApplication.applicationState == UIApplicationState.UIApplicationStateActive)
     }
     DisposableEffect(Unit) {
@@ -27,7 +26,7 @@ actual fun isAppInForeground(): Boolean {
             UIApplicationDidEnterBackgroundNotification to false,
         ]
         val observers = changes.map { (name, value) ->
-            center.addObserverForName(name, null, NSOperationQueue.mainQueue) { active = value }
+            center.addObserverForName(name, null, NSOperationQueue.mainQueue) { active.value = value }
         }
         onDispose { observers.forEach(center::removeObserver) }
     }

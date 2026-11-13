@@ -1,13 +1,15 @@
 package com.xbot.kotogram.feature.connection.impl.platform
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.currentStateAsState
 
 @Composable
-actual fun isAppInForeground(): Boolean {
-    val state by LocalLifecycleOwner.current.lifecycle.currentStateFlow.collectAsState()
-    return state.isAtLeast(Lifecycle.State.RESUMED)
+internal actual fun rememberAppForeground(): State<Boolean> {
+    val state = LocalLifecycleOwner.current.lifecycle.currentStateAsState()
+    return remember(state) { derivedStateOf { state.value.isAtLeast(Lifecycle.State.RESUMED) } }
 }
