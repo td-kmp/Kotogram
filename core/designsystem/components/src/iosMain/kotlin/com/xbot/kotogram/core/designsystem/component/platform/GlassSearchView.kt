@@ -58,7 +58,7 @@ internal class GlassSearchView(
         root.contentView.addSubview(cancel)
         val content = root.contentView
         NSLayoutConstraint.activateConstraints(
-            listOf(
+            [
                 capsule.leadingAnchor.constraintEqualToAnchor(content.leadingAnchor),
                 capsule.topAnchor.constraintEqualToAnchor(content.topAnchor),
                 capsule.bottomAnchor.constraintEqualToAnchor(content.bottomAnchor),
@@ -71,7 +71,7 @@ internal class GlassSearchView(
                 field.trailingAnchor.constraintEqualToAnchor(capsule.contentView.trailingAnchor, constant = -INSET),
                 field.topAnchor.constraintEqualToAnchor(capsule.contentView.topAnchor),
                 field.bottomAnchor.constraintEqualToAnchor(capsule.contentView.bottomAnchor),
-            ),
+            ],
         )
         field.addAction(
             UIAction.actionWithHandler { onTextChange(field.text.orEmpty()) },

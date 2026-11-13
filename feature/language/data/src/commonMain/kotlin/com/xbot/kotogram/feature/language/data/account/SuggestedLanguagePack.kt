@@ -8,13 +8,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
 internal class SuggestedLanguagePack : AccountUpdates {
-    private val mutableLanguagePackId = MutableStateFlow("")
-    val languagePackId: StateFlow<String> = mutableLanguagePackId.asStateFlow()
+    val languagePackId: StateFlow<String>
+        field = MutableStateFlow("")
 
     override fun start(
         scope: CoroutineScope,
@@ -23,7 +22,7 @@ internal class SuggestedLanguagePack : AccountUpdates {
         scope.launch(start = CoroutineStart.UNDISPATCHED) {
             client.updatesOf<UpdateOption>()
                 .filter { it.name == SUGGESTED_LANGUAGE_PACK_ID }
-                .collect { mutableLanguagePackId.value = (it.value as? OptionValueString)?.value.orEmpty() }
+                .collect { languagePackId.value = (it.value as? OptionValueString)?.value.orEmpty() }
         }
     }
 

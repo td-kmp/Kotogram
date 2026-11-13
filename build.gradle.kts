@@ -1,4 +1,4 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+import org.jetbrains.kotlin.gradle.dsl.HasConfigurableKotlinCompilerOptions
 
 plugins {
     alias(libs.plugins.android.application) apply false
@@ -29,14 +29,22 @@ spotless {
 
 // Kotlin 2.4's experimental KEEP features; local type aliases and companion blocks would mark every binary pre-release.
 subprojects {
-    tasks.withType(KotlinCompilationTask::class.java).configureEach {
-        compilerOptions.freeCompilerArgs.addAll(
-            "-Xcollection-literals",
-            "-Xcontext-sensitive-resolution",
-            "-Xexplicit-context-arguments",
-            "-Xname-based-destructuring=only-syntax",
-            "-Xreturn-value-checker=check",
-        )
+    val kotlinPlugins = listOf(
+        "org.jetbrains.kotlin.multiplatform",
+        "org.jetbrains.kotlin.jvm",
+        "com.android.application"
+    )
+    kotlinPlugins.forEach { id ->
+        pluginManager.withPlugin(id) {
+            val kotlin = extensions.getByName("kotlin") as HasConfigurableKotlinCompilerOptions<*>
+            kotlin.compilerOptions.freeCompilerArgs.addAll(
+                "-Xcollection-literals",
+                "-Xcontext-sensitive-resolution",
+                "-Xexplicit-context-arguments",
+                "-Xname-based-destructuring=only-syntax",
+                "-Xreturn-value-checker=check",
+            )
+        }
     }
 }
 

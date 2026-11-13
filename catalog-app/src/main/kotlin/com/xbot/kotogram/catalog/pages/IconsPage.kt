@@ -19,7 +19,7 @@ import com.xbot.kotogram.catalog.model.CatalogSection
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.icon.KotogramIcons
 
-private val Common = listOf(
+private val Common = [
     "Back" to KotogramIcons.Back,
     "Close" to KotogramIcons.Close,
     "Cross" to KotogramIcons.Cross,
@@ -30,16 +30,16 @@ private val Common = listOf(
     "More" to KotogramIcons.More,
     "Check" to KotogramIcons.Check,
     "DoubleCheck" to KotogramIcons.DoubleCheck,
-)
+]
 
-private val SignIn = listOf(
+private val SignIn = [
     "Eye" to KotogramIcons.Eye,
     "EyeOff" to KotogramIcons.EyeOff,
     "QrCode" to KotogramIcons.QrCode,
     "Smartphone" to KotogramIcons.Smartphone,
-)
+]
 
-private val ChatList = listOf(
+private val ChatList = [
     "Compose" to KotogramIcons.Compose,
     "Edit" to KotogramIcons.Edit,
     "Pin" to KotogramIcons.Pin,
@@ -50,9 +50,9 @@ private val ChatList = listOf(
     "Archive" to KotogramIcons.Archive,
     "Folder" to KotogramIcons.Folder,
     "Bookmark" to KotogramIcons.Bookmark,
-)
+]
 
-private val Chat = listOf(
+private val Chat = [
     "Attach" to KotogramIcons.Attach,
     "Send" to KotogramIcons.Send,
     "Microphone" to KotogramIcons.Microphone,
@@ -66,9 +66,9 @@ private val Chat = listOf(
     "Video" to KotogramIcons.Video,
     "Info" to KotogramIcons.Info,
     "Camera" to KotogramIcons.Camera,
-)
+]
 
-private val SettingsAndProfile = listOf(
+private val SettingsAndProfile = [
     "Settings" to KotogramIcons.Settings,
     "Person" to KotogramIcons.Person,
     "PersonAdd" to KotogramIcons.PersonAdd,
@@ -84,9 +84,9 @@ private val SettingsAndProfile = listOf(
     "Shield" to KotogramIcons.Shield,
     "Plus" to KotogramIcons.Plus,
     "Message" to KotogramIcons.Message,
-)
+]
 
-private val ChatListRow = listOf(
+private val ChatListRow = [
     "SpeakerOff" to KotogramIcons.SpeakerOff,
     "PinFilled" to KotogramIcons.PinFilled,
     "ForwardFilled" to KotogramIcons.ForwardFilled,
@@ -114,16 +114,16 @@ private val ChatListRow = listOf(
     "TopicArrow" to KotogramIcons.TopicArrow,
     "DisclosureArrow" to KotogramIcons.DisclosureArrow,
     "TopicClosed" to KotogramIcons.TopicClosed,
-)
+]
 
-private val Avatars = listOf(
+private val Avatars = [
     "AvatarSavedMessages" to KotogramIcons.AvatarSavedMessages,
     "AvatarReplies" to KotogramIcons.AvatarReplies,
     "AvatarMyNotes" to KotogramIcons.AvatarMyNotes,
     "AvatarAnonymous" to KotogramIcons.AvatarAnonymous,
     "AvatarArchive" to KotogramIcons.AvatarArchive,
     "AvatarDeleted" to KotogramIcons.AvatarDeleted,
-)
+]
 
 private val AllIcons = Common + SignIn + ChatList + Chat + SettingsAndProfile
 
@@ -134,7 +134,7 @@ internal val IconsPage = CatalogPage(
     description = "KotogramIcons: line icons drawn from lines, circles and arcs at Telegram for macOS's sizes and " +
         "weights, in the middle of Compose's 24-dp canvas. The chat list row's icons are Telegram for iOS's, at " +
         "their own sizes.",
-    examples = listOf(
+    examples = [
         CatalogExample("Common") { IconGrid(Common, 24.dp) },
         CatalogExample("Sign-in") { IconGrid(SignIn, 24.dp) },
         CatalogExample("Chat list") { IconGrid(ChatList, 24.dp) },
@@ -146,7 +146,7 @@ internal val IconsPage = CatalogPage(
         CatalogExample("Chat list row at three times the size") {
             IconGrid(ChatListRow, scale = 3f, cellWidth = WideCellWidth)
         },
-    ),
+    ],
 )
 
 @Composable

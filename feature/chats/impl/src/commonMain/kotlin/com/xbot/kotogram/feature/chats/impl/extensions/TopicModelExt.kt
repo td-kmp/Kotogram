@@ -14,11 +14,11 @@ import io.xbot.tdlib.api.Sticker
 internal fun TopicModel.toTopic(customEmoji: Map<Long, Sticker>): ForumTopic = ForumTopic(
     title = title,
     icon = when (val icon = icon) {
-        TopicIconModel.General -> TopicIcon.General
+        General -> TopicIcon.General
 
-        is TopicIconModel.Bubble -> TopicIcon.Bubble(icon.color)
+        is Bubble -> TopicIcon.Bubble(icon.color)
 
-        is TopicIconModel.Emoji -> TopicIcon.Emoji {
+        is Emoji -> TopicIcon.Emoji {
             CustomEmoji(customEmoji[icon.customEmojiId], "", Modifier.fillMaxSize(), loops = 0)
         }
 

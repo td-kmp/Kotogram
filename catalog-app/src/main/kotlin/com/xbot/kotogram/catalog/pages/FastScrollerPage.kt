@@ -18,11 +18,11 @@ internal val FastScrollerPage = CatalogPage(
         "moment later and, dragged, names the section in a bubble, ticking with the haptics of a segment as the " +
         "section changes. It lies over the list's margin and takes no room from its rows. A list that only " +
         "shows its place takes ScrollIndicator.",
-    examples = listOf(
+    examples = [
         CatalogExample("Over a sectioned LazyColumn") {
             SampleCountryList { state, sections ->
                 FastScroller(state, sections, Modifier.align(Alignment.CenterEnd).fillMaxHeight())
             }
         },
-    ),
+    ],
 )

@@ -12,7 +12,7 @@ import com.xbot.kotogram.core.designsystem.extensions.polyline
 import com.xbot.kotogram.core.designsystem.extensions.stroke
 
 internal fun backIcon() = icon("Back") {
-    stroke(width = 2f) { polyline(listOf(Offset(15f, 6f), Offset(9f, 12f), Offset(15f, 18f))) }
+    stroke(width = 2f) { polyline([Offset(15f, 6f), Offset(9f, 12f), Offset(15f, 18f)]) }
 }
 
 internal fun closeIcon() = icon("Close") {
@@ -43,11 +43,11 @@ internal fun searchIcon() = icon("Search") {
 }
 
 internal fun chevronDownIcon() = icon("ChevronDown") {
-    stroke(width = 1.5f) { polyline(listOf(Offset(8f, 10f), Offset(12f, 14f), Offset(16f, 10f))) }
+    stroke(width = 1.5f) { polyline([Offset(8f, 10f), Offset(12f, 14f), Offset(16f, 10f)]) }
 }
 
 internal fun chevronRightIcon() = icon("ChevronRight") {
-    stroke(width = 1.5f) { polyline(listOf(Offset(10f, 8f), Offset(14f, 12f), Offset(10f, 16f))) }
+    stroke(width = 1.5f) { polyline([Offset(10f, 8f), Offset(14f, 12f), Offset(10f, 16f)]) }
 }
 
 internal fun moreIcon() = icon("More") {
@@ -59,12 +59,12 @@ internal fun moreIcon() = icon("More") {
 }
 
 internal fun checkIcon() = icon("Check") {
-    stroke(width = 1.5f) { polyline(listOf(Offset(6f, 12.5f), Offset(10f, 16.5f), Offset(18f, 8.5f))) }
+    stroke(width = 1.5f) { polyline([Offset(6f, 12.5f), Offset(10f, 16.5f), Offset(18f, 8.5f)]) }
 }
 
 internal fun doubleCheckIcon() = icon("DoubleCheck") {
     stroke(width = 1.5f) {
-        polyline(listOf(Offset(2.5f, 12.5f), Offset(6f, 16f), Offset(13.5f, 8.5f)))
-        polyline(listOf(Offset(10.5f, 14.5f), Offset(12f, 16f), Offset(19.5f, 8.5f)))
+        polyline([Offset(2.5f, 12.5f), Offset(6f, 16f), Offset(13.5f, 8.5f)])
+        polyline([Offset(10.5f, 14.5f), Offset(12f, 16f), Offset(19.5f, 8.5f)])
     }
 }

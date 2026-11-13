@@ -71,7 +71,7 @@ class CatalogScreenshotTest(
         @Parameterized.Parameters(name = "{0}, dark {1}, font scale {2}, laptop {3}")
         fun screens(): List<Array<Any>> {
             val themes = (listOf(HOME) + CatalogPages.map { it.id } - MOVING_SCREENS).flatMap { screen ->
-                listOf(false, true).map { darkTheme -> arrayOf<Any>(screen, darkTheme, 1f, true) }
+                [false, true].map { darkTheme -> arrayOf<Any>(screen, darkTheme, 1f, true) }
             }
             val largeText = FIELD_SCREENS.map { screen -> arrayOf<Any>(screen, false, LARGE_FONT_SCALE, true) }
             val touch = TOUCH_SCREENS.map { screen -> arrayOf<Any>(screen, false, 1f, false) }
@@ -83,11 +83,11 @@ class CatalogScreenshotTest(
 private const val HOME = "home"
 private const val HOME_TITLE = "Kotogram design system"
 private val FIELD_SCREENS =
-    listOf("text-field", "secure-text-field", "search-field", "code-field", "phone-number-field")
+    ["text-field", "secure-text-field", "search-field", "code-field", "phone-number-field"]
 private val TOUCH_SCREENS =
     FIELD_SCREENS + listOf("icon-button", "checkbox", "switch", "top-bar", "chat-list-item", "typography")
 
-private val MOVING_SCREENS = setOf("transitions")
+private val MOVING_SCREENS: Set<String> = ["transitions"]
 private const val LARGE_FONT_SCALE = 2f
 private const val SCREEN_TAG = "catalog-screen"
 private const val WIDTH = 900

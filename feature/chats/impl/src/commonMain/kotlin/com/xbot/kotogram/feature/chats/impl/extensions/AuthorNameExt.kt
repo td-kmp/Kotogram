@@ -8,6 +8,6 @@ import com.xbot.kotogram.feature.chats.impl.screen.list.AuthorName
 
 @Composable
 internal fun AuthorName.text(): String = when (this) {
-    is AuthorName.Name -> text
-    AuthorName.You -> stringResource(Res.string.chatlist_you)
+    is Name -> text
+    You -> stringResource(Res.string.chatlist_you)
 }

@@ -50,7 +50,7 @@ class PhoneViewModelTest {
     fun theNextAccountSendsThePendingNumber() = runTest {
         loginEntry.pendingPhoneNumber.value = entered
         val state = phoneScreen()
-        assertEquals(listOf(entered.international), repository.phoneNumbers)
+        assertEquals([entered.international], repository.phoneNumbers)
         assertNull(loginEntry.pendingPhoneNumber.value)
         assertEquals(entered.number, state.number)
         assertEquals(uzbekistan, state.country)
@@ -60,7 +60,7 @@ class PhoneViewModelTest {
     fun thePendingNumberIsOnScreenFromTheStart() = runTest {
         loginEntry.pendingPhoneNumber.value = entered
         val viewModel =
-            PhoneViewModel(SavedStateHandle(), loginEntry, FakeCountryRepository(listOf(russia)), repository)
+            PhoneViewModel(SavedStateHandle(), loginEntry, FakeCountryRepository([russia]), repository)
         val initial = viewModel.container.stateFlow.value
         assertEquals(uzbekistan, initial.country)
         assertEquals(entered.callingCode + entered.number, viewModel.phoneNumber.text.toString())
@@ -92,7 +92,7 @@ class PhoneViewModelTest {
             { onAction(PhoneScreenAction.OnSubmit) },
         )
         assertEquals(false, state.canSubmit)
-        assertEquals(emptyList(), repository.phoneNumbers)
+        assertEquals([], repository.phoneNumbers)
     }
 
     @Test
@@ -112,7 +112,7 @@ class PhoneViewModelTest {
         val viewModel = PhoneViewModel(
             SavedStateHandle(),
             loginEntry,
-            FakeCountryRepository(listOf(russia, uzbekistan)),
+            FakeCountryRepository([russia, uzbekistan]),
             repository,
         )
         viewModel.testWithInternalState(this) {
@@ -143,6 +143,6 @@ class PhoneViewModelTest {
         englishName = name,
         flagEmoji = "",
         isHidden = false,
-        callingCodes = listOf(callingCode),
+        callingCodes = [callingCode],
     )
 }

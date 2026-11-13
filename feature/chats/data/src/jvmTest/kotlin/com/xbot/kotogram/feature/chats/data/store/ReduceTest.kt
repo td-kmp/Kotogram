@@ -47,7 +47,7 @@ class ReduceTest {
             UpdateNewChat(chat(2, position(ChatListMain, 30))),
             UpdateNewChat(chat(3, position(ChatListMain, 10))),
         )
-        assertEquals(listOf(2L, 3L, 1L), state.main())
+        assertEquals([2L, 3L, 1L], state.main())
     }
 
     @Test
@@ -56,9 +56,9 @@ class ReduceTest {
             UpdateNewChat(chat(1, position(ChatListMain, 10), position(ChatListArchive, 20))),
             UpdateChatPosition(chatId = 1, position = position(ChatListMain, 0)),
         )
-        assertEquals(emptyList(), state.main())
-        assertEquals(listOf(1L), state.chatLists[ChatListArchive]?.chatIds)
-        assertEquals(listOf(ChatListArchive), state.chats[1]?.positions?.map { it.list })
+        assertEquals([], state.main())
+        assertEquals([1L], state.chatLists[ChatListArchive]?.chatIds)
+        assertEquals([ChatListArchive], state.chats[1]?.positions?.map { it.list })
         assertEquals(1L, state.chats[1]?.id)
     }
 
@@ -70,10 +70,10 @@ class ReduceTest {
             UpdateChatLastMessage(
                 chatId = 1,
                 lastMessage = null,
-                positions = listOf(position(ChatListMain, 30)),
+                positions = [position(ChatListMain, 30)],
             ),
         )
-        assertEquals(listOf(1L, 2L), state.main())
+        assertEquals([1L, 2L], state.main())
     }
 
     @Test
@@ -83,11 +83,11 @@ class ReduceTest {
             UpdateChatLastMessage(
                 chatId = 1,
                 lastMessage = null,
-                positions = listOf(position(ChatListMain, 10)),
+                positions = [position(ChatListMain, 10)],
             ),
         )
-        assertEquals(emptyList(), state.chatLists[ChatListArchive]?.chatIds)
-        assertEquals(listOf(1L), state.main())
+        assertEquals([], state.chatLists[ChatListArchive]?.chatIds)
+        assertEquals([1L], state.main())
     }
 
     @Test

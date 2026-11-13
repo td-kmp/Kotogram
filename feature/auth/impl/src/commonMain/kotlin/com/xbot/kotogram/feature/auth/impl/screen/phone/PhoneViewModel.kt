@@ -102,9 +102,9 @@ internal class PhoneViewModel(
 
     fun onAction(action: PhoneScreenAction) {
         when (action) {
-            is PhoneScreenAction.OnCountryPickerVisibilityChange -> onCountryPickerVisibilityChange(action.visible)
-            is PhoneScreenAction.OnCountrySelect -> onCountrySelect(action.country)
-            PhoneScreenAction.OnSubmit -> onSubmit()
+            is OnCountryPickerVisibilityChange -> onCountryPickerVisibilityChange(action.visible)
+            is OnCountrySelect -> onCountrySelect(action.country)
+            OnSubmit -> onSubmit()
         }
     }
 

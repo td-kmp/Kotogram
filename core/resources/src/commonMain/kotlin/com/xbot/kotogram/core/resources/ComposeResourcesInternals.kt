@@ -33,21 +33,21 @@ private val ruleLists = Array(cldrPluralRuleLists.size) { index ->
     }
 }
 
-private val categories = listOf(
+private val categories = [
     PluralCategory.ZERO,
     PluralCategory.ONE,
     PluralCategory.TWO,
     PluralCategory.FEW,
     PluralCategory.MANY,
     PluralCategory.OTHER,
-)
+]
 
 internal fun pluralForm(
     value: LanguagePackStringValuePluralized,
     pluralCode: String,
     quantity: Int,
 ): String {
-    val forms = with(value) { listOf(zeroValue, oneValue, twoValue, fewValue, manyValue, otherValue) }
+    val forms = with(value) { [zeroValue, oneValue, twoValue, fewValue, manyValue, otherValue] }
     return forms[formIndex(pluralCode, quantity)].ifEmpty { value.otherValue }
 }
 

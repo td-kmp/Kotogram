@@ -24,7 +24,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -59,14 +58,14 @@ class AccountManager(
     private var sessions = emptyMap<AccountId, AccountSession>()
     private var addingId: AccountId? = null
 
-    private val mutableRegistry = MutableStateFlow(AccountRegistry())
-    val registry: StateFlow<AccountRegistry> = mutableRegistry.asStateFlow()
+    val registry: StateFlow<AccountRegistry>
+        field = MutableStateFlow(AccountRegistry())
 
-    private val mutableShown = MutableStateFlow(ShownAccounts())
-    val shown: StateFlow<ShownAccounts> = mutableShown.asStateFlow()
+    val shown: StateFlow<ShownAccounts>
+        field = MutableStateFlow(ShownAccounts())
 
-    private val mutableAccounts = MutableStateFlow(emptyList<AccountSession>())
-    val accounts: StateFlow<List<AccountSession>> = mutableAccounts.asStateFlow()
+    val accounts: StateFlow<List<AccountSession>>
+        field = MutableStateFlow(emptyList<AccountSession>())
 
     fun start() {
         appScope.launch {
@@ -353,18 +352,18 @@ class AccountManager(
     }
 
     private suspend fun setRegistry(next: AccountRegistry) {
-        if (next == mutableRegistry.value) return
-        mutableRegistry.value = next
+        if (next == registry.value) return
+        registry.value = next
         store.save(next)
     }
 
     private fun publish() {
         val current = registry.value
-        mutableShown.value = ShownAccounts(
+        shown.value = ShownAccounts(
             active = current.active?.let { sessions[it] },
             adding = addingId?.let { sessions[it] },
         )
-        mutableAccounts.value = current.signedIn.mapNotNull { sessions[it.id] }
+        accounts.value = current.signedIn.mapNotNull { sessions[it.id] }
     }
 
     private companion object {

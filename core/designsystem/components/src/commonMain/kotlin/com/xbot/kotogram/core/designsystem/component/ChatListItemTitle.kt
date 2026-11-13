@@ -283,7 +283,7 @@ private class TitleMeasurePolicy(
     ): List<PlacedIcon> {
         var origin = textEnd + TitleIconStart.roundToPx()
         val placed = mutableListOf<PlacedIcon>()
-        for (part in listOf(TitlePart.EmojiStatus, TitlePart.Mark, TitlePart.Muted)) {
+        for (part in [TitlePart.EmojiStatus, TitlePart.Mark, TitlePart.Muted]) {
             val icon = icons[part] ?: continue
             val muted = part == TitlePart.Muted
             val x = if (muted) origin + MutedIconOffset.roundToPx() else origin

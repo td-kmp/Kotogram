@@ -30,43 +30,43 @@ import com.xbot.kotogram.feature.chats.impl.screen.list.TypingKind
 import org.jetbrains.compose.resources.StringResource as ComposeStringResource
 
 internal fun TypingKind.action(): TypingAction = when (this) {
-    TypingKind.Text -> TypingAction.Typing
-    TypingKind.Voice -> TypingAction.RecordingVoice
-    TypingKind.Video -> TypingAction.RecordingVideo
-    TypingKind.Photo, TypingKind.VideoUpload, TypingKind.File -> TypingAction.Uploading
-    TypingKind.Game -> TypingAction.PlayingGame
-    TypingKind.Sticker -> TypingAction.ChoosingSticker
+    Text -> TypingAction.Typing
+    Voice -> TypingAction.RecordingVoice
+    Video -> TypingAction.RecordingVideo
+    Photo, VideoUpload, File -> TypingAction.Uploading
+    Game -> TypingAction.PlayingGame
+    Sticker -> TypingAction.ChoosingSticker
 }
 
 internal fun TypingKind.userText(): ComposeStringResource = when (this) {
-    TypingKind.Text -> Res.string.peer_activity_user_typingtext
-    TypingKind.Voice -> Res.string.peer_activity_user_recordingaudio
-    TypingKind.Video -> Res.string.peer_activity_user_recordingvideo
-    TypingKind.Photo -> Res.string.peer_activity_user_sendingphoto
-    TypingKind.VideoUpload -> Res.string.peer_activity_user_sendingvideo
-    TypingKind.File -> Res.string.peer_activity_user_sendingfile
-    TypingKind.Game -> Res.string.peer_activity_user_playinggame
-    TypingKind.Sticker -> Res.string.peer_activity_user_choosingsticker
+    Text -> Res.string.peer_activity_user_typingtext
+    Voice -> Res.string.peer_activity_user_recordingaudio
+    Video -> Res.string.peer_activity_user_recordingvideo
+    Photo -> Res.string.peer_activity_user_sendingphoto
+    VideoUpload -> Res.string.peer_activity_user_sendingvideo
+    File -> Res.string.peer_activity_user_sendingfile
+    Game -> Res.string.peer_activity_user_playinggame
+    Sticker -> Res.string.peer_activity_user_choosingsticker
 }
 
 internal fun TypingKind.chatText(): ComposeStringResource = when (this) {
-    TypingKind.Text -> Res.string.peer_activity_chat_typingtext
-    TypingKind.Voice -> Res.string.peer_activity_chat_recordingaudio
-    TypingKind.Video -> Res.string.peer_activity_chat_recordingvideo
-    TypingKind.Photo -> Res.string.peer_activity_chat_sendingphoto
-    TypingKind.VideoUpload -> Res.string.peer_activity_chat_sendingvideo
-    TypingKind.File -> Res.string.peer_activity_chat_sendingfile
-    TypingKind.Game -> Res.string.peer_activity_chat_playinggame
-    TypingKind.Sticker -> Res.string.peer_activity_chat_choosingsticker
+    Text -> Res.string.peer_activity_chat_typingtext
+    Voice -> Res.string.peer_activity_chat_recordingaudio
+    Video -> Res.string.peer_activity_chat_recordingvideo
+    Photo -> Res.string.peer_activity_chat_sendingphoto
+    VideoUpload -> Res.string.peer_activity_chat_sendingvideo
+    File -> Res.string.peer_activity_chat_sendingfile
+    Game -> Res.string.peer_activity_chat_playinggame
+    Sticker -> Res.string.peer_activity_chat_choosingsticker
 }
 
 internal fun TypingKind.multiText(): ComposeStringResource = when (this) {
-    TypingKind.Text -> Res.string.peer_activity_chat_multi_typingtext1
-    TypingKind.Voice -> Res.string.peer_activity_chat_multi_recordingaudio1
-    TypingKind.Video -> Res.string.peer_activity_chat_multi_recordingvideo1
-    TypingKind.Photo -> Res.string.peer_activity_chat_multi_sendingphoto1
-    TypingKind.VideoUpload -> Res.string.peer_activity_chat_multi_sendingvideo1
-    TypingKind.File -> Res.string.peer_activity_chat_multi_sendingfile1
-    TypingKind.Game -> Res.string.peer_activity_chat_multi_playinggame1
-    TypingKind.Sticker -> Res.string.peer_activity_chat_multi_choosingsticker1
+    Text -> Res.string.peer_activity_chat_multi_typingtext1
+    Voice -> Res.string.peer_activity_chat_multi_recordingaudio1
+    Video -> Res.string.peer_activity_chat_multi_recordingvideo1
+    Photo -> Res.string.peer_activity_chat_multi_sendingphoto1
+    VideoUpload -> Res.string.peer_activity_chat_multi_sendingvideo1
+    File -> Res.string.peer_activity_chat_multi_sendingfile1
+    Game -> Res.string.peer_activity_chat_multi_playinggame1
+    Sticker -> Res.string.peer_activity_chat_multi_choosingsticker1
 }

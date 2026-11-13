@@ -163,7 +163,7 @@ private class ChatListScreenStateProvider : PreviewParameterProvider<ChatListScr
     )
 }
 
-internal val SampleRows = listOf(
+internal val SampleRows = [
     sampleRow(1, "Anastasia", "And you?", date = minutesAgo(10), unread = 5, color = 0),
     sampleRow(
         2,
@@ -222,7 +222,7 @@ internal val SampleRows = listOf(
         muted = true,
         color = 5,
     ),
-)
+]
 
 @Suppress("LongParameterList")
 private fun sampleRow(
@@ -265,12 +265,12 @@ private fun sampleRow(
             PreviewText.Formatted(FormattedText(text = text))
         },
         icon = null,
-        thumbnails = emptyList(),
+        thumbnails = [],
         hideAuthor = false,
     ),
     typing = null,
-    topics = emptyList(),
-    tags = emptyList(),
+    topics = [],
+    tags = [],
     hasOpenAppButton = false,
 )
 

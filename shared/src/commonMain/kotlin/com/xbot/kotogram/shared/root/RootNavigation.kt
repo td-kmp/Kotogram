@@ -113,10 +113,10 @@ private fun AccountNavigation(
             transitionSpec = transitions.push,
             popTransitionSpec = transitions.pop,
             predictivePopTransitionSpec = transitions.predictivePop,
-            entryDecorators = listOf(
+            entryDecorators = [
                 rememberSaveableStateHolderNavEntryDecorator(),
                 rememberSharedViewModelStoreNavEntryDecorator(),
-            ),
+            ],
             entryProvider = koinEntryProvider(),
         )
     }

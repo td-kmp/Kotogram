@@ -198,11 +198,11 @@ internal fun Message.toPreview(context: PreviewContext): ChatPreview.Message {
         return ChatPreview.Message(
             PreviewText.Resource(service),
             content.icon(this),
-            emptyList(),
+            [],
             content.keepsAuthor().not(),
         )
     }
-    val thumbnails = if (context.showMedia && selfDestructType == null) content.thumbnails() else emptyList()
+    val thumbnails = if (context.showMedia && selfDestructType == null) content.thumbnails() else []
     return ChatPreview.Message(
         content.text(this),
         content.icon(this),
@@ -375,7 +375,7 @@ private fun MessageContent.serviceText(
         is MessageChatDeleteMember -> if (userId == message.senderUserId()) {
             text(Res.string.chat_service_group_removedself, sender)
         } else {
-            text(Res.string.chat_service_group_removedmembers1, sender, context.names(listOf(userId)))
+            text(Res.string.chat_service_group_removedmembers1, sender, context.names([userId]))
         }
 
         is MessageChatUpgradeTo, is MessageChatUpgradeFrom -> text(Res.string.chat_service_group_migratedtosupergroup)
@@ -606,7 +606,7 @@ private fun MessageContent.thumbnails(): List<ThumbnailModel> = when (this) {
 
     is MessagePaidMedia -> media.take(MAX_THUMBNAILS).mapNotNull { it.thumbnail() }
 
-    else -> emptyList()
+    else -> []
 }
 
 private fun thumbnail(
@@ -629,7 +629,7 @@ private fun PaidMedia.thumbnail(): ThumbnailModel? = when (this) {
 
 private fun Photo.preview(): Any? = sizes.minByOrNull { it.width }?.photo ?: minithumbnail?.data
 
-internal fun User.fullName(): String = listOf(firstName, lastName).filter { it.isNotBlank() }.joinToString(" ")
+internal fun User.fullName(): String = [firstName, lastName].filter { it.isNotBlank() }.joinToString(" ")
 
 private const val SECONDS_IN_MINUTE = 60
 private const val SECONDS_IN_HOUR = 3_600

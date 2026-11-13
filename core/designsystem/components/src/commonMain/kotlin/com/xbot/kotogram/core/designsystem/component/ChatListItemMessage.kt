@@ -127,9 +127,9 @@ fun ChatListItemScope.Message(
     modifier: Modifier = Modifier,
     author: String? = null,
     icon: MessageIcon? = null,
-    thumbnails: List<MessageThumbnail> = emptyList(),
-    topics: List<ForumTopic> = emptyList(),
-    tags: List<FolderTag> = emptyList(),
+    thumbnails: List<MessageThumbnail> = [],
+    topics: List<ForumTopic> = [],
+    tags: List<FolderTag> = [],
     inlineContent: Map<String, InlineTextContent> = emptyMap(),
 ) {
     val forum = topics.isNotEmpty() && tags.isEmpty()
@@ -155,13 +155,13 @@ fun ChatListItemScope.Draft(
     label: String,
     text: AnnotatedString,
     modifier: Modifier = Modifier,
-    tags: List<FolderTag> = emptyList(),
+    tags: List<FolderTag> = [],
     inlineContent: Map<String, InlineTextContent> = emptyMap(),
 ) {
     if (tags.isEmpty()) {
-        TextBlock(text, HeaderContent.Line(label, texts.draft), tags, null, emptyList(), inlineContent, modifier)
+        TextBlock(text, HeaderContent.Line(label, texts.draft), tags, null, [], inlineContent, modifier)
     } else {
-        TextBlock(text.prefixed("$label: ", texts.draft), null, tags, null, emptyList(), inlineContent, modifier)
+        TextBlock(text.prefixed("$label: ", texts.draft), null, tags, null, [], inlineContent, modifier)
     }
 }
 
@@ -181,7 +181,7 @@ fun ChatListItemScope.ArchivedChats(
             }
         }
     }
-    TextBlock(text, null, emptyList(), null, emptyList(), emptyMap(), modifier)
+    TextBlock(text, null, [], null, [], emptyMap(), modifier)
 }
 
 private fun AnnotatedString.prefixed(
@@ -245,7 +245,7 @@ private fun ChatListItemScope.TextBlock(
         modifier = modifier.drawWithCache {
             val shape = highlight.shape?.takeIf { highlighted }
             val path = shape?.let {
-                Path().apply { addRectStack(listOf(it.top, it.bottom), radius = it.radius, snap = it.snap) }
+                Path().apply { addRectStack([it.top, it.bottom], radius = it.radius, snap = it.snap) }
             }
             onDrawBehind { path?.let { drawPath(it, highlightColor) } }
         },

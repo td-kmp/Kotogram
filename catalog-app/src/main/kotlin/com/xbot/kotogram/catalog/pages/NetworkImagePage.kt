@@ -26,7 +26,7 @@ internal val NetworkImagePage = CatalogPage(
     description =
         "An image Coil loads. In the app the account's loader reads TDLib's files, downloading " +
             "them first; a minithumbnail can stand in until then. Here the images are bytes.",
-    examples = listOf(
+    examples = [
         CatalogExample("Loaded, as an avatar and a photo") {
             Row(horizontalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.large)) {
                 NetworkImage(SampleImage, null, Modifier.size(56.dp).clip(CircleShape))
@@ -49,7 +49,7 @@ internal val NetworkImagePage = CatalogPage(
         CatalogExample("A thumbnail until the image comes") {
             Thumbnailed()
         },
-    ),
+    ],
 )
 
 @Composable

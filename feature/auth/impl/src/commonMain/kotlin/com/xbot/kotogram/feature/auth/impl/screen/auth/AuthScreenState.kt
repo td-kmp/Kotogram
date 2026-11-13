@@ -5,8 +5,8 @@ import com.xbot.kotogram.feature.auth.domain.model.LoginFlow
 
 internal data class AuthScreenState(
     val flow: LoginFlow,
-    val backStack: List<AuthStep> = emptyList(),
+    val backStack: List<AuthStep> = [],
     val hasLeftFirstStep: Boolean = false,
 ) {
-    val canUseQr: Boolean get() = flow == LoginFlow.QrCodeFirst
+    val canUseQr: Boolean get() = flow == QrCodeFirst
 }

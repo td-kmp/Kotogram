@@ -72,7 +72,7 @@ private class SectionIndexSource(
     private val onSection: (Int) -> Unit,
 ) : NSObject(),
     UITableViewDataSourceProtocol {
-    var titles: List<String> = emptyList()
+    var titles: List<String> = []
 
     override fun numberOfSectionsInTableView(tableView: UITableView): NSInteger = titles.size.convert()
 

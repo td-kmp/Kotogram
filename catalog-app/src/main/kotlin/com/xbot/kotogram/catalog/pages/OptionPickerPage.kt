@@ -24,7 +24,7 @@ internal val OptionPickerPage = CatalogPage(
         "it, SearchField and ListItem rows under sticky section headers, with FastScroller over its sections " +
         "and ScrollIndicator over a search's matches. The selected option opens in sight with a check; a search " +
         "lists the matches alone, the match in semibold.",
-    examples = listOf(CatalogExample("A country, as at sign-in") { CountryPicker() }),
+    examples = [CatalogExample("A country, as at sign-in") { CountryPicker() }],
 )
 
 @Composable

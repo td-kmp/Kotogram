@@ -38,7 +38,7 @@ class LanguageSuggestionViewModelTest {
         suggestions.suggestion.value = russian
         languages.switched = CompletableDeferred()
         assertTrue(state(LanguageSuggestionAction.OnContinueClick).isSwitching)
-        assertEquals(listOf("ru"), languages.applied)
+        assertEquals(["ru"], languages.applied)
     }
 
     private suspend fun TestScope.state(action: LanguageSuggestionAction? = null): LanguageSuggestionState {

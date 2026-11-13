@@ -26,7 +26,7 @@ internal val ColorsPage = CatalogPage(
     name = "Colors",
     description = "Material 3's roles, filled with Telegram for macOS's Day Classic and Night Accent palettes. " +
         "On Android 12 and later the system's dynamic colours take their place.",
-    examples = listOf(
+    examples = [
         CatalogExample("Accent") {
             val colors = KotogramTheme.colors
             ColorRoles(
@@ -71,7 +71,7 @@ internal val ColorsPage = CatalogPage(
                 "onErrorContainer" to colors.onErrorContainer,
             )
         },
-    ),
+    ],
 )
 
 @Composable

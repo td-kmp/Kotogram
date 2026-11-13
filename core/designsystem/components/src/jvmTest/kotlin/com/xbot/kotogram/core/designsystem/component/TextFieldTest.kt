@@ -22,7 +22,7 @@ import kotlin.test.assertTrue
 class TextFieldTest {
     @Test
     fun keepsItsMinimumHeightAtTheUsualScale() {
-        for (laptop in listOf(true, false)) {
+        for (laptop in [true, false]) {
             val field = measure(fontScale = 1f, laptop = laptop)
             assertEquals(field.minHeight, field.height, "laptop $laptop")
         }
@@ -30,7 +30,7 @@ class TextFieldTest {
 
     @Test
     fun growsWithTheFontScale() {
-        for (laptop in listOf(true, false)) {
+        for (laptop in [true, false]) {
             val field = measure(fontScale = 2f, laptop = laptop)
             assertTrue(field.height > field.minHeight, "${field.height} at twice the font scale, laptop $laptop")
         }

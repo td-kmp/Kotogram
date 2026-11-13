@@ -56,13 +56,13 @@ internal class RegistrationViewModel(
 
     fun onAction(action: RegistrationScreenAction) {
         when (action) {
-            is RegistrationScreenAction.OnTermsVisibilityChange -> onTermsVisibilityChange(
+            is OnTermsVisibilityChange -> onTermsVisibilityChange(
                 action.visible,
             )
 
-            is RegistrationScreenAction.OnPhotoPicked -> photo = action.jpeg
+            is OnPhotoPicked -> photo = action.jpeg
 
-            RegistrationScreenAction.OnSubmit -> onSubmit()
+            OnSubmit -> onSubmit()
         }
     }
 

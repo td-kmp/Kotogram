@@ -9,7 +9,7 @@ class LoginEntry(
     flow: LoginFlow,
 ) {
     val method = MutableStateFlow(
-        if (flow == LoginFlow.QrCodeFirst) LoginMethod.QrCode else LoginMethod.PhoneNumber,
+        if (flow == QrCodeFirst) LoginMethod.QrCode else LoginMethod.PhoneNumber,
     )
 
     val pendingPhoneNumber = MutableStateFlow<EnteredPhoneNumber?>(null)

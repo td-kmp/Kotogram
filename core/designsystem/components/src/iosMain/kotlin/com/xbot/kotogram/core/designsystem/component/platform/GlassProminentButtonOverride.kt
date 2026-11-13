@@ -46,14 +46,14 @@ internal object GlassProminentButtonOverride : ProminentButtonOverride {
                 modifier = Modifier.matchParentSize(),
                 update = { button ->
                     button.configuration = glassConfiguration(
-                        title = text.takeUnless { state == ButtonState.Loading },
+                        title = text.takeUnless { state == Loading },
                         font = UIFont.systemFontOfSize(fontSize, textStyle.fontWeight.appleWeight()),
                         color = colors.contentColor(state).toUIColor(),
-                        loading = state == ButtonState.Loading,
+                        loading = state == Loading,
                     )
                     button.tintColor = colors.containerColor(state).toUIColor()
                     button.overrideUserInterfaceStyle = interfaceStyle(dark)
-                    button.userInteractionEnabled = state == ButtonState.Enabled
+                    button.userInteractionEnabled = state == Enabled
                     button.accessibilityLabel = text
                 },
                 properties = GlassProperties,

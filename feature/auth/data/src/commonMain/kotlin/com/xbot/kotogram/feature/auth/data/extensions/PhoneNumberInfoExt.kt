@@ -33,7 +33,7 @@ private val TestCountry = CountryInfo(
     englishName = "Test",
     flagEmoji = "🛰️",
     isHidden = false,
-    callingCodes = listOf(TEST_CALLING_CODE),
+    callingCodes = [TEST_CALLING_CODE],
 )
 
 private const val TEST_CALLING_CODE = "999"

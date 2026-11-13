@@ -45,10 +45,10 @@ class MacProgressIndicator {
         indicator.translatesAutoresizingMaskIntoConstraints = false
         parent.addSubview(indicator)
         NSLayoutConstraint.activateConstraints(
-            listOf(
+            [
                 indicator.centerXAnchor.constraintEqualToAnchor(parent.centerXAnchor),
                 indicator.centerYAnchor.constraintEqualToAnchor(parent.centerYAnchor),
-            ),
+            ],
         )
     }
 }

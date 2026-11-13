@@ -57,8 +57,8 @@ internal class PasswordViewModel(
 
     fun onAction(action: PasswordScreenAction) {
         when (action) {
-            PasswordScreenAction.OnSubmit -> onSubmit()
-            PasswordScreenAction.OnForgotPassword -> onForgotPassword()
+            OnSubmit -> onSubmit()
+            OnForgotPassword -> onForgotPassword()
         }
     }
 

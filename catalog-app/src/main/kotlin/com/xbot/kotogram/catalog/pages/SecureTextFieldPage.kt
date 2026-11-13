@@ -28,7 +28,7 @@ internal val SecureTextFieldPage = CatalogPage(
     name = "SecureTextField",
     description = "The password field of Telegram for macOS's sign-in (Auth_PasswordEntry): the same field over " +
         "BasicSecureTextField, with a button that shows the password.",
-    examples = listOf(
+    examples = [
         CatalogExample("Hidden") { PasswordField(revealed = false) },
         CatalogExample("Shown") { PasswordField(revealed = true) },
         CatalogExample("Empty") {
@@ -43,7 +43,7 @@ internal val SecureTextFieldPage = CatalogPage(
                 textObfuscationMode = TextObfuscationMode.Hidden,
             )
         },
-    ),
+    ],
 )
 
 @Composable

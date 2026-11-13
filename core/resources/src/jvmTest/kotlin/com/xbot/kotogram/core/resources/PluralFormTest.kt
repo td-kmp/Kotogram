@@ -20,19 +20,19 @@ class PluralFormTest {
     ) = quantities.map { pluralForm(allForms, pluralCode, it) }
 
     @Test
-    fun englishHasOneAndOther() = assertEquals(listOf("other", "one", "other", "other"), forms("en", 0, 1, 2, 21))
+    fun englishHasOneAndOther() = assertEquals(["other", "one", "other", "other"], forms("en", 0, 1, 2, 21))
 
     @Test
     fun russianFollowsTheLastDigits() =
-        assertEquals(listOf("one", "few", "many", "one", "many"), forms("ru", 1, 22, 25, 101, 111))
+        assertEquals(["one", "few", "many", "one", "many"], forms("ru", 1, 22, 25, 101, 111))
 
     @Test
     fun arabicHasAllSix() =
-        assertEquals(listOf("zero", "one", "two", "few", "many", "other"), forms("ar", 0, 1, 2, 5, 11, 100))
+        assertEquals(["zero", "one", "two", "few", "many", "other"], forms("ar", 0, 1, 2, 5, 11, 100))
 
     @Test
     fun aRegionWithRulesOfItsOwnKeepsThem() =
-        assertEquals(listOf("one", "other"), listOf(pluralForm(allForms, "pt-br", 0), pluralForm(allForms, "pt-pt", 0)))
+        assertEquals(["one", "other"], [pluralForm(allForms, "pt-br", 0), pluralForm(allForms, "pt-pt", 0)])
 
     @Test
     fun anEmptyFormFallsToOther() = assertEquals(

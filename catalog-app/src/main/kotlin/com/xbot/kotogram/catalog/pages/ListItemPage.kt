@@ -28,7 +28,7 @@ internal val ListItemPage = CatalogPage(
     description = "Material 3's slots (overline, headline, supporting, leading, trailing) with the insets of " +
         "Telegram for macOS's rows (GeneralRowItem: 12 and 14). A position groups rows as macOS's settings do: " +
         "rounded ends and a divider under the text.",
-    examples = listOf(
+    examples = [
         CatalogExample("Grouped, as in settings") { SettingsGroup() },
         CatalogExample("Plain, as in a list of chats or countries") {
             ListItem(
@@ -59,7 +59,7 @@ internal val ListItemPage = CatalogPage(
                 modifier = Modifier.fillMaxWidth(),
             )
         },
-    ),
+    ],
 )
 
 @Composable

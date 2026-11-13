@@ -74,7 +74,7 @@ internal fun PhoneScreen(
     val focusRequester = remember { FocusRequester() }
     viewModel.collectSideEffect { effect ->
         when (effect) {
-            PhoneScreenSideEffect.Submitted -> onSubmit()
+            Submitted -> onSubmit()
         }
     }
     LaunchedEffect(focusRequester) { focusRequester.requestFocus() }
@@ -295,10 +295,10 @@ private class PhoneScreenStateProvider : PreviewParameterProvider<PhoneScreenSta
         englishName = "Uzbekistan",
         flagEmoji = "🇺🇿",
         isHidden = false,
-        callingCodes = listOf("998"),
+        callingCodes = ["998"],
     )
     private val empty = PhoneScreenState(
-        countries = listOf(country),
+        countries = [country],
         country = country,
         callingCode = "998",
         numberPattern = "-- --- -- --",

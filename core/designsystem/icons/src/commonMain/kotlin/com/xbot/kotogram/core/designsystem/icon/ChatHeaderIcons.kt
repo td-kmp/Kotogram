@@ -35,7 +35,7 @@ internal fun callIcon() = icon("Call") {
 internal fun videoIcon() = icon("Video") {
     stroke(width = LINE) {
         roundRect(3.5f, 7f, 15.5f, 17f, 2.5f)
-        polygon(listOf(Offset(15.5f, 10.5f), Offset(20.5f, 7.5f), Offset(20.5f, 16.5f), Offset(15.5f, 13.5f)))
+        polygon([Offset(15.5f, 10.5f), Offset(20.5f, 7.5f), Offset(20.5f, 16.5f), Offset(15.5f, 13.5f)])
     }
 }
 

@@ -55,13 +55,13 @@ internal fun messagePollIcon() = icon("MessagePoll", canvas = 20f) {
 internal fun messageCallIncomingIcon() = callIcon(
     name = "MessageCallIncoming",
     corner = Offset(11.33f, 8.67f),
-    ends = listOf(Offset(11.33f, 4.34f), Offset(15.66f, 8.67f), Offset(16.33f, 3.67f)),
+    ends = [Offset(11.33f, 4.34f), Offset(15.66f, 8.67f), Offset(16.33f, 3.67f)],
 )
 
 internal fun messageCallOutgoingIcon() = callIcon(
     name = "MessageCallOutgoing",
     corner = Offset(16.33f, 3.67f),
-    ends = listOf(Offset(12f, 3.67f), Offset(16.33f, 8f), Offset(11.33f, 8.67f)),
+    ends = [Offset(12f, 3.67f), Offset(16.33f, 8f), Offset(11.33f, 8.67f)],
 )
 
 internal fun thumbnailPlayIcon() = icon("ThumbnailPlay", canvas = 16f) {

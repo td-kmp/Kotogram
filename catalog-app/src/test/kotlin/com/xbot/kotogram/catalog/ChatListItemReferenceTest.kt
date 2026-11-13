@@ -155,7 +155,7 @@ private fun thumbnails(
     image: ImageBitmap?,
 ): List<MessageThumbnail> {
     if (image != null) {
-        return listOf(MessageThumbnail({ Image(image, null, Modifier.fillMaxSize()) }, row.thumbnailType))
+        return [MessageThumbnail({ Image(image, null, Modifier.fillMaxSize()) }, row.thumbnailType)]
     }
     return List(row.thumbnails) { MessageThumbnail({ Box(Modifier.fillMaxSize().background(Color.Gray)) }) }
 }
@@ -241,7 +241,7 @@ private data class ReferenceRow(
     val letters: String? = null,
     val colorIndex: Int = 0,
     val forum: Boolean = false,
-    val topics: List<ForumTopic> = emptyList(),
+    val topics: List<ForumTopic> = [],
 )
 
 private val MamaFirst = ReferenceRow("0-mama-pinned-1", "Мама", "18:19", "Немного подожди", pinned = true)
@@ -307,8 +307,8 @@ private const val YOU = "Вы"
 private const val ORANGE_TOPIC = 0xFFD67E
 private const val VIOLET_TOPIC = 0xCB86DB
 
-private val ReferenceRows = listOf(
-    LIGHT to listOf(
+private val ReferenceRows = [
+    LIGHT to [
         MamaFirst,
         MamaSecond,
         ReferenceRow(
@@ -326,8 +326,8 @@ private val ReferenceRows = listOf(
         Botalka.copy(file = "5-botalka"),
         TudaSyuda.copy(file = "6-tudasyuda"),
         Sber.copy(file = "7-sber"),
-    ),
-    DARK to listOf(
+    ],
+    DARK to [
         MamaFirst,
         MamaSecond,
         Troparevo.copy(file = "2-troparevo"),
@@ -355,13 +355,13 @@ private val ReferenceRows = listOf(
             icon = MessageIcon.Forwarded,
             thumbnails = 1,
             forum = true,
-            topics = listOf(
+            topics = [
                 ForumTopic("Apple Pay & Google Pay", TopicIcon.Bubble(ORANGE_TOPIC), unread = true),
                 ForumTopic("Visa Infinite", TopicIcon.Bubble(VIOLET_TOPIC)),
-            ),
+            ],
         ),
-    ),
-    LIGHT_SMALL to listOf(
+    ],
+    LIGHT_SMALL to [
         ReferenceRow(
             "20-mention",
             GROUP,
@@ -499,8 +499,8 @@ private val ReferenceRows = listOf(
             letters = "J",
             colorIndex = 3,
         ),
-    ),
-)
+    ],
+]
 
 private const val REFERENCES = "references/chat-list-item"
 private const val OUTPUT = "build/chat-list-item-reference"

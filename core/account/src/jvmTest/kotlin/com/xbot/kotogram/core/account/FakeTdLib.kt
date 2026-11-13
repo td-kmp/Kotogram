@@ -56,17 +56,17 @@ internal class FakeTdLib(
                 val account = directory.substringBeforeLast("/db").substringAfterLast('/').toInt()
                 accounts[clientId] = account
                 startStates[account].orEmpty()
-                    .ifEmpty { listOf("authorizationStateWaitPhoneNumber") }
+                    .ifEmpty { ["authorizationStateWaitPhoneNumber"] }
                     .forEach { emitState(clientId, it) }
             }
 
-            "logOut" -> listOf(
+            "logOut" -> [
                 "authorizationStateLoggingOut",
                 "authorizationStateClosing",
                 "authorizationStateClosed",
-            ).forEach { emitState(clientId, it) }
+            ].forEach { emitState(clientId, it) }
 
-            "close" -> listOf("authorizationStateClosing", "authorizationStateClosed")
+            "close" -> ["authorizationStateClosing", "authorizationStateClosed"]
                 .forEach { emitState(clientId, it) }
         }
     }

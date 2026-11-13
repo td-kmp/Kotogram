@@ -273,9 +273,9 @@ private const val BAR_MIDDLE = 10f
 
 private const val BAR_RIGHT = 14f
 
-private val SIDE_BARS = floatArrayOf(10f, 4f, 8f, 4f, 10f)
+private val SIDE_BARS: FloatArray = [10f, 4f, 8f, 4f, 10f]
 
-private val MIDDLE_BARS = floatArrayOf(6f, 10f, 4f, 12f, 6f)
+private val MIDDLE_BARS: FloatArray = [6f, 10f, 4f, 12f, 6f]
 
 private const val BARS_DURATION = 2200
 

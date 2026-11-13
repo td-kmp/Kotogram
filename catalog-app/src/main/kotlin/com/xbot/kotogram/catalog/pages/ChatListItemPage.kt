@@ -51,7 +51,7 @@ internal val ChatListItemPage = CatalogPage(
     description = "A row of the chat list after Telegram for iOS's ChatListItem: the avatar with its story ring " +
         "and badges, the title with its marks, the date with the outgoing status, the preview (author, topics, " +
         "tags, typing) and the badges at the bottom right.",
-    examples = listOf(
+    examples = [
         CatalogExample("Private chats") {
             Column {
                 SampleChat("Alice Carter", "18:19", "See you tomorrow at the station", colorIndex = 0)
@@ -279,20 +279,20 @@ internal val ChatListItemPage = CatalogPage(
         CatalogExample("Forums") {
             Column {
                 ForumChat(
-                    topics = listOf(
+                    topics = [
                         ForumTopic("Releases", TopicIcon.Bubble(0x6FB9F0), unread = true),
                         ForumTopic("General", TopicIcon.General),
                         ForumTopic("Off-topic", TopicIcon.Bubble(0xFF93B2)),
-                    ),
+                    ],
                     author = "Mia",
                     text = "1.12 is out, the notes are in the pinned message",
                     unread = "5",
                 )
                 ForumChat(
-                    topics = listOf(
+                    topics = [
                         ForumTopic("Design", TopicIcon.Bubble(0xFFD67E)),
                         ForumTopic("Bugs", TopicIcon.Emoji { SampleEmojiStatus() }),
-                    ),
+                    ],
                     author = "You",
                     text = "Pushed the fix",
                     status = MessageStatus.Read,
@@ -307,19 +307,19 @@ internal val ChatListItemPage = CatalogPage(
                     text = "Could you look at the chat list?",
                     colorIndex = 6,
                     author = "Mia",
-                    tags = listOf(FolderTag("Work", 5), FolderTag("Design", 2)),
+                    tags = [FolderTag("Work", 5), FolderTag("Design", 2)],
                 )
                 SampleChat(
                     title = "Alice Carter",
                     date = "17:40",
                     text = "See you tomorrow",
                     colorIndex = 0,
-                    tags = listOf(
+                    tags = [
                         FolderTag("Family", 3),
                         FolderTag("Friends", 1),
                         FolderTag("Close", 6),
                         FolderTag("All", 0),
-                    ),
+                    ],
                 )
                 ChatListItem(
                     avatar = { SampleAvatar("GH", colorIndex = 3) },
@@ -329,7 +329,7 @@ internal val ChatListItemPage = CatalogPage(
                         Draft(
                             "Draft",
                             AnnotatedString("Let me check the compiler first"),
-                            tags = listOf(FolderTag("Work", 5)),
+                            tags = [FolderTag("Work", 5)],
                         )
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -374,7 +374,7 @@ internal val ChatListItemPage = CatalogPage(
                 )
             }
         },
-    ),
+    ],
 )
 
 @Composable
@@ -405,7 +405,7 @@ private fun SampleChat(
     thumbnailType: MessageThumbnailType = MessageThumbnailType.Photo,
     spoilerMedia: Boolean = false,
     spoilerText: Pair<String, String>? = null,
-    tags: List<FolderTag> = emptyList(),
+    tags: List<FolderTag> = [],
     separator: ChatListItemSeparator = ChatListItemSeparator.Inset,
 ) {
     val letters = title.split(' ').take(2).joinToString("") { it.take(1) }
@@ -528,12 +528,12 @@ private fun ArchiveChat(hidden: Boolean) {
         title = { Title("Archived Chats") },
         text = {
             ArchivedChats(
-                listOf(
+                [
                     ArchivedChat("Old classmates", unread = true),
                     ArchivedChat("Flat 12"),
                     ArchivedChat("Delivery Bot", unread = true),
                     ArchivedChat("Kotlin Weekly"),
-                ),
+                ],
             )
         },
         badges = { Badges(unreadCount = "4", muted = true) },
@@ -545,7 +545,7 @@ private fun ArchiveChat(hidden: Boolean) {
 
 @Composable
 private fun SampleThumbnail(index: Int) {
-    val colors = listOf(Color(0xFF7FB3D5), Color(0xFFF5B041), Color(0xFF82E0AA))
+    val colors = [Color(0xFF7FB3D5), Color(0xFFF5B041), Color(0xFF82E0AA)]
     Box(Modifier.fillMaxSize().clip(RoundedCornerShape(3f)).background(colors[index % colors.size]))
 }
 

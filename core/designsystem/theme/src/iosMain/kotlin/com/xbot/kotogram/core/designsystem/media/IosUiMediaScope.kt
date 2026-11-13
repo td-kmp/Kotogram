@@ -42,7 +42,7 @@ internal class IosUiMediaScope(
     private var keyboardObservers = emptyList<NSObjectProtocol>()
 
     // Workaround: iOS 27.1's UIHingeInteraction isn't in Kotlin 2.4.20's UIKit, built from the iOS 26.4 SDK.
-    override val windowPosture: UiMediaScope.WindowPosture = UiMediaScope.WindowPosture(emptyList())
+    override val windowPosture: UiMediaScope.WindowPosture = UiMediaScope.WindowPosture([])
 
     override val windowWidth: Dp
         get() = windowInfo.containerDpSize.width
@@ -70,16 +70,16 @@ internal class IosUiMediaScope(
         get() = UiMediaScope.ViewingDistance.Near
 
     fun startObserving() {
-        keyboardObservers = listOf(
+        keyboardObservers = [
             observe(UIKeyboardWillShowNotification) { isImeShowing = it.keyboardHeight > 0 },
             observe(UIKeyboardWillChangeFrameNotification) { isImeShowing = it.keyboardHeight > 0 },
             observe(UIKeyboardWillHideNotification) { isImeShowing = false },
-        )
+        ]
     }
 
     fun stopObserving() {
         keyboardObservers.forEach(NSNotificationCenter.defaultCenter::removeObserver)
-        keyboardObservers = emptyList()
+        keyboardObservers = []
     }
 }
 

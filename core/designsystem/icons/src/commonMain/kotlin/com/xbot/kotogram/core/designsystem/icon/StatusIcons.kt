@@ -67,7 +67,7 @@ internal fun bellOffIcon() = icon("BellOff") {
 internal fun clockIcon() = icon("Clock") {
     stroke(width = LINE) {
         circle(Center, 8.5f)
-        polyline(listOf(Offset(12f, 7.5f), Offset(12f, 12f), Offset(15.5f, 14f)))
+        polyline([Offset(12f, 7.5f), Offset(12f, 12f), Offset(15.5f, 14f)])
     }
 }
 

@@ -31,7 +31,7 @@ internal val CheckboxPage = CatalogPage(
     description = "AppKit's checkbox on macOS, at its own size. Elsewhere Compose draws it, the check drawing itself " +
         "in: Material 3's 18 rounded square on touch screens, the circle of a selected row on iOS, since UIKit " +
         "has a checkbox only in Mac Catalyst, and a 14 square on a laptop.",
-    examples = listOf(
+    examples = [
         CatalogExample("Press to toggle") {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.large),
@@ -56,7 +56,7 @@ internal val CheckboxPage = CatalogPage(
         },
         CatalogExample("In a list") {
             Column {
-                listOf("Photos", "Videos", "Files").forEachIndexed { index, name ->
+                ["Photos", "Videos", "Files"].forEachIndexed { index, name ->
                     var checked by remember { mutableStateOf(index == 0) }
                     ListItem(
                         headlineContent = { Text(name) },
@@ -67,7 +67,7 @@ internal val CheckboxPage = CatalogPage(
                 }
             }
         },
-    ),
+    ],
 )
 
 private val MaterialCheckbox = CheckboxStyle {

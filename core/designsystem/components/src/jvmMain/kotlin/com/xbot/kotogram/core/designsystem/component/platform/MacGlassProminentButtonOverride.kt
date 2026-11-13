@@ -29,7 +29,7 @@ internal object MacGlassProminentButtonOverride : ProminentButtonOverride {
         val currentState by rememberUpdatedState(state)
         val button = remember { MacGlassButton() }
         LaunchedEffect(button) {
-            button.clicks().collect { if (currentState == ButtonState.Enabled) currentOnClick() }
+            button.clicks().collect { if (currentState == Enabled) currentOnClick() }
         }
         val textStyle = buttonStyle.textStyle
         val fontSize = with(LocalDensity.current) { textStyle.fontSize.toDp().value.toDouble() }
@@ -39,7 +39,7 @@ internal object MacGlassProminentButtonOverride : ProminentButtonOverride {
                 factory = { nucleusNsPlatformView(handle = { button.viewHandle }, onDispose = button::close) },
                 modifier = Modifier.matchParentSize(),
                 update = {
-                    val loading = state == ButtonState.Loading
+                    val loading = state == Loading
                     val contentColor = colors.contentColor(state)
                     val containerColor = colors.containerColor(state)
                     button.setTitle(
@@ -51,7 +51,7 @@ internal object MacGlassProminentButtonOverride : ProminentButtonOverride {
                     button.bezelColor = containerColor.toArgb()
                     button.isDark = dark
                     button.setLoading(loading, lightSpinner = contentColor.isLightOn(containerColor))
-                    button.isEnabled = state != ButtonState.Disabled
+                    button.isEnabled = state != Disabled
                 },
                 placedAsOverlay = true,
             )

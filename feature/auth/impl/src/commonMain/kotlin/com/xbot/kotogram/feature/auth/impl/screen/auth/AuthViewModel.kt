@@ -43,10 +43,10 @@ internal class AuthViewModel(
 
     fun onAction(action: AuthScreenAction) {
         when (action) {
-            AuthScreenAction.OnBack -> onBack()
-            AuthScreenAction.OnEntrySubmitted -> dismissedStep.value = null
-            AuthScreenAction.OnPhoneLoginClick -> loginEntry.method.value = LoginMethod.PhoneNumber
-            AuthScreenAction.OnQrLoginClick -> onQrLoginClick()
+            OnBack -> onBack()
+            OnEntrySubmitted -> dismissedStep.value = null
+            OnPhoneLoginClick -> loginEntry.method.value = LoginMethod.PhoneNumber
+            OnQrLoginClick -> onQrLoginClick()
         }
     }
 
@@ -55,7 +55,7 @@ internal class AuthViewModel(
     }
 
     private fun onQrLoginClick() = intent {
-        if (flow != LoginFlow.QrCodeFirst) return@intent
+        if (flow != QrCodeFirst) return@intent
         loginEntry.method.value = LoginMethod.QrCode
         // Workaround: past a step the server answers AUTH_TOKEN_ALREADY_ACCEPTED, so sign-in starts over as in Unigram.
         if (authRepository.authorizationState.first().toAuthStep() != null) {
@@ -68,7 +68,7 @@ internal class AuthViewModel(
         step: AuthStep?,
         dismissed: AuthStep?,
     ): List<AuthStep> {
-        val entry = if (method == LoginMethod.QrCode && step == null) {
+        val entry = if (method == QrCode && step == null) {
             AuthStep.QrCode
         } else {
             AuthStep.PhoneNumber

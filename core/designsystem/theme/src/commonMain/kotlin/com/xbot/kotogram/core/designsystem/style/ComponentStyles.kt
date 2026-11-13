@@ -28,7 +28,7 @@ interface StyleResolver {
 }
 
 class DefaultStyleResolver : StyleResolver {
-    private val pendingBlocks: MutableList<() -> Unit> = mutableListOf()
+    private val pendingBlocks: MutableList<() -> Unit> = []
     private var resolvingIndex = -1
 
     override fun resolve(block: () -> Unit) {

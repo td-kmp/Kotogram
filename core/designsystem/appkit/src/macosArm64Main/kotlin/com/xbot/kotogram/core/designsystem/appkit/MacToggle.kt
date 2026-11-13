@@ -18,8 +18,8 @@ class MacToggle(
 ) {
     private val stateChanges = ActionFlow { isOn }
     private val toggle: ToggleControl = when (kind) {
-        MacToggleKind.Switch -> SwitchControl(stateChanges.target)
-        MacToggleKind.Checkbox -> CheckboxControl(stateChanges.target)
+        Switch -> SwitchControl(stateChanges.target)
+        Checkbox -> CheckboxControl(stateChanges.target)
     }
 
     val viewHandle: Long get() = toggle.control.handle()

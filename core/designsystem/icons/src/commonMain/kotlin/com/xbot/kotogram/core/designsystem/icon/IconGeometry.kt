@@ -12,7 +12,7 @@ internal fun halfPlane(
     val length = hypot(b.x - a.x, b.y - a.y)
     val normal = Offset(-(b.y - a.y) / length, (b.x - a.x) / length)
     val side = { point: Offset -> (point - a).x * normal.x + (point - a).y * normal.y - distance }
-    val square = listOf(Offset(0f, 0f), Offset(canvas, 0f), Offset(canvas, canvas), Offset(0f, canvas))
+    val square = [Offset(0f, 0f), Offset(canvas, 0f), Offset(canvas, canvas), Offset(0f, canvas)]
     val kept = mutableListOf<Offset>()
     square.indices.forEach { index ->
         val current = square[index]

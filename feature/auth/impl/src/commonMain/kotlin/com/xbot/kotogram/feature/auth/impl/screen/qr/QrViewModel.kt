@@ -26,7 +26,7 @@ internal class QrViewModel(
 
     fun onAction(action: QrScreenAction) {
         when (action) {
-            QrScreenAction.OnRequestQrCode -> onRequestQrCode()
+            OnRequestQrCode -> onRequestQrCode()
         }
     }
 

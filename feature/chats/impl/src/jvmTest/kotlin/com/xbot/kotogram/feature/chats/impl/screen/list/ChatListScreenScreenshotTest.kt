@@ -78,12 +78,12 @@ private fun sampleState(): ChatListScreenState {
         name = ChatFolderName(text = FormattedText(text = "Personal")),
         icon = ChatFolderIcon(name = "Private"),
     )
-    val photos = listOf(0xFF6D4C41, 0xFF1E88E5, 0xFF37474F, 0xFFC62828, 0xFF2E7D32, 0xFFF9A825, 0xFF455A64)
+    val photos = [0xFF6D4C41, 0xFF1E88E5, 0xFF37474F, 0xFFC62828, 0xFF2E7D32, 0xFFF9A825, 0xFF455A64]
     return ChatListScreenState(
-        tabs = listOf(
+        tabs = [
             ChatFolderTab(ChatListMain, folder = null, unreadCount = 0, hasUnmutedUnread = false),
             ChatFolderTab(ChatListFolder(chatFolderId = 1), personal, unreadCount = 8, hasUnmutedUnread = true),
-        ),
+        ],
         rows = SampleRows.mapIndexed { index, row ->
             row.withPhoto(if (index == 6) null else photo(photos[index]))
                 .withThumbnail(if (index == 3 || index == 4) photo(0xFF90A4AE) else null)
@@ -99,7 +99,7 @@ private fun ChatListRow.withThumbnail(thumbnail: ByteArray?) = copy(
         ChatPreview.Message(
             it.content,
             it.icon,
-            listOf(ThumbnailModel(thumbnail, MessageThumbnailType.Photo, false)),
+            [ThumbnailModel(thumbnail, MessageThumbnailType.Photo, false)],
             it.hideAuthor,
         )
     } ?: preview,
@@ -132,7 +132,7 @@ private fun media(
     height: Int,
     laptop: Boolean,
 ) = object : UiMediaScope {
-    override val windowPosture = WindowPosture(emptyList())
+    override val windowPosture = WindowPosture([])
     override val windowWidth = width.dp
     override val windowHeight = height.dp
     override val pointerPrecision = if (laptop) PointerPrecision.Fine else PointerPrecision.Coarse

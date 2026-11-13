@@ -125,7 +125,7 @@ private fun <T> BottomSheetScope.OptionSheetContent(
     val text = query.text.toString().trim()
     val sections = remember(options) {
         if (optionSection == null) {
-            listOf(OptionSection(null, options))
+            [OptionSection(null, options)]
         } else {
             options.groupBy(optionSection).map { OptionSection(it.key, it.value) }
         }

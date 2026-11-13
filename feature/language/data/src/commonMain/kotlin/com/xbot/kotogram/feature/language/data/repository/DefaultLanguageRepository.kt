@@ -26,7 +26,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterNotNull
@@ -50,8 +49,8 @@ internal class DefaultLanguageRepository(
 
     private val chosen = MutableStateFlow<LanguagePackInfo?>(null)
 
-    private val mutableState = MutableStateFlow<LanguageState>(LanguageState.Loading)
-    override val state: StateFlow<LanguageState> = mutableState.asStateFlow()
+    override val state: StateFlow<LanguageState>
+        field = MutableStateFlow<LanguageState>(LanguageState.Loading)
 
     val languagePackId: Flow<String> = flow {
         restored.await()
@@ -78,7 +77,7 @@ internal class DefaultLanguageRepository(
             } else {
                 loaded.withChanges(update)
             }
-            if (next != null) mutableState.value = LanguageState.Loaded(next)
+            if (next != null) state.value = LanguageState.Loaded(next)
         }
     }
 
@@ -87,14 +86,14 @@ internal class DefaultLanguageRepository(
         chosen.value = info
         restored.complete(Unit)
         if (info == null) {
-            mutableState.value = LanguageState.Bundled
+            state.value = LanguageState.Bundled
             return
         }
         val fallback = appScope.launch {
             delay(RESTORE_TIMEOUT)
-            mutableState.compareAndSet(LanguageState.Loading, LanguageState.Bundled)
+            state.compareAndSet(LanguageState.Loading, LanguageState.Bundled)
         }
-        mutableState.value = download(info).fold(ifLeft = { LanguageState.Bundled }, ifRight = LanguageState::Loaded)
+        state.value = download(info).fold(ifLeft = { LanguageState.Bundled }, ifRight = LanguageState::Loaded)
         fallback.cancel()
     }
 
@@ -108,9 +107,9 @@ internal class DefaultLanguageRepository(
     private suspend fun switchTo(languagePackId: String): Either<LanguageError, Unit> = either {
         if (languagePackId == BUNDLED_LANGUAGE_PACK_ID) {
             choose(info = null)
-            mutableState.value = LanguageState.Bundled
+            state.value = LanguageState.Bundled
         } else {
-            mutableState.value = LanguageState.Loaded(fetch(languagePackId).bind())
+            state.value = LanguageState.Loaded(fetch(languagePackId).bind())
         }
     }.mapLeft { it.toLanguageError() }
 

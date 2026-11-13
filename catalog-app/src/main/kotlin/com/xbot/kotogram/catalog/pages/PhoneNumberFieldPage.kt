@@ -18,7 +18,7 @@ internal val PhoneNumberFieldPage = CatalogPage(
         "without a fill of its own, in the text field's sizes and with its ring on touch screens. One " +
         "TextFieldState holds the digits of the calling code and the number, and what is left of the country's " +
         "pattern shows under the text. Here every number is Uzbekistan's.",
-    examples = listOf(
+    examples = [
         CatalogExample("A country and its pattern") { SamplePhoneNumberField("998") },
         CatalogExample("Typing") { SamplePhoneNumberField("99890123") },
         CatalogExample("Complete") { SamplePhoneNumberField("998901234567") },
@@ -33,7 +33,7 @@ internal val PhoneNumberFieldPage = CatalogPage(
         CatalogExample("Focused: a ring on touch screens, none on a laptop") {
             SamplePhoneNumberField("99890", focused = true)
         },
-    ),
+    ],
 )
 
 @Composable

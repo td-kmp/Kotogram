@@ -316,17 +316,17 @@ private const val EDGE_BLUR_END = 0.57f
 @Suppress("MagicNumber")
 private val EdgeColorFilter = ColorFilter.colorMatrix(
     ColorMatrix(
-        floatArrayOf(
+        [
             1.1969f, -0.1789f, -0.0180f, 0f, 7.65f,
             -0.0531f, 1.0712f, -0.0181f, 0f, 7.65f,
             -0.0532f, -0.1787f, 1.2320f, 0f, 7.65f,
             0f, 0f, 0f, 1f, 0f,
-        ),
+        ],
     ),
 )
 
 @Suppress("MagicNumber")
-private val EdgeBlurMask = floatArrayOf(1f, 0.87f, 0.75f, 0.69f, 0.68f, 0.66f, 0.63f, 0.59f, 0.57f, 0.57f, 0.57f)
+private val EdgeBlurMask: FloatArray = [1f, 0.87f, 0.75f, 0.69f, 0.68f, 0.66f, 0.63f, 0.59f, 0.57f, 0.57f, 0.57f]
 
 private val EdgeBlurFalloff = Easing { fraction ->
     val position = fraction.coerceIn(0f, 1f) * EdgeBlurMask.lastIndex

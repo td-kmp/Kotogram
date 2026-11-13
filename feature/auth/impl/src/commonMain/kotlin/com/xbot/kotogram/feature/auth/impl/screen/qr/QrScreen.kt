@@ -189,7 +189,7 @@ private fun ColumnScope.QrInstructions(
     )
     Spacer(Modifier.height(style.beforeSteps))
     Column(verticalArrangement = Arrangement.spacedBy(style.betweenSteps)) {
-        listOf(Res.string.login_qr1_help1, Res.string.login_qr2_help2, Res.string.login_qr1_help3)
+        [Res.string.login_qr1_help1, Res.string.login_qr2_help2, Res.string.login_qr1_help3]
             .forEachIndexed { index, step ->
                 QrStep(number = index + 1, text = stringResource(step))
             }

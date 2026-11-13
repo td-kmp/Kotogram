@@ -68,7 +68,7 @@ fun ListItem(
 ) {
     @Suppress("NAME_SHADOWING")
     val style = rememberStyle(::ListItemStyleScope, ListItemStyle.Adaptive then style)
-    val hasDivider = position == ListItemPosition.First || position == ListItemPosition.Middle
+    val hasDivider = position == First || position == Middle
     val twoLine = supportingContent != null || overlineContent != null
     val padding = if (twoLine) style.twoLineContentPadding else style.contentPadding
     // Hack: the padding may sit lower than it sits high, as UIKit's two-line cell; what flanks the text stays centred in the row.
@@ -144,9 +144,9 @@ fun ListItem(
 
 private fun CornerBasedShape.at(position: ListItemPosition?): Shape = when (position) {
     null, ListItemPosition.Middle -> RectangleShape
-    ListItemPosition.Single -> this
-    ListItemPosition.First -> copy(bottomStart = ZeroCornerSize, bottomEnd = ZeroCornerSize)
-    ListItemPosition.Last -> copy(topStart = ZeroCornerSize, topEnd = ZeroCornerSize)
+    Single -> this
+    First -> copy(bottomStart = ZeroCornerSize, bottomEnd = ZeroCornerSize)
+    Last -> copy(topStart = ZeroCornerSize, topEnd = ZeroCornerSize)
 }
 
 context(style: ListItemStyleScope)

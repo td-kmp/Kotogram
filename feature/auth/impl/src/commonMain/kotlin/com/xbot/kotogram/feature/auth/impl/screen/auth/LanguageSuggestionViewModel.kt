@@ -23,7 +23,7 @@ internal class LanguageSuggestionViewModel(
 
     fun onAction(action: LanguageSuggestionAction) {
         when (action) {
-            LanguageSuggestionAction.OnContinueClick -> onContinueClick()
+            OnContinueClick -> onContinueClick()
         }
     }
 

@@ -36,7 +36,7 @@ internal val TextFieldPage = CatalogPage(
     name = "TextField",
     description = "Telegram for macOS's input over BasicTextField on a laptop, larger and with a focus ring on " +
         "touch screens. It takes a TextFieldState, plus a title and a suggestion above the field.",
-    examples = listOf(
+    examples = [
         CatalogExample("Placeholder") {
             TextField(state = rememberTextFieldState(), placeholder = { Text("Enter a username") })
         },
@@ -93,7 +93,7 @@ internal val TextFieldPage = CatalogPage(
         CatalogExample("Focused: a ring on touch screens, none on a laptop") {
             FocusedTextField()
         },
-    ),
+    ],
 )
 
 @Composable

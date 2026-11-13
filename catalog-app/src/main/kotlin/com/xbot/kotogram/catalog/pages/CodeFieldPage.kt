@@ -23,7 +23,7 @@ internal val CodeFieldPage = CatalogPage(
     description = "The sign-in code of Telegram for macOS (CodeEntryControl), in Telegram for iOS's cells on touch " +
         "screens: a cell per digit, the next one marked, digits that spring in, a shake at a wrong code. It takes " +
         "a TextFieldState and the code's length.",
-    examples = listOf(
+    examples = [
         CatalogExample("Typing") { FocusedCodeField() },
         CatalogExample("Complete") {
             CodeField(state = rememberTextFieldState("123456"), length = 6)
@@ -48,7 +48,7 @@ internal val CodeFieldPage = CatalogPage(
         CatalogExample("Disabled while the code is checked") {
             CodeField(state = rememberTextFieldState("12345"), length = 5, enabled = false)
         },
-    ),
+    ],
 )
 
 @Composable

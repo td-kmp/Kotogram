@@ -68,10 +68,10 @@ fun ChatListItemScope.ChatAvatar(
                 },
         ) { content(null) }
         if (stories != null) StoryRingCanvas(stories, shape)
-        OnlineDot(visible = badge == AvatarBadge.Online)
-        VoiceChatDot(visible = badge == AvatarBadge.VoiceChat)
+        OnlineDot(visible = badge == Online)
+        VoiceChatDot(visible = badge == VoiceChat)
         AutoDeleteBadge(text = (badge as? AvatarBadge.AutoDelete)?.text, avatar = content)
-        if (badge == AvatarBadge.Subscription) SubscriptionStar()
+        if (badge == Subscription) SubscriptionStar()
         if (stories is StoryRing.Live) LiveBadge(stories.label)
     }
 }
@@ -91,8 +91,8 @@ private fun ChatListItemScope.StoryRingCanvas(
         Modifier
             .fillMaxSize()
             .drawWithCache {
-                val active = Brush.verticalGradient(listOf(unseenColors.first, unseenColors.second))
-                val seen = Brush.verticalGradient(listOf(seenColors.first, seenColors.second))
+                val active = Brush.verticalGradient([unseenColors.first, unseenColors.second])
+                val seen = Brush.verticalGradient([seenColors.first, seenColors.second])
                 onDrawBehind { drawStoryRing(stories, shape, active, seen) }
             },
     )
@@ -139,8 +139,8 @@ private fun ringPath(
     val inset = line / 2
     val far = side - inset
     val radius = when (shape) {
-        AvatarShape.Circle -> (side - line) / 2
-        AvatarShape.RoundedRect -> floor(side * RING_CORNER)
+        Circle -> (side - line) / 2
+        RoundedRect -> floor(side * RING_CORNER)
     }
     moveTo(side / 2, inset)
     lineTo(far - radius, inset)

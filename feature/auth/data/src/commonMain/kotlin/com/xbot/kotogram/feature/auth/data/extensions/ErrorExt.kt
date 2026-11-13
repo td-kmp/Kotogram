@@ -5,7 +5,7 @@ import com.xbot.kotogram.core.account.extensions.retryAfter
 import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import io.xbot.tdlib.api.Error
 
-private val invalidCodeErrors = setOf("PHONE_CODE_INVALID", "PHONE_CODE_EMPTY")
+private val invalidCodeErrors: Set<String> = ["PHONE_CODE_INVALID", "PHONE_CODE_EMPTY"]
 
 internal fun Error.toAuthError(): AuthError = when {
     isFlood -> AuthError.TooManyAttempts(retryAfter)

@@ -72,7 +72,7 @@ fun Avatar(
             .clip(shape.toShape())
             .drawWithCache {
                 val gradient = Brush.linearGradient(
-                    colors = listOf(light, dark),
+                    colors = [light, dark],
                     start = Offset.Zero,
                     end = Offset(0f, size.height),
                 )
@@ -110,11 +110,11 @@ fun Avatar(
 ) {
     val avatarStyle = rememberStyle(::AvatarStyleScope, AvatarStyle.Default then style)
     val (top, bottom) = when (icon) {
-        AvatarIcon.Deleted -> avatarStyle.grayGradient
-        AvatarIcon.HiddenArchive -> avatarStyle.hiddenArchiveGradient
+        Deleted -> avatarStyle.grayGradient
+        HiddenArchive -> avatarStyle.hiddenArchiveGradient
         else -> avatarStyle.iconGradient
     }
-    val tint = if (icon == AvatarIcon.HiddenArchive) avatarStyle.hiddenArchiveIconColor else avatarStyle.iconColor
+    val tint = if (icon == HiddenArchive) avatarStyle.hiddenArchiveIconColor else avatarStyle.iconColor
     val painter = rememberVectorPainter(icon.vector())
     val blurred = blur != null
     Box(
@@ -122,7 +122,7 @@ fun Avatar(
             .clip(shape.toShape())
             .semantics { if (contentDescription != null) this.contentDescription = contentDescription }
             .drawWithCache {
-                val gradient = Brush.linearGradient(listOf(top, bottom), Offset.Zero, Offset(0f, size.height))
+                val gradient = Brush.linearGradient([top, bottom], Offset.Zero, Offset(0f, size.height))
                 val factor = size.width / IconAvatarSide.toPx()
                 val iconSize = painter.intrinsicSize * factor
                 val topLeft =
@@ -141,17 +141,17 @@ fun Avatar(
 }
 
 private fun AvatarIcon.vector(): ImageVector = when (this) {
-    AvatarIcon.SavedMessages -> KotogramIcons.AvatarSavedMessages
-    AvatarIcon.Replies -> KotogramIcons.AvatarReplies
-    AvatarIcon.MyNotes -> KotogramIcons.AvatarMyNotes
-    AvatarIcon.HiddenAuthor -> KotogramIcons.AvatarAnonymous
-    AvatarIcon.Archive, AvatarIcon.HiddenArchive -> KotogramIcons.AvatarArchive
-    AvatarIcon.Deleted -> KotogramIcons.AvatarDeleted
+    SavedMessages -> KotogramIcons.AvatarSavedMessages
+    Replies -> KotogramIcons.AvatarReplies
+    MyNotes -> KotogramIcons.AvatarMyNotes
+    HiddenAuthor -> KotogramIcons.AvatarAnonymous
+    Archive, HiddenArchive -> KotogramIcons.AvatarArchive
+    Deleted -> KotogramIcons.AvatarDeleted
 }
 
 internal fun AvatarShape.toShape(): Shape = when (this) {
-    AvatarShape.Circle -> CircleShape
-    AvatarShape.RoundedRect -> ForumShape
+    Circle -> CircleShape
+    RoundedRect -> ForumShape
 }
 
 fun interface AvatarStyle : ComponentStyle<AvatarStyleScope> {
@@ -161,7 +161,7 @@ fun interface AvatarStyle : ComponentStyle<AvatarStyleScope> {
         @Suppress("MagicNumber")
         val Default = AvatarStyle {
             gradients(
-                listOf(
+                [
                     Color(0xFFFF885E) to Color(0xFFFF516A),
                     Color(0xFFFFCD6A) to Color(0xFFFFA85C),
                     Color(0xFF82B1FF) to Color(0xFF665FFF),
@@ -169,7 +169,7 @@ fun interface AvatarStyle : ComponentStyle<AvatarStyleScope> {
                     Color(0xFF00FCFD) to Color(0xFF4ACCCD),
                     Color(0xFF72D5FD) to Color(0xFF2A9EF1),
                     Color(0xFFE0A2F3) to Color(0xFFD669ED),
-                ),
+                ],
             )
             iconGradient(Color(0xFF72D5FD) to Color(0xFF2A9EF1))
             iconColor(Color.White)
@@ -212,7 +212,7 @@ class AvatarStyleScope(
 ) : AdaptiveStyleScope<AvatarStyleScope>,
     StyleResolver by DefaultStyleResolver() {
 
-    var gradients: List<Pair<Color, Color>> = emptyList()
+    var gradients: List<Pair<Color, Color>> = []
         private set
 
     var lettersTextStyle: TextStyle = TextStyle.Default

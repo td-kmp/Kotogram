@@ -66,8 +66,8 @@ internal class ChatListViewModel(
 
     fun onAction(action: ChatListScreenAction) {
         when (action) {
-            ChatListScreenAction.OnEndReached -> onEndReached()
-            is ChatListScreenAction.OnFolderSelect -> onFolderSelect(action.chatList)
+            OnEndReached -> onEndReached()
+            is OnFolderSelect -> onFolderSelect(action.chatList)
         }
     }
 
@@ -83,7 +83,7 @@ internal class ChatListViewModel(
 
     private suspend fun loadForumTopics(rows: List<ChatListRow>) {
         rows.filter {
-            it.avatar.shape == AvatarShape.RoundedRect && it.topics.isEmpty() &&
+            it.avatar.shape == RoundedRect && it.topics.isEmpty() &&
                 requestedTopics.add(it.chatId)
         }
             .forEach { repository.loadForumTopics(it.chatId) }
@@ -94,7 +94,7 @@ internal class ChatListViewModel(
         reduce {
             state.copy(
                 selected = chatList,
-                rows = emptyList(),
+                rows = [],
                 isComplete = false,
                 loadFailed = false,
             )

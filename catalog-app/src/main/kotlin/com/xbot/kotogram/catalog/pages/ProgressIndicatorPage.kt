@@ -24,7 +24,7 @@ internal val ProgressIndicatorPage = CatalogPage(
         "UIActivityIndicatorView on iOS, AppKit's NSProgressIndicator on macOS, Material 3's " +
         "CircularProgressIndicator elsewhere. Native spinners are medium or small up to 32 and large above, and " +
         "draw their own stroke; the style's stroke width is Material's.",
-    examples = listOf(
+    examples = [
         CatalogExample("Sizes") {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.large),
@@ -44,5 +44,5 @@ internal val ProgressIndicatorPage = CatalogPage(
                 ProgressIndicator(style = ProgressIndicatorStyle { color(theme.colors.onPrimary) })
             }
         },
-    ),
+    ],
 )

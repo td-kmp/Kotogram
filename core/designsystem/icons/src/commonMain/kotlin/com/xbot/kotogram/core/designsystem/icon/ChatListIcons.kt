@@ -33,14 +33,14 @@ internal fun pinIcon() = icon("Pin") {
         stroke(width = LINE) {
             roundRect(9f, 3.5f, 15f, 6f, 1f)
             polyline(
-                listOf(
+                [
                     Offset(10f, 6f),
                     Offset(10f, 10.5f),
                     Offset(7.5f, 13.5f),
                     Offset(16.5f, 13.5f),
                     Offset(14f, 10.5f),
                     Offset(14f, 6f),
-                ),
+                ],
             )
             line(Offset(12f, 13.5f), Offset(12f, 20.5f))
         }
@@ -103,7 +103,7 @@ private fun ImageVector.Builder.pencil(
         val bodyEnd = tip - width * 1.2f
         stroke(width = LINE) {
             roundRect(left, top, right, bodyEnd, width / 4)
-            polyline(listOf(Offset(left, bodyEnd), Offset(center.x, tip), Offset(right, bodyEnd)))
+            polyline([Offset(left, bodyEnd), Offset(center.x, tip), Offset(right, bodyEnd)])
             line(Offset(left, top + width), Offset(right, top + width))
         }
     }

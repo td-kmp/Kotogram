@@ -2,7 +2,7 @@ package com.xbot.kotogram.catalog.pages
 
 import com.xbot.kotogram.catalog.model.CatalogPage
 
-val CatalogPages: List<CatalogPage> = listOf(
+val CatalogPages: List<CatalogPage> = [
     ColorsPage,
     TypographyPage,
     ShapesPage,
@@ -30,4 +30,4 @@ val CatalogPages: List<CatalogPage> = listOf(
     ProgressIndicatorPage,
     RichTextPage,
     QrCodePage,
-)
+]

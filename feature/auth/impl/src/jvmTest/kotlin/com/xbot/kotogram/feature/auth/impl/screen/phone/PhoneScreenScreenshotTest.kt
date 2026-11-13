@@ -81,7 +81,7 @@ enum class Device(
     val height: Dp,
     val scale: Float,
     val laptop: Boolean,
-    val posture: WindowPosture = WindowPosture(emptyList()),
+    val posture: WindowPosture = WindowPosture([]),
 ) {
     IPhoneAir("iphone-air", 420.dp, 912.dp, 3f, laptop = false),
     IPhoneAirLandscape("iphone-air-landscape", 912.dp, 420.dp, 2f, laptop = false),
@@ -106,8 +106,7 @@ enum class Device(
     val mediaQueryInfo = MediaQueryInfo(isLaptop = laptop, isTv = false, isAuto = false)
 }
 
-private fun halfOpened(orientation: FoldOrientation) =
-    WindowPosture(listOf(WindowFold(FoldState.HalfOpened, orientation)))
+private fun halfOpened(orientation: FoldOrientation) = WindowPosture([WindowFold(FoldState.HalfOpened, orientation)])
 
 private val uzbekistan = CountryInfo(
     countryCode = "UZ",
@@ -115,11 +114,11 @@ private val uzbekistan = CountryInfo(
     englishName = "Uzbekistan",
     flagEmoji = "🇺🇿",
     isHidden = false,
-    callingCodes = listOf("998"),
+    callingCodes = ["998"],
 )
 
 private val entered = PhoneScreenState(
-    countries = listOf(uzbekistan),
+    countries = [uzbekistan],
     country = uzbekistan,
     callingCode = "998",
     number = "933988",

@@ -67,7 +67,7 @@ internal class UiMediaScopeImpl(
     imeVisibility: Boolean,
 ) : UiMediaScope {
     private val packageManager = context.packageManager
-    var posture by mutableStateOf(WindowPosture(emptyList()))
+    var posture by mutableStateOf(WindowPosture([]))
     var anyPointer by mutableStateOf(resolvePointerPrecision(inputManager))
     var isDocked by mutableStateOf(false)
     var isImeVisible by mutableStateOf(imeVisibility)
@@ -169,7 +169,7 @@ internal fun rememberUiMediaScope(): UiMediaScope {
 }
 
 internal fun resolvePosture(layoutInfo: WindowLayoutInfo?): WindowPosture {
-    if (layoutInfo == null || layoutInfo.displayFeatures.isEmpty()) return WindowPosture(emptyList())
+    if (layoutInfo == null || layoutInfo.displayFeatures.isEmpty()) return WindowPosture([])
 
     val features = layoutInfo.displayFeatures
     val folds = ArrayList<WindowFold>(features.size)
@@ -220,7 +220,7 @@ internal fun resolvePointerPrecision(inputManager: InputManager?): PointerPrecis
         if (device.hasValidPointerSource(InputDevice.SOURCE_TOUCHSCREEN)) {
             pointerPrecision = PointerPrecision.Coarse
         } else if (
-            pointerPrecision == PointerPrecision.None &&
+            pointerPrecision == None &&
             (
                 device.hasValidPointerSource(InputDevice.SOURCE_JOYSTICK) ||
                     device.hasValidPointerSource(InputDevice.SOURCE_GAMEPAD)
@@ -232,12 +232,12 @@ internal fun resolvePointerPrecision(inputManager: InputManager?): PointerPrecis
         // Workaround: emulators report their pointers this way; kept apart so a real device's source wins.
         if (device.hasFallbackFinePointer()) {
             fallbackPrecision = PointerPrecision.Fine
-        } else if (fallbackPrecision != PointerPrecision.Fine && device.hasFallbackCoarsePointer()) {
+        } else if (fallbackPrecision != Fine && device.hasFallbackCoarsePointer()) {
             fallbackPrecision = PointerPrecision.Coarse
         }
     }
 
-    if (pointerPrecision != PointerPrecision.None) return pointerPrecision
+    if (pointerPrecision != None) return pointerPrecision
 
     return fallbackPrecision
 }

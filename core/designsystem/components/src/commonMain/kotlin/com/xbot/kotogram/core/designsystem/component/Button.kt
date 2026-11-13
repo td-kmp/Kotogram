@@ -104,7 +104,7 @@ internal fun StyledButton(
         MaterialButton(
             onClick = onClick,
             modifier = modifier.then(pressFeedback(source)).heightIn(min = style.minHeight),
-            enabled = state == ButtonState.Enabled,
+            enabled = state == Enabled,
             shape = style.shape,
             colors = style.buttonColors().during(state),
             elevation = null,
@@ -122,7 +122,7 @@ internal fun StyledButton(
 private fun pressFeedback(source: MutableInteractionSource): Modifier =
     if (currentPlatform.isApple) Modifier.indication(source, KotogramTheme.indication) else Modifier
 
-private fun ButtonColors.during(state: ButtonState): ButtonColors = if (state == ButtonState.Loading) {
+private fun ButtonColors.during(state: ButtonState): ButtonColors = if (state == Loading) {
     copy(disabledContainerColor = containerColor, disabledContentColor = contentColor)
 } else {
     this
@@ -136,12 +136,12 @@ private fun ButtonContent(
 ) {
     Box(contentAlignment = Alignment.Center) {
         Row(
-            modifier = Modifier.alpha(if (state == ButtonState.Loading) 0f else 1f),
+            modifier = Modifier.alpha(if (state == Loading) 0f else 1f),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
             content = content,
         )
-        if (state == ButtonState.Loading) {
+        if (state == Loading) {
             val contentColor = LocalContentColor.current
             ProgressIndicator(
                 modifier = Modifier.size(style.progressSize),

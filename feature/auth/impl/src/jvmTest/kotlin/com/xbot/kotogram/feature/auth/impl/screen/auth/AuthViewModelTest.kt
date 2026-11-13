@@ -24,14 +24,14 @@ class AuthViewModelTest {
 
     @Test
     fun theQrCodeIsTheEntryBeforeTheFirstStep() = runTest {
-        assertEquals(listOf(AuthStep.QrCode), backStack(LoginFlow.QrCodeFirst))
+        assertEquals([AuthStep.QrCode], backStack(LoginFlow.QrCodeFirst))
     }
 
     @Test
     fun pastAStepTheEntryIsThePhone() = runTest {
         repository.authorizationState.value = waitCode
         assertEquals(
-            listOf(AuthStep.PhoneNumber, AuthStep.Code),
+            [AuthStep.PhoneNumber, AuthStep.Code],
             backStack(LoginFlow.QrCodeFirst),
         )
     }
@@ -40,7 +40,7 @@ class AuthViewModelTest {
     fun aStepTheUserWentBackFromStaysHidden() = runTest {
         repository.authorizationState.value = waitCode
         assertEquals(
-            listOf(AuthStep.PhoneNumber),
+            [AuthStep.PhoneNumber],
             backStack(LoginFlow.PhoneNumberOnly, AuthScreenAction.OnBack),
         )
     }
@@ -49,7 +49,7 @@ class AuthViewModelTest {
     fun aNewStepShowsAfterGoingBackFromAnother() = runTest {
         repository.authorizationState.value = waitCode
         assertEquals(
-            listOf(AuthStep.PhoneNumber, AuthStep.Password),
+            [AuthStep.PhoneNumber, AuthStep.Password],
             backStack(LoginFlow.PhoneNumberOnly, AuthScreenAction.OnBack) {
                 repository.authorizationState.value = AuthorizationStateWaitPassword()
             },
@@ -58,7 +58,7 @@ class AuthViewModelTest {
 
     @Test
     fun withoutAStepThereIsOnlyTheEntry() = runTest {
-        assertEquals(listOf(AuthStep.PhoneNumber), backStack(LoginFlow.PhoneNumberOnly))
+        assertEquals([AuthStep.PhoneNumber], backStack(LoginFlow.PhoneNumberOnly))
     }
 
     @Test
@@ -66,7 +66,7 @@ class AuthViewModelTest {
         repository.authorizationState.value =
             AuthorizationStateWaitOtherDeviceConfirmation(link = "tg://login")
         assertEquals(
-            listOf(AuthStep.PhoneNumber),
+            [AuthStep.PhoneNumber],
             backStack(LoginFlow.QrCodeFirst, AuthScreenAction.OnPhoneLoginClick),
         )
         assertEquals(0, repository.restarts)
@@ -76,7 +76,7 @@ class AuthViewModelTest {
     fun theQrCodePastAStepRestartsTheSignIn() = runTest {
         repository.authorizationState.value = waitCode
         assertEquals(
-            listOf(AuthStep.QrCode),
+            [AuthStep.QrCode],
             backStack(LoginFlow.QrCodeFirst, AuthScreenAction.OnQrLoginClick),
         )
         assertEquals(1, repository.restarts)

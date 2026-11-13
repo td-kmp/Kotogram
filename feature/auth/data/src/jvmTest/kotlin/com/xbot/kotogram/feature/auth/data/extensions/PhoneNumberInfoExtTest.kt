@@ -41,7 +41,7 @@ class PhoneNumberInfoExtTest {
             englishName = "Uzbekistan",
             flagEmoji = "",
             isHidden = false,
-            callingCodes = listOf("998"),
+            callingCodes = ["998"],
         )
         val info = PhoneNumberInfo(uzbekistan, countryCallingCode = "998", formattedPhoneNumber = "90 --- -- --")
         assertEquals(info, info.orTestNumber("99890"))

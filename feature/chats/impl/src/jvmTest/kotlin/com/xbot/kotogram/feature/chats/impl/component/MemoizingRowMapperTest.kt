@@ -23,8 +23,8 @@ class MemoizingRowMapperTest {
         val first = Any()
         val second = Any()
 
-        val before = mapper.map(listOf(Entry(1, first), Entry(2, second)))
-        val after = mapper.map(listOf(Entry(1, first), Entry(2, second)))
+        val before = mapper.map([Entry(1, first), Entry(2, second)])
+        val after = mapper.map([Entry(1, first), Entry(2, second)])
 
         assertSame(before, after)
     }
@@ -33,8 +33,8 @@ class MemoizingRowMapperTest {
     fun `a changed entry gets a new row and the others keep theirs`() {
         val first = Any()
 
-        val before = mapper.map(listOf(Entry(1, first), Entry(2, Any())))
-        val after = mapper.map(listOf(Entry(1, first), Entry(2, Any())))
+        val before = mapper.map([Entry(1, first), Entry(2, Any())])
+        val after = mapper.map([Entry(1, first), Entry(2, Any())])
 
         assertNotSame(before, after)
         assertSame(before[0], after[0])

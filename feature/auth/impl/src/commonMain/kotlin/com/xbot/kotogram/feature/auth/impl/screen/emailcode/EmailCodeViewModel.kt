@@ -51,7 +51,7 @@ internal class EmailCodeViewModel(
 
     fun onAction(action: EmailCodeScreenAction) {
         when (action) {
-            EmailCodeScreenAction.OnSubmit -> onSubmit()
+            OnSubmit -> onSubmit()
         }
     }
 

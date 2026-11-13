@@ -62,7 +62,7 @@ internal class DefaultChatRepository(
         .map { it.archiveSummary() }
 
     override suspend fun loadStories(): Either<ChatError, Unit> = either {
-        for (list in listOf(StoryListMain, StoryListArchive)) {
+        for (list in [StoryListMain, StoryListArchive]) {
             do {
                 val more = client.sendCatching(LoadActiveStories(storyList = list))
                     .map { true }

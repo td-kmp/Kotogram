@@ -24,7 +24,7 @@ internal val ShapesPage = CatalogPage(
     name = "Shapes",
     description = "Material 3's shapes with Telegram for macOS's radius of 10 for fields, cards and the QR code. " +
         "Buttons keep full corners, as on macOS.",
-    examples = listOf(
+    examples = [
         CatalogExample("Corners") {
             val shapes = KotogramTheme.shapes
             val spacing = KotogramTheme.spacing
@@ -40,7 +40,7 @@ internal val ShapesPage = CatalogPage(
                 ShapeSample("full · buttons", CircleShape)
             }
         },
-    ),
+    ],
 )
 
 @Composable

@@ -31,8 +31,8 @@ class DefaultLanguageRepositoryTest {
     private val client = FakeAppClient(
         infos = mapOf("ru" to russian, "x-ru" to custom),
         packs = mapOf(
-            "ru" to listOf(ordinary("A", "а"), ordinary("B", "б"), deleted("C")),
-            "x-ru" to listOf(ordinary("A", "своё а")),
+            "ru" to [ordinary("A", "а"), ordinary("B", "б"), deleted("C")],
+            "x-ru" to [ordinary("A", "своё а")],
         ),
     )
     private val store = InMemoryChosenLanguageStore()
@@ -46,7 +46,7 @@ class DefaultLanguageRepositoryTest {
         runCurrent()
         assertEquals(LanguageState.Bundled, repository.state.value)
         assertEquals("", repository.languagePackId.first())
-        assertEquals(emptyList(), client.requests)
+        assertEquals([], client.requests)
     }
 
     @Test
@@ -139,7 +139,7 @@ class DefaultLanguageRepositoryTest {
         store.saved = russian
         val repository = repository()
         runCurrent()
-        client.packs = client.packs + ("ru" to listOf(ordinary("A", "а2")))
+        client.packs = client.packs + ("ru" to [ordinary("A", "а2")])
 
         repository.onStringsChanged(update("ru"))
 
@@ -192,7 +192,7 @@ class DefaultLanguageRepositoryTest {
 
         assertEquals("а", loaded(repository).texts()["A"])
         assertEquals(0, client.requests.count { it is GetLanguagePackInfo })
-        assertEquals(listOf("ru"), platform.synced)
+        assertEquals(["ru"], platform.synced)
     }
 
     @Test
@@ -202,7 +202,7 @@ class DefaultLanguageRepositoryTest {
         runCurrent()
 
         assertEquals("а", loaded(repository).texts()["A"])
-        assertEquals(listOf("ru"), platform.synced)
+        assertEquals(["ru"], platform.synced)
     }
 
     @Test
@@ -243,7 +243,7 @@ class DefaultLanguageRepositoryTest {
 
         assertEquals(LanguageState.Bundled, repository.state.value)
         assertNull(store.saved)
-        assertEquals(emptyList(), platform.synced)
+        assertEquals([], platform.synced)
     }
 
     @Test
@@ -255,7 +255,7 @@ class DefaultLanguageRepositoryTest {
         assertEquals(Unit, repository.apply("ru").getOrNull())
 
         assertEquals("б", loaded(repository).texts()["B"])
-        assertEquals(listOf("ru"), platform.synced)
+        assertEquals(["ru"], platform.synced)
     }
 
     @Test
@@ -266,7 +266,7 @@ class DefaultLanguageRepositoryTest {
 
         assertIs<LanguageError.Unknown>(repository.apply("de").leftOrNull())
 
-        assertEquals(emptyList(), platform.synced)
+        assertEquals([], platform.synced)
     }
 
     private fun loaded(repository: DefaultLanguageRepository): LanguagePack =

@@ -10,7 +10,7 @@ import com.xbot.kotogram.feature.chats.impl.extensions.NameList
 
 @Composable
 internal fun StringResource.resolved(): String = when (val resource = this) {
-    is StringResource.Text -> stringResource(
+    is Text -> stringResource(
         resource.resource,
         *resource.formatArgs.map {
             it.resolvedArgument()

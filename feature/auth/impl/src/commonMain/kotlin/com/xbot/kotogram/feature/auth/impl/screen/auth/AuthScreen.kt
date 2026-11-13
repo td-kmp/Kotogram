@@ -97,10 +97,10 @@ private fun AuthSteps(
         transitionSpec = transitions.push,
         popTransitionSpec = transitions.pop,
         predictivePopTransitionSpec = transitions.predictivePop,
-        entryDecorators = listOf(
+        entryDecorators = [
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator(),
-        ),
+        ],
         entryProvider = entryProvider {
             entry<AuthStep.QrCode> {
                 QrScreen(

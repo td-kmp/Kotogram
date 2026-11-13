@@ -36,8 +36,8 @@ class LocalizationTest {
 
     @Test
     fun aPluralTakesThePackLanguagesForm() = assertEquals(
-        listOf("%d участник", "%d участника", "%d участников"),
-        listOf(1, 3, 5).map { russian.plural(Res.plurals.chat_groupcall_members, it) },
+        ["%d участник", "%d участника", "%d участников"],
+        [1, 3, 5].map { russian.plural(Res.plurals.chat_groupcall_members, it) },
     )
 
     @Test
@@ -54,7 +54,7 @@ class LocalizationTest {
         val title = StringResource.Text(Res.string.login_qr_title)
         assertEquals("Вход по QR-коду", russian.getString(title))
         assertEquals("Log in to Telegram by QR Code", BundledLocalization.getString(title))
-        val members = listOf(1, 21).map { StringResource.Plural(Res.plurals.chat_groupcall_members, it, it) }
-        assertEquals(listOf("1 participant", "21 participants"), members.map { BundledLocalization.getString(it) })
+        val members = [1, 21].map { StringResource.Plural(Res.plurals.chat_groupcall_members, it, it) }
+        assertEquals(["1 participant", "21 participants"], members.map { BundledLocalization.getString(it) })
     }
 }

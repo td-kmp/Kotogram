@@ -30,7 +30,7 @@ internal class DefaultLanguageSuggestionRepository(
 
     private suspend fun suggestionOf(languagePackId: String): LanguageSuggestion? {
         val strings = client.sendCatching(
-            GetLanguagePackStrings(languagePackId = languagePackId, keys = listOf(CONTINUE_KEY)),
+            GetLanguagePackStrings(languagePackId = languagePackId, keys = [CONTINUE_KEY]),
         ).getOrNull() ?: return null
         val text = strings.strings.firstOrNull { it.key == CONTINUE_KEY }?.value as? LanguagePackStringValueOrdinary
         return text?.let { LanguageSuggestion(languagePackId, it.value) }

@@ -10,8 +10,8 @@ import com.xbot.kotogram.feature.chats.impl.screen.list.TitleMarkModel
 
 @Composable
 internal fun TitleMarkModel.toMark(): TitleMark = when (this) {
-    TitleMarkModel.Verified -> TitleMark.Verified
-    TitleMarkModel.Premium -> TitleMark.Premium
-    TitleMarkModel.Scam -> TitleMark.Warning(stringResource(Res.string.mark_scam))
-    TitleMarkModel.Fake -> TitleMark.Warning(stringResource(Res.string.mark_fake))
+    Verified -> TitleMark.Verified
+    Premium -> TitleMark.Premium
+    Scam -> TitleMark.Warning(stringResource(Res.string.mark_scam))
+    Fake -> TitleMark.Warning(stringResource(Res.string.mark_fake))
 }

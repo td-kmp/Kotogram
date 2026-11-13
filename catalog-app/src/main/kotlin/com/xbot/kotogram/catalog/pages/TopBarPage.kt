@@ -41,7 +41,7 @@ internal val TopBarPage = CatalogPage(
         "platforms a bar with UIKit's sizes, a centred title and, under it, the scroll edge effect of iOS 27: " +
         "what scrolls beneath is blurred, tinted with the screen's colour and closed by a hairline. The buttons " +
         "are the caller's: GlassIconButton for a bar over content, as a sheet's close button on iOS 26.",
-    examples = listOf(
+    examples = [
         CatalogExample("Content scrolls under the bar") {
             ScrolledUnder()
         },
@@ -86,7 +86,7 @@ internal val TopBarPage = CatalogPage(
                 actions = { IconButton(KotogramIcons.More, contentDescription = "More", onClick = {}) },
             )
         },
-    ),
+    ],
 )
 
 @Composable

@@ -54,9 +54,9 @@ fun KotogramTheme(
 }
 
 internal fun indicationOverrides(): Array<ProvidedValue<*>> = if (currentPlatform.isApple) {
-    arrayOf(LocalIndication provides DimIndication, LocalRippleConfiguration provides null)
+    [LocalIndication provides DimIndication, LocalRippleConfiguration provides null]
 } else {
-    emptyArray()
+    []
 }
 
 @Composable

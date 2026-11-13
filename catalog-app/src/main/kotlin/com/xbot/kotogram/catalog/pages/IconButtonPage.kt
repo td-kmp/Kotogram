@@ -20,7 +20,7 @@ internal val IconButtonPage = CatalogPage(
         "default has no container and a style gives it one. GlassIconButton is for a bar over content: UIKit's " +
         "and AppKit's glass button on iOS 26 and macOS 26 and later, drawing the icon from the vector, and the " +
         "same IconButton elsewhere.",
-    examples = listOf(
+    examples = [
         CatalogExample("Standard") { Icons(style = IconButtonStyle) },
         CatalogExample("With a container") {
             Icons(style = IconButtonStyle { containerColor(theme.colors.surfaceContainerHigh) })
@@ -28,7 +28,7 @@ internal val IconButtonPage = CatalogPage(
         CatalogExample("Disabled") { Icons(style = IconButtonStyle, enabled = false) },
         CatalogExample("GlassIconButton") { GlassIcons(enabled = true) },
         CatalogExample("GlassIconButton, disabled") { GlassIcons(enabled = false) },
-    ),
+    ],
 )
 
 @Composable

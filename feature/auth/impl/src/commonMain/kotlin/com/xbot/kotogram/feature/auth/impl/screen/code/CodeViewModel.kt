@@ -60,8 +60,8 @@ internal class CodeViewModel(
 
     fun onAction(action: CodeScreenAction) {
         when (action) {
-            CodeScreenAction.OnSubmit -> submit()
-            CodeScreenAction.OnResend -> onResend()
+            OnSubmit -> submit()
+            OnResend -> onResend()
         }
     }
 

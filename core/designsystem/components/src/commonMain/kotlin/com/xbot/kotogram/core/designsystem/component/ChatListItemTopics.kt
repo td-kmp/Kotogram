@@ -79,16 +79,16 @@ private fun ChatListItemScope.TopicChip(topic: ForumTopic) {
         content = {
             Text(topic.title, style = titleStyle, maxLines = 1, overflow = TextOverflow.Ellipsis)
             when (val icon = topic.icon) {
-                TopicIcon.General -> Icon(
+                General -> Icon(
                     imageVector = KotogramIcons.GeneralTopic,
                     contentDescription = null,
                     modifier = Modifier.size(TopicIconSize),
                     tint = style.generalTopicColor,
                 )
 
-                is TopicIcon.Bubble -> TopicBubble(topic.title, icon.color, Modifier.size(TopicIconSize))
+                is Bubble -> TopicBubble(topic.title, icon.color, Modifier.size(TopicIconSize))
 
-                is TopicIcon.Emoji -> Box(Modifier.size(TopicIconSize), Alignment.Center) { icon.content() }
+                is Emoji -> Box(Modifier.size(TopicIconSize), Alignment.Center) { icon.content() }
 
                 null -> Unit
             }
@@ -194,12 +194,12 @@ private val TopicBubblePath: Path = PathParser().parsePathString(
 
 @Suppress("MagicNumber")
 private val TopicColors: Map<Int, Pair<List<Long>, List<Long>>> = mapOf(
-    0x6FB9F0 to (listOf(0xFF6FB9F0, 0xFF0261E4) to listOf(0xFF026CB5, 0xFF064BB7)),
-    0xFFD67E to (listOf(0xFFFFD67E, 0xFFFC8601) to listOf(0xFFDA9400, 0xFFFA5F00)),
-    0xCB86DB to (listOf(0xFFCB86DB, 0xFF9338AF) to listOf(0xFF812E98, 0xFF6F2B87)),
-    0x8EEE98 to (listOf(0xFF8EEE98, 0xFF02B504) to listOf(0xFF02A01B, 0xFF009716)),
-    0xFF93B2 to (listOf(0xFFFF93B2, 0xFFE23264) to listOf(0xFFFC447A, 0xFFC80C46)),
-    0xFB6F5F to (listOf(0xFFFB6F5F, 0xFFD72615) to listOf(0xFFDC1908, 0xFFB61506)),
+    0x6FB9F0 to ([0xFF6FB9F0, 0xFF0261E4] to [0xFF026CB5, 0xFF064BB7]),
+    0xFFD67E to ([0xFFFFD67E, 0xFFFC8601] to [0xFFDA9400, 0xFFFA5F00]),
+    0xCB86DB to ([0xFFCB86DB, 0xFF9338AF] to [0xFF812E98, 0xFF6F2B87]),
+    0x8EEE98 to ([0xFF8EEE98, 0xFF02B504] to [0xFF02A01B, 0xFF009716]),
+    0xFF93B2 to ([0xFFFF93B2, 0xFFE23264] to [0xFFFC447A, 0xFFC80C46]),
+    0xFB6F5F to ([0xFFFB6F5F, 0xFFD72615] to [0xFFDC1908, 0xFFB61506]),
 )
 
 private val DefaultTopicColors = TopicColors.getValue(0x6FB9F0)

@@ -73,10 +73,10 @@ interface UiMediaScope {
         val folds: List<WindowFold>,
     ) {
         val isFlat: Boolean
-            get() = folds.none { it.state == FoldState.HalfOpened }
+            get() = folds.none { it.state == HalfOpened }
 
         val isTabletop: Boolean
-            get() = folds.any { it.state == FoldState.HalfOpened && it.orientation == FoldOrientation.Horizontal }
+            get() = folds.any { it.state == HalfOpened && it.orientation == Horizontal }
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true

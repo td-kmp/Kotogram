@@ -100,7 +100,7 @@ internal fun ChatListEntry.toRow(): ChatListRow {
         date = message?.date ?: chat.draftMessage?.date ?: 0,
         status = message?.takeIf { draft == null }?.status(
             chat.lastReadOutboxMessageId,
-            special == SpecialChat.SavedMessages,
+            special == SavedMessages,
         ),
         unreadCount = chat.unreadCount,
         hasUnreadMention = chat.unreadMentionCount > 0,
@@ -110,7 +110,7 @@ internal fun ChatListEntry.toRow(): ChatListRow {
         author = if (draft == null && (preview as? ChatPreview.Message)?.hideAuthor != true) author() else null,
         preview = preview,
         typing = typing(),
-        topics = if (draft == null) topics.map { it.toModel() } else emptyList(),
+        topics = if (draft == null) topics.map { it.toModel() } else [],
         tags = tags.map { TagModel(it.name.text.text, it.colorId) },
         hasOpenAppButton = (user?.type as? UserTypeBot)?.hasMainWebApp == true && !unread,
     )
@@ -119,20 +119,20 @@ internal fun ChatListEntry.toRow(): ChatListRow {
 private fun ChatListEntry.emojiStatusId(verification: VerificationStatus?): Long? =
     (chat.emojiStatus?.type as? EmojiStatusTypeCustomEmoji)?.customEmojiId
         ?.takeIf {
-            special != SpecialChat.SavedMessages && verification?.isScam != true && verification?.isFake != true
+            special != SavedMessages && verification?.isScam != true && verification?.isFake != true
         }
 
 private fun ChatListEntry.title(): RowTitle = when {
-    special == SpecialChat.SavedMessages -> RowTitle.SavedMessages
-    special == SpecialChat.Replies -> RowTitle.Replies
+    special == SavedMessages -> RowTitle.SavedMessages
+    special == Replies -> RowTitle.Replies
     user?.type is UserTypeDeleted -> RowTitle.DeletedAccount
     else -> RowTitle.Name(chat.title)
 }
 
 private fun ChatListEntry.avatar(): AvatarModel {
     val icon = when {
-        special == SpecialChat.SavedMessages -> AvatarIcon.SavedMessages
-        special == SpecialChat.Replies -> AvatarIcon.Replies
+        special == SavedMessages -> AvatarIcon.SavedMessages
+        special == Replies -> AvatarIcon.Replies
         user?.type is UserTypeDeleted -> AvatarIcon.Deleted
         else -> null
     }
@@ -150,7 +150,7 @@ private fun ChatListEntry.stories(): StoriesModel? {
     val active = stories?.takeIf { it.stories.isNotEmpty() }
     val unseen = active?.stories?.filter { it.storyId > active.maxReadStoryId }.orEmpty()
     return when {
-        special == SpecialChat.SavedMessages -> null
+        special == SavedMessages -> null
 
         active != null && active.stories.any { it.isLive } -> StoriesModel.Live
 
@@ -171,7 +171,7 @@ private fun ChatListEntry.avatarBadge(): AvatarBadgeModel? {
         user.type is UserTypeRegular &&
         !user.isSupport &&
         user.id != myUserId &&
-        special != SpecialChat.ServiceNotifications &&
+        special != ServiceNotifications &&
         (user.status as? UserStatusOnline)?.expires?.let { it > Clock.System.now().epochSeconds } == true
     val videoChat = chat.type !is ChatTypePrivate && chat.type !is ChatTypeSecret &&
         chat.videoChat.groupCallId != 0 && chat.videoChat.hasParticipants
@@ -186,7 +186,7 @@ private fun ChatListEntry.avatarBadge(): AvatarBadgeModel? {
 }
 
 private fun ChatListEntry.mark(verification: VerificationStatus?): TitleMarkModel? {
-    if (special == SpecialChat.SavedMessages) return null
+    if (special == SavedMessages) return null
     return when {
         verification?.isVerified == true -> TitleMarkModel.Verified
         verification?.isScam == true -> TitleMarkModel.Scam
@@ -213,7 +213,7 @@ private fun ChatListEntry.author(): AuthorName? {
     val message = chat.lastMessage
     return when {
         message == null -> null
-        special == SpecialChat.SavedMessages -> forwardAuthor()?.let(AuthorName::Name)
+        special == SavedMessages -> forwardAuthor()?.let(AuthorName::Name)
         !isGroup || senderChat?.id == chat.id -> null
         message.isOutgoing -> AuthorName.You
         else -> (senderUser?.fullName() ?: senderChat?.title)?.let(AuthorName::Name)
@@ -246,7 +246,7 @@ private fun ChatListEntry.preview(message: Message): ChatPreview {
             you = you,
         ),
     )
-    val hiddenCode = special == SpecialChat.ServiceNotifications || special == SpecialChat.VerificationCodes
+    val hiddenCode = special == ServiceNotifications || special == VerificationCodes
     val content = preview.content
     return if (hiddenCode && content is PreviewText.Formatted && message.content is MessageText) {
         ChatPreview.Message(
@@ -274,7 +274,7 @@ private fun ChatListEntry.secretChatPreview(): ChatPreview? {
 
         SecretChatStateClosed -> StringResource.Text(Res.string.chatlist_secretchat_terminated)
     }
-    return ChatPreview.Message(PreviewText.Resource(text), null, emptyList(), hideAuthor = true)
+    return ChatPreview.Message(PreviewText.Resource(text), null, [], hideAuthor = true)
 }
 
 private fun ChatListEntry.typing(): TypingModel? {

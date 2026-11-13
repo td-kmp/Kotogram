@@ -30,11 +30,11 @@ internal fun qrCodeSpec(
     data: String,
     gridModules: Int,
 ): QrCodeSpec {
-    val levels = listOf(
+    val levels = [
         QrErrorCorrectionLevel.Medium to QrErrorCorrection.M,
         QrErrorCorrectionLevel.MediumHigh to QrErrorCorrection.Q,
         QrErrorCorrectionLevel.High to QrErrorCorrection.H,
-    )
+    ]
     return levels.firstNotNullOfOrNull { (level, correction) ->
         QrCodeSpec(level, QrEncoder(correction).encode(data).width).takeIf { it.modules == gridModules }
     } ?: QrCodeSpec(QrErrorCorrectionLevel.Medium, QrEncoder(QrErrorCorrection.M).encode(data).width)

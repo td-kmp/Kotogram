@@ -24,7 +24,7 @@ internal val SpacingPage = CatalogPage(
     name = "Spacing",
     description = "KotogramTheme.spacing: the gaps Telegram for macOS uses on its sign-in screens and in its lists. " +
         "Material 3 has no spacing of its own.",
-    examples = listOf(
+    examples = [
         CatalogExample("Scale") {
             val spacing = KotogramTheme.spacing
             Column(verticalArrangement = Arrangement.spacedBy(spacing.small)) {
@@ -35,7 +35,7 @@ internal val SpacingPage = CatalogPage(
                 SpacingSample("extraLarge", spacing.extraLarge)
             }
         },
-    ),
+    ],
 )
 
 @Composable

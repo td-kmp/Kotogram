@@ -75,7 +75,7 @@ internal fun logoutIcon() = icon("Logout") {
         arcTo(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = false, 7f, 19.5f)
         lineTo(12.5f, 19.5f)
         line(Offset(10f, 12f), Offset(20f, 12f))
-        polyline(listOf(Offset(16.5f, 8.5f), Offset(20f, 12f), Offset(16.5f, 15.5f)))
+        polyline([Offset(16.5f, 8.5f), Offset(20f, 12f), Offset(16.5f, 15.5f)])
     }
 }
 

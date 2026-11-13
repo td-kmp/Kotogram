@@ -61,7 +61,7 @@ class MacWindow(
                 canChooseFiles = true
                 canChooseDirectories = false
                 allowsMultipleSelection = false
-                allowedContentTypes = listOf(UTTypeImage)
+                allowedContentTypes = [UTTypeImage]
             }
             suspendCancellableCoroutine<NSURL?> { continuation ->
                 panel.beginSheetModalForWindow(window) { response ->

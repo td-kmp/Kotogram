@@ -64,7 +64,7 @@ class SharedViewModelStoreNavEntryDecorator<T : Any>(
             )
 
         val localValues: MutableList<ProvidedValue<*>> =
-            mutableListOf(LocalViewModelStoreOwner provides localOwner)
+            [LocalViewModelStoreOwner provides localOwner]
 
         val parentContentKey = entry.metadata[ParentKey]
         if (parentContentKey != null) {

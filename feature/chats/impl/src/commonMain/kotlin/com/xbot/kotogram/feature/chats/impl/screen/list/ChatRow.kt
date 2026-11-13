@@ -250,15 +250,15 @@ private fun draftLabel(): String = stringResource(Res.string.chatlist_draft).tri
 
 @Composable
 private fun previewText(preview: ChatPreview): AnnotatedString = when (preview) {
-    is ChatPreview.Message -> when (val content = preview.content) {
-        is PreviewText.Formatted -> {
+    is Message -> when (val content = preview.content) {
+        is Formatted -> {
             val text = content.text.toPreviewString()
             if (content.hiddenCode) text.withHiddenCode() else text
         }
 
-        is PreviewText.Plain -> AnnotatedString(content.text)
+        is Plain -> AnnotatedString(content.text)
 
-        is PreviewText.Resource -> AnnotatedString(content.resource.resolved())
+        is Resource -> AnnotatedString(content.resource.resolved())
     }
 
     else -> AnnotatedString("")
@@ -273,7 +273,7 @@ private fun AnnotatedString.withHiddenCode(): AnnotatedString {
 }
 
 private fun previewThumbnails(preview: ChatPreview): List<MessageThumbnail> {
-    if (preview !is ChatPreview.Message) return emptyList()
+    if (preview !is ChatPreview.Message) return []
     return preview.thumbnails.map { thumbnail ->
         MessageThumbnail(
             image = { blur ->

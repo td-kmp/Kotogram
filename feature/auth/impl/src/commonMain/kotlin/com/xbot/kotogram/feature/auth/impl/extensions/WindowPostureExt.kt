@@ -5,4 +5,4 @@ import com.xbot.kotogram.core.designsystem.media.UiMediaScope.FoldState
 import com.xbot.kotogram.core.designsystem.media.UiMediaScope.WindowPosture
 
 internal val WindowPosture.isBook: Boolean
-    get() = folds.any { it.state == FoldState.HalfOpened && it.orientation == FoldOrientation.Vertical }
+    get() = folds.any { it.state == HalfOpened && it.orientation == Vertical }

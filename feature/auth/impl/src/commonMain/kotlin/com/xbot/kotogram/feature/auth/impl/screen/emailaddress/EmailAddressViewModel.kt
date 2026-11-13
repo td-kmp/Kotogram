@@ -29,7 +29,7 @@ internal class EmailAddressViewModel(
 
     fun onAction(action: EmailAddressScreenAction) {
         when (action) {
-            EmailAddressScreenAction.OnSubmit -> onSubmit()
+            OnSubmit -> onSubmit()
         }
     }
 

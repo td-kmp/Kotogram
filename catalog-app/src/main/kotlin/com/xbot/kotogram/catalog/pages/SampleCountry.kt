@@ -7,7 +7,7 @@ internal class SampleCountry(
     val code: String,
 )
 
-internal val SampleCountries: List<SampleCountry> = listOf(
+internal val SampleCountries: List<SampleCountry> = [
     SampleCountry("🇦🇺", "Австралия", "Australia", "+61"),
     SampleCountry("🇦🇹", "Австрия", "Austria", "+43"),
     SampleCountry("🇦🇿", "Азербайджан", "Azerbaijan", "+994"),
@@ -87,4 +87,4 @@ internal val SampleCountries: List<SampleCountry> = listOf(
     SampleCountry("🇪🇹", "Эфиопия", "Ethiopia", "+251"),
     SampleCountry("🇰🇷", "Южная Корея", "South Korea", "+82"),
     SampleCountry("🇯🇵", "Япония", "Japan", "+81"),
-)
+]

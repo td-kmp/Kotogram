@@ -26,7 +26,7 @@ internal val SwitchPage = CatalogPage(
     description = "UIKit's UISwitch on iOS and AppKit's NSSwitch on macOS, at their own sizes; UIKit's takes the " +
         "style's track colour, AppKit's the system accent. Elsewhere Compose draws Material 3's switch on touch " +
         "screens and a smaller one on a laptop. A change the caller doesn't take goes back.",
-    examples = listOf(
+    examples = [
         CatalogExample("Press to toggle") {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.large),
@@ -50,7 +50,7 @@ internal val SwitchPage = CatalogPage(
         },
         CatalogExample("In a list") {
             Column {
-                listOf("Notifications", "Sounds", "Previews").forEachIndexed { index, name ->
+                ["Notifications", "Sounds", "Previews"].forEachIndexed { index, name ->
                     var checked by remember { mutableStateOf(index != 1) }
                     ListItem(
                         headlineContent = { Text(name) },
@@ -60,7 +60,7 @@ internal val SwitchPage = CatalogPage(
                 }
             }
         },
-    ),
+    ],
 )
 
 @Composable

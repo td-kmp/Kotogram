@@ -30,7 +30,7 @@ internal fun attachIcon() = icon("Attach") {
 
 internal fun sendIcon() = icon("Send") {
     stroke(width = LINE) {
-        polygon(listOf(Offset(4.5f, 4.5f), Offset(20f, 12f), Offset(4.5f, 19.5f), Offset(7.5f, 12f)))
+        polygon([Offset(4.5f, 4.5f), Offset(20f, 12f), Offset(4.5f, 19.5f), Offset(7.5f, 12f)])
         line(Offset(7.5f, 12f), Offset(13f, 12f))
     }
 }
@@ -58,7 +58,7 @@ internal fun smileIcon() = icon("Smile") {
 internal fun cameraIcon() = icon("Camera") {
     stroke(width = LINE) {
         roundRect(3.5f, 7.5f, 20.5f, 19f, 2.5f)
-        polyline(listOf(Offset(8.5f, 7.5f), Offset(9.8f, 5.2f), Offset(14.2f, 5.2f), Offset(15.5f, 7.5f)))
+        polyline([Offset(8.5f, 7.5f), Offset(9.8f, 5.2f), Offset(14.2f, 5.2f), Offset(15.5f, 7.5f)])
         circle(Offset(12f, 13f), 3.5f)
     }
 }

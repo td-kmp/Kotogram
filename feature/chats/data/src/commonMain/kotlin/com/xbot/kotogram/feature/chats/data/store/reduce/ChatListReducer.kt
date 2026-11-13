@@ -15,7 +15,7 @@ internal object ChatListReducer : Reducer {
         update: Update,
     ): ChatsState = when (update) {
         is UpdateNewChat ->
-            state.withPositions(update.chat.id, old = emptyList(), new = update.chat.positions)
+            state.withPositions(update.chat.id, old = [], new = update.chat.positions)
 
         is UpdateChatPosition -> state.withPosition(update.chatId, update.position)
 

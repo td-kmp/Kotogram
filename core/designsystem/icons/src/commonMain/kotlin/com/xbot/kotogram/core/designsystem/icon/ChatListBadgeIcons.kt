@@ -12,7 +12,7 @@ import com.xbot.kotogram.core.designsystem.extensions.stroke
 internal fun pinFilledIcon() = icon("PinFilled", canvas = 20f) {
     fill {
         polygon(
-            listOf(
+            [
                 Offset(12.5f, 2.744f),
                 Offset(11.5f, 3.645f),
                 Offset(9.5f, 6.415f),
@@ -40,7 +40,7 @@ internal fun pinFilledIcon() = icon("PinFilled", canvas = 20f) {
                 Offset(16.653f, 5.833f),
                 Offset(14.016f, 3.167f),
                 Offset(13.167f, 2.7f),
-            ),
+            ],
         )
     }
 }

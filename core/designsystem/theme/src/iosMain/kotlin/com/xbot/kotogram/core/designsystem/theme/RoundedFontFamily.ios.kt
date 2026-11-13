@@ -8,7 +8,7 @@ import androidx.compose.ui.text.platform.SystemFont
 @OptIn(ExperimentalTextApi::class)
 actual val platformRoundedFontFamily: FontFamily? = if (currentPlatform.isApple) {
     FontFamily(
-        listOf(FontWeight.Normal, FontWeight.Medium, FontWeight.SemiBold, FontWeight.Bold).map { weight ->
+        [FontWeight.Normal, FontWeight.Medium, FontWeight.SemiBold, FontWeight.Bold].map { weight ->
             SystemFont(APPLE_ROUNDED, weight)
         },
     )

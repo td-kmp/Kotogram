@@ -73,7 +73,7 @@ internal object PageSheetOverride : BottomSheetOverride {
         DisposableEffect(sheet) {
             sheet.modalPresentationStyle = UIModalPresentationPageSheet
             sheet.sheetPresentationController?.detents =
-                listOf(UISheetPresentationControllerDetent.largeDetent())
+                [UISheetPresentationControllerDetent.largeDetent()]
             sheet.presentationController?.delegate = delegate
             var disposed = false
             val present = {

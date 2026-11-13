@@ -223,7 +223,7 @@ private class Speckles(
 
     init {
         val side = sprite.side.toFloat()
-        val corners = floatArrayOf(0f, 0f, side, 0f, side, side, 0f, side)
+        val corners: FloatArray = [0f, 0f, side, 0f, side, side, 0f, side]
         for (at in textureCoordinates.indices) textureCoordinates[at] = corners[at % QUAD_FLOATS]
         for (at in indices.indices) {
             val quad = at / QUAD_INDICES
@@ -342,7 +342,7 @@ private const val FADE_OUT_START = 0.75f
 private const val QUAD_CORNERS = 4
 private const val QUAD_FLOATS = 8
 private const val QUAD_INDICES = 6
-private val QuadTriangles = intArrayOf(0, 1, 2, 0, 2, 3)
+private val QuadTriangles: IntArray = [0, 1, 2, 0, 2, 3]
 private const val SPRITE_MARGIN = 1
 private const val RGB_MASK = 0xFFFFFF
 private const val ALPHA_SHIFT = 24

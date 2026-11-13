@@ -4,7 +4,7 @@ import com.xbot.kotogram.feature.auth.domain.model.AuthError
 import io.xbot.tdlib.api.CountryInfo
 
 internal data class PhoneScreenState(
-    val countries: List<CountryInfo> = emptyList(),
+    val countries: List<CountryInfo> = [],
     val country: CountryInfo? = null,
     val callingCode: String = "",
     val number: String = "",

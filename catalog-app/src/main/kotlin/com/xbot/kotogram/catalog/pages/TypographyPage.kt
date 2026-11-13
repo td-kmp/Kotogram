@@ -23,7 +23,7 @@ internal val TypographyPage = CatalogPage(
     description = "Two scales in Material 3's roles, switched by the theme: Telegram for iOS's sizes on touch " +
         "screens, Telegram for macOS's on laptops (toggle Mobile). Each role carries SF Pro's tracking for its " +
         "size. Apple platforms draw them in SF Pro; Android, the web, Windows and Linux in Inter.",
-    examples = listOf(
+    examples = [
         CatalogExample("Roles") {
             val typography = KotogramTheme.typography
             TypeScale(
@@ -46,7 +46,7 @@ internal val TypographyPage = CatalogPage(
         },
         CatalogExample("Weights") {
             Column(verticalArrangement = Arrangement.spacedBy(KotogramTheme.spacing.small)) {
-                listOf(FontWeight.Normal, FontWeight.Medium, FontWeight.SemiBold).forEach { weight ->
+                [FontWeight.Normal, FontWeight.Medium, FontWeight.SemiBold].forEach { weight ->
                     Text(
                         text = "${weightName(weight)} ${weight.weight} · $SAMPLE",
                         style = KotogramTheme.typography.bodyLarge,
@@ -70,7 +70,7 @@ internal val TypographyPage = CatalogPage(
                 sample = "Telegram",
             )
         },
-    ),
+    ],
 )
 
 @Composable

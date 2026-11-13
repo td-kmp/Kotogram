@@ -50,7 +50,7 @@ internal fun AnnotatedString.withoutSpoilers(spoilers: List<Spoiler>): String = 
 }
 
 internal class SpoilerAreas {
-    var rects: List<Rect> = emptyList()
+    var rects: List<Rect> = []
         private set
 
     fun update(

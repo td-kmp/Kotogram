@@ -9,6 +9,6 @@ import com.xbot.kotogram.feature.chats.impl.screen.list.StoriesModel
 
 @Composable
 internal fun StoriesModel.toRing(): StoryRing = when (this) {
-    is StoriesModel.Stories -> StoryRing.Stories(total, unseen, closeFriends)
-    StoriesModel.Live -> StoryRing.Live(stringResource(Res.string.gallery_pagecontroller_live))
+    is Stories -> StoryRing.Stories(total, unseen, closeFriends)
+    Live -> StoryRing.Live(stringResource(Res.string.gallery_pagecontroller_live))
 }

@@ -89,7 +89,7 @@ class PhoneNumberFieldTest {
 
     @Test
     fun isTwoRowsHigh() {
-        for ((laptop, height) in listOf(false to 100.dp, true to 80.dp)) {
+        for ((laptop, height) in [false to 100.dp, true to 80.dp]) {
             runComposeUiTest {
                 setField(TextFieldState("998"), pattern = "-- --- -- --", laptop = laptop)
                 assertEquals(height, onNodeWithTag(FIELD_TAG).getUnclippedBoundsInRoot().height, "laptop $laptop")

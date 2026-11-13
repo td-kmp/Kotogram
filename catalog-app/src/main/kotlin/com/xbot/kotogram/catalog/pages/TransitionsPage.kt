@@ -47,7 +47,7 @@ internal val TransitionsPage = CatalogPage(
         "controls. On macOS and iOS those lie over the Compose canvas, so nothing Compose draws covers them: the " +
         "transition clips the screen underneath to the part still seen, and the controls are cut with it. " +
         "-Dcatalog.autoplay=true pushes and pops by itself.",
-    examples = listOf(CatalogExample("Push and pop") { TransitionsExample() }),
+    examples = [CatalogExample("Push and pop") { TransitionsExample() }],
 )
 
 @Composable

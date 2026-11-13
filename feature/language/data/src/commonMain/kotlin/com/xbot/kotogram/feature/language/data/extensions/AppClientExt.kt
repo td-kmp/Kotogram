@@ -16,4 +16,4 @@ internal suspend fun AppClient.languagePack(info: LanguagePackInfo): Either<Erro
 }
 
 private suspend fun AppClient.strings(languagePackId: String): Either<Error, Map<String, LanguagePackStringValue>> =
-    send(GetLanguagePackStrings(languagePackId = languagePackId, keys = emptyList())).map { it.toMap() }
+    send(GetLanguagePackStrings(languagePackId = languagePackId, keys = [])).map { it.toMap() }

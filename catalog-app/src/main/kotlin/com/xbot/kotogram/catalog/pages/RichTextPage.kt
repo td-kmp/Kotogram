@@ -22,7 +22,7 @@ internal val RichTextPage = CatalogPage(
     name = "RichText",
     description = "TDLib's FormattedText as Compose text: core:resources turns its entities into an AnnotatedString, " +
         "the design system styles it from the theme. Links open, mentions and hashtags call back.",
-    examples = listOf(
+    examples = [
         CatalogExample("Terms of Service") {
             RichText(
                 formatted(
@@ -46,7 +46,7 @@ internal val RichTextPage = CatalogPage(
                 onEntityClick = {},
             )
         },
-    ),
+    ],
 )
 
 private fun formatted(

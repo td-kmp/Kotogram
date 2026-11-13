@@ -106,7 +106,7 @@ fun ChatListItem(
             .drawBehind { drawRect(container.value) }
             .then(clickable)
             .drawBehind {
-                val inset = separator == ChatListItemSeparator.Inset
+                val inset = separator == Inset
                 val start = if (inset) (style.avatarStart + style.avatarSize + AvatarGap).toPx() else 0f
                 val end = if (inset) style.separatorEnd.toPx() else 0f
                 drawRect(style.separatorColor, Offset(start, size.height - 1f), Size(size.width - start - end, 1f))
@@ -254,7 +254,7 @@ fun interface ChatListItemStyle : ComponentStyle<ChatListItemStyleScope> {
             premiumColor(theme.colors.primary)
             labelColor(theme.colors.onSurface.copy(alpha = LABEL_ALPHA))
             tagColors(
-                listOf(
+                [
                     Color(0xFFCC5049),
                     Color(0xFFD67722),
                     Color(0xFF955CDB),
@@ -262,7 +262,7 @@ fun interface ChatListItemStyle : ComponentStyle<ChatListItemStyleScope> {
                     Color(0xFF309EBA),
                     Color(0xFF368AD1),
                     Color(0xFFC7508B),
-                ),
+                ],
             )
             tagOverflowColor(theme.colors.onSurfaceVariant)
             generalTopicColor(theme.colors.outline)
@@ -460,7 +460,7 @@ class ChatListItemStyleScope(
     var labelColor: Color = Color.Unspecified
         private set
 
-    var tagColors: List<Color> = emptyList()
+    var tagColors: List<Color> = []
         private set
 
     var tagOverflowColor: Color = Color.Unspecified

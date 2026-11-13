@@ -9,7 +9,7 @@ internal fun FontWeight?.appleWeight(): Double {
 }
 
 @Suppress("MagicNumber")
-private val AppleWeights = listOf(
+private val AppleWeights = [
     FontWeight.Thin to -0.8,
     FontWeight.ExtraLight to -0.6,
     FontWeight.Light to -0.4,
@@ -19,4 +19,4 @@ private val AppleWeights = listOf(
     FontWeight.Bold to 0.4,
     FontWeight.ExtraBold to 0.56,
     FontWeight.Black to 0.62,
-)
+]

@@ -28,14 +28,14 @@ internal val ScrollIndicatorPage = CatalogPage(
         "whole height of the edge with a thumb as long as the part in view, which follows the scroll as it " +
         "happens: Wear OS's indicator in look, Android's scrollbar in size and timing, 4 wide, shown while the " +
         "content scrolls and faded 300 ms after. A sectioned list on a touch screen takes FastScroller instead.",
-    examples = listOf(
+    examples = [
         CatalogExample("Over a LazyColumn") {
             SampleCountryList { state, _ ->
                 ScrollIndicator(state, Modifier.align(Alignment.CenterEnd).fillMaxHeight())
             }
         },
         CatalogExample("Over a scrolling Column") { ScrollingColumn() },
-    ),
+    ],
 )
 
 @Composable

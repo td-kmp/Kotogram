@@ -16,12 +16,12 @@ internal val SearchFieldPage = CatalogPage(
         "it has text. On iOS 26 and later it is UIKit's search field in a glass capsule, and searching brings a " +
         "glass cancel button out of it. Where it sits is the screen's call: at the bottom on iOS 26, at the top " +
         "elsewhere.",
-    examples = listOf(
+    examples = [
         CatalogExample("Empty") {
             SearchField(rememberTextFieldState(), Modifier.fillMaxWidth(), placeholder = "Search")
         },
         CatalogExample("With a query") {
             SearchField(rememberTextFieldState("Guin"), Modifier.fillMaxWidth(), placeholder = "Search")
         },
-    ),
+    ],
 )

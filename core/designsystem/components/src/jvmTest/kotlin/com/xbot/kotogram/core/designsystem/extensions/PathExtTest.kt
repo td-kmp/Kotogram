@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 
 class PathExtTest {
     private val chipOverPill = Path().apply {
-        addRectStack(listOf(Rect(0f, 0f, 60f, 20f), Rect(0f, 20f, 200f, 40f)), radius = 10f)
+        addRectStack([Rect(0f, 0f, 60f, 20f), Rect(0f, 20f, 200f, 40f)], radius = 10f)
     }
 
     @Test
@@ -37,7 +37,7 @@ class PathExtTest {
     @Test
     fun `edges closer than the snap are joined`() {
         val path = Path().apply {
-            addRectStack(listOf(Rect(0f, 0f, 99f, 20f), Rect(0f, 20f, 100f, 40f)), radius = 4f, snap = 2f)
+            addRectStack([Rect(0f, 0f, 99f, 20f), Rect(0f, 20f, 100f, 40f)], radius = 4f, snap = 2f)
         }
 
         assertTrue(path.covers(99.5f, 10f))

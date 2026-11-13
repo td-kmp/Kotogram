@@ -17,7 +17,7 @@ import dev.nucleusframework.window.tao.LocalTaoWindow
 
 @Composable
 internal actual fun platformComponentOverrides(): Array<ProvidedValue<*>> {
-    if (!currentPlatform.isApple || LocalTaoWindow.current == null) return emptyArray()
+    if (!currentPlatform.isApple || LocalTaoWindow.current == null) return []
     return listOfNotNull(
         LocalProgressIndicatorOverride provides MacSpinnerOverride,
         LocalMenuOverride provides MacPopUpMenuOverride,

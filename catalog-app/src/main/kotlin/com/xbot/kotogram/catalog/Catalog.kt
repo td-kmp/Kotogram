@@ -41,8 +41,8 @@ fun Catalog(
         Column {
             CatalogTopBar(
                 title = when (current) {
-                    CatalogKey.Home -> HOME_TITLE
-                    is CatalogKey.Page -> current.page.name
+                    Home -> HOME_TITLE
+                    is Page -> current.page.name
                 },
                 onBack = onBack.takeIf { backStack.size > 1 },
                 darkTheme = darkTheme,

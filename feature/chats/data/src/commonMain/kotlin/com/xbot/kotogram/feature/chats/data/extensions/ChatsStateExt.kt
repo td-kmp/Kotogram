@@ -49,7 +49,7 @@ internal fun ChatsState.hasSameEntriesAs(
     options === other.options
 
 internal fun ChatsState.folderTabs(): List<ChatFolderTab> {
-    val update = folders ?: return emptyList()
+    val update = folders ?: return []
     val tabs = update.chatFolders.map { folder ->
         tab(ChatListFolder(chatFolderId = folder.id), folder)
     }
@@ -114,7 +114,7 @@ private fun ChatsState.entry(
         },
         stories = stories[chat.id],
         scopeSettings = scopeSettings[chat.scope()],
-        topics = if (supergroup?.isForum == true) topics[chat.id]?.entries().orEmpty() else emptyList(),
+        topics = if (supergroup?.isForum == true) topics[chat.id]?.entries().orEmpty() else [],
         tags = tags(chat),
         mentionedUsers = chat.lastMessage?.content?.mentionedUserIds().orEmpty().mapNotNull { users[it] },
         special = special(chat),
@@ -123,7 +123,7 @@ private fun ChatsState.entry(
 }
 
 private fun ChatsState.tags(chat: Chat): List<ChatFolderInfo> {
-    val update = folders?.takeIf { it.areTagsEnabled } ?: return emptyList()
+    val update = folders?.takeIf { it.areTagsEnabled } ?: return []
     return update.chatFolders.filter { folder ->
         folder.colorId >= 0 && chat.chatLists.any { it is ChatListFolder && it.chatFolderId == folder.id }
     }

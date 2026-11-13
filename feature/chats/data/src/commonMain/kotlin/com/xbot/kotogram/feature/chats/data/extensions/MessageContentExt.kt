@@ -8,8 +8,8 @@ import io.xbot.tdlib.api.MessageInviteVideoChatParticipants
 
 internal fun MessageContent.mentionedUserIds(): List<Long> = when (this) {
     is MessageChatAddMembers -> memberUserIds
-    is MessageChatDeleteMember -> listOf(userId)
+    is MessageChatDeleteMember -> [userId]
     is MessageInviteVideoChatParticipants -> userIds
-    is MessageGiftedPremium -> listOf(gifterUserId, receiverUserId)
-    else -> emptyList()
+    is MessageGiftedPremium -> [gifterUserId, receiverUserId]
+    else -> []
 }

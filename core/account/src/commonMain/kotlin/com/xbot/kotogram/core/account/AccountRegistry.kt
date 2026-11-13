@@ -10,7 +10,7 @@ data class AccountEntry(
 
 @Serializable
 data class AccountRegistry(
-    val accounts: List<AccountEntry> = emptyList(),
+    val accounts: List<AccountEntry> = [],
     val active: AccountId? = null,
     val lastId: Int = 0,
 ) {

@@ -35,7 +35,7 @@ class InvisibleInkTest {
     }
 }
 
-private val EmitterSpeeds = listOf(0.1f to 0.65f, 0.25f to 1.63f, 0.5f to 3.54f, 0.75f to 5.78f, 0.9f to 7.55f)
+private val EmitterSpeeds = [0.1f to 0.65f, 0.25f to 1.63f, 0.5f to 3.54f, 0.75f to 5.78f, 0.9f to 7.55f]
 private const val SEEDS = 20_000
 private const val SPEED_TOLERANCE = 0.25f
 private const val SHARE_TOLERANCE = 0.02f

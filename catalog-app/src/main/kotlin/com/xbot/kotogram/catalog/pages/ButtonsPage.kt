@@ -28,14 +28,14 @@ internal val ButtonsPage = CatalogPage(
         "Enabled, Disabled or Loading; a loading button keeps its colours and width. " +
         "ProminentButton is a screen's main action: this filled button, and UIKit's prominent glass button on " +
         "iOS 26 and later.",
-    examples = listOf(
+    examples = [
         CatalogExample("Filled") { States { state -> Button(onClick = {}, state = state) { Text("Next") } } },
         CatalogExample("Prominent") { States { state -> ProminentButton("Continue", onClick = {}, state = state) } },
         CatalogExample("Text") {
             States { state -> TextButton(onClick = {}, state = state) { Text("Forgot password?") } }
         },
         CatalogExample("Loads for two seconds when pressed") { LoadingOnPress() },
-    ),
+    ],
 )
 
 @Composable

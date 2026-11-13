@@ -40,7 +40,7 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
 class AccountManagerTest {
-    private val ready = listOf("authorizationStateReady")
+    private val ready = ["authorizationStateReady"]
 
     private fun test(body: suspend () -> Unit) = runTest {
         withContext(Dispatchers.Default) { withTimeout(30.seconds) { body() } }
@@ -60,7 +60,7 @@ class AccountManagerTest {
         assertEquals(AccountId(1), session.id)
         assertEquals(registryOf(AccountEntry(AccountId(1))), app.store.saved)
         assertEquals(
-            listOf("1 getOption", "1 setTdlibParameters"),
+            ["1 getOption", "1 setTdlibParameters"],
             app.tdLib.requests.take(2),
         )
     }
@@ -71,7 +71,7 @@ class AccountManagerTest {
         val app = TestApp(options = FakeOptions(options)).started()
         app.active { it is AuthorizationStateWaitPhoneNumber }
         assertEquals(
-            listOf("1 getOption", "1 setOption a", "1 setOption b", "1 setTdlibParameters"),
+            ["1 getOption", "1 setOption a", "1 setOption b", "1 setTdlibParameters"],
             app.tdLib.requests.take(4),
         )
     }
@@ -106,7 +106,7 @@ class AccountManagerTest {
         app.manager.registry.first { it.entry(AccountId(1))?.userId == 77L }
         assertEquals(77L, app.store.saved.entry(AccountId(1))?.userId)
         assertEquals(
-            listOf(AccountId(1)),
+            [AccountId(1)],
             app.manager.accounts.first { it.isNotEmpty() }.map { it.id },
         )
     }
@@ -160,7 +160,7 @@ class AccountManagerTest {
         next?.authorizationState?.first { it is AuthorizationStateWaitPhoneNumber }
         app.awaitDeleted(session.id)
         assertFalse(app.root.resolve("1").exists())
-        assertEquals(listOf(AccountId(2)), app.store.saved.accounts.map { it.id })
+        assertEquals([AccountId(2)], app.store.saved.accounts.map { it.id })
     }
 
     @Test
@@ -199,11 +199,11 @@ class AccountManagerTest {
 
     @Test
     fun aSessionRevokedWhileTheAppWasClosedRemovesTheAccount() = test {
-        val revoked = listOf(
+        val revoked = [
             "authorizationStateLoggingOut",
             "authorizationStateClosing",
             "authorizationStateClosed",
-        )
+        ]
         val store = InMemoryRegistryStore(registryOf(signedIn(1)))
         val app = TestApp(FakeTdLib(mapOf(1 to revoked)), store).started()
         app.awaitDeleted(AccountId(1))
@@ -224,7 +224,7 @@ class AccountManagerTest {
         session.authorizationState.first { it !is AuthorizationStateReady }
         delay(200)
 
-        assertEquals(listOf(signedIn(1)), app.manager.registry.value.accounts)
+        assertEquals([signedIn(1)], app.manager.registry.value.accounts)
         assertTrue(app.keys.deleted.isEmpty())
     }
 
@@ -253,7 +253,7 @@ class AccountManagerTest {
         val app = TestApp(FakeTdLib(mapOf(1 to ready)), store).started()
         app.active { it == AuthorizationStateReady }
         assertEquals(1, app.tdLib.instancesCreated)
-        assertEquals(listOf(AccountId(3)), app.keys.deleted.toList())
+        assertEquals([AccountId(3)], app.keys.deleted.toList())
         assertNull(app.manager.registry.value.entry(AccountId(3)))
     }
 
@@ -305,7 +305,7 @@ class AccountManagerTest {
         next?.authorizationState?.first { it is AuthorizationStateWaitPhoneNumber }
         app.awaitDeleted(session.id)
         assertTrue("1 logOut" in app.tdLib.requests)
-        assertEquals(listOf(AccountId(2)), app.store.saved.accounts.map { it.id })
+        assertEquals([AccountId(2)], app.store.saved.accounts.map { it.id })
     }
 
     @Test
@@ -365,7 +365,7 @@ class AccountManagerTest {
         val store = InMemoryRegistryStore(registryOf(signedIn(1)))
         val app = TestApp(
             store = store,
-            keys = FakeDatabaseKeys(lost = setOf(AccountId(1))),
+            keys = FakeDatabaseKeys(lost = [AccountId(1)]),
         ).started()
         assertEquals(
             AccountId(2),
@@ -377,7 +377,7 @@ class AccountManagerTest {
 
     @Test
     fun aBrokenKeystoreDoesNotOpenNewAccountsInALoop() = test {
-        val app = TestApp(keys = FakeDatabaseKeys(lost = setOf(AccountId(1)))).started()
+        val app = TestApp(keys = FakeDatabaseKeys(lost = [AccountId(1)])).started()
         app.manager.shown.first { it.active != null }
         delay(200)
         assertEquals(1, app.tdLib.instancesCreated)
@@ -466,7 +466,7 @@ private class InMemoryRegistryStore(
 }
 
 private class FakeDatabaseKeys(
-    private val lost: Set<AccountId> = emptySet(),
+    private val lost: Set<AccountId> = [],
 ) : DatabaseKeys {
     val deleted = CopyOnWriteArrayList<AccountId>()
 

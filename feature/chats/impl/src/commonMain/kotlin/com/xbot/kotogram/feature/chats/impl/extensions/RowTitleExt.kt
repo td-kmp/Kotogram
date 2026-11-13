@@ -10,8 +10,8 @@ import com.xbot.kotogram.feature.chats.impl.screen.list.RowTitle
 
 @Composable
 internal fun RowTitle.text(): String = when (this) {
-    is RowTitle.Name -> text
-    RowTitle.SavedMessages -> stringResource(Res.string.peer_savedmessages)
-    RowTitle.Replies -> stringResource(Res.string.peer_repliesnotifications)
-    RowTitle.DeletedAccount -> stringResource(Res.string.peer_deleteduser)
+    is Name -> text
+    SavedMessages -> stringResource(Res.string.peer_savedmessages)
+    Replies -> stringResource(Res.string.peer_repliesnotifications)
+    DeletedAccount -> stringResource(Res.string.peer_deleteduser)
 }

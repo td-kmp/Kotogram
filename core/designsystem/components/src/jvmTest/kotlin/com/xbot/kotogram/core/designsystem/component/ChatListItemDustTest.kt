@@ -65,12 +65,12 @@ class ChatListItemDustTest {
         val scene = scene(counts, spoilerText())
         try {
             repeat(SETTLE_FRAMES) { scene.render(it * FRAME_NANOS) }
-            val before = listOf(counts.recomposed, counts.layouts, counts.draws)
+            val before = [counts.recomposed, counts.layouts, counts.draws]
             val first = scene.render(SETTLE_FRAMES * FRAME_NANOS).pixels()
             var last = first
             for (frame in 1..FRAMES) last = scene.render((SETTLE_FRAMES + frame) * FRAME_NANOS).pixels()
 
-            assertEquals(before, listOf(counts.recomposed, counts.layouts, counts.draws))
+            assertEquals(before, [counts.recomposed, counts.layouts, counts.draws])
             assertFalse(first.contentEquals(last), "the dust didn't move")
         } finally {
             scene.close()

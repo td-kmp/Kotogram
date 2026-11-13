@@ -24,7 +24,7 @@ internal class DesktopMediaScope(
     val windowInfo: WindowInfo,
 ) : UiMediaScope {
 
-    override val windowPosture: UiMediaScope.WindowPosture = UiMediaScope.WindowPosture(emptyList())
+    override val windowPosture: UiMediaScope.WindowPosture = UiMediaScope.WindowPosture([])
 
     override val windowWidth: Dp
         get() = windowInfo.containerDpSize.width
