@@ -1,11 +1,12 @@
 # The `online` option and the network type: a stale chat list after the background
 
 Found on 2026-11-13 on the SM-G990E (Android 16) with a release build: back from nine minutes in the background,
-the chat list showed nothing new for about two minutes. **Nothing is built yet.** This note is what was read and
-measured, and a design to start from.
+the chat list showed nothing new for about two minutes. This note is what was read and measured, and what is built (§5).
 
 Sources: the phone's own logs over adb; TDLib in `td-pack/td` (1.8.68 there, one version behind the library);
-Telegram X `main` as fetched on 2026-11-13 (`BaseActivity.java`, `telegram/Tdlib.java`, `telegram/TdlibManager.java`);
+Telegram X `main` as fetched on 2026-11-13 (`BaseActivity.java`, `telegram/Tdlib.java`, `telegram/TdlibManager.java`,
+`core/WatchDog.java`); Telegram for Android's `ApplicationLoader.java` and Telegram-iOS's
+`submodules/Reachability/Sources/Reachability.swift`, both fetched the same day;
 Compose Multiplatform 1.12.1's source jars; the Nucleus fork's `feature/native-view-overlay`.
 
 ## 1. What happened
@@ -65,23 +66,54 @@ focus is anywhere in the window's tree, and its scene hosts set `WindowInfo.isWi
 `MainActivity` handles `orientation|screenLayout|screenSize|smallestScreenSize|locale|layoutDirection`, so a
 switch of the dark theme still recreates it: a pause and a resume in a row.
 
-## 5. A design to start from
+## 5. What is built (2026-11-13), not wired yet
 
-The author's own, not built and not reviewed.
+The author's own on top of Telegram X's behaviour; nothing in `shared` includes it yet.
 
-- `core:account`: `OnlineStatus` (`isOnline: StateFlow<Boolean>`), `MutableOnlineStatus`, `DefaultOnlineStatus`,
-  a `single` in `accountsModule`.
-- `OnlineOptions : TdlibOptions` in `scope(AccountScope)`: `"online"` is true while the status is and its session
-  is the one in front, `shown.adding ?: shown.active`, as one account is online in Telegram X.
-  `AccountManager.sendOptions` already sends every change of an owner's map to its client, the first before
-  `setTdlibParameters`. Its `combine` waits for every owner, so the flow has to emit at once.
-- `shared`: `App(isActive: Boolean = isResumed())` writes the status in a `DisposableEffect`; `jvm-app` passes
-  the window's state.
-- `setNetworkType` is the other half: on each change of the default network, to every client, and again on
-  resume to the clients that aren't connected. It is also what brings back at once the accounts that aren't in
-  front. It needs a platform observer (`ConnectivityManager`'s default network callback on Android).
-- Open: whether TDLib takes `setOption online` before `setTdlibParameters` (the options sent there now are
-  answered only after it); a test over `FakeTdLib` in `core/account/src/jvmTest`.
+- **`feature:connection`**, not `core:account`, which runs accounts and owns no subsystem
+  ([architecture](../architecture.md)). `domain`: `ConnectionRepository.setInForeground`, for the root's
+  lifecycle effect. `data`: `DefaultConnectionRepository` (a `single`, holds `inForeground` and the shared
+  network flow), and in `scope(AccountScope)`:
+  - `OnlineOptions : TdlibOptions`: `"online"` is true while the app is in front and the account is
+    `shown.adding ?: shown.active` (one account online, as Telegram X).
+  - `NetworkTypeUpdates : AccountUpdates`: `setNetworkType` on every change of the network (the shared flow
+    replays the last one to a new client, as Telegram X's `modifyClient`), and again when the app comes to the
+    front to a client whose state isn't `connectionStateReady` (Telegram X's `resendNetworkTypeIfNeeded`).
+- **The network**, native as Telegram's apps:
+  - Android: `registerDefaultNetworkCallback`, as Telegram for Android (`ApplicationLoader`); Telegram X still
+    reads `CONNECTIVITY_ACTION` (`WatchDog`). Wi-Fi and Ethernet are `networkTypeWiFi`, cellular without
+    `NET_CAPABILITY_NOT_ROAMING` is roaming, anything else mobile: Telegram X's mapping.
+  - iOS (`IosNetworkMonitor`) and macOS (`core:platform:macos`'s `MacNetworkMonitor` through
+    NucleusNativeAccess): `nw_path_monitor`, as Telegram's `Reachability` (`submodules/Reachability`, built for
+    iOS 12 and macOS 14): satisfied and cellular is mobile, satisfied otherwise Wi-Fi, else none. A report goes
+    out only when the path's status or interfaces change. Telegram keeps only changes of the type; TDLib asks
+    for every change of the network.
+  - Windows (`core:platform:windows`, `mingwX64`): Network List Manager's `INetworkListManagerEvents`
+    (`ConnectivityChanged`), as Telegram Desktop: Qt's `QNetworkInformation` there, and lib_base's own NLM sink
+    before Qt 6.2 (`base_network_reachability_win.cpp`). Disconnected is none, anything else other: NLM tells no
+    transport. COM runs on one thread of its own, with a static sink whose `AddRef` and `Release` don't count.
+  - Linux (`core:platform:linux`, `linuxX64`): rtnetlink's link, address and route groups wake it, the default
+    route in `/proc/net/route` and `/proc/net/ipv6_route` decides, as GLib's `GNetworkMonitorNetlink` does, one of
+    the backends of Qt's `QNetworkInformation` that Telegram Desktop uses. The route's device is Wi-Fi with
+    `wireless` or `phy80211` in `/sys/class/net/<name>`, mobile with `DEVTYPE=wwan`, other otherwise (own rule).
+    NetworkManager over D-Bus, Qt's first backend, needs libdbus, which the Kotlin/Native sysroot doesn't have.
+  - Web: `navigator.onLine` and the window's `online` and `offline` events, as Telegram Web A
+    (`useBrowserOnline`) and Web K (`apiManagerProxy`): online is other, offline none.
+  - The JVM picks by `os.name` and `os.arch`: macOS on arm64, Windows and Linux on x64; any other desktop
+    reports nothing. A monitor that fails is logged and stops; TDLib then keeps its default.
+- **Checked on 2026-11-13:** `feature:connection:data` compiles for the JVM, Android, the iOS simulator and wasm;
+  the three native modules compile, link (the DLL and the `.so` cross-linked on the Mac) and are bundled in their
+  jars. On this Mac a throwaway JVM test went through `platformNetworkMonitor()` and FFM to `nw_path_monitor`: the
+  first type in 33 ms (`networkTypeWiFi`, the default route on `en0`), three collectors at once and five restarts
+  alike, no second report on a steady network, and the repository's replay. Watched live: Wi-Fi off gave
+  `networkTypeNone` and on `networkTypeWiFi` within a second each; joining the iPhone's hotspot gave a `none` and
+  a `wiFi` 0.3 s apart (the hotspot is Wi-Fi to macOS, not cellular). `spotlessApply` and `detekt` pass. Nothing
+  ran on Windows, Linux, a phone or a browser, and no TDLib client was given the reports.
+- **Next:** a platform effect at the root that calls `setInForeground` (Android's activity or application,
+  iOS's scene hooks, the desktop's Nucleus window or always true), then `connectionDataModule` in `shared`.
+- **Open:** whether TDLib takes `setOption online` and `setNetworkType` before `setTdlibParameters` (both are sent
+  without waiting, as the other options); a test over `FakeTdLib` in `core/account/src/jvmTest`. Whether several
+  Kotlin/Native libraries (`appkit`'s and a platform module's) live well in one JVM.
 
 ## 6. Seeing it again
 

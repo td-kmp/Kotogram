@@ -1,0 +1,5 @@
+package = com.xbot.kotogram.core.platform.windows.netlistmgr
+headers = netlistmgr.h
+headerFilter = netlistmgr.h
+nonStrictEnums = NLM_CONNECTIVITY
+linkerOpts = -lole32 -luuid

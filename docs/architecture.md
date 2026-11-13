@@ -53,6 +53,7 @@ ios-app/                     Xcode project, thin Swift host (not a Gradle module
 :core:designsystem:components components used by 2+ features, their native variants, ProvidePlatformComponents
 :core:designsystem:icons     KotogramIcons
 :core:designsystem:appkit    AppKit's controls in Kotlin/Native for the JVM on macOS (FFM, NucleusNativeAccess)
+:core:platform:{macos,windows,linux} each OS's system APIs without UI in Kotlin/Native for the JVM (FFM, NucleusNativeAccess, one native target a module): the network
 :core:resources              every string, StringResource, the Localization port, markup and plurals, localising extensions of TDLib's classes
 
 :feature:<name>:api
@@ -72,7 +73,7 @@ Its source sets split on where TDLib runs: `nonWebMain` (in the process) and `we
 | `core:account` | `tdlib-client`, Koin, DataStore | Compose, anything feature-specific |
 | `feature:x:api` | `core:navigation:api`, serialization | screens, ViewModels, logic |
 | `feature:x:domain` | `tdlib-client` (the DTOs), other features' `domain`, coroutines, Arrow | `core:account`, Compose, `io.xbot.tdlib.client.*` |
-| `feature:x:data` | its `domain`, `core:account`, Koin | Compose, ViewModels |
+| `feature:x:data` | its `domain`, `core:account`, Koin, `core:platform:*` in its platform source sets | Compose, ViewModels |
 | `feature:x:impl` | its `api` and `domain`, other features' `api` and `domain`, `core:designsystem:components` and `:icons`, `core:resources`, `core:navigation:api`, `core:account` for `AccountScope` and `AppCoroutineScope` in `di` | any `data`, other `impl`, `io.xbot.tdlib.client.*` |
 | other `core:*` | other `core:*`, no cycles | anything feature-specific |
 | `shared` | everything | business logic |

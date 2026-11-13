@@ -1,0 +1,2 @@
+package = com.xbot.kotogram.core.platform.linux.netlink
+headers = linux/netlink.h linux/rtnetlink.h
