@@ -15,7 +15,7 @@ import com.xbot.kotogram.catalog.model.CatalogSection
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.component.Button
 import com.xbot.kotogram.core.designsystem.component.ButtonState
-import com.xbot.kotogram.core.designsystem.component.ProminentButton
+import com.xbot.kotogram.core.designsystem.component.GlassButton
 import com.xbot.kotogram.core.designsystem.component.TextButton
 import kotlinx.coroutines.delay
 
@@ -26,11 +26,11 @@ internal val ButtonsPage = CatalogPage(
     description = "Telegram for macOS's sign-in button on a laptop (Auth_NextView: a pill at least 36 high, 15 on " +
         "each side, 14 medium) and Telegram for iOS's on touch screens (50 high, 17 semibold). ButtonState is " +
         "Enabled, Disabled or Loading; a loading button keeps its colours and width. " +
-        "ProminentButton is a screen's main action: this filled button, and UIKit's prominent glass button on " +
+        "GlassButton is a screen's main action: this filled button, and UIKit's prominent glass button on " +
         "iOS 26 and later.",
     examples = [
         CatalogExample("Filled") { States { state -> Button(onClick = {}, state = state) { Text("Next") } } },
-        CatalogExample("Prominent") { States { state -> ProminentButton("Continue", onClick = {}, state = state) } },
+        CatalogExample("Prominent") { States { state -> GlassButton("Continue", onClick = {}, state = state) } },
         CatalogExample("Text") {
             States { state -> TextButton(onClick = {}, state = state) { Text("Forgot password?") } }
         },
@@ -54,7 +54,7 @@ private fun LoadingOnPress() {
             loading = false
         }
     }
-    ProminentButton(
+    GlassButton(
         text = "Sign in",
         onClick = { loading = true },
         state = ButtonState.of(enabled = true, loading = loading),

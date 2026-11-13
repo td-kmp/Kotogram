@@ -2,6 +2,7 @@ package com.xbot.kotogram.feature.chats.impl.screen.list
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -28,6 +29,11 @@ internal fun interface ChatListScreenStyle : ComponentStyle<ChatListScreenStyleS
             tabMutedBadgeColor(theme.colors.outline)
             tabTextStyle(theme.typography.bodyLarge.merge(color = theme.colors.onSurface))
             tabBadgeTextStyle(theme.typography.labelMedium.merge(color = Color.White))
+            connectionIndicatorSize(20.dp)
+            connectionIndicatorGap(4.dp)
+            connectionIndicatorColor(
+                if (theme.colors.surface.luminance() < 0.5f) theme.colors.onSurface else theme.colors.onSurfaceVariant,
+            )
         }
 
         val Adaptive = Default then ChatListScreenStyle {
@@ -35,6 +41,8 @@ internal fun interface ChatListScreenStyle : ComponentStyle<ChatListScreenStyleS
                 previewEmojiSize(16.dp)
                 tabEmojiSize(16.dp)
                 tabBadgePadding(4.dp)
+                connectionIndicatorSize(16.dp)
+                connectionIndicatorGap(6.dp)
             }
         }
     }
@@ -85,6 +93,15 @@ internal class ChatListScreenStyleScope(
     var tabBadgeTextStyle: TextStyle = TextStyle.Default
         private set
 
+    var connectionIndicatorSize: Dp = Dp.Unspecified
+        private set
+
+    var connectionIndicatorGap: Dp = Dp.Unspecified
+        private set
+
+    var connectionIndicatorColor: Color = Color.Unspecified
+        private set
+
     fun previewEmojiSize(size: Dp) {
         previewEmojiSize = size
     }
@@ -119,5 +136,17 @@ internal class ChatListScreenStyleScope(
 
     fun tabBadgeTextStyle(style: TextStyle) {
         tabBadgeTextStyle = style
+    }
+
+    fun connectionIndicatorSize(size: Dp) {
+        connectionIndicatorSize = size
+    }
+
+    fun connectionIndicatorGap(gap: Dp) {
+        connectionIndicatorGap = gap
+    }
+
+    fun connectionIndicatorColor(color: Color) {
+        connectionIndicatorColor = color
     }
 }

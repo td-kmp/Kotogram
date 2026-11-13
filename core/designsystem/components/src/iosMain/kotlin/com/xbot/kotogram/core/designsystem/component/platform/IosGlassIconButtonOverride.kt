@@ -31,6 +31,7 @@ internal object IosGlassIconButtonOverride : GlassIconButtonOverride {
             bitmap.toUIImage(scale)?.imageWithRenderingMode(UIImageRenderingMode.UIImageRenderingModeAlwaysTemplate)
         }
         val color = iconColor.toUIColor()
+        val tint = style.containerColor.takeIf { it.alpha > 0f }?.toUIColor()
         val dark = KotogramTheme.colors.surface.isDark()
         OverlayView(
             factory = {
@@ -41,11 +42,17 @@ internal object IosGlassIconButtonOverride : GlassIconButtonOverride {
             },
             modifier = modifier.minimumInteractiveComponentSize().size(style.size),
             update = { button ->
-                button.configuration = UIButtonConfiguration.glassButtonConfiguration().apply {
+                val configuration = if (tint != null) {
+                    UIButtonConfiguration.prominentGlassButtonConfiguration()
+                } else {
+                    UIButtonConfiguration.glassButtonConfiguration()
+                }
+                button.configuration = configuration.apply {
                     image = templateImage
                     baseForegroundColor = color
                     cornerStyle = UIButtonConfigurationCornerStyleCapsule
                 }
+                tint?.let { button.tintColor = it }
                 button.overrideUserInterfaceStyle = interfaceStyle(dark)
                 button.enabled = enabled
                 button.accessibilityLabel = contentDescription

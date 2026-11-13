@@ -33,8 +33,8 @@ import com.xbot.kotogram.core.designsystem.PreviewKotogram
 import com.xbot.kotogram.core.designsystem.PreviewKotogramLaptop
 import com.xbot.kotogram.core.designsystem.component.ButtonState
 import com.xbot.kotogram.core.designsystem.component.CodeField
+import com.xbot.kotogram.core.designsystem.component.GlassButton
 import com.xbot.kotogram.core.designsystem.component.LottieImage
-import com.xbot.kotogram.core.designsystem.component.ProminentButton
 import com.xbot.kotogram.core.designsystem.media.derivedMediaQuery
 import com.xbot.kotogram.core.designsystem.media.mediaQuery
 import com.xbot.kotogram.core.designsystem.style.rememberStyle
@@ -146,7 +146,7 @@ internal fun EmailCodeScreenContent(
                             }
                         }
                         if (nextVisible) {
-                            ProminentButton(
+                            GlassButton(
                                 text = stringResource(Res.string.login_next),
                                 onClick = { onAction(EmailCodeScreenAction.OnSubmit) },
                                 state = ButtonState.of(

@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-look="phone">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The chat list's bar and the connection state: prototype</title>
+<style>
+/* The live device on the left, the notes on the right. The device carries the app's colours, sizes and motion; the
+   page around it stays quiet. Sizes in px are points on Apple and dp on Android. */
+:root {
+  color-scheme: dark;
+  --page: #0b1117; --panel: #111a23; --ink: #e3eaf1; --muted: #8a9bab; --line: #1f2c39; --chip: #18242f;
+  /* Night Accent, theme/Color.kt */
+  --surface: #18222d; --high: #213040; --onSurface: #ffffff; --onSurfaceVariant: #b1c3d5; --primary: #2ea6ff;
+  --onPrimary: #ffffff; --pinned: #213040;
+  --glassFill: rgba(255, 255, 255, 0.07); --glassRim: rgba(255, 255, 255, 0.16); --glassShine: rgba(255, 255, 255, 0.22);
+  --glassShadow: rgba(0, 0, 0, 0.28); --edgeTint: rgba(24, 34, 45, 0.85);
+  --iosSpinner: #ffffff;
+  --bezel: #05080b;
+  --ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --app: -apple-system, "SF Pro Text", system-ui, sans-serif;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --page: #f5f6f8; --panel: #ffffff; --ink: #16202a; --muted: #5d6b78; --line: #dce1e7; --chip: #e9eef4;
+  /* Day Classic, theme/Color.kt */
+  --surface: #ffffff; --high: #f4f4f4; --onSurface: #000000; --onSurfaceVariant: #999999; --primary: #2481cc;
+  --onPrimary: #ffffff; --pinned: #f4f4f4;
+  --glassFill: rgba(255, 255, 255, 0.62); --glassRim: rgba(0, 0, 0, 0.08); --glassShine: rgba(255, 255, 255, 0.9);
+  --glassShadow: rgba(0, 0, 0, 0.12); --edgeTint: rgba(255, 255, 255, 0.85);
+  --iosSpinner: #808080;
+  --bezel: #c9ced6;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 15px/1.55 var(--ui); padding: 32px 20px 64px; }
+.wrap { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 26px; }
+code { font-family: var(--mono); font-size: 0.87em; }
+p { margin: 0; }
+header.page { display: flex; flex-direction: column; gap: 10px; max-width: 76ch; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 0; font-size: clamp(24px, 3.6vw, 32px); line-height: 1.15; font-weight: 600; text-wrap: balance; }
+h2 { margin: 0; font-size: 17px; font-weight: 600; }
+.lead { color: var(--muted); }
+
+.bars { position: sticky; top: 0; z-index: 5; background: var(--page); border-block: 1px solid var(--line); }
+.bar { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; padding: 10px 0; }
+.bar + .bar { border-top: 1px solid var(--line); }
+.ctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.label { font: 500 12px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--panel); }
+.seg button, .plain { font: 500 13px/1 var(--ui); color: var(--muted); background: none; border: 0; padding: 9px 12px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--chip); color: var(--ink); }
+.seg button:focus-visible, .plain:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.seg button[data-rec]::after { content: ""; display: inline-block; width: 6px; height: 6px; margin-left: 7px;
+  border-radius: 50%; background: var(--primary); vertical-align: 1px; }
+.plain { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); }
+.plain:hover { background: var(--chip); }
+.readout { font: 12.5px/1 var(--mono); color: var(--muted); min-width: 9ch; }
+:root:not([data-look="phone"]) .phone-only { display: none !important; }
+
+.stage { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 36px; align-items: start; }
+@media (max-width: 920px) { .stage { grid-template-columns: 1fr; justify-items: center; } }
+.holder { padding: 10px; border-radius: 52px; background: var(--bezel); position: sticky; top: 130px; }
+:root[data-look="android"] .holder { border-radius: 44px; }
+:root[data-look="mac"] .holder { border-radius: 14px; padding: 0; background: none; }
+
+/* ---------- the device ---------- */
+.screen { position: relative; overflow: hidden; background: var(--surface); color: var(--onSurface); font-family: var(--app);
+  -webkit-font-smoothing: antialiased; touch-action: none; user-select: none; }
+:root[data-look="phone"] .screen { width: 420px; height: 820px; border-radius: 42px; }
+:root[data-look="android"] .screen { width: 412px; height: 820px; border-radius: 34px; font-family: Roboto, var(--app); }
+:root[data-look="mac"] .screen { width: 380px; height: 680px; border-radius: 12px;
+  box-shadow: 0 0 0 0.5px var(--glassRim), 0 18px 50px rgba(0, 0, 0, 0.35); }
+
+.list { position: absolute; left: 0; right: 0; top: 0; will-change: transform; }
+.row { display: grid; grid-template-columns: 56px 1fr auto; gap: 0 10px; padding: 8px 15px; height: 76px; align-items: start; }
+:root[data-look="mac"] .row { grid-template-columns: 50px 1fr auto; height: 70px; padding: 10px 10px; }
+.row.pin { background: var(--pinned); }
+.av { width: 56px; height: 56px; border-radius: 50%; }
+:root[data-look="mac"] .av { width: 50px; height: 50px; }
+.row .t { font: 600 16px/20px var(--app); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-top: 2px; }
+.row .m { font: 400 15px/20px var(--app); color: var(--onSurfaceVariant); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+:root[data-look="mac"] .row .t { font-size: 14px; } :root[data-look="mac"] .row .m { font-size: 13px; }
+.row .d { font: 400 14px/20px var(--app); color: var(--onSurfaceVariant); padding-top: 2px; text-align: right; }
+:root[data-look="mac"] .row .d { font-size: 12px; }
+.row .c { display: inline-block; margin-top: 8px; min-width: 22px; height: 22px; padding: 0 7px; border-radius: 11px;
+  background: var(--primary); color: #fff; font: 500 13px/22px var(--app); text-align: center; }
+.row .c.mute { background: var(--onSurfaceVariant); color: var(--surface); }
+
+/* The bar's backdrop on every look: UIKit's scroll edge effect (blur, a tint of 0.85 fading over its last 54). */
+.edge { position: absolute; left: 0; right: 0; top: 0; pointer-events: none; background: var(--edgeTint);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--fade)), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - var(--fade)), transparent); }
+
+.statusbar { position: absolute; left: 0; right: 0; top: 0; height: 54px; display: flex; align-items: center;
+  justify-content: space-between; padding: 0 34px 0 46px; font: 600 17px/1 var(--app); pointer-events: none; z-index: 2; }
+.statusbar .island { width: 124px; height: 36px; border-radius: 18px; background: #000; }
+.statusbar .icons { display: flex; gap: 6px; } .statusbar .icons i { width: 18px; height: 11px; border-radius: 3px; background: currentColor; }
+.statusbar .icons i:last-child { width: 26px; border-radius: 4px; }
+:root[data-look="android"] .statusbar { height: 32px; padding: 0 24px; font: 500 14px/1 Roboto, var(--app); }
+:root[data-look="android"] .statusbar .island { width: 14px; height: 14px; border-radius: 50%; }
+:root[data-look="mac"] .statusbar { display: none; }
+.traffic { position: absolute; left: 20px; display: none; gap: 9px; z-index: 2; }
+:root[data-look="mac"] .traffic { display: flex; }
+.traffic i { width: 14px; height: 14px; border-radius: 50%; background: #ff5f57; }
+.traffic i:nth-child(2) { background: #febc2e; } .traffic i:nth-child(3) { background: #28c840; }
+
+/* Liquid glass, approximated: on the device it is UIKit's and AppKit's own. */
+.glass { position: absolute; border-radius: 999px; background: var(--glassFill);
+  -webkit-backdrop-filter: blur(10px) saturate(1.8); backdrop-filter: blur(10px) saturate(1.8);
+  box-shadow: inset 0 0.5px 0 var(--glassShine), inset 0 0 0 0.5px var(--glassRim), 0 6px 18px var(--glassShadow); }
+:root[data-look="android"] #rightPill { background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.btn { position: absolute; top: 0; display: grid; place-items: center; color: var(--onSurface); cursor: pointer;
+  font: 500 17px/1 var(--app); letter-spacing: -0.43px; border-radius: 999px; }
+.btn svg { display: block; }
+.btn.pressed > * { opacity: 0.6; }
+:root[data-look="android"] .btn.pressed { background: color-mix(in srgb, var(--onSurface) 10%, transparent); }
+:root[data-look="android"] .btn.pressed > * { opacity: 1; }
+:root:not([data-look="phone"]) #leftPill { display: none; }
+:root[data-look="android"] #storyBtn, :root[data-look="android"] #composePill { display: none !important; }
+/* The primary action: glass tinted with the accent (the HIG's .prominent), alone in its capsule. */
+#composePill { background: var(--primary); box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.35), 0 6px 18px var(--glassShadow); }
+#composePill .btn { color: var(--onPrimary); }
+:root:not([data-look="android"]) #searchBtn, :root:not([data-look="android"]) .fab { display: none !important; }
+
+.title { position: absolute; top: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font: 600 17px/20px var(--app); letter-spacing: -0.43px; z-index: 1; }
+:root[data-look="mac"] .title { font: 600 15px/18px var(--app); letter-spacing: -0.24px; }
+:root[data-look="android"] .title { font: 500 22px/28px Roboto, var(--app); letter-spacing: 0; }
+.spinner { position: absolute; display: none; z-index: 1; }
+.spinner.on { display: block; }
+.ios-spin { width: 22px; height: 22px; color: var(--iosSpinner); }
+.ios-spin svg { display: block; width: 22px; height: 22px; animation: spokes 1s steps(8) infinite; }
+@keyframes spokes { to { transform: rotate(360deg); } }
+.arc-spin { width: 20px; height: 20px; color: var(--onSurface); }
+.arc-spin svg { display: block; overflow: visible; }
+
+.search { position: absolute; overflow: hidden; display: flex; align-items: center; justify-content: center; gap: 6px;
+  color: var(--onSurfaceVariant); font: 400 17px/1 var(--app); letter-spacing: -0.43px; cursor: text;
+  background: var(--high); box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+:root[data-look="mac"] .search { font-size: 13px; justify-content: flex-start; padding-left: 10px; gap: 4px; }
+:root[data-look="android"] .search { display: none; }
+.search svg { flex: none; }
+
+.tabs { position: absolute; left: 15px; right: 15px; height: 41px; border-radius: 21px; background: var(--high); display: grid;
+  grid-template-columns: 1fr 1fr; align-items: center; text-align: center; font: 400 17px/1 var(--app); }
+:root[data-look="mac"] .tabs { left: 10px; right: 10px; height: 32px; font-size: 13px; }
+:root[data-look="android"] .tabs { left: 16px; right: 16px; height: 40px; font: 500 15px/1 Roboto, var(--app); }
+.tabs b { font-weight: inherit; display: inline-flex; gap: 6px; align-items: center; justify-content: center; }
+.tabs b span { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--primary); color: #fff;
+  font: 500 13px/20px var(--app); }
+
+/* Material 3's FAB, 56 with 16 from the edges, and a small one of 40 over it for the story. */
+.fab { position: absolute; display: grid; place-items: center; background: var(--primary); color: var(--onPrimary);
+  border-radius: 16px; width: 56px; height: 56px; right: 16px; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1); cursor: pointer; }
+.fab.small { width: 40px; height: 40px; border-radius: 12px; right: 24px; background: var(--high); color: var(--onSurface); }
+.fab.hidden { transform: translateY(130px); }
+.fab.small.hidden { transform: translateY(190px); }
+
+/* ---------- the notes ---------- */
+.notes { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: flex;
+  flex-direction: column; gap: 10px; }
+.card ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.card .own { color: var(--primary); font: 500 11px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; }
+.card[data-for]:not(.on) { display: none; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 500 11px/1.2 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+tr.now td { background: var(--chip); }
+.log { font: 12.5px/1.6 var(--mono); max-height: 180px; overflow: auto; margin: 0; padding: 10px 12px; border-radius: 8px;
+  background: var(--page); border: 1px solid var(--line); white-space: pre-wrap; }
+.log .shown { color: var(--primary); }
+.log .dropped { color: var(--muted); text-decoration: line-through; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="page">
+    <span class="eyebrow">KTG-9 · chat list · prototype</span>
+    <h1>The chat list's bar, with the connection state in its title</h1>
+    <p class="lead">One bar, three platforms' manners. The iPhone takes Telegram for iOS's (<code>ChatListNavigationBar</code>):
+      glass capsules, a search field that folds as the list scrolls. The Mac follows the macOS guidelines: no Edit, the
+      title at the leading edge, search at the top of the list. Android takes Material's: a top app bar and a floating
+      new message button. On all three the title gives way to the connection state while TDLib isn't ready. Scroll the
+      list with the wheel or drag it; pull it down past the top.</p>
+  </header>
+
+  <div class="bars">
+    <div class="bar" role="toolbar" aria-label="Look">
+      <div class="ctl"><span class="label">Theme</span>
+        <span class="seg" data-key="theme"><button data-v="dark">Dark</button><button data-v="light">Light</button></span></div>
+      <div class="ctl"><span class="label">Look</span>
+        <span class="seg" data-key="look"><button data-v="phone">iPhone</button><button data-v="mac">Mac</button><button
+          data-v="android">Android</button></span></div>
+      <div class="ctl"><span class="label">Proxy</span>
+        <span class="seg" data-key="proxy"><button data-v="off">None</button><button data-v="on">Enabled</button></span></div>
+      <div class="ctl"><span class="label">Scroll</span>
+        <button class="plain" data-scroll="top">Top</button>
+        <button class="plain phone-only" data-scroll="pull">Pulled down</button>
+        <button class="plain phone-only" data-scroll="half">Search half folded</button>
+        <button class="plain" data-scroll="down">Scrolled</button>
+        <span class="readout" id="offset">0 pt</span></div>
+    </div>
+    <div class="bar" role="toolbar" aria-label="Connection state">
+      <div class="ctl"><span class="label">TDLib</span>
+        <span class="seg" data-key="raw">
+          <button data-v="ready">Ready</button><button data-v="waiting">Waiting for network</button><button
+          data-v="proxy">Connecting to proxy</button><button data-v="connecting">Connecting</button><button
+          data-v="updating">Updating</button></span></div>
+      <div class="ctl"><span class="label">Delay</span>
+        <span class="seg" data-key="delay"><button data-v="0">None</button><button data-v="ios" data-rec>0.3 s, iOS</button><button
+          data-v="mac">1 s, macOS</button></span></div>
+      <div class="ctl"><span class="label">Play</span>
+        <button class="plain" data-play="resume">Back from the background</button>
+        <button class="plain" data-play="flap">Short reconnect</button>
+        <button class="plain" data-play="offline">Network lost and back</button></div>
+    </div>
+  </div>
+
+  <section class="stage">
+    <div class="holder">
+      <div class="screen" id="screen">
+        <div class="list" id="list"></div>
+        <div class="edge" id="edge"></div>
+        <div class="statusbar"><span>9:41</span><span class="island"></span><span class="icons"><i></i><i></i></span></div>
+        <div class="traffic" id="traffic"><i></i><i></i><i></i></div>
+
+        <div class="glass" id="leftPill"><div class="btn" id="edit"><span>Edit</span></div></div>
+        <div class="glass" id="rightPill">
+          <div class="btn" id="searchBtn" aria-label="Search"><svg viewBox="0 0 24 24" width="24" height="24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 4.5 4.5"/></svg></div>
+          <div class="btn" id="proxyBtn" aria-label="Proxy settings"><svg id="shield" viewBox="0 0 30 30" width="30" height="30"></svg></div>
+          <div class="btn" id="storyBtn" aria-label="Add story"><svg viewBox="0 0 24 24" width="24" height="24" fill="none"
+            stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="8.6"/>
+            <path d="M12 8.2v7.6M8.2 12h7.6"/></svg></div>
+        </div>
+        <div class="glass" id="composePill">
+          <div class="btn" id="composeBtn" aria-label="New message"><svg viewBox="0 0 24 24" width="24" height="24" fill="none"
+            stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path
+            d="M11 4.5H7.5a3 3 0 0 0-3 3v9a3 3 0 0 0 3 3h9a3 3 0 0 0 3-3V13"/><path d="M17.6 3.9a1.6 1.6 0 0 1 2.3 2.3l-7.4 7.4-3 .7.7-3z"/></svg></div>
+        </div>
+        <div class="spinner ios-spin" id="iosSpin"><svg viewBox="0 0 22 22" aria-hidden="true"></svg></div>
+        <div class="spinner arc-spin" id="arcSpin"><svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><circle cx="10"
+          cy="10" r="9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" pathLength="1"/></svg></div>
+        <div class="title" id="title" aria-live="polite">Chats</div>
+
+        <div class="glass search" id="search"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round"><circle cx="8.5" cy="8.5" r="6"/><path d="m13 13 4.5 4.5"/></svg><span>Search</span></div>
+        <div class="tabs" id="tabs"><b>All</b><b>Personal <span>8</span></b></div>
+
+        <div class="fab small" id="fabStory" aria-label="Add story"><svg viewBox="0 0 24 24" width="22" height="22" fill="none"
+          stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path
+          d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.8L10 4h4l1.7 2h1.8A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/>
+          <circle cx="12" cy="12.4" r="3.3"/></svg></div>
+        <div class="fab" id="fab" aria-label="New message"><svg viewBox="0 0 24 24" width="24" height="24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path
+          d="M15.3 5.2a2 2 0 0 1 2.9 0l.6.6a2 2 0 0 1 0 2.9L9 18.5l-4.2 1 1-4.2z"/><path d="m13.5 7 3.5 3.5"/></svg></div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="card" data-for="phone">
+        <h2>iPhone: Telegram for iOS's bar, from the sources</h2>
+        <ul>
+          <li><b>Rows</b> (<code>ChatListNavigationBar.update</code>): under the status bar 3, the buttons' row of 44
+            (placed 10 under the status bar), 9, the search's 60 and 2, then the folders and 3.</li>
+          <li><b>Capsules</b> (<code>NavigationBarComponent</code>, <code>NavigationBarContentView</code>): the left one
+            holds Edit, 17 medium with 12 each side; on the right new story and the proxy's shield (30 in a 44 cell,
+            only with a proxy), 44 each, 16 from the screen's edges. A pressed button's content dims to 0.6.</li>
+          <li><b>New message alone, in blue</b> (decided on 2026-11-13): its own capsule tinted with the accent, the HIG's
+            <code>.prominent</code> ("Only specify one primary action, and put it on the trailing side"), 12 from the
+            other capsule (<code>navigationBarInterSectionSpacing</code>). Telegram keeps all three in one plain capsule.</li>
+          <li><b>Search</b> (<code>NavigationBarSearchContentNode</code>): a field of 44 with 16 at the sides, 8
+            above the zone's bottom, the placeholder 17 regular, centred. Flat, the folders' fill, round ends
+            (decided on 2026-11-13); Telegram's is glass.</li>
+          <li><b>Scroll up</b>: the bar loses up to 54; the search zone folds over those 54, the field shrinks and
+            fades out in the first 40 of them, and the folders ride up with the bar's bottom. Past 54 the bar stays and
+            the list goes under it, through the edge effect.</li>
+          <li><b>Pull down</b>: the bar grows with the pull and the search and folders follow the list; in Telegram the
+            stories open there (from 65 pulled, with a tap of haptics). We have no stories yet.</li>
+          <li><b>The title</b> (<code>ChatListTitleView</code>): every state but ready puts its text in the title with
+            the indicator; ready puts "Chats" back, without an animation.</li>
+          <li><b>The HIG</b> agrees: actions belong in the toolbar, Edit as text ("actions like edit that aren't
+            well-represented by symbols"), a search field inline above the list it searches. Apple has no floating
+            button. Its own Mail and Notes put New and search in a bottom toolbar; Telegram keeps its tab bar there.</li>
+        </ul>
+      </div>
+
+      <div class="card" data-for="mac">
+        <h2>Mac: the macOS guidelines</h2>
+        <ul>
+          <li><b>No Edit.</b> A Mac list has no edit mode: rows are selected with the pointer and ⌘ or ⇧, and act through
+            a context menu and the menu bar. The HIG doesn't say "no Edit button"; Mail, Messages and Telegram for macOS
+            just don't have one.</li>
+          <li><b>The title at the leading edge</b>, after the window's controls ("Elements that let people return … and
+            show or hide a sidebar appear at the far leading edge, followed by the view title"); the state goes there
+            with the indicator, as on the iPhone.</li>
+          <li><b>Actions at the trailing edge</b>: new message in blue on its own, as on the iPhone (the HIG's
+            <code>.prominent</code> is macOS's too), new story and the shield in one group. Every one
+            of them also has to be a menu bar command ("Make every toolbar item available as a command in the menu
+            bar"): File ▸ New Message, ⌘N, in the app's menu.</li>
+          <li><b>Search at the top of the list</b> ("Include search at the top of the sidebar when filtering content or
+            navigation there"), a flat field with round ends that stays: nothing folds on the Mac.</li>
+          <li><b>Sizes</b> are the laptop's own: a toolbar row of 52 under the window's controls, buttons of 32, a field
+            of 28, folders of 32, the title 15 semibold. Read off nothing; to be measured against AppKit's toolbar.</li>
+        </ul>
+      </div>
+
+      <div class="card" data-for="android">
+        <h2>Android: Material, and Telegram for Android</h2>
+        <ul>
+          <li><b>The bar</b> is Material 3's centre-aligned top app bar of 64, the title 22; search and the shield as
+            icon buttons at the end. The list goes under it through the same blur as on Apple (decided on
+            2026-11-13).</li>
+          <li><b>The floating button</b> for a new message, Material 3's FAB: 56, 16 from the edges, corner 16. Telegram
+            for Android (<code>DialogsActivity</code>, <code>FragmentFloatingButton</code>) has a pencil of 48, 20 from
+            the side and 14 from the bottom, and a story button of the same size over it; here the story is Material's
+            small FAB of 40. Both slide away as the list scrolls down and come back as it scrolls up.</li>
+          <li><b>The state</b> (<code>LaunchActivity.updateCurrentConnectionState</code>): the bar's title is replaced by
+            the state's text (<code>setTitleOverlayText</code>), without an indicator; "Connecting" carries a tap to the
+            proxy settings. Here the indicator comes before the text as on Apple (decided on 2026-11-13), so the title
+            is one composable for all: the common <code>ProgressIndicator</code>, each platform's own through its
+            override (<code>UIActivityIndicatorView</code> on iOS, the arc elsewhere).</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>The connection states</h2>
+        <table>
+          <thead><tr><th>TDLib</th><th>In the title</th></tr></thead>
+          <tbody id="states"></tbody>
+        </table>
+        <pre class="log" id="log" aria-live="polite"></pre>
+      </div>
+
+      <div class="card">
+        <span class="own">Own choices, to decide</span>
+        <ul>
+          <li><b>The state in the title, with the indicator, on every look</b> (decided on 2026-11-13); Telegram for
+            macOS has a glass pill at the bottom left instead, Telegram for Android has no indicator.</li>
+          <li><b>iOS's delay on every look</b> (decided on 2026-11-13): a state that follows ready shows 0.3 s late and
+            not at all if gone by then; the others at once. The scenarios' timings are illustrative.</li>
+          <li><b>Icons</b> are stand-ins drawn here; the app takes its own. On the iPhone the indicator's spokes stand in
+            for <code>UIActivityIndicatorView</code>, which the app shows through <code>ActivityIndicatorOverride</code>;
+            the glass is UIKit's and AppKit's own through the design system's overrides.</li>
+          <li><b>Left out</b>: the stories, the passcode lock and emoji status in the title, Edit's editing mode, search
+            itself.</li>
+          <li><b>The data</b>: <code>updateConnectionState</code> is per account. The chat list would read it from
+            <code>feature:connection:domain</code>, kept in <code>scope(AccountScope)</code> and delayed there.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+const root = document.documentElement;
+const $ = id => document.getElementById(id);
+const STATES = {
+  ready: { tdlib: "connectionStateReady", text: null, key: null },
+  waiting: { tdlib: "connectionStateWaitingForNetwork", text: "Waiting For Network...", key: "ConnectionStatus.WaitingForNetwork" },
+  proxy: { tdlib: "connectionStateConnectingToProxy", text: "Connecting To Proxy...", key: "ConnectionStatus.ConnectingToProxy" },
+  connecting: { tdlib: "connectionStateConnecting", text: "Connecting...", key: "ConnectionStatus.Connecting" },
+  updating: { tdlib: "connectionStateUpdating", text: "Updating...", key: "ConnectionStatus.Updating" },
+};
+const SCENARIOS = {
+  resume: [[0, "connecting"], [1400, "updating"], [2600, "ready"]],
+  flap: [[0, "connecting"], [400, "updating"], [800, "ready"]],
+  offline: [[0, "waiting"], [4000, "connecting"], [5000, "updating"], [6000, "ready"]],
+};
+const ROWS = [
+  ["#7a5a4c", "Anastasia", "And you?", "10:48", "5", false, false],
+  ["#1e88e5", "I want to be with you", "Hi, it's Nastya. I'm about to turn thirty", "Tue", "", true, false],
+  ["#455a64", "Nastya", "goodnight", "10/14", "", true, false],
+  ["#c62828", "Emergency | News 18+", "A ten-year-old boy crashed his quad bike", "08:58", "537", false, true],
+  ["#2e7d32", "Live • News", "Photo", "08:57", "37", false, true],
+  ["#f9a825", "Rozetked Discuss", "Sure, and some more memory for it…", "08:55", "189.7K", false, true],
+  ["#29b6f6", "Proxy MTProto", "Server: Unknown Port: 443 Secret: ee…", "08:53", "6.3K", false, true],
+  ["#8e24aa", "Design", "The bar is in", "08:40", "", false, false],
+  ["#00897b", "Kotogram", "KTG-9: the chat list", "08:31", "2", false, false],
+  ["#5e35b1", "Compose Multiplatform", "1.12.1 is out", "Mon", "", false, true],
+  ["#6d4c41", "Mom", "Call me when you can", "Sun", "", false, false],
+  ["#3949ab", "TDLib", "1.8.69", "Sat", "", false, true],
+  ["#d81b60", "Weekend", "Who's in?", "Fri", "14", false, false],
+  ["#546e7a", "Saved Messages", "local.properties", "Thu", "", false, false],
+];
+
+/* The bar's geometry per look. iPhone: ChatListNavigationBar's numbers. Mac and Android: own, see the notes. */
+const LOOKS = {
+  phone: { top: 54, rowY: 64, row: 44, button: 44, side: 16, zoneTop: 110, zone: 60, field: 44, fieldBottom: 8,
+    fold: 54, tabsGap: 2, tabs: 41, tabsBelow: 9, fade: 54, spinner: 22, pull: true },
+  mac: { top: 0, rowY: 0, row: 52, button: 32, side: 10, zoneTop: 52, zone: 36, field: 28, fieldBottom: 4,
+    fold: 0, tabsGap: 4, tabs: 32, tabsBelow: 8, fade: 24, spinner: 20, pull: false },
+  android: { top: 32, rowY: 32, row: 64, button: 48, side: 4, zoneTop: 96, zone: 0, field: 0, fieldBottom: 0,
+    fold: 0, tabsGap: 4, tabs: 40, tabsBelow: 8, fade: 40, spinner: 20, pull: false },
+};
+const fullHeight = g => g.zoneTop + g.zone + g.tabsGap + g.tabs + g.tabsBelow;
+
+const state = { theme: "dark", look: "phone", proxy: "off", raw: "ready", delay: "ios" };
+let shown = "ready";
+let pending = null;
+let played = [];
+let t0 = performance.now();
+let offset = 0;
+let lastOffset = 0;
+let fabHidden = false;
+let settle = null;
+
+$("list").innerHTML = ROWS.map(([color, name, message, date, count, pin, mute]) => `
+  <div class="row${pin ? " pin" : ""}"><div class="av" style="background:${color}"></div>
+  <div><div class="t">${name}</div><div class="m">${message}</div></div>
+  <div class="d">${date}<br>${count ? `<span class="c${mute ? " mute" : ""}">${count}</span>` : ""}</div></div>`).join("");
+
+document.querySelector(".ios-spin svg").innerHTML = Array.from({ length: 8 }, (_, i) => {
+  const a = (i * 45 - 90) * Math.PI / 180;
+  return `<line x1="${11 + 5.2 * Math.cos(a)}" y1="${11 + 5.2 * Math.sin(a)}" x2="${11 + 10 * Math.cos(a)}" y2="${11 + 10 * Math.sin(a)}"
+    stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity="${(1 - i / 9).toFixed(2)}"/>`;
+}).join("");
+
+function shieldSvg(status) {
+  const body = `<path d="M15 5.5 22 8v6.2c0 4.6-3 8-7 9.8-4-1.8-7-5.2-7-9.8V8z" fill="${status === "connected" ? "currentColor" : "none"}"
+    stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>`;
+  const mark = status === "connected" ? `<path d="m11.6 14.6 2.4 2.4 4.4-4.6" fill="none" stroke="var(--surface)" stroke-width="1.8"
+    stroke-linecap="round" stroke-linejoin="round"/>` : "";
+  const ring = status === "connecting" ? `<circle cx="15" cy="15" r="13" fill="none" stroke="currentColor" stroke-width="1.4"
+    stroke-linecap="round" stroke-dasharray="20 62"><animateTransform attributeName="transform" type="rotate" from="0 15 15"
+    to="360 15 15" dur="1s" repeatCount="indefinite"/></circle>` : "";
+  return body + mark + ring;
+}
+
+// InfiniteProgressView's arc, the laptop's indicator.
+function bezier(x1, y1, x2, y2) {
+  const f = (t, a, b) => 3 * a * t * (1 - t) ** 2 + 3 * b * t * t * (1 - t) + t ** 3;
+  return x => { let lo = 0, hi = 1; for (let i = 0; i < 30; i++) { const m = (lo + hi) / 2; if (f(m, x1, x2) < x) lo = m; else hi = m; } return f((lo + hi) / 2, y1, y2); };
+}
+const easeInOut = bezier(0.42, 0, 0.58, 1);
+(function tick(now) {
+  const s = now / 1000;
+  const p = easeInOut((s % 2.5) / 2.5) * 2.5;
+  const [start, end] = p < 1.25 ? [0, p / 1.25] : [(p - 1.25) / 1.25, 1];
+  const circle = document.querySelector("#arcSpin circle");
+  circle.style.strokeDasharray = `${Math.max(end - start, 0.0001)} 1`;
+  circle.style.strokeDashoffset = `${-start}`;
+  circle.parentElement.style.transform = `rotate(${-90 + 180 + 0.58 * 180 / Math.PI + 360 * ((s % 1.5) / 1.5)}deg)`;
+  requestAnimationFrame(tick);
+})(0);
+
+/* ---------- layout ---------- */
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+function layout() {
+  const look = state.look;
+  const g = LOOKS[look];
+  const width = $("screen").clientWidth;
+  const full = fullHeight(g);
+  const clipped = Math.min(g.fold, offset);
+  const visible = full - (g.pull ? clipped : clamp(clipped, 0, g.fold));
+  const folded = g.fold ? clamp(clipped, 0, g.fold) / g.fold : 0;
+  const buttonY = g.rowY + (g.row - g.button) / 2;
+  $("traffic").style.top = `${(g.row - 14) / 2}px`;
+
+  // Edit, iPhone only.
+  const edit = $("edit");
+  const editWidth = Math.max(g.button, Math.ceil(edit.firstElementChild.getBoundingClientRect().width) + 24);
+  Object.assign($("leftPill").style, { left: `${g.side}px`, top: `${buttonY}px`, width: `${editWidth}px`, height: `${g.button}px` });
+  Object.assign(edit.style, { left: "0px", width: `${editWidth}px`, height: `${g.button}px` });
+
+  // At the trailing edge: new message alone in a blue capsule, then new story and the shield in one, 12 apart (UIKit's
+  // gap between two of a side's capsules, NavigationBarRowLayout); on Android search and the shield as icon buttons.
+  const proxyOn = state.proxy === "on";
+  const buttons = look === "android"
+    ? ["searchBtn", ...(proxyOn ? ["proxyBtn"] : [])]
+    : ["storyBtn", ...(proxyOn ? ["proxyBtn"] : [])];
+  $("proxyBtn").style.display = proxyOn ? "grid" : "none";
+  const pillWidth = buttons.length * g.button;
+  const composeWidth = look === "android" ? 0 : g.button;
+  const groupGap = look === "phone" ? 12 : look === "mac" ? 8 : 0;
+  Object.assign($("composePill").style, { left: `${width - g.side - composeWidth}px`, top: `${buttonY}px`, width: `${composeWidth}px`, height: `${g.button}px` });
+  Object.assign($("composeBtn").style, { left: "0px", width: `${g.button}px`, height: `${g.button}px` });
+  const pillRight = width - g.side - (composeWidth ? composeWidth + groupGap : 0);
+  Object.assign($("rightPill").style, { left: `${pillRight - pillWidth}px`, top: `${buttonY}px`, width: `${pillWidth}px`, height: `${g.button}px` });
+  buttons.forEach((id, index) => Object.assign($(id).style, { display: "grid", left: `${pillWidth - (index + 1) * g.button}px`, width: `${g.button}px`, height: `${g.button}px` }));
+  const iconScale = look === "mac" ? 0.75 : 1;
+  for (const svg of document.querySelectorAll("#rightPill svg, #composePill svg")) svg.style.transform = `scale(${iconScale})`;
+  $("shield").innerHTML = shieldSvg(STATES[shown].text === null ? "connected" : "connecting");
+
+  // The title: centred on the iPhone in what the indicator leaves (ChatListTitleView); at the leading edge on the Mac,
+  // after the window's controls; centred on Android too. The indicator goes before it on all three.
+  const text = STATES[shown].text;
+  const title = $("title");
+  title.textContent = text ?? "Chats";
+  const indicator = text !== null;
+  const pillLeft = pillRight - pillWidth;
+  const leftEnd = look === "phone" ? g.side + editWidth : look === "mac" ? 20 + 3 * 14 + 2 * 9 : 0;
+  const pad = indicator ? g.spinner + 6 : 0;
+  title.style.maxWidth = look === "mac"
+    ? `${pillLeft - 8 - leftEnd - 16 - pad}px`
+    : `${width - 2 * (Math.max(leftEnd, width - pillLeft) + 8) - pad}px`;
+  const titleWidth = title.getBoundingClientRect().width;
+  let titleX;
+  if (look === "mac") {
+    titleX = leftEnd + 16 + pad;
+  } else {
+    titleX = pad + Math.floor((width - titleWidth - pad) / 2);
+  }
+  const titleY = g.rowY + (g.row - title.offsetHeight) / 2;
+  Object.assign(title.style, { left: `${titleX}px`, top: `${titleY}px` });
+  const spinner = look === "phone" ? $("iosSpin") : $("arcSpin");
+  for (const s of [$("iosSpin"), $("arcSpin")]) s.classList.toggle("on", s === spinner && indicator);
+  spinner.style.left = `${titleX - g.spinner - (look === "phone" ? 4 : 6)}px`;
+  spinner.style.top = `${look === "phone" ? titleY - 1 : g.rowY + (g.row - g.spinner) / 2}px`;
+
+  // The folders ride on the bar's bottom; on the iPhone the search zone over them folds.
+  const tabsTop = visible - g.tabsBelow - g.tabs;
+  $("tabs").style.top = `${tabsTop}px`;
+  if (g.zone) {
+    const zoneTop = tabsTop - g.tabsGap - g.zone - (g.zone - g.field) * 0.5 * folded;
+    const lowCut = (g.zone - g.field) / g.zone;
+    const progress = g.fold ? clamp((1 - folded - lowCut) / (1 - lowCut), 0, 1) : 1;
+    const height = g.field * progress;
+    Object.assign($("search").style, {
+      left: `${g.side}px`, width: `${width - 2 * g.side}px`, top: `${zoneTop + g.zone - g.fieldBottom - height}px`,
+      height: `${height}px`, opacity: progress.toFixed(3), visibility: progress > 0 ? "visible" : "hidden",
+    });
+    $("search").firstElementChild.style.transform = `scale(${(look === "mac" ? 0.8 : 1) * (0.6 + 0.4 * progress)})`;
+  }
+
+  // The list starts under the whole bar; past the folds it goes under the bar.
+  $("list").style.transform = `translateY(${full - offset}px)`;
+  const edgeHeight = look === "phone" ? full + 14 - g.zone * folded : visible + 14;
+  $("edge").style.height = `${Math.max(0, edgeHeight)}px`;
+  $("edge").style.setProperty("--fade", `${g.fade}px`);
+  $("edge").classList.toggle("scrolled", offset > 0);
+
+  // Android's floating buttons slide away while the list goes down and come back as it goes up.
+  if (offset > lastOffset + 2 && offset > 40) fabHidden = true;
+  else if (offset < lastOffset - 2 || offset <= 0) fabHidden = false;
+  lastOffset = offset;
+  const screenHeight = $("screen").clientHeight;
+  $("fab").style.top = `${screenHeight - 16 - 24 - 56}px`;
+  $("fabStory").style.top = `${screenHeight - 16 - 24 - 56 - 16 - 40}px`;
+  $("fab").classList.toggle("hidden", fabHidden);
+  $("fabStory").classList.toggle("hidden", fabHidden);
+
+  $("offset").textContent = `${Math.round(offset)} ${look === "android" ? "dp" : "pt"}`;
+}
+
+/* ---------- scrolling: wheel, drag, and a spring back from a pull ---------- */
+function minOffset() { return LOOKS[state.look].pull ? -140 : 0; }
+function maxOffset() {
+  return Math.max(0, $("list").scrollHeight + fullHeight(LOOKS[state.look]) - $("screen").clientHeight + 20);
+}
+function setOffset(value) { offset = clamp(value, minOffset(), maxOffset()); layout(); }
+function animateTo(target, duration = 380) {
+  cancelAnimationFrame(settle);
+  const from = offset;
+  const startTime = performance.now();
+  const step = now => {
+    const t = Math.min(1, (now - startTime) / duration);
+    setOffset(from + (target - from) * (1 - (1 - t) ** 3));
+    if (t < 1) settle = requestAnimationFrame(step);
+  };
+  settle = requestAnimationFrame(step);
+}
+const springBack = () => { if (offset < 0) animateTo(0, 450); };
+let wheelIdle = null;
+$("screen").addEventListener("wheel", event => {
+  event.preventDefault();
+  cancelAnimationFrame(settle);
+  const resistance = offset < 0 && event.deltaY < 0 ? 0.35 : 1;
+  setOffset(offset + event.deltaY * resistance);
+  clearTimeout(wheelIdle);
+  wheelIdle = setTimeout(springBack, 140);
+}, { passive: false });
+let drag = null;
+$("screen").addEventListener("pointerdown", event => {
+  if (event.target.closest(".btn, .search, .fab")) return;
+  cancelAnimationFrame(settle);
+  drag = { y: event.clientY, offset };
+  $("screen").setPointerCapture(event.pointerId);
+});
+$("screen").addEventListener("pointermove", event => {
+  if (!drag) return;
+  const raw = drag.offset + drag.y - event.clientY;
+  setOffset(raw < 0 ? raw * 0.45 : raw);
+});
+$("screen").addEventListener("pointerup", () => { drag = null; springBack(); });
+for (const button of document.querySelectorAll(".btn, .fab")) {
+  button.addEventListener("pointerdown", () => button.classList.add("pressed"));
+  button.addEventListener("pointerup", () => button.classList.remove("pressed"));
+  button.addEventListener("pointerleave", () => button.classList.remove("pressed"));
+}
+for (const button of document.querySelectorAll("[data-scroll]")) {
+  button.addEventListener("click", () => {
+    const g = LOOKS[state.look];
+    const target = { top: 0, pull: -90, half: g.fold / 2, down: 260 }[button.dataset.scroll];
+    if (button.dataset.scroll === "pull") { cancelAnimationFrame(settle); setOffset(target); }
+    else animateTo(target);
+  });
+}
+
+/* ---------- the connection state ---------- */
+function stamp() { return `+${((performance.now() - t0) / 1000).toFixed(2)} s`; }
+function log(line, cls = "") {
+  const el = $("log");
+  el.insertAdjacentHTML("beforeend", `<span class="${cls}">${stamp()}  ${line}</span>\n`);
+  el.scrollTop = el.scrollHeight;
+}
+function setRaw(next, fromScenario = false) {
+  if (!fromScenario) { played.forEach(clearTimeout); played = []; t0 = performance.now(); $("log").textContent = ""; }
+  if (next === "proxy" && state.proxy !== "on") state.proxy = "on";
+  const previous = state.raw;
+  state.raw = next;
+  log(`TDLib  ${STATES[next].tdlib}`);
+  if (pending) { clearTimeout(pending.timer); log(`dropped  ${STATES[pending.value].text}`, "dropped"); pending = null; }
+  const wait = next === "ready" ? 0 : state.delay === "mac" ? 1000 : state.delay === "ios" && previous === "ready" ? 300 : 0;
+  if (wait === 0) show(next);
+  else pending = { value: next, timer: setTimeout(() => { pending = null; show(next); }, wait) };
+  render();
+}
+function show(value) {
+  if (value === shown) return;
+  shown = value;
+  log(`shown  ${STATES[value].text ?? "Chats"}`, "shown");
+  render();
+}
+
+function render() {
+  root.dataset.theme = state.theme;
+  root.dataset.look = state.look;
+  for (const seg of document.querySelectorAll(".seg")) {
+    for (const button of seg.querySelectorAll("button")) {
+      button.setAttribute("aria-pressed", String(state[seg.dataset.key] === button.dataset.v));
+    }
+  }
+  for (const card of document.querySelectorAll(".card[data-for]")) card.classList.toggle("on", card.dataset.for === state.look);
+  const indicator = "indicator and ";
+  $("states").innerHTML = Object.entries(STATES).map(([id, s]) => `
+    <tr class="${id === shown ? "now" : ""}"><td><code>${s.tdlib}</code></td>
+    <td>${s.text ? `${indicator}${s.text}<br><code>${s.key}</code>` : "Chats"}</td></tr>`).join("");
+  setOffset(offset);
+}
+
+for (const seg of document.querySelectorAll(".seg")) {
+  seg.addEventListener("click", event => {
+    const button = event.target.closest("button");
+    if (!button) return;
+    if (seg.dataset.key === "raw") setRaw(button.dataset.v);
+    else {
+      state[seg.dataset.key] = button.dataset.v;
+      if (seg.dataset.key === "look") { offset = 0; lastOffset = 0; fabHidden = false; }
+      render();
+    }
+  });
+}
+for (const button of document.querySelectorAll("[data-play]")) {
+  button.addEventListener("click", () => {
+    played.forEach(clearTimeout);
+    played = [];
+    if (pending) { clearTimeout(pending.timer); pending = null; }
+    shown = "ready";
+    state.raw = "ready";
+    t0 = performance.now();
+    $("log").textContent = "";
+    render();
+    for (const [at, value] of SCENARIOS[button.dataset.play]) played.push(setTimeout(() => setRaw(value, true), at));
+  });
+}
+document.fonts?.ready.then(render);
+render();
+</script>
+</body>
+</html>

@@ -73,6 +73,7 @@ internal class ChatListViewModel(
         when (action) {
             OnEndReached -> onEndReached()
             is OnFolderSelect -> onFolderSelect(action.chatList)
+            OnSearchClick, OnEditClick, OnNewStoryClick, OnComposeClick -> Unit
         }
     }
 

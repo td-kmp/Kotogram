@@ -7,9 +7,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.component.ButtonState
+import com.xbot.kotogram.core.designsystem.component.GlassButtonOverride
+import com.xbot.kotogram.core.designsystem.component.GlassButtonOverrideScope
 import com.xbot.kotogram.core.designsystem.component.NativeBox
-import com.xbot.kotogram.core.designsystem.component.ProminentButtonOverride
-import com.xbot.kotogram.core.designsystem.component.ProminentButtonOverrideScope
 import com.xbot.kotogram.core.designsystem.extensions.appleWeight
 import com.xbot.kotogram.core.designsystem.extensions.containerColor
 import com.xbot.kotogram.core.designsystem.extensions.contentColor
@@ -28,9 +28,9 @@ import platform.UIKit.UIColor
 import platform.UIKit.UIFont
 import platform.UIKit.accessibilityLabel
 
-internal object GlassProminentButtonOverride : ProminentButtonOverride {
+internal object IosGlassButtonOverride : GlassButtonOverride {
     @Composable
-    override fun ProminentButtonOverrideScope.ProminentButton() {
+    override fun GlassButtonOverrideScope.GlassButton() {
         val currentOnClick by rememberUpdatedState(onClick)
         val textStyle = buttonStyle.textStyle
         val fontSize = with(LocalDensity.current) { textStyle.fontSize.toDp().value.toDouble() }
@@ -45,13 +45,15 @@ internal object GlassProminentButtonOverride : ProminentButtonOverride {
                 },
                 modifier = Modifier.matchParentSize(),
                 update = { button ->
+                    val tint = colors.containerColor(state)
                     button.configuration = glassConfiguration(
+                        prominent = tint.alpha > 0f,
                         title = text.takeUnless { state == Loading },
                         font = UIFont.systemFontOfSize(fontSize, textStyle.fontWeight.appleWeight()),
                         color = colors.contentColor(state).toUIColor(),
                         loading = state == Loading,
                     )
-                    button.tintColor = colors.containerColor(state).toUIColor()
+                    if (tint.alpha > 0f) button.tintColor = tint.toUIColor()
                     button.overrideUserInterfaceStyle = interfaceStyle(dark)
                     button.userInteractionEnabled = state == Enabled
                     button.accessibilityLabel = text
@@ -64,11 +66,16 @@ internal object GlassProminentButtonOverride : ProminentButtonOverride {
 
 @OptIn(BetaInteropApi::class)
 private fun glassConfiguration(
+    prominent: Boolean,
     title: String?,
     font: UIFont,
     color: UIColor,
     loading: Boolean,
-): UIButtonConfiguration = UIButtonConfiguration.prominentGlassButtonConfiguration().apply {
+): UIButtonConfiguration = if (prominent) {
+    UIButtonConfiguration.prominentGlassButtonConfiguration()
+} else {
+    UIButtonConfiguration.glassButtonConfiguration()
+}.apply {
     attributedTitle = title?.let {
         NSAttributedString.create(
             string = it,

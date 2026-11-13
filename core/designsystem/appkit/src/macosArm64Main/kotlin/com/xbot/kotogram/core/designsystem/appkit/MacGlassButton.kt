@@ -33,7 +33,7 @@ class MacGlassButton {
     var bezelColor: Int
         get() = button.bezelColor?.toArgb() ?: 0
         set(value) {
-            button.bezelColor = value.toNSColor()
+            button.bezelColor = if (value == 0) null else value.toNSColor()
         }
 
     var isDark: Boolean

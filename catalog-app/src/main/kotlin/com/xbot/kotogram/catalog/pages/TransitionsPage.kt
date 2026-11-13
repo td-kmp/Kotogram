@@ -31,9 +31,9 @@ import com.xbot.kotogram.catalog.model.CatalogSection
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.animation.rememberNavTransitions
 import com.xbot.kotogram.core.designsystem.component.Checkbox
+import com.xbot.kotogram.core.designsystem.component.GlassButton
 import com.xbot.kotogram.core.designsystem.component.GlassIconButton
 import com.xbot.kotogram.core.designsystem.component.ProgressIndicator
-import com.xbot.kotogram.core.designsystem.component.ProminentButton
 import com.xbot.kotogram.core.designsystem.component.Switch
 import com.xbot.kotogram.core.designsystem.component.TextButton
 import com.xbot.kotogram.core.designsystem.icon.KotogramIcons
@@ -109,9 +109,9 @@ private fun TransitionScreen(
             Toggles()
         }
         Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
-            ProminentButton("Next", onClick = onNext)
+            GlassButton("Next", onClick = onNext)
             Box(Modifier.background(Marker).padding(spacing.small)) { TextButton(onClick = onNext) { Text("Compose") } }
-            ProminentButton("Next", onClick = onNext)
+            GlassButton("Next", onClick = onNext)
         }
     }
 }

@@ -50,7 +50,7 @@ import androidx.compose.ui.unit.isSpecified
 import com.xbot.kotogram.core.designsystem.PreviewKotogram
 import com.xbot.kotogram.core.designsystem.PreviewKotogramLaptop
 import com.xbot.kotogram.core.designsystem.component.ButtonState
-import com.xbot.kotogram.core.designsystem.component.ProminentButton
+import com.xbot.kotogram.core.designsystem.component.GlassButton
 import com.xbot.kotogram.core.designsystem.component.TextButton
 import com.xbot.kotogram.core.designsystem.component.TextField
 import com.xbot.kotogram.core.designsystem.component.rememberPhotoPickerLauncher
@@ -267,7 +267,7 @@ private fun RegistrationAction(
     onAction: (RegistrationScreenAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ProminentButton(
+    GlassButton(
         text = stringResource(Res.string.login_new_register_next),
         onClick = { onAction(RegistrationScreenAction.OnSubmit) },
         state = ButtonState.of(enabled = canSubmit, loading = state.isSubmitting),

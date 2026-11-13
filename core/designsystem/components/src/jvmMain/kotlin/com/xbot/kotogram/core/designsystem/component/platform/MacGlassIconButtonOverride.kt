@@ -7,6 +7,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.graphics.toArgb
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.appkit.MacGlassIconButton
 import com.xbot.kotogram.core.designsystem.component.GlassIconButtonOverride
@@ -40,6 +41,7 @@ internal object MacGlassIconButtonOverride : GlassIconButtonOverride {
                 button.accessibilityLabel = contentDescription
                 button.isDark = dark
                 button.isEnabled = enabled
+                button.bezelColor = if (style.containerColor.alpha > 0f) style.containerColor.toArgb() else 0
             },
             placedAsOverlay = true,
         )

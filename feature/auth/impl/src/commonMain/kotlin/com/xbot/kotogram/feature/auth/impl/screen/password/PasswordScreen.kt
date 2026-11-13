@@ -37,9 +37,9 @@ import com.xbot.kotogram.core.designsystem.PreviewKotogram
 import com.xbot.kotogram.core.designsystem.PreviewKotogramLaptop
 import com.xbot.kotogram.core.designsystem.component.ButtonState
 import com.xbot.kotogram.core.designsystem.component.CodeField
+import com.xbot.kotogram.core.designsystem.component.GlassButton
 import com.xbot.kotogram.core.designsystem.component.IconButton
 import com.xbot.kotogram.core.designsystem.component.LottieImage
-import com.xbot.kotogram.core.designsystem.component.ProminentButton
 import com.xbot.kotogram.core.designsystem.component.SecureTextField
 import com.xbot.kotogram.core.designsystem.component.TextButton
 import com.xbot.kotogram.core.designsystem.icon.KotogramIcons
@@ -233,7 +233,7 @@ private fun PasswordAction(
     onAction: (PasswordScreenAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ProminentButton(
+    GlassButton(
         text = stringResource(Res.string.login_next),
         onClick = { onAction(PasswordScreenAction.OnSubmit) },
         state = ButtonState.of(enabled = true, loading = state.isSubmitting),

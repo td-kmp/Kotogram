@@ -2,6 +2,8 @@ package com.xbot.kotogram.core.designsystem.appkit
 
 import com.xbot.kotogram.core.designsystem.appkit.extensions.handle
 import com.xbot.kotogram.core.designsystem.appkit.extensions.isDark
+import com.xbot.kotogram.core.designsystem.appkit.extensions.toArgb
+import com.xbot.kotogram.core.designsystem.appkit.extensions.toNSColor
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
 import kotlinx.coroutines.flow.Flow
@@ -39,6 +41,12 @@ class MacGlassIconButton {
         get() = button.isDark
         set(value) {
             button.isDark = value
+        }
+
+    var bezelColor: Int
+        get() = button.bezelColor?.toArgb() ?: 0
+        set(value) {
+            button.bezelColor = if (value == 0) null else value.toNSColor()
         }
 
     var isEnabled: Boolean

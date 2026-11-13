@@ -119,7 +119,7 @@ Compose:
       - LocalMenuOverride
       - LocalNavigator
       - LocalProgressIndicatorOverride
-      - LocalProminentButtonOverride
+      - LocalGlassButtonOverride
       - LocalScrollIndicatorOverride
       - LocalSearchFieldOverride
       - LocalSharedViewModelStoreOwner

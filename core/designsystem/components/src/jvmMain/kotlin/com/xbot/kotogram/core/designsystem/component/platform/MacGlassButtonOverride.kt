@@ -11,9 +11,9 @@ import androidx.compose.ui.platform.LocalDensity
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.appkit.MacGlassButton
 import com.xbot.kotogram.core.designsystem.component.ButtonState
+import com.xbot.kotogram.core.designsystem.component.GlassButtonOverride
+import com.xbot.kotogram.core.designsystem.component.GlassButtonOverrideScope
 import com.xbot.kotogram.core.designsystem.component.NativeBox
-import com.xbot.kotogram.core.designsystem.component.ProminentButtonOverride
-import com.xbot.kotogram.core.designsystem.component.ProminentButtonOverrideScope
 import com.xbot.kotogram.core.designsystem.extensions.appleWeight
 import com.xbot.kotogram.core.designsystem.extensions.containerColor
 import com.xbot.kotogram.core.designsystem.extensions.contentColor
@@ -22,9 +22,9 @@ import com.xbot.kotogram.core.designsystem.extensions.isLightOn
 import dev.nucleusframework.window.tao.NativeView
 import dev.nucleusframework.window.tao.nucleusNsPlatformView
 
-internal object MacGlassProminentButtonOverride : ProminentButtonOverride {
+internal object MacGlassButtonOverride : GlassButtonOverride {
     @Composable
-    override fun ProminentButtonOverrideScope.ProminentButton() {
+    override fun GlassButtonOverrideScope.GlassButton() {
         val currentOnClick by rememberUpdatedState(onClick)
         val currentState by rememberUpdatedState(state)
         val button = remember { MacGlassButton() }
@@ -48,7 +48,7 @@ internal object MacGlassProminentButtonOverride : ProminentButtonOverride {
                         fontWeight = textStyle.fontWeight.appleWeight(),
                         argb = contentColor.toArgb(),
                     )
-                    button.bezelColor = containerColor.toArgb()
+                    button.bezelColor = if (containerColor.alpha > 0f) containerColor.toArgb() else 0
                     button.isDark = dark
                     button.setLoading(loading, lightSpinner = contentColor.isLightOn(containerColor))
                     button.isEnabled = state != Disabled

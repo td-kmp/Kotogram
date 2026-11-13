@@ -35,11 +35,11 @@ import androidx.compose.ui.unit.isSpecified
 import com.xbot.kotogram.core.designsystem.PreviewKotogram
 import com.xbot.kotogram.core.designsystem.PreviewKotogramLaptop
 import com.xbot.kotogram.core.designsystem.component.ButtonState
+import com.xbot.kotogram.core.designsystem.component.GlassButton
 import com.xbot.kotogram.core.designsystem.component.LottieImage
 import com.xbot.kotogram.core.designsystem.component.OptionLabel
 import com.xbot.kotogram.core.designsystem.component.OptionPicker
 import com.xbot.kotogram.core.designsystem.component.PhoneNumberField
-import com.xbot.kotogram.core.designsystem.component.ProminentButton
 import com.xbot.kotogram.core.designsystem.component.TextButton
 import com.xbot.kotogram.core.designsystem.media.derivedMediaQuery
 import com.xbot.kotogram.core.designsystem.media.mediaQuery
@@ -225,7 +225,7 @@ private fun PhoneAction(
             Text(text = stringResource(Res.string.login_qr_login), style = style.qrLoginTextStyle)
         }
     } else {
-        ProminentButton(
+        GlassButton(
             text = stringResource(Res.string.login_next),
             onClick = { onAction(PhoneScreenAction.OnSubmit) },
             state = ButtonState.of(enabled = state.canSubmit, loading = state.isSubmitting),

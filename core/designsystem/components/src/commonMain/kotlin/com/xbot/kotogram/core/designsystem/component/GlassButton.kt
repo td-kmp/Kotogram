@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.Dp
 import com.xbot.kotogram.core.designsystem.style.rememberStyle
 
 @Composable
-fun ProminentButton(
+fun GlassButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -26,17 +26,17 @@ fun ProminentButton(
     style: ButtonStyle = ButtonStyle,
 ) {
     val buttonStyle = rememberStyle(::ButtonStyleScope, ButtonStyle.Adaptive then style)
-    with(LocalProminentButtonOverride.current) {
-        ProminentButtonOverrideScope(text, onClick, modifier, state, buttonStyle).ProminentButton()
+    with(LocalGlassButtonOverride.current) {
+        GlassButtonOverrideScope(text, onClick, modifier, state, buttonStyle).GlassButton()
     }
 }
 
-internal interface ProminentButtonOverride {
+internal interface GlassButtonOverride {
     @Composable
-    fun ProminentButtonOverrideScope.ProminentButton()
+    fun GlassButtonOverrideScope.GlassButton()
 }
 
-internal class ProminentButtonOverrideScope(
+internal class GlassButtonOverrideScope(
     val text: String,
     val onClick: () -> Unit,
     val modifier: Modifier,
@@ -46,9 +46,9 @@ internal class ProminentButtonOverrideScope(
     val colors: ButtonColors get() = buttonStyle.buttonColors()
 }
 
-internal object DefaultProminentButtonOverride : ProminentButtonOverride {
+internal object DefaultGlassButtonOverride : GlassButtonOverride {
     @Composable
-    override fun ProminentButtonOverrideScope.ProminentButton() {
+    override fun GlassButtonOverrideScope.GlassButton() {
         context(buttonStyle) {
             StyledButton(onClick = onClick, modifier = modifier, state = state, interactionSource = null) {
                 Text(text)
@@ -57,25 +57,25 @@ internal object DefaultProminentButtonOverride : ProminentButtonOverride {
     }
 }
 
-internal val LocalProminentButtonOverride: ProvidableCompositionLocal<ProminentButtonOverride> =
-    staticCompositionLocalOf { DefaultProminentButtonOverride }
+internal val LocalGlassButtonOverride: ProvidableCompositionLocal<GlassButtonOverride> =
+    staticCompositionLocalOf { DefaultGlassButtonOverride }
 
 @Composable
-internal fun ProminentButtonOverrideScope.NativeBox(content: @Composable BoxScope.() -> Unit) {
+internal fun GlassButtonOverrideScope.NativeBox(content: @Composable BoxScope.() -> Unit) {
     Box(
         modifier = modifier.minimumInteractiveComponentSize(),
         contentAlignment = Alignment.Center,
         propagateMinConstraints = true,
     ) {
         CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
-            with(DefaultProminentButtonOverride) {
-                ProminentButtonOverrideScope(
+            with(DefaultGlassButtonOverride) {
+                GlassButtonOverrideScope(
                     text = text,
                     onClick = {},
                     modifier = Modifier.alpha(0f).clearAndSetSemantics {},
                     state = ButtonState.Disabled,
                     buttonStyle = buttonStyle,
-                ).ProminentButton()
+                ).GlassButton()
             }
         }
         content()

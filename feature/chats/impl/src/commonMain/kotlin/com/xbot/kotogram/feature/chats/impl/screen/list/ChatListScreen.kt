@@ -1,14 +1,12 @@
 package com.xbot.kotogram.feature.chats.impl.screen.list
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,19 +20,25 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.xbot.kotogram.core.designsystem.KotogramTheme
 import com.xbot.kotogram.core.designsystem.PreviewKotogram
+import com.xbot.kotogram.core.designsystem.component.BarAction
+import com.xbot.kotogram.core.designsystem.component.BarTextAction
 import com.xbot.kotogram.core.designsystem.component.ChatListItemSeparator
 import com.xbot.kotogram.core.designsystem.component.MessageStatus
 import com.xbot.kotogram.core.designsystem.component.ProgressIndicator
-import com.xbot.kotogram.core.designsystem.component.TopBar
+import com.xbot.kotogram.core.designsystem.component.SearchScaffold
+import com.xbot.kotogram.core.designsystem.icon.KotogramIcons
 import com.xbot.kotogram.core.designsystem.style.rememberStyle
 import com.xbot.kotogram.core.resources.Res
 import com.xbot.kotogram.core.resources.StringResource
 import com.xbot.kotogram.core.resources.annotatedStringResource
 import com.xbot.kotogram.core.resources.chat_list_photo1
 import com.xbot.kotogram.core.resources.chatlist_emptytext
+import com.xbot.kotogram.core.resources.chatlist_story
 import com.xbot.kotogram.core.resources.error_anerror
-import com.xbot.kotogram.core.resources.peerlist_title_chats
+import com.xbot.kotogram.core.resources.navigation_edit
+import com.xbot.kotogram.core.resources.searchfield_search
 import com.xbot.kotogram.core.resources.stringResource
+import com.xbot.kotogram.core.resources.touchbarlabel_newchat
 import com.xbot.kotogram.feature.chats.impl.extensions.firstGrapheme
 import io.xbot.tdlib.api.ChatListArchive
 import io.xbot.tdlib.api.ChatListMain
@@ -82,12 +86,24 @@ internal fun ChatListScreenContent(
             .collect { currentOnAction(ChatListScreenAction.OnEndReached) }
     }
     context(style) {
-        Scaffold(
-            modifier = modifier,
-            containerColor = KotogramTheme.colors.surface,
-            topBar = { TopBar(title = { Text(stringResource(Res.string.peerlist_title_chats)) }) },
-        ) { innerPadding ->
-            Column(Modifier.fillMaxSize().padding(innerPadding)) {
+        SearchScaffold(
+            title = { ChatListTitle(state.connection) },
+            searchPlaceholder = stringResource(Res.string.searchfield_search),
+            onSearchClick = { onAction(ChatListScreenAction.OnSearchClick) },
+            listState = listState,
+            modifier = modifier.background(KotogramTheme.colors.surface),
+            editAction = BarTextAction(stringResource(Res.string.navigation_edit)) {
+                onAction(ChatListScreenAction.OnEditClick)
+            },
+            actions = [
+                BarAction(KotogramIcons.Camera, stringResource(Res.string.chatlist_story)) {
+                    onAction(ChatListScreenAction.OnNewStoryClick)
+                },
+            ],
+            primaryAction = BarAction(KotogramIcons.Compose, stringResource(Res.string.touchbarlabel_newchat)) {
+                onAction(ChatListScreenAction.OnComposeClick)
+            },
+            header = {
                 if (state.tabs.size > 1) {
                     FolderTabs(
                         tabs = state.tabs,
@@ -96,51 +112,50 @@ internal fun ChatListScreenContent(
                         onSelect = { onAction(ChatListScreenAction.OnFolderSelect(it)) },
                     )
                 }
-                Box(Modifier.weight(1f).fillMaxWidth()) {
-                    LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
-                        val archive = state.archive
-                        if (archive != null && state.selected == ChatListMain) {
-                            item(key = ARCHIVE_KEY, contentType = ARCHIVE_KEY) {
-                                ArchiveRow(
-                                    summary = archive,
-                                    separator = ChatListItemSeparator.FullWidth,
-                                    onClick = { onAction(ChatListScreenAction.OnFolderSelect(ChatListArchive)) },
-                                    modifier = Modifier.animateItem(),
-                                )
-                            }
-                        }
-                        itemsIndexed(
-                            items = state.rows,
-                            key = { _, row -> row.chatId },
-                            contentType = { _, _ -> "chat" },
-                        ) { index, row ->
-                            val next = state.rows.getOrNull(index + 1)
-                            ChatRow(
-                                row = row,
-                                customEmoji = state.customEmoji,
-                                separator = if (next == null || (row.isPinned && !next.isPinned)) {
-                                    ChatListItemSeparator.FullWidth
-                                } else {
-                                    ChatListItemSeparator.Inset
-                                },
-                                onClick = { onChatClick(row.chatId) },
-                                modifier = Modifier.animateItem(),
-                            )
-                        }
+            },
+        ) { contentPadding ->
+            LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = contentPadding) {
+                val archive = state.archive
+                if (archive != null && state.selected == ChatListMain) {
+                    item(key = ARCHIVE_KEY, contentType = ARCHIVE_KEY) {
+                        ArchiveRow(
+                            summary = archive,
+                            separator = ChatListItemSeparator.FullWidth,
+                            onClick = { onAction(ChatListScreenAction.OnFolderSelect(ChatListArchive)) },
+                            modifier = Modifier.animateItem(),
+                        )
                     }
-                    if (state.rows.isEmpty()) {
-                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            when {
-                                state.isLoading -> ProgressIndicator()
+                }
+                itemsIndexed(
+                    items = state.rows,
+                    key = { _, row -> row.chatId },
+                    contentType = { _, _ -> "chat" },
+                ) { index, row ->
+                    val next = state.rows.getOrNull(index + 1)
+                    ChatRow(
+                        row = row,
+                        customEmoji = state.customEmoji,
+                        separator = if (next == null || (row.isPinned && !next.isPinned)) {
+                            ChatListItemSeparator.FullWidth
+                        } else {
+                            ChatListItemSeparator.Inset
+                        },
+                        onClick = { onChatClick(row.chatId) },
+                        modifier = Modifier.animateItem(),
+                    )
+                }
+            }
+            if (state.rows.isEmpty()) {
+                Box(Modifier.fillMaxSize().padding(contentPadding), contentAlignment = Alignment.Center) {
+                    when {
+                        state.isLoading -> ProgressIndicator()
 
-                                state.loadFailed -> Text(stringResource(Res.string.error_anerror))
+                        state.loadFailed -> Text(stringResource(Res.string.error_anerror))
 
-                                state.isComplete -> Text(
-                                    text = annotatedStringResource(Res.string.chatlist_emptytext),
-                                    textAlign = TextAlign.Center,
-                                )
-                            }
-                        }
+                        state.isComplete -> Text(
+                            text = annotatedStringResource(Res.string.chatlist_emptytext),
+                            textAlign = TextAlign.Center,
+                        )
                     }
                 }
             }

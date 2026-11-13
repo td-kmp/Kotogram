@@ -24,7 +24,7 @@ import com.xbot.kotogram.catalog.model.CatalogExample
 import com.xbot.kotogram.catalog.model.CatalogPage
 import com.xbot.kotogram.catalog.model.CatalogSection
 import com.xbot.kotogram.core.designsystem.KotogramTheme
-import com.xbot.kotogram.core.designsystem.component.ProminentButton
+import com.xbot.kotogram.core.designsystem.component.GlassButton
 import com.xbot.kotogram.core.designsystem.component.rememberPhotoPickerLauncher
 import org.jetbrains.skia.Image as SkiaImage
 
@@ -59,7 +59,7 @@ private fun PickedPhoto() {
             photo?.let { Image(it, contentDescription = null, contentScale = ContentScale.Crop) }
         }
         if (launcher != null) {
-            ProminentButton(text = "Choose photo", onClick = launcher::launch)
+            GlassButton(text = "Choose photo", onClick = launcher::launch)
         } else {
             Text("No picker on this desktop", style = KotogramTheme.typography.bodyMedium)
         }

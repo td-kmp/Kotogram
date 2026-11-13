@@ -27,7 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.isSpecified
 import com.xbot.kotogram.core.designsystem.PreviewKotogram
 import com.xbot.kotogram.core.designsystem.PreviewKotogramLaptop
-import com.xbot.kotogram.core.designsystem.component.ProminentButton
+import com.xbot.kotogram.core.designsystem.component.GlassButton
 import com.xbot.kotogram.core.designsystem.media.derivedMediaQuery
 import com.xbot.kotogram.core.designsystem.media.mediaQuery
 import com.xbot.kotogram.core.designsystem.style.rememberStyle
@@ -109,7 +109,7 @@ private fun BackAction(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ProminentButton(
+    GlassButton(
         text = stringResource(Res.string.navigation_back),
         onClick = onBackClick,
         modifier = if (style.contentMaxWidth.isSpecified) {

@@ -4,6 +4,20 @@ For the next agent or machine. Durable rules are in [CLAUDE.md](../CLAUDE.md). T
 
 ## Where things stand
 
+**Where the session of 2026-11-13 (afternoon, first Mac) stopped:**
+- **Online and the network** are committed: `online` follows the app's foreground on every platform (a minimized
+  or hidden window included), the network type goes to TDLib from each platform's monitor
+  ([research/online-status.md](research/online-status.md)).
+- **The connection state** is committed: `feature:connection`'s `ConnectionStateRepository` (per account, iOS's
+  0.3 s delay after ready), `ConnectionState.title`, and the chat list's state holds it.
+- **The chat list's bar is WIP**, committed as such: `SearchScaffold` (title with the state's indicator, glass
+  buttons, a prominent new message, a flat search folding on the iPhone, the folders, a progressive blur, Android's
+  FAB), `ProminentButton` renamed `GlassButton` (prominent with a coloured container, plain glass with a clear one),
+  and on the desktop an edge-to-edge window whose title band the bar draws itself. The prototype is
+  [design/connection-status-prototype.html](design/connection-status-prototype.html); the macOS measurements, the
+  title band's press problem and the Nucleus fork's uncommitted fix are in
+  [research/macos-title-bar.md](research/macos-title-bar.md). The developer goes on with it at home.
+
 **Where the last session stopped (2026-11-13, 02:00, on the first Mac), for the next agent:**
 - **Everything is committed and pushed** (`feature/KTG-9-chat-list`, three commits over `7d03925`): the spoiler dust reworked (next point) with its three `chat-list-item` screenshots, [research/spoiler-dust-rendering.md](research/spoiler-dust-rendering.md) and the design doc; `tdlib-kmp` alpha03 from Maven Central; this file and [research/online-status.md](research/online-status.md). The working tree is clean.
 - **The dust was reworked at the developer's request** (review the branch; if it isn't good, rethink the architecture; find the fastest drawing for every target; keep the common API a modifier). The first native take is deleted (`NativeDust`, `DustWindow`, `DustLayer`, `DustRenderer`, the GLSL in common code, `ViewExt`, `LayoutCoordinatesExt`, `RectExt`): it lay outside the scene, took a GL surface a spoiler and was never seen on a phone. The dust now stays in the scene on every platform, goes to the canvas in one `drawVertices`, and on Android a frame of it draws only its own rect ([design/designsystem.md](design/designsystem.md#components); the numbers and what was turned down are in the research note). `Modifier.invisibleInk(color) { areas }` is unchanged for its caller.
@@ -90,7 +104,7 @@ Checked on 2026-11-09: `shared` compiles for Android, the iOS simulator and the 
   - Fonts: the system's SF Pro on Apple platforms, Inter (bundled) elsewhere.
 - **`KotogramIcons`** in `core:designsystem`: 51 line icons for sign-in, the chat list, chats, settings and profiles ([design/designsystem.md](design/designsystem.md#icons)). A detekt `ForbiddenImport/designSystem` keeps screens on the design system; feature screens moved from `MaterialTheme` to `KotogramTheme`.
 - **`Button`/`TextButton`** (`ButtonState`: enabled, disabled, loading), **`ListItem`** (M3's slots, macOS's insets, grouped positions) and **`RichText`** (TDLib's `FormattedText`, parsed in `core:resources`) in `core:designsystem`. The auth and chat screens use them; `CodeField` has a `supportingText` for its error.
-- **`ProminentButton`**: the main action of each auth screen. It is UIKit's prominent glass button on iOS 26 and later and the filled `Button` elsewhere ([design/designsystem.md](design/designsystem.md#components)). On iOS it has run only in the catalog on the iPhone Air simulator (iOS 27.2, 2026-11-10): it draws and slides with its screen; nobody has pressed it there. On macOS 26 it is AppKit's glass `NSButton` above the Compose surface (Nucleus's `NativeView` with our `placedAsOverlay`); in the catalog, real clicks press it, light it, click it and show its spinner.
+- **`GlassButton`**: the main action of each auth screen. It is UIKit's prominent glass button on iOS 26 and later and the filled `Button` elsewhere ([design/designsystem.md](design/designsystem.md#components)). On iOS it has run only in the catalog on the iPhone Air simulator (iOS 27.2, 2026-11-10): it draws and slides with its screen; nobody has pressed it there. On macOS 26 it is AppKit's glass `NSButton` above the Compose surface (Nucleus's `NativeView` with our `placedAsOverlay`); in the catalog, real clicks press it, light it, click it and show its spinner.
 - **Native overlays stay through transitions on macOS** ([design/designsystem.md](design/designsystem.md#native-overlays), 2026-11-10, `afb3131`):
   - Nucleus's `NativeView(placedAsOverlay = true)` now mounts the view in a clip view framed to its Compose ancestors' clip, reported after every frame's layout and committed with that frame.
   - The desktop's transitions clip the screen underneath to the part still seen, in their specs alone. A NavDisplay made to fill its place can't be clipped that way: the root's, inside a `Surface`, takes `wrapContentSize`.
@@ -137,7 +151,7 @@ Waiting on the developer: **D3, push.** Log in at my.telegram.org and check whet
 1. The online status and the network type ([research/online-status.md](research/online-status.md)): `online` true while the app is in front, for the account on display, and `setNetworkType` on every change of the network. Then check on the phone that the list is fresh right after the background.
 2. Spoiler dust on the phone (release build): a resting list with a spoiler in view, on 120 Hz. `top -H` for the threads, `dumpsys gfxinfo` for the frames and `debug.hwui.show_dirty_regions` for the frame's damage, against the emulator's numbers in [research/spoiler-dust-rendering.md](research/spoiler-dust-rendering.md). Then the same question on the iPhone: what a frame of the chat list costs with dust in view decides whether `CAEmitterLayer` is worth a resting layer of its own.
 3. Read and commit the working tree (above): the photo picker's Image I/O, `appkit`'s new shape, `OverlayView` and `IosNavTransitions`, `Checkbox` and `Switch`, the colour roles, the iOS option picker and `TopBar` with Haze. Then: let the chat list scroll under its bar (`rememberTopBarScrollBehavior`), measure AppKit's toolbar for the laptop bar, and look at the desktop catalog's bar.
-4. Look at the release build on the iPhone: the country picker (page sheet, glass search at the bottom, the A–Я index), `GlassIconButton`, `UISwitch` and `ProminentButton`'s glass. Then a PR for KTG-7.
+4. Look at the release build on the iPhone: the country picker (page sheet, glass search at the bottom, the A–Я index), `GlassIconButton`, `UISwitch` and `GlassButton`'s glass. Then a PR for KTG-7.
 5. A small account menu in the chat list (add, switch, log out), so multi-account can be tried by hand.
 6. Try it with a real account, and get D3.
 7. Finish M1: avatars (`FileStore`, `FileDownloads`, Coil fetcher, §7 of [messaging-core.md](design/messaging-core.md)), folders, typing, scope mute settings. Its entities use the old names: `FileStore` and the like become `AccountUpdates` followers.

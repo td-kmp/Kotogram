@@ -37,8 +37,8 @@ import androidx.compose.ui.unit.isSpecified
 import com.xbot.kotogram.core.designsystem.PreviewKotogram
 import com.xbot.kotogram.core.designsystem.PreviewKotogramLaptop
 import com.xbot.kotogram.core.designsystem.component.ButtonState
+import com.xbot.kotogram.core.designsystem.component.GlassButton
 import com.xbot.kotogram.core.designsystem.component.LottieImage
-import com.xbot.kotogram.core.designsystem.component.ProminentButton
 import com.xbot.kotogram.core.designsystem.component.TextField
 import com.xbot.kotogram.core.designsystem.media.derivedMediaQuery
 import com.xbot.kotogram.core.designsystem.media.mediaQuery
@@ -174,7 +174,7 @@ private fun EmailAddressAction(
     onAction: (EmailAddressScreenAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ProminentButton(
+    GlassButton(
         text = stringResource(Res.string.login_next),
         onClick = { onAction(EmailAddressScreenAction.OnSubmit) },
         state = ButtonState.of(enabled = email.text.isNotBlank(), loading = state.isSubmitting),
