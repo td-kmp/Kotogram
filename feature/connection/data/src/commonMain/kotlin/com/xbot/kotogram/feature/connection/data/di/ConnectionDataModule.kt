@@ -7,7 +7,10 @@ import com.xbot.kotogram.core.account.TdlibOptions
 import com.xbot.kotogram.feature.connection.data.account.NetworkTypeUpdates
 import com.xbot.kotogram.feature.connection.data.account.OnlineOptions
 import com.xbot.kotogram.feature.connection.data.repository.DefaultConnectionRepository
+import com.xbot.kotogram.feature.connection.data.repository.DefaultConnectionStateRepository
+import com.xbot.kotogram.feature.connection.data.store.ConnectionStore
 import com.xbot.kotogram.feature.connection.domain.repository.ConnectionRepository
+import com.xbot.kotogram.feature.connection.domain.repository.ConnectionStateRepository
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.scopedOf
 import org.koin.dsl.bind
@@ -21,6 +24,8 @@ val connectionDataModule = module {
         )
     } bind ConnectionRepository::class
     scope(AccountScope) {
+        scopedOf(::ConnectionStore) { bind<AccountUpdates>() }
+        scopedOf(::DefaultConnectionStateRepository) { bind<ConnectionStateRepository>() }
         scopedOf(::OnlineOptions) { bind<TdlibOptions>() }
         scopedOf(::NetworkTypeUpdates) { bind<AccountUpdates>() }
     }

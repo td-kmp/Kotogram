@@ -34,6 +34,7 @@ kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     dependencies {
         implementation(projects.feature.chats.domain)
+        implementation(projects.feature.connection.domain)
         implementation(projects.feature.media.domain)
         implementation(projects.core.account)
         implementation(projects.feature.chats.api)

@@ -9,9 +9,7 @@ import com.xbot.kotogram.feature.connection.impl.platform.rememberAppForeground
 import org.koin.compose.koinInject
 
 @Composable
-fun ConnectionEffect(
-    repository: ConnectionRepository = koinInject()
-) {
+fun ConnectionEffect(repository: ConnectionRepository = koinInject()) {
     val inForeground = rememberAppForeground()
     LaunchedEffect(repository, inForeground) {
         snapshotFlow { inForeground.value }.collect { repository.setInForeground(it) }

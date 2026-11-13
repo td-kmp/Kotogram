@@ -3,6 +3,7 @@ package com.xbot.kotogram.feature.chats.impl.screen.list
 import androidx.lifecycle.ViewModel
 import com.xbot.kotogram.core.designsystem.component.AvatarShape
 import com.xbot.kotogram.feature.chats.domain.repository.ChatRepository
+import com.xbot.kotogram.feature.connection.domain.repository.ConnectionStateRepository
 import com.xbot.kotogram.feature.media.domain.repository.CustomEmojiRepository
 import io.xbot.tdlib.api.ChatList
 import io.xbot.tdlib.api.ChatListArchive
@@ -25,6 +26,7 @@ import org.orbitmvi.orbit.viewmodel.orbitContainer
 internal class ChatListViewModel(
     private val repository: ChatRepository,
     private val customEmojiRepository: CustomEmojiRepository,
+    private val connectionRepository: ConnectionStateRepository,
 ) : ViewModel(),
     OrbitContainerHost<ChatListScreenState, ChatListScreenState, Nothing> {
 
@@ -39,6 +41,9 @@ internal class ChatListViewModel(
                 }
                 launch {
                     repository.archive().collect { archive -> reduce { state.copy(archive = archive) } }
+                }
+                launch {
+                    connectionRepository.state.collect { connection -> reduce { state.copy(connection = connection) } }
                 }
                 launch { repository.loadMore(ChatListArchive) }
                 launch { repository.loadStories() }

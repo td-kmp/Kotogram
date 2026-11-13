@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
@@ -27,4 +28,10 @@ kotlin {
     }
 
     jvmToolchain(25)
+
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    dependencies {
+        api(libs.tdlib.client)
+        api(libs.kotlinx.coroutines.core)
+    }
 }
