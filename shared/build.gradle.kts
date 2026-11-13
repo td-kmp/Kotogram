@@ -55,6 +55,8 @@ kotlin {
             implementation(projects.feature.chats.api)
             implementation(projects.feature.chats.data)
             implementation(projects.feature.chats.impl)
+            implementation(projects.feature.connection.data)
+            implementation(projects.feature.connection.impl)
             implementation(projects.feature.language.data)
             implementation(projects.feature.language.impl)
             implementation(libs.compose.runtime)

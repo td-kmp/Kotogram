@@ -66,9 +66,9 @@ focus is anywhere in the window's tree, and its scene hosts set `WindowInfo.isWi
 `MainActivity` handles `orientation|screenLayout|screenSize|smallestScreenSize|locale|layoutDirection`, so a
 switch of the dark theme still recreates it: a pause and a resume in a row.
 
-## 5. What is built (2026-11-13), not wired yet
+## 5. What is built (2026-11-13)
 
-The author's own on top of Telegram X's behaviour; nothing in `shared` includes it yet.
+The author's own on top of Telegram X's behaviour.
 
 - **`feature:connection`**, not `core:account`, which runs accounts and owns no subsystem
   ([architecture](../architecture.md)). `domain`: `ConnectionRepository.setInForeground`, for the root's
@@ -109,11 +109,22 @@ The author's own on top of Telegram X's behaviour; nothing in `shared` includes 
   `networkTypeNone` and on `networkTypeWiFi` within a second each; joining the iPhone's hotspot gave a `none` and
   a `wiFi` 0.3 s apart (the hotspot is Wi-Fi to macOS, not cellular). `spotlessApply` and `detekt` pass. Nothing
   ran on Windows, Linux, a phone or a browser, and no TDLib client was given the reports.
-- **Next:** a platform effect at the root that calls `setInForeground` (Android's activity or application,
-  iOS's scene hooks, the desktop's Nucleus window or always true), then `connectionDataModule` in `shared`.
-- **Open:** whether TDLib takes `setOption online` and `setNetworkType` before `setTdlibParameters` (both are sent
-  without waiting, as the other options); a test over `FakeTdLib` in `core/account/src/jvmTest`. Whether several
-  Kotlin/Native libraries (`appkit`'s and a platform module's) live well in one JVM.
+- **Wired:** `feature:connection:impl`'s `ConnectionEffect()` sits at the root of `App()` and writes
+  `isAppInForeground()`, a platform's own signal (as `isSystemInDarkTheme()`), to `setInForeground`, and false
+  when it leaves the composition. Android: the activity's lifecycle at `RESUMED` (`LocalLifecycleOwner` above
+  the navigation is `MainActivity`), Telegram X's `onResume` and `onPause`. iOS: `UIApplication`'s state and its
+  did-become-active, will-resign-active and did-enter-background notifications, as Telegram-iOS's `AppDelegate`.
+  Desktop: `jvm-app` passes the window's own state, active and not minimized (`NucleusDecoratedWindowScope.state`),
+  as Telegram Desktop's `hasActiveWindow`; `LocalWindowInfo.isWindowFocused` alone stayed true with the window
+  minimized on macOS (Nucleus puts `windowDidMiniaturize` into `isMinimized`, not into the focus), and is only
+  the default for other hosts. Telegram Desktop's idle timeout (`offlineIdleTimeout`) isn't taken. Web: `focus` and
+  `blur` of the window and `document.hasFocus()`, as Web A's `useBackgroundMode`. `shared` starts
+  `connectionDataModule`.
+- **Checked:** `KoinGraphTest` (real TDLib, this Mac's network monitor) sets the app in front and TDLib answers
+  `getOption online` with true; nothing is logged against `setOption online` or `setNetworkType`, so options
+  sent before `setTdlibParameters` are taken. The effect hasn't run in an app on any platform.
+- **Open:** whether several Kotlin/Native libraries (`appkit`'s and a platform module's) live well in one JVM.
+  Then the phone: the chat list fresh right after the background (§6).
 
 ## 6. Seeing it again
 

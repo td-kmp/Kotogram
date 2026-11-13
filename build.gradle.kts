@@ -32,7 +32,7 @@ subprojects {
     val kotlinPlugins = listOf(
         "org.jetbrains.kotlin.multiplatform",
         "org.jetbrains.kotlin.jvm",
-        "com.android.application"
+        "com.android.application",
     )
     kotlinPlugins.forEach { id ->
         pluginManager.withPlugin(id) {

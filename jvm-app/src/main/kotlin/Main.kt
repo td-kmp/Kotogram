@@ -44,7 +44,7 @@ fun main(args: Array<String>) {
                         .padding(horizontal = 12.dp),
                 )
             }
-            App()
+            App(inForeground = state.isActive && !state.isMinimized)
         }
     }
 }

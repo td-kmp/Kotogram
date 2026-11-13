@@ -19,11 +19,14 @@ import com.xbot.kotogram.core.resources.LocalizationSource
 import com.xbot.kotogram.feature.auth.api.AuthRoute
 import com.xbot.kotogram.feature.chats.api.ChatListRoute
 import com.xbot.kotogram.feature.chats.api.ChatRoute
+import com.xbot.kotogram.feature.connection.domain.repository.ConnectionRepository
 import com.xbot.kotogram.shared.di.initKoin
 import io.xbot.tdlib.api.AuthorizationStateWaitPhoneNumber
 import io.xbot.tdlib.api.GetOption
+import io.xbot.tdlib.api.OptionValueBoolean
 import io.xbot.tdlib.api.OptionValueString
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
@@ -75,6 +78,13 @@ class KoinGraphTest {
                         OptionValueString("$root/langpack"),
                         koin.get<AppClient>().send(GetOption(name = "language_pack_database_path")).getOrNull(),
                     )
+
+                    koin.get<ConnectionRepository>().setInForeground(true)
+                    while (koin.get<AppClient>().send(GetOption(name = "online")).getOrNull() !=
+                        OptionValueBoolean(true)
+                    ) {
+                        delay(100)
+                    }
 
                     val definitions = koin.instanceRegistry.instances.values
                         .map { it.beanDefinition }
